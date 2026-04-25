@@ -61,10 +61,13 @@
     <textarea id="nl" rows="3" placeholder="可选：中文/英文自然语言，会经过 LLM 处理"
       class="w-full border rounded px-2 py-1 mb-3 text-sm"></textarea>
 
-    <div class="flex gap-4 mb-3 text-sm">
-      <label class="flex items-center gap-1"><input type="checkbox" id="rewrite" /> 改写模式 (-r)</label>
-      <label class="flex items-center gap-1"><input type="checkbox" id="sentence" /> 句子模式 (-s)</label>
+    <div class="flex gap-4 mb-1 text-sm">
+      <label class="flex items-center gap-1"><input type="checkbox" id="rewrite" checked /> 改写模式 (-r)</label>
     </div>
+    <p class="text-xs text-gray-500 mb-3">
+      改写模式：让 LLM 基于「直接 Tag」（或工作流内置 prompt）作为底本，结合「自然语言描述」整体重写一段新的 prompt，会智能修改、删除、补充原有标签。<br>
+      未勾选时为普通翻译/追加：把自然语言翻译成 tag 后，直接拼接到底本之后，原内容保持不变。
+    </p>
 
     <div class="flex gap-2 items-end mb-2 text-sm">
       <div>
@@ -129,14 +132,21 @@
     <div id="images" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
   </div>
 
-  <!-- 历史 -->
+  <!-- 全部输出图片 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">📜 本次会话历史 (<span id="history-count">0</span>)</h2>
-      <button id="btn-clear-history"
-        class="text-xs px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">清空</button>
+      <h2 class="text-lg font-semibold">🖼️ 所有生成图片
+        <span class="text-xs text-gray-500 font-normal">(<span id="gallery-shown">0</span>/<span id="gallery-total">0</span>)</span>
+      </h2>
+      <button id="btn-reload-gallery"
+        class="text-xs px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">重载</button>
     </div>
-    <div id="history" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
+    <div id="gallery-dir" class="text-xs text-gray-400 mb-2"></div>
+    <div id="gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
+    <div class="mt-3 text-center">
+      <button id="btn-load-more"
+        class="hidden text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">加载更多</button>
+    </div>
   </div>
 </div>
 
@@ -147,24 +157,81 @@ let defaultRes = {w: null, h: null};
 const history = [];  // {url, filename, prompt, time}
 
 function renderHistory() {
-  $('history-count').textContent = history.length;
-  $('history').innerHTML = history.map((h, i) =>
-    `<a href="${h.url}" target="_blank" rel="noopener"
-        title="${h.filename}\n${(h.prompt||'').slice(0,200)}"
-        class="block group">
-       <img src="${h.url}" loading="lazy"
-         class="w-full aspect-square object-cover rounded border hover:ring-2 hover:ring-blue-400" />
-     </a>`
-  ).join('');
+  // 已替换为 ComfyUI output 目录浏览，不再渲染会话内历史
 }
 
 function pushHistory(item) {
   history.unshift(item);
-  renderHistory();
+  // 新生成的图：插入到 gallery 顶部并刷新计数
+  if (item && item.filename) {
+    prependGalleryItem(item.filename);
+  }
+}
+
+// ============== 输出目录浏览 ==============
+const galleryState = {
+  total: 0,
+  loaded: 0,
+  pageSize: 60,
+};
+
+function galleryItemHTML(relPath) {
+  const url = '/api/output/file?path=' + encodeURIComponent(relPath);
+  const safe = relPath.replace(/"/g, '&quot;');
+  return `<a href="${url}" target="_blank" rel="noopener"
+    title="${safe}" class="block">
+    <img src="${url}" loading="lazy" decoding="async"
+      class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-blue-400" />
+  </a>`;
+}
+
+async function loadGallery(reset = true) {
+  if (reset) {
+    galleryState.loaded = 0;
+    $('gallery').innerHTML = '';
+  }
+  const r = await fetch(`/api/output/list?limit=${galleryState.pageSize}&offset=${galleryState.loaded}`);
+  const d = await r.json();
+  galleryState.total = d.total || 0;
+  $('gallery-total').textContent = galleryState.total;
+  $('gallery-dir').textContent = d.exists
+    ? `📁 ${d.output_dir}`
+    : `⚠️ 目录不存在：${d.output_dir}`;
+  const frag = document.createDocumentFragment();
+  for (const it of (d.items || [])) {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = galleryItemHTML(it.path);
+    frag.appendChild(wrap.firstElementChild);
+  }
+  $('gallery').appendChild(frag);
+  galleryState.loaded += (d.items || []).length;
+  $('gallery-shown').textContent = galleryState.loaded;
+  if (galleryState.loaded < galleryState.total) {
+    $('btn-load-more').classList.remove('hidden');
+  } else {
+    $('btn-load-more').classList.add('hidden');
+  }
+}
+
+function prependGalleryItem(filename) {
+  // 文件名仅是 basename，OUTPUT_DIR 直接放在根。预置到顶部即可看到。
+  const wrap = document.createElement('div');
+  wrap.innerHTML = galleryItemHTML(filename);
+  const node = wrap.firstElementChild;
+  $('gallery').prepend(node);
+  galleryState.total += 1;
+  galleryState.loaded += 1;
+  $('gallery-shown').textContent = galleryState.loaded;
+  $('gallery-total').textContent = galleryState.total;
 }
 
 async function loadCurrent() {
-  const r = await fetch('/api/workflows/current');
+  const path = getCurrentPath();
+  if (!path) {
+    $('current-info').textContent = '未选中工作流';
+    return;
+  }
+  const r = await fetch('/api/workflows/current?path=' + encodeURIComponent(path));
   const d = await r.json();
   if (!d.path) {
     $('current-info').textContent = '未选中工作流';
@@ -237,18 +304,18 @@ function renderList() {
   });
 }
 
+function getCurrentPath() {
+  return localStorage.getItem('currentWorkflow') || '';
+}
+
+function setCurrentPath(path) {
+  if (path) localStorage.setItem('currentWorkflow', path);
+  else localStorage.removeItem('currentWorkflow');
+}
+
 async function selectWorkflow(path) {
+  setCurrentPath(path);
   $('current-info').textContent = `加载 ${path} ...`;
-  const r = await fetch('/api/workflows/select', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({path})
-  });
-  if (!r.ok) {
-    const e = await r.json();
-    alert('失败: ' + (e.detail || r.status));
-    return;
-  }
   await loadCurrent();
 }
 
@@ -258,7 +325,6 @@ let currentPrompt = '';
 function appendLog(line) {
   const el = $('log');
   el.textContent += line + '\n';
-  el.scrollTop = el.scrollHeight;
 }
 
 function startRun() {
@@ -272,10 +338,10 @@ function startRun() {
     if (!confirm('未输入任何 prompt，使用工作流内置 prompt？')) return;
   }
   const payload = {
+    workflow_path: getCurrentPath(),
     direct_prompt: direct,
     nl_prompt: nl,
     rewrite: $('rewrite').checked,
-    sentence_mode: $('sentence').checked,
     width: parseInt($('width').value) || null,
     height: parseInt($('height').value) || null,
   };
@@ -310,7 +376,6 @@ function handleMsg(m) {
   } else if (m.type === 'llm_chunk') {
     const el = $('llm-stream');
     el.textContent += m.delta;
-    el.scrollTop = el.scrollHeight;
   } else if (m.type === 'llm_done') {
     appendLog('LLM 完成');
   } else if (m.type === 'progress') {
@@ -343,9 +408,6 @@ function handleMsg(m) {
     appendLog(`✅ 完成，共 ${m.count} 张`);
     $('progress-text').textContent = '完成';
     if (m.final_prompt) $('final-prompt').textContent = m.final_prompt;
-    requestAnimationFrame(() => {
-      window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-    });
   } else if (m.type === 'error') {
     appendLog('❌ ' + m.message);
     $('progress-text').textContent = '失败: ' + m.message;
@@ -378,11 +440,8 @@ $('res-presets').addEventListener('click', (e) => {
   $('width').value = btn.dataset.w;
   $('height').value = btn.dataset.h;
 });
-$('btn-clear-history').addEventListener('click', () => {
-  if (history.length && !confirm('清空历史记录？')) return;
-  history.length = 0;
-  renderHistory();
-});
+$('btn-reload-gallery').addEventListener('click', () => loadGallery(true));
+$('btn-load-more').addEventListener('click', () => loadGallery(false));
 
 // ============== 全局状态：跨页面同步 ==============
 let globalBusy = false;
@@ -489,6 +548,7 @@ setInterval(() => {
 
 loadCurrent();
 loadList();
+loadGallery(true);
 </script>
 </body>
 </html>

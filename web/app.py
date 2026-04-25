@@ -12,6 +12,9 @@ LMS_PORT = 1234
 
 WEB_HOST = "127.0.0.1"
 WEB_PORT = 8080
+
+# ComfyUI 输出目录（只读浏览）
+OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
 # ===================================
 
 import asyncio
@@ -35,6 +38,7 @@ COMFYUI_WS = f"ws://{COMFYUI_HOST}:{COMFYUI_PORT}"
 CLIENT_ID = uuid.uuid4().hex
 
 STATE_FILE = Path(__file__).parent / "state.json"
+OUTPUT_DIR = Path(OUTPUT_DIR_STR)
 STATIC_DIR = Path(__file__).parent / "static"
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
@@ -303,32 +307,19 @@ def workflow_to_prompt_api(workflow: Dict[str, Any]) -> Tuple[Dict[str, Any], Op
 async def translate_prompt(
     prompt: str,
     original_prompt: Optional[str] = None,
-    sentence_mode: bool = False,
     on_chunk: Optional[Any] = None,
 ) -> str:
     if original_prompt:
-        if sentence_mode:
-            system = (
-                "你是 AI 绘图 prompt 改写专家（句子模式）。用户提供原始prompt和新描述，"
-                "你输出最终英文自然语言句子。保持未要求改变的部分，只输出英文句子，不解释。"
-            )
-        else:
-            system = (
-                "你是 SD/Pony/Illustrious prompt 改写专家。用户提供原始tag和新描述，"
-                "你输出最终英文逗号分隔tag。保持未要求改变的部分。只输出最终prompt，不解释，不输出中文。"
-            )
+        system = (
+            "你是 SD/Pony/Illustrious prompt 改写专家。用户提供原始tag和新描述，"
+            "你输出最终英文逗号分隔tag。保持未要求改变的部分。只输出最终prompt，不解释，不输出中文。"
+        )
         user = f"原始 prompt：\n{original_prompt}\n\n用户的新描述：\n{prompt}\n\n请生成最终的 prompt："
     else:
-        if sentence_mode:
-            system = (
-                "将描述转换为现代 AI 绘图模型（Flux/SD3）的英文自然语言句子。"
-                "只输出英文文本，不解释。涵盖主体/外观/动作/场景/光线/镜头/氛围。"
-            )
-        else:
-            system = (
-                "将自然语言转换为 SD/Pony/Illustrious 英文 tag prompt。"
-                "逗号分隔，顺序：主体>外观>动作>场景>光线>构图>质量词。只输出最终prompt，不解释，不输出中文。"
-            )
+        system = (
+            "将自然语言转换为 SD/Pony/Illustrious 英文 tag prompt。"
+            "逗号分隔，顺序：主体>外观>动作>场景>光线>构图>质量词。只输出最终prompt，不解释，不输出中文。"
+        )
         user = prompt
 
     body = {
@@ -403,7 +394,7 @@ async def api_list():
         wfs = await list_workflows()
         for w in wfs:
             w["thumbnail"] = bool(find_thumbnail(w.get("path", "")))
-        return {"workflows": wfs, "current": load_state().get("current")}
+        return {"workflows": wfs}
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -418,8 +409,79 @@ async def api_thumbnail(path: str):
     return FileResponse(str(p), media_type=media)
 
 
+# ============== ComfyUI output 浏览（只读） ==============
+
+OUTPUT_IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
+
+
+def _resolve_output_path(rel: str) -> Path:
+    """安全解析 OUTPUT_DIR 下的相对路径，防止路径穿越。"""
+    if not rel:
+        raise HTTPException(400, "path required")
+    # 拒绝绝对路径与回溯
+    rel_norm = rel.replace("\\", "/").lstrip("/")
+    if ".." in rel_norm.split("/"):
+        raise HTTPException(400, "invalid path")
+    base = OUTPUT_DIR.resolve()
+    candidate = (OUTPUT_DIR / rel_norm).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        raise HTTPException(400, "path escapes output dir")
+    return candidate
+
+
+@app.get("/api/output/list")
+async def api_output_list(limit: int = 500, offset: int = 0):
+    """递归列出 OUTPUT_DIR 下所有图片，按 mtime 倒序，分页。"""
+    if not OUTPUT_DIR.exists():
+        return {"items": [], "total": 0, "output_dir": str(OUTPUT_DIR), "exists": False}
+    base = OUTPUT_DIR.resolve()
+    items: List[Tuple[float, str, int]] = []
+    for p in OUTPUT_DIR.rglob("*"):
+        if not p.is_file():
+            continue
+        if p.suffix.lower() not in OUTPUT_IMAGE_EXTS:
+            continue
+        try:
+            rel = p.resolve().relative_to(base).as_posix()
+        except Exception:
+            continue
+        try:
+            st = p.stat()
+        except Exception:
+            continue
+        items.append((st.st_mtime, rel, st.st_size))
+    items.sort(key=lambda x: -x[0])
+    total = len(items)
+    sliced = items[offset:offset + max(0, min(limit, 2000))]
+    return {
+        "output_dir": str(OUTPUT_DIR),
+        "exists": True,
+        "total": total,
+        "items": [
+            {"path": rel, "mtime": mt, "size": sz} for (mt, rel, sz) in sliced
+        ],
+    }
+
+
+@app.get("/api/output/file")
+async def api_output_file(path: str):
+    p = _resolve_output_path(path)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    if p.suffix.lower() not in OUTPUT_IMAGE_EXTS:
+        raise HTTPException(400, "not an image")
+    ext = p.suffix.lower().lstrip(".")
+    media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, f"image/{ext}")
+    return FileResponse(str(p), media_type=media)
+
+
 @app.post("/api/workflows/select")
 async def api_select(payload: Dict[str, str]):
+    """已废弃：选择由前端 localStorage 维护。
+    保留接口仅为向后兼容，仅校验工作流可加载并返回摘要，不写任何状态。
+    """
     path = payload.get("path", "")
     if not path:
         raise HTTPException(400, "path required")
@@ -427,9 +489,6 @@ async def api_select(payload: Dict[str, str]):
         data = await get_workflow(path)
     except Exception as e:
         raise HTTPException(500, f"加载失败: {e}")
-    state = load_state()
-    state["current"] = path
-    save_state(state)
     return {"ok": True, "path": path, "summary": summarize_workflow(data)}
 
 
@@ -473,8 +532,10 @@ def apply_resolution(prompt_dict: Dict[str, Any], width: int, height: int) -> in
 
 
 @app.get("/api/workflows/current")
-async def api_current():
-    path = load_state().get("current")
+async def api_current(path: Optional[str] = None):
+    """返回指定工作流的摘要 + 默认分辨率。前端传 path（来自浏览器 localStorage）。
+    不存在 path 参数时返回空，后端不再持有"当前工作流"状态。
+    """
     if not path:
         return {"path": None}
     has_thumb = bool(find_thumbnail(path))
@@ -511,7 +572,6 @@ async def api_translate(payload: Dict[str, Any]):
         out = await translate_prompt(
             prompt,
             original_prompt=payload.get("original_prompt") or None,
-            sentence_mode=bool(payload.get("sentence_mode")),
         )
         return {"text": out}
     except Exception as e:
@@ -528,10 +588,10 @@ async def api_interrupt():
 
 
 class RunRequest(BaseModel):
+    workflow_path: str = ""
     direct_prompt: str = ""
     nl_prompt: str = ""
     rewrite: bool = False
-    sentence_mode: bool = False
     width: Optional[int] = None
     height: Optional[int] = None
 
@@ -649,9 +709,9 @@ async def ws_run(ws: WebSocket):
 
 async def _run_task(ws: WebSocket, req: RunRequest):
     import time as _time
-    path = load_state().get("current")
+    path = req.workflow_path
     if not path:
-        await emit(ws, {"type": "error", "message": "未选中工作流"})
+        await emit(ws, {"type": "error", "message": "未指定工作流（前端未传 workflow_path）"})
         return
 
     await _push_status({
@@ -673,7 +733,7 @@ async def _run_task(ws: WebSocket, req: RunRequest):
         builtin = str(builtin)
     builtin = builtin.strip()
 
-    sep = " " if req.sentence_mode else ", "
+    sep = ", "
 
     if req.nl_prompt:
         await emit(ws, {"type": "log", "message": f"[2/4] LLM {'改写' if req.rewrite else '翻译'}中..."})
@@ -686,13 +746,12 @@ async def _run_task(ws: WebSocket, req: RunRequest):
         base = req.direct_prompt or builtin
         if req.rewrite and base:
             translated = await translate_prompt(
-                req.nl_prompt, original_prompt=base,
-                sentence_mode=req.sentence_mode, on_chunk=_on_chunk,
+                req.nl_prompt, original_prompt=base, on_chunk=_on_chunk,
             )
             sd_prompt = translated
         else:
             translated = await translate_prompt(
-                req.nl_prompt, sentence_mode=req.sentence_mode, on_chunk=_on_chunk,
+                req.nl_prompt, on_chunk=_on_chunk,
             )
             parts = [p for p in (builtin, req.direct_prompt, translated) if p]
             sd_prompt = sep.join(parts)
