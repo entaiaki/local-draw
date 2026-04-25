@@ -20,6 +20,18 @@
     </a>
   </div>
 
+  <!-- 全局状态横幅 -->
+  <div id="global-status" class="hidden mb-4 rounded border p-3 text-sm bg-yellow-50 border-yellow-300 text-yellow-900">
+    <div class="flex items-center justify-between gap-2 mb-1">
+      <span class="font-semibold">⚙️ <span id="gs-stage">服务器忙</span></span>
+      <span id="gs-meta" class="text-xs text-yellow-700"></span>
+    </div>
+    <div id="gs-bar-wrap" class="hidden w-full bg-yellow-200 rounded h-2 overflow-hidden">
+      <div id="gs-bar" class="bg-yellow-500 h-2 transition-all" style="width:0%"></div>
+    </div>
+    <div id="gs-text" class="text-xs mt-1"></div>
+  </div>
+
   <!-- 当前工作流 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
@@ -34,7 +46,7 @@
     <h2 class="text-lg font-semibold mb-2">📋 工作流列表</h2>
     <input id="search" type="text" placeholder="搜索关键词..."
       class="w-full border rounded px-2 py-1 mb-2 text-sm" />
-    <div id="wf-list" class="max-h-96 overflow-y-auto border rounded text-sm divide-y"></div>
+    <div id="wf-list" class="max-h-[32rem] overflow-y-auto"></div>
   </div>
 
   <!-- 生图表单 -->
@@ -54,7 +66,7 @@
       <label class="flex items-center gap-1"><input type="checkbox" id="sentence" /> 句子模式 (-s)</label>
     </div>
 
-    <div class="flex gap-2 items-end mb-3 text-sm">
+    <div class="flex gap-2 items-end mb-2 text-sm">
       <div>
         <label class="block text-xs text-gray-500 mb-0.5">宽 width</label>
         <input id="width" type="number" min="64" step="8" placeholder="默认"
@@ -68,6 +80,20 @@
       <button id="btn-reset-res" type="button"
         class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-xs">恢复默认</button>
       <span id="default-res" class="text-xs text-gray-500"></span>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-3 text-xs" id="res-presets">
+      <button type="button" data-w="832" data-h="1216"
+        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
+        832×1216 <span class="text-gray-500">推荐</span>
+      </button>
+      <button type="button" data-w="1024" data-h="1024"
+        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
+        1024×1024 <span class="text-gray-500">大头照</span>
+      </button>
+      <button type="button" data-w="512" data-h="512"
+        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
+        512×512 <span class="text-gray-500">测试模型</span>
+      </button>
     </div>
 
     <div class="flex gap-2">
@@ -144,16 +170,17 @@ async function loadCurrent() {
     $('current-info').textContent = '未选中工作流';
     return;
   }
+  const display = d.path.replace(/\.json$/i, '');
   const thumb = d.thumbnail
     ? `<img src="/api/thumbnail?path=${encodeURIComponent(d.path)}" class="w-16 h-16 object-cover rounded border flex-shrink-0" />`
     : '';
   if (d.error) {
-    $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div>${d.path} (错误: ${d.error})</div></div>`;
+    $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div>${display} (错误: ${d.error})</div></div>`;
     return;
   }
   const s = d.summary;
   $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div>
-    <div class="font-medium">${d.path}</div>
+    <div class="font-medium">${display}</div>
     <div class="text-xs text-gray-500">节点 ${s.node_count} | 连线 ${s.link_count} | 分组 ${s.group_count}</div>
   </div></div>`;
 
@@ -187,18 +214,24 @@ function renderList() {
     $('wf-list').innerHTML = '<div class="p-2 text-gray-400">无</div>';
     return;
   }
-  $('wf-list').innerHTML = filtered.map(w => {
-    const thumb = w.thumbnail
-      ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-12 h-12 object-cover rounded border flex-shrink-0" loading="lazy" />`
-      : `<div class="w-12 h-12 rounded border bg-gray-100 flex items-center justify-center text-gray-300 text-xs flex-shrink-0">无图</div>`;
-    return `<div class="p-2 hover:bg-blue-50 cursor-pointer flex justify-between items-center gap-2 wf-item" data-path="${w.path}">
-       <div class="flex items-center gap-2 min-w-0 flex-1">
+  // 横向卡片：[缩略图] 名字 ；每张卡片宽度自适应内容，行内尽量塞，溢出换行
+  $('wf-list').innerHTML =
+    `<div id="wf-grid" class="flex flex-wrap gap-2">` +
+    filtered.map(w => {
+      const stem = w.path.replace(/\.json$/i, '');
+      const idx = stem.indexOf(' - ');
+      const model = idx >= 0 ? stem.slice(0, idx) : stem;
+      const custom = idx >= 0 ? stem.slice(idx + 3) : '';
+      const thumb = w.thumbnail
+        ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
+        : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
+      return `<div class="wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16" data-path="${w.path}">
          ${thumb}
-         <span class="text-sm truncate">${w.path}</span>
-       </div>
-       <button class="text-xs px-2 py-0.5 bg-blue-500 text-white rounded flex-shrink-0">选择</button>
-     </div>`;
-  }).join('');
+         <span class="text-[11px] font-medium whitespace-nowrap">${model}</span>
+         <span class="text-[10px] text-gray-500 whitespace-nowrap">${custom}</span>
+       </div>`;
+    }).join('') +
+    `</div>`;
   document.querySelectorAll('.wf-item').forEach(el => {
     el.addEventListener('click', () => selectWorkflow(el.dataset.path));
   });
@@ -229,6 +262,10 @@ function appendLog(line) {
 }
 
 function startRun() {
+  if (globalBusy) {
+    alert('服务器繁忙：已有任务在执行（其它页面/会话正在生图）');
+    return;
+  }
   const direct = $('direct').value.trim();
   const nl = $('nl').value.trim();
   if (!direct && !nl) {
@@ -316,7 +353,7 @@ function handleMsg(m) {
 }
 
 function finishRun() {
-  $('btn-run').disabled = false;
+  $('btn-run').disabled = !!globalBusy;
   $('btn-cancel').classList.add('hidden');
   activeWS = null;
 }
@@ -335,11 +372,120 @@ $('btn-reset-res').addEventListener('click', () => {
   $('width').value = '';
   $('height').value = '';
 });
+$('res-presets').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-w]');
+  if (!btn) return;
+  $('width').value = btn.dataset.w;
+  $('height').value = btn.dataset.h;
+});
 $('btn-clear-history').addEventListener('click', () => {
   if (history.length && !confirm('清空历史记录？')) return;
   history.length = 0;
   renderHistory();
 });
+
+// ============== 全局状态：跨页面同步 ==============
+let globalBusy = false;
+
+function applyGlobalStatus(s) {
+  globalBusy = !!s.busy;
+  const box = $('global-status');
+  if (!s.busy) {
+    box.classList.add('hidden');
+    if (!activeWS) {
+      $('btn-run').disabled = false;
+    }
+    // 任务结束：清理"镜像中"标记
+    mirroring = false;
+    return;
+  }
+  box.classList.remove('hidden');
+
+  const stageMap = {
+    loading: '加载工作流',
+    llm: 'LLM 处理中',
+    generating: '生图中',
+  };
+  $('gs-stage').textContent = stageMap[s.stage] || '处理中';
+
+  const meta = [];
+  if (s.workflow) meta.push(s.workflow.replace(/\.json$/i, ''));
+  if (s.started_at) {
+    const sec = Math.floor(Date.now()/1000 - s.started_at);
+    meta.push(sec + 's');
+  }
+  $('gs-meta').textContent = meta.join(' · ');
+
+  if (s.max && s.max > 1) {
+    const pct = Math.floor((s.value || 0) * 100 / s.max);
+    $('gs-bar-wrap').classList.remove('hidden');
+    $('gs-bar').style.width = pct + '%';
+    $('gs-text').textContent = `${s.node || ''} ${s.value}/${s.max} (${pct}%)  节点 ${s.done||0}/${s.total||0}`;
+  } else {
+    $('gs-bar-wrap').classList.add('hidden');
+    $('gs-text').textContent = s.node ? `执行: ${s.node}` : '';
+  }
+
+  // 别人在跑时禁用我的 run
+  if (!activeWS) {
+    $('btn-run').disabled = true;
+  }
+
+  // 标记：当前页面没在跑，但服务器在跑 —— 进入"镜像旁观者"模式
+  if (!activeWS && !mirroring) {
+    enterMirrorMode();
+  }
+}
+
+let mirroring = false;
+function enterMirrorMode() {
+  mirroring = true;
+  // 显示进度区，便于复用现有 UI 收事件
+  $('progress-box').classList.remove('hidden');
+  $('result-box').classList.add('hidden');
+  $('log').textContent = '';
+  $('llm-box').classList.add('hidden');
+  $('llm-stream').textContent = '';
+  $('progress-text').textContent = '👀 旁观其它页面的任务';
+  $('progress-bar-wrap').classList.add('hidden');
+  $('images').innerHTML = '';
+  $('final-prompt').textContent = '';
+  currentPrompt = '';
+}
+
+let statusWS = null;
+function connectStatus() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  statusWS = new WebSocket(`${proto}://${location.host}/ws/status`);
+  statusWS.onmessage = (e) => {
+    let m;
+    try { m = JSON.parse(e.data); } catch { return; }
+    if (m.type === 'status') {
+      applyGlobalStatus(m);
+    } else if (m.type === 'mirror') {
+      // 旁观者：用同一个 handler 渲染事件
+      // 但发起者 (activeWS != null) 已经从自己的 ws 收到过同事件，跳过避免重复
+      if (activeWS) return;
+      handleMsg(m.event);
+    }
+  };
+  statusWS.onclose = () => {
+    statusWS = null;
+    setTimeout(connectStatus, 2000);
+  };
+  statusWS.onerror = () => { try { statusWS.close(); } catch {} };
+}
+connectStatus();
+// 计时刷新
+setInterval(() => {
+  if (globalBusy) {
+    // 触发一次 meta 刷新（基于上次状态）
+    const meta = $('gs-meta').textContent;
+    if (/(\d+)s$/.test(meta)) {
+      // 由后端 status 推送驱动；这里仅心跳
+    }
+  }
+}, 1000);
 
 loadCurrent();
 loadList();

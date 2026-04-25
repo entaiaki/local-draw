@@ -538,6 +538,76 @@ class RunRequest(BaseModel):
 
 # 单一并发锁
 _run_lock = asyncio.Lock()
+# 广播：所有打开 /ws/status 的客户端
+_status_subscribers: "set[WebSocket]" = set()
+# 当前活跃任务快照：None 表示空闲
+_active_status: Optional[Dict[str, Any]] = None
+# 当前任务的事件回放缓冲（新连入的客户端可重建 UI）
+# 元素: 原始 send 给前端的 dict
+_event_log: List[Dict[str, Any]] = []
+
+
+def _idle_snapshot() -> Dict[str, Any]:
+    return {"busy": False}
+
+
+async def _broadcast(msg: Dict[str, Any]) -> None:
+    dead = []
+    for sub in list(_status_subscribers):
+        try:
+            await sub.send_json(msg)
+        except Exception:
+            dead.append(sub)
+    for d in dead:
+        _status_subscribers.discard(d)
+
+
+async def emit(ws: Optional[WebSocket], msg: Dict[str, Any]) -> None:
+    """发送一条业务事件：发起者 ws + 所有订阅者 + 写入回放日志。"""
+    _event_log.append(msg)
+    # 发起者
+    if ws is not None:
+        try:
+            await ws.send_json(msg)
+        except Exception:
+            pass
+    # 订阅者（包装一层 mirror 包，前端可识别）
+    await _broadcast({"type": "mirror", "event": msg})
+
+
+async def _push_status(patch: Optional[Dict[str, Any]] = None, *, reset: bool = False) -> None:
+    """更新 _active_status 并向所有订阅者广播。"""
+    global _active_status
+    if reset:
+        _active_status = None
+        _event_log.clear()
+    elif patch:
+        if _active_status is None:
+            _active_status = {"busy": True}
+        _active_status.update(patch)
+    snap = {"type": "status", **(_active_status or _idle_snapshot())}
+    await _broadcast(snap)
+
+
+@app.websocket("/ws/status")
+async def ws_status(ws: WebSocket):
+    """只读订阅：当前任务状态 + 历史回放 + 后续广播。"""
+    await ws.accept()
+    _status_subscribers.add(ws)
+    try:
+        # 立即推快照
+        await ws.send_json({"type": "status", **(_active_status or _idle_snapshot())})
+        # 回放本次任务已发生的所有事件，让新页面重建 UI
+        for evt in list(_event_log):
+            await ws.send_json({"type": "mirror", "event": evt})
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
+    finally:
+        _status_subscribers.discard(ws)
 
 
 @app.websocket("/ws/run")
@@ -551,7 +621,11 @@ async def ws_run(ws: WebSocket):
     await ws.accept()
 
     if _run_lock.locked():
-        await ws.send_json({"type": "error", "message": "服务器繁忙：已有任务在执行"})
+        await ws.send_json({
+            "type": "error",
+            "message": "服务器繁忙：已有任务在执行（其它页面/会话正在生图）",
+            "busy": True,
+        })
         await ws.close()
         return
 
@@ -566,22 +640,32 @@ async def ws_run(ws: WebSocket):
             return
         except Exception as e:
             try:
-                await ws.send_json({"type": "error", "message": str(e)})
+                await emit(ws, {"type": "error", "message": str(e)})
             except Exception:
                 pass
+        finally:
+            await _push_status(reset=True)
 
 
 async def _run_task(ws: WebSocket, req: RunRequest):
+    import time as _time
     path = load_state().get("current")
     if not path:
-        await ws.send_json({"type": "error", "message": "未选中工作流"})
+        await emit(ws, {"type": "error", "message": "未选中工作流"})
         return
 
-    await ws.send_json({"type": "log", "message": f"[1/4] 加载工作流 {path}"})
+    await _push_status({
+        "busy": True,
+        "stage": "loading",
+        "workflow": path,
+        "started_at": _time.time(),
+    })
+
+    await emit(ws, {"type": "log", "message": f"[1/4] 加载工作流 {path}"})
     data = await get_workflow(path)
     prompt_dict, positive_ref = workflow_to_prompt_api(data)
     if not positive_ref:
-        await ws.send_json({"type": "error", "message": "未找到正向 CLIPTextEncode 节点"})
+        await emit(ws, {"type": "error", "message": "未找到正向 CLIPTextEncode 节点"})
         return
     node_id, input_name = positive_ref
     builtin = prompt_dict[node_id]["inputs"].get(input_name, "") or ""
@@ -592,33 +676,34 @@ async def _run_task(ws: WebSocket, req: RunRequest):
     sep = " " if req.sentence_mode else ", "
 
     if req.nl_prompt:
-        await ws.send_json({"type": "log", "message": f"[2/4] LLM {'改写' if req.rewrite else '翻译'}中..."})
-        await ws.send_json({"type": "llm_start"})
+        await emit(ws, {"type": "log", "message": f"[2/4] LLM {'改写' if req.rewrite else '翻译'}中..."})
+        await emit(ws, {"type": "llm_start"})
+        await _push_status({"stage": "llm"})
 
-        async def _emit(piece: str):
-            await ws.send_json({"type": "llm_chunk", "delta": piece})
+        async def _on_chunk(piece: str):
+            await emit(ws, {"type": "llm_chunk", "delta": piece})
 
         base = req.direct_prompt or builtin
         if req.rewrite and base:
             translated = await translate_prompt(
                 req.nl_prompt, original_prompt=base,
-                sentence_mode=req.sentence_mode, on_chunk=_emit,
+                sentence_mode=req.sentence_mode, on_chunk=_on_chunk,
             )
             sd_prompt = translated
         else:
             translated = await translate_prompt(
-                req.nl_prompt, sentence_mode=req.sentence_mode, on_chunk=_emit,
+                req.nl_prompt, sentence_mode=req.sentence_mode, on_chunk=_on_chunk,
             )
             parts = [p for p in (builtin, req.direct_prompt, translated) if p]
             sd_prompt = sep.join(parts)
-        await ws.send_json({"type": "llm_done", "text": translated})
+        await emit(ws, {"type": "llm_done", "text": translated})
     else:
         parts = [p for p in (builtin, req.direct_prompt) if p]
         sd_prompt = sep.join(parts)
-        await ws.send_json({"type": "log", "message": "[2/4] 跳过 LLM"})
+        await emit(ws, {"type": "log", "message": "[2/4] 跳过 LLM"})
 
     if not sd_prompt.strip():
-        await ws.send_json({"type": "error", "message": "最终 prompt 为空"})
+        await emit(ws, {"type": "error", "message": "最终 prompt 为空"})
         return
 
     prompt_dict[node_id]["inputs"][input_name] = sd_prompt
@@ -626,7 +711,7 @@ async def _run_task(ws: WebSocket, req: RunRequest):
     if req.width and req.height and req.width > 0 and req.height > 0:
         n = apply_resolution(prompt_dict, int(req.width), int(req.height))
         if n:
-            await ws.send_json({"type": "log", "message": f"分辨率覆盖为 {req.width}x{req.height} ({n} 个节点)"})
+            await emit(ws, {"type": "log", "message": f"分辨率覆盖为 {req.width}x{req.height} ({n} 个节点)"})
 
     for nid, ndata in prompt_dict.items():
         if ndata.get("class_type") == "KSampler":
@@ -634,12 +719,17 @@ async def _run_task(ws: WebSocket, req: RunRequest):
             if "seed" in inp:
                 inp["seed"] = random.randint(0, 2**63 - 1)
 
-    await ws.send_json({"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
+    await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
     prompt_id = await submit_prompt(prompt_dict)
-    await ws.send_json({"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
-    await ws.send_json({"type": "prompt_id", "prompt_id": prompt_id, "final_prompt": sd_prompt})
+    await emit(ws, {"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
+    await emit(ws, {"type": "prompt_id", "prompt_id": prompt_id, "final_prompt": sd_prompt})
+    await _push_status({
+        "stage": "generating",
+        "prompt_id": prompt_id,
+        "final_prompt": sd_prompt[:200],
+    })
 
-    await ws.send_json({"type": "log", "message": "[4/4] 等待生成..."})
+    await emit(ws, {"type": "log", "message": "[4/4] 等待生成..."})
     history = await _wait_for(prompt_id, ws, prompt_dict)
 
     images = []
@@ -652,12 +742,12 @@ async def _run_task(ws: WebSocket, req: RunRequest):
             })
 
     if not images:
-        await ws.send_json({"type": "error", "message": "无图片输出"})
+        await emit(ws, {"type": "error", "message": "无图片输出"})
         return
 
     for img in images:
         url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"
-        await ws.send_json({
+        await emit(ws, {
             "type": "image",
             "url": url,
             "filename": img["filename"],
@@ -665,7 +755,7 @@ async def _run_task(ws: WebSocket, req: RunRequest):
             "image_type": img["type"],
         })
 
-    await ws.send_json({"type": "done", "final_prompt": sd_prompt, "count": len(images)})
+    await emit(ws, {"type": "done", "final_prompt": sd_prompt, "count": len(images)})
 
 
 async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any], timeout: int = 600) -> Dict[str, Any]:
@@ -708,8 +798,17 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any], 
                         cls = prompt_dict.get(str(rid), {}).get("class_type", str(rid))
                         cv = running.get("value", 0)
                         cm = running.get("max", 0)
-                        await ws.send_json({
+                        prog = {
                             "type": "progress",
+                            "node": cls,
+                            "value": cv,
+                            "max": cm,
+                            "done": done,
+                            "total": total,
+                        }
+                        await emit(ws, prog)
+                        await _push_status({
+                            "stage": "generating",
                             "node": cls,
                             "value": cv,
                             "max": cm,
@@ -720,7 +819,8 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any], 
                     node = data.get("node")
                     if node is not None:
                         cls = prompt_dict.get(str(node), {}).get("class_type", str(node))
-                        await ws.send_json({"type": "progress", "node": cls})
+                        await emit(ws, {"type": "progress", "node": cls})
+                        await _push_status({"stage": "generating", "node": cls})
                     elif data.get("prompt_id") == prompt_id:
                         completed = True
                         break
