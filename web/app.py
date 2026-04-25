@@ -1,0 +1,776 @@
+"""
+ComfyUI 网页版控制台
+
+启动: uvicorn web.app:app --host 0.0.0.0 --port 8080 --reload
+"""
+
+# ========== IP / 端口配置 ==========
+COMFYUI_HOST = "127.0.0.1"
+COMFYUI_PORT = 8000
+LMS_HOST = "127.0.0.1"
+LMS_PORT = 1234
+
+WEB_HOST = "127.0.0.1"
+WEB_PORT = 8080
+# ===================================
+
+import asyncio
+import json
+import random
+import uuid
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import httpx
+import websockets
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+COMFYUI_API = f"http://{COMFYUI_HOST}:{COMFYUI_PORT}"
+LMS_API = f"http://{LMS_HOST}:{LMS_PORT}"
+COMFYUI_WS = f"ws://{COMFYUI_HOST}:{COMFYUI_PORT}"
+
+CLIENT_ID = uuid.uuid4().hex
+
+STATE_FILE = Path(__file__).parent / "state.json"
+STATIC_DIR = Path(__file__).parent / "static"
+THUMB_DIR = Path(__file__).parent / "thumbnails"
+THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
+
+app = FastAPI(title="ComfyUI Web")
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+# ---------------- state ----------------
+
+def load_state() -> Dict[str, Any]:
+    if not STATE_FILE.exists():
+        return {}
+    try:
+        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def save_state(state: Dict[str, Any]) -> None:
+    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+# ---------------- ComfyUI helpers ----------------
+
+async def list_workflows() -> List[Dict[str, Any]]:
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(
+            f"{COMFYUI_API}/api/userdata",
+            params={"dir": "workflows", "recurse": "true", "split": "false", "full_info": "true"},
+            headers={"Comfy-User": ""},
+        )
+        r.raise_for_status()
+        return r.json()
+
+
+async def get_workflow(path: str) -> Dict[str, Any]:
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(
+            f"{COMFYUI_API}/api/userdata/workflows%2F{path}",
+            headers={"Comfy-User": ""},
+        )
+        r.raise_for_status()
+        return r.json()
+
+
+async def submit_prompt(prompt: Dict[str, Any]) -> str:
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.post(
+            f"{COMFYUI_API}/api/prompt",
+            json={"client_id": CLIENT_ID, "prompt": prompt},
+            headers={"Comfy-User": ""},
+        )
+        r.raise_for_status()
+        return r.json()["prompt_id"]
+
+
+async def interrupt_prompt() -> None:
+    async with httpx.AsyncClient(timeout=10) as client:
+        await client.post(f"{COMFYUI_API}/api/interrupt", headers={"Comfy-User": ""})
+
+
+async def get_history(prompt_id: str) -> Optional[Dict[str, Any]]:
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(f"{COMFYUI_API}/api/history/{prompt_id}", headers={"Comfy-User": ""})
+        r.raise_for_status()
+        d = r.json()
+        return d.get(prompt_id)
+
+
+async def download_image(filename: str, subfolder: str, img_type: str) -> Tuple[bytes, str]:
+    async with httpx.AsyncClient(timeout=60) as client:
+        r = await client.get(
+            f"{COMFYUI_API}/api/view",
+            params={"filename": filename, "subfolder": subfolder, "type": img_type},
+            headers={"Comfy-User": ""},
+        )
+        r.raise_for_status()
+        return r.content, r.headers.get("content-type", "image/png")
+
+
+# ---------------- workflow → prompt API ----------------
+
+def summarize_workflow(data: Dict[str, Any]) -> Dict[str, Any]:
+    nodes = data.get("nodes", [])
+    types: Dict[str, int] = {}
+    for node in nodes:
+        t = node.get("type", "?")
+        types[t] = types.get(t, 0) + 1
+    return {
+        "node_count": len(nodes),
+        "link_count": len(data.get("links", [])),
+        "group_count": len(data.get("groups", [])),
+        "types": types,
+    }
+
+
+def workflow_to_prompt_api(workflow: Dict[str, Any]) -> Tuple[Dict[str, Any], Optional[Tuple[str, str]]]:
+    """与 dev/comfyui.py workflow_to_prompt_api 同步实现。"""
+    prompt: Dict[str, Any] = {}
+    positive_ref: Optional[Tuple[str, str]] = None
+
+    top_nodes = workflow.get("nodes", [])
+    top_links = workflow.get("links", [])
+    subgraphs = {sg["id"]: sg for sg in workflow.get("definitions", {}).get("subgraphs", [])}
+
+    subgraph_internal_outputs: Dict[str, Dict[int, Tuple[int, int]]] = {}
+    for sg_id, sg in subgraphs.items():
+        out_node_id = sg.get("outputNode", {}).get("id", -20)
+        out_map: Dict[int, Tuple[int, int]] = {}
+        for link in sg.get("links", []):
+            if isinstance(link, dict) and link.get("target_id") == out_node_id:
+                slot = link.get("target_slot", 0)
+                out_map[slot] = (link.get("origin_id"), link.get("origin_slot", 0))
+        subgraph_internal_outputs[sg_id] = out_map
+
+    link_map: Dict[int, Tuple[str, int]] = {}
+    top_node_by_id = {n["id"]: n for n in top_nodes}
+
+    for link in top_links:
+        if isinstance(link, list) and len(link) >= 6:
+            lid, oid, oslot = link[0], link[1], link[2]
+        elif isinstance(link, dict):
+            lid, oid, oslot = link["id"], link["origin_id"], link.get("origin_slot", 0)
+        else:
+            continue
+
+        src_node = top_node_by_id.get(oid)
+        if src_node and src_node.get("type") in subgraphs:
+            sg_id = src_node["type"]
+            internal = subgraph_internal_outputs.get(sg_id, {}).get(oslot)
+            if internal:
+                int_nid, int_slot = internal
+                link_map[lid] = (f"{sg_id}:{int_nid}", int_slot)
+            else:
+                link_map[lid] = (str(oid), oslot)
+        else:
+            link_map[lid] = (str(oid), oslot)
+
+    def build_subgraph_link_map(sg, instance_node):
+        sg_id = sg["id"]
+        m: Dict[int, Tuple[str, int]] = {}
+        ext_inputs: Dict[str, Tuple[str, int]] = {}
+        for inp in instance_node.get("inputs", []) or []:
+            link_id = inp.get("link")
+            if link_id is not None and link_id in link_map:
+                ext_inputs[inp.get("name")] = link_map[link_id]
+        sg_inputs_list = sg.get("inputs", [])
+        for link in sg.get("links", []):
+            if not isinstance(link, dict):
+                continue
+            lid = link["id"]
+            oid = link["origin_id"]
+            oslot = link.get("origin_slot", 0)
+            if oid < 0:
+                if oslot < len(sg_inputs_list):
+                    ext_name = sg_inputs_list[oslot]["name"]
+                    if ext_name in ext_inputs:
+                        m[lid] = ext_inputs[ext_name]
+            else:
+                m[lid] = (f"{sg_id}:{oid}", oslot)
+        return m
+
+    SEED_WIDGETS = {"seed", "noise_seed"}
+
+    def extract_inputs(node, lmap):
+        result: Dict[str, Any] = {}
+        widgets = node.get("widgets_values", []) or []
+        widget_idx = 0
+        for inp in node.get("inputs", []) or []:
+            name = inp.get("name")
+            if not name:
+                continue
+            link_id = inp.get("link")
+            is_widget = inp.get("widget") is not None
+            ref = lmap.get(link_id) if link_id is not None else None
+            if ref is not None:
+                result[name] = [ref[0], ref[1]]
+                if is_widget:
+                    widget_idx += 1
+                    if name in SEED_WIDGETS and widget_idx < len(widgets):
+                        val = widgets[widget_idx]
+                        if isinstance(val, str) and val in ("fixed", "increment", "decrement", "randomize"):
+                            widget_idx += 1
+            elif is_widget:
+                if widget_idx < len(widgets):
+                    result[name] = widgets[widget_idx]
+                    widget_idx += 1
+                if name in SEED_WIDGETS and widget_idx < len(widgets):
+                    val = widgets[widget_idx]
+                    if isinstance(val, str) and val in ("fixed", "increment", "decrement", "randomize"):
+                        widget_idx += 1
+        return result
+
+    NON_EXEC = {"MarkdownNote", "Note", "Reroute", "PrimitiveNode"}
+
+    for node in top_nodes:
+        ntype = node.get("type", "")
+        nid = str(node.get("id"))
+        if ntype in NON_EXEC:
+            continue
+        if ntype in subgraphs:
+            sg = subgraphs[ntype]
+            sg_id = sg["id"]
+            sg_lmap = build_subgraph_link_map(sg, node)
+            proxy = node.get("properties", {}).get("proxyWidgets", []) or []
+            instance_widgets = node.get("widgets_values", []) or []
+            sg_widget_override: Dict[Tuple[int, str], Any] = {}
+            for i, pair in enumerate(proxy):
+                if i < len(instance_widgets) and isinstance(pair, list) and len(pair) == 2:
+                    sg_widget_override[(int(pair[0]), pair[1])] = instance_widgets[i]
+            for sub_node in sg.get("nodes", []):
+                sub_type = sub_node.get("type", "")
+                if sub_type in NON_EXEC:
+                    continue
+                sub_nid = f"{sg_id}:{sub_node['id']}"
+                sub_inputs = extract_inputs(sub_node, sg_lmap)
+                for inp in sub_node.get("inputs", []) or []:
+                    name = inp.get("name")
+                    if inp.get("widget") is not None:
+                        key = (sub_node["id"], name)
+                        if key in sg_widget_override:
+                            sub_inputs[name] = sg_widget_override[key]
+                prompt[sub_nid] = {
+                    "inputs": sub_inputs,
+                    "class_type": sub_type,
+                    "_meta": {"title": sub_node.get("title", sub_type)},
+                }
+                title = sub_node.get("title", "")
+                if sub_type == "CLIPTextEncode":
+                    t_low = title.lower()
+                    if "positive" in t_low or "[pos]" in t_low or "[prompt]" in t_low:
+                        positive_ref = (sub_nid, "text")
+            continue
+        prompt[nid] = {
+            "inputs": extract_inputs(node, link_map),
+            "class_type": ntype,
+            "_meta": {"title": node.get("title", ntype)},
+        }
+
+    if positive_ref is None:
+        for node in top_nodes:
+            if node.get("type") == "CLIPTextEncode":
+                title = node.get("title", "")
+                t_low = title.lower()
+                if "positive" in t_low or "[pos]" in t_low or "[prompt]" in t_low:
+                    positive_ref = (str(node["id"]), "text")
+                    break
+
+    if positive_ref is None:
+        for nid, ndata in prompt.items():
+            if ndata.get("class_type") in ("KSampler", "KSamplerAdvanced", "SamplerCustom", "SamplerCustomAdvanced"):
+                pos = ndata.get("inputs", {}).get("positive")
+                if isinstance(pos, list) and len(pos) >= 1:
+                    src_id = str(pos[0])
+                    src = prompt.get(src_id)
+                    if src and src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
+                        positive_ref = (src_id, "text")
+                        break
+
+    return prompt, positive_ref
+
+
+# ---------------- LLM ----------------
+
+async def translate_prompt(
+    prompt: str,
+    original_prompt: Optional[str] = None,
+    sentence_mode: bool = False,
+    on_chunk: Optional[Any] = None,
+) -> str:
+    if original_prompt:
+        if sentence_mode:
+            system = (
+                "你是 AI 绘图 prompt 改写专家（句子模式）。用户提供原始prompt和新描述，"
+                "你输出最终英文自然语言句子。保持未要求改变的部分，只输出英文句子，不解释。"
+            )
+        else:
+            system = (
+                "你是 SD/Pony/Illustrious prompt 改写专家。用户提供原始tag和新描述，"
+                "你输出最终英文逗号分隔tag。保持未要求改变的部分。只输出最终prompt，不解释，不输出中文。"
+            )
+        user = f"原始 prompt：\n{original_prompt}\n\n用户的新描述：\n{prompt}\n\n请生成最终的 prompt："
+    else:
+        if sentence_mode:
+            system = (
+                "将描述转换为现代 AI 绘图模型（Flux/SD3）的英文自然语言句子。"
+                "只输出英文文本，不解释。涵盖主体/外观/动作/场景/光线/镜头/氛围。"
+            )
+        else:
+            system = (
+                "将自然语言转换为 SD/Pony/Illustrious 英文 tag prompt。"
+                "逗号分隔，顺序：主体>外观>动作>场景>光线>构图>质量词。只输出最终prompt，不解释，不输出中文。"
+            )
+        user = prompt
+
+    body = {
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+        "temperature": 0.7,
+        "max_tokens": 999999,
+        "stream": True,
+    }
+
+    chunks: List[str] = []
+    async with httpx.AsyncClient(timeout=120) as client:
+        async with client.stream("POST", f"{LMS_API}/v1/chat/completions", json=body) as r:
+            r.raise_for_status()
+            async for line in r.aiter_lines():
+                if not line or not line.startswith("data:"):
+                    continue
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(data)
+                except Exception:
+                    continue
+                delta = (obj.get("choices") or [{}])[0].get("delta", {}) or {}
+                piece = delta.get("content") or ""
+                if not piece:
+                    continue
+                chunks.append(piece)
+                if on_chunk is not None:
+                    try:
+                        await on_chunk(piece)
+                    except Exception:
+                        pass
+    return "".join(chunks).strip()
+
+
+# ---------------- routes ----------------
+
+@app.get("/")
+async def index():
+    return FileResponse(str(STATIC_DIR / "index.html"))
+
+
+def find_thumbnail(wf_path: str) -> Optional[Path]:
+    """按工作流路径在 web/thumbnails/ 下查找同名图片。
+
+    支持：
+    - 完整 path（保留子目录），如 workflows/foo/bar.json → thumbnails/foo/bar.png
+    - 仅 basename，去掉 .json 后缀
+    """
+    if not wf_path:
+        return None
+    stem = wf_path[:-5] if wf_path.lower().endswith(".json") else wf_path
+    base = Path(stem)
+    candidates = []
+    for ext in THUMB_EXTS:
+        candidates.append(THUMB_DIR / (str(base) + ext))
+        candidates.append(THUMB_DIR / (base.name + ext))
+    for c in candidates:
+        try:
+            cr = c.resolve()
+            if cr.is_file() and str(cr).startswith(str(THUMB_DIR.resolve())):
+                return cr
+        except Exception:
+            continue
+    return None
+
+
+@app.get("/api/workflows")
+async def api_list():
+    try:
+        wfs = await list_workflows()
+        for w in wfs:
+            w["thumbnail"] = bool(find_thumbnail(w.get("path", "")))
+        return {"workflows": wfs, "current": load_state().get("current")}
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+@app.get("/api/thumbnail")
+async def api_thumbnail(path: str):
+    p = find_thumbnail(path)
+    if not p:
+        raise HTTPException(404, "no thumbnail")
+    ext = p.suffix.lower().lstrip(".")
+    media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, f"image/{ext}")
+    return FileResponse(str(p), media_type=media)
+
+
+@app.post("/api/workflows/select")
+async def api_select(payload: Dict[str, str]):
+    path = payload.get("path", "")
+    if not path:
+        raise HTTPException(400, "path required")
+    try:
+        data = await get_workflow(path)
+    except Exception as e:
+        raise HTTPException(500, f"加载失败: {e}")
+    state = load_state()
+    state["current"] = path
+    save_state(state)
+    return {"ok": True, "path": path, "summary": summarize_workflow(data)}
+
+
+RES_NODE_TYPES = {
+    "EmptyLatentImage", "EmptySD3LatentImage", "EmptyLatentImageAdvanced",
+    "ModelSamplingFlux", "EmptyHunyuanLatentVideo",
+}
+
+
+def find_resolution_nodes(prompt_dict: Dict[str, Any]) -> List[str]:
+    """返回所有持有 width/height 输入的节点 id。"""
+    out = []
+    for nid, ndata in prompt_dict.items():
+        inp = ndata.get("inputs", {}) or {}
+        if "width" in inp and "height" in inp and isinstance(inp["width"], (int, float)) and isinstance(inp["height"], (int, float)):
+            out.append(nid)
+    return out
+
+
+def detect_default_resolution(prompt_dict: Dict[str, Any]) -> Optional[Tuple[int, int]]:
+    nids = find_resolution_nodes(prompt_dict)
+    if not nids:
+        return None
+    # 优先选 EmptyLatent 系
+    for nid in nids:
+        if prompt_dict[nid].get("class_type") in RES_NODE_TYPES:
+            inp = prompt_dict[nid]["inputs"]
+            return int(inp["width"]), int(inp["height"])
+    inp = prompt_dict[nids[0]]["inputs"]
+    return int(inp["width"]), int(inp["height"])
+
+
+def apply_resolution(prompt_dict: Dict[str, Any], width: int, height: int) -> int:
+    """把所有 width/height 节点都改写。返回修改的节点数。"""
+    n = 0
+    for nid in find_resolution_nodes(prompt_dict):
+        prompt_dict[nid]["inputs"]["width"] = width
+        prompt_dict[nid]["inputs"]["height"] = height
+        n += 1
+    return n
+
+
+@app.get("/api/workflows/current")
+async def api_current():
+    path = load_state().get("current")
+    if not path:
+        return {"path": None}
+    has_thumb = bool(find_thumbnail(path))
+    try:
+        data = await get_workflow(path)
+    except Exception as e:
+        return {"path": path, "error": str(e), "thumbnail": has_thumb}
+    pd, _ = workflow_to_prompt_api(data)
+    res = detect_default_resolution(pd)
+    return {
+        "path": path,
+        "summary": summarize_workflow(data),
+        "thumbnail": has_thumb,
+        "default_width": res[0] if res else None,
+        "default_height": res[1] if res else None,
+    }
+
+
+@app.get("/api/image")
+async def api_image(filename: str, subfolder: str = "", type: str = "output"):
+    try:
+        content, ct = await download_image(filename, subfolder, type)
+        return Response(content=content, media_type=ct)
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+@app.post("/api/translate")
+async def api_translate(payload: Dict[str, Any]):
+    prompt = payload.get("prompt", "")
+    if not prompt:
+        raise HTTPException(400, "prompt required")
+    try:
+        out = await translate_prompt(
+            prompt,
+            original_prompt=payload.get("original_prompt") or None,
+            sentence_mode=bool(payload.get("sentence_mode")),
+        )
+        return {"text": out}
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+@app.post("/api/interrupt")
+async def api_interrupt():
+    try:
+        await interrupt_prompt()
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+class RunRequest(BaseModel):
+    direct_prompt: str = ""
+    nl_prompt: str = ""
+    rewrite: bool = False
+    sentence_mode: bool = False
+    width: Optional[int] = None
+    height: Optional[int] = None
+
+
+# 单一并发锁
+_run_lock = asyncio.Lock()
+
+
+@app.websocket("/ws/run")
+async def ws_run(ws: WebSocket):
+    """前端通过 WebSocket 提交并实时接收进度。
+
+    协议:
+      客户端首条消息: {direct_prompt, nl_prompt, rewrite, sentence_mode}
+      服务端推送: {type: "log"|"progress"|"image"|"done"|"error", ...}
+    """
+    await ws.accept()
+
+    if _run_lock.locked():
+        await ws.send_json({"type": "error", "message": "服务器繁忙：已有任务在执行"})
+        await ws.close()
+        return
+
+    async with _run_lock:
+        try:
+            init = await ws.receive_json()
+        except Exception:
+            return
+        try:
+            await _run_task(ws, RunRequest(**init))
+        except WebSocketDisconnect:
+            return
+        except Exception as e:
+            try:
+                await ws.send_json({"type": "error", "message": str(e)})
+            except Exception:
+                pass
+
+
+async def _run_task(ws: WebSocket, req: RunRequest):
+    path = load_state().get("current")
+    if not path:
+        await ws.send_json({"type": "error", "message": "未选中工作流"})
+        return
+
+    await ws.send_json({"type": "log", "message": f"[1/4] 加载工作流 {path}"})
+    data = await get_workflow(path)
+    prompt_dict, positive_ref = workflow_to_prompt_api(data)
+    if not positive_ref:
+        await ws.send_json({"type": "error", "message": "未找到正向 CLIPTextEncode 节点"})
+        return
+    node_id, input_name = positive_ref
+    builtin = prompt_dict[node_id]["inputs"].get(input_name, "") or ""
+    if not isinstance(builtin, str):
+        builtin = str(builtin)
+    builtin = builtin.strip()
+
+    sep = " " if req.sentence_mode else ", "
+
+    if req.nl_prompt:
+        await ws.send_json({"type": "log", "message": f"[2/4] LLM {'改写' if req.rewrite else '翻译'}中..."})
+        await ws.send_json({"type": "llm_start"})
+
+        async def _emit(piece: str):
+            await ws.send_json({"type": "llm_chunk", "delta": piece})
+
+        base = req.direct_prompt or builtin
+        if req.rewrite and base:
+            translated = await translate_prompt(
+                req.nl_prompt, original_prompt=base,
+                sentence_mode=req.sentence_mode, on_chunk=_emit,
+            )
+            sd_prompt = translated
+        else:
+            translated = await translate_prompt(
+                req.nl_prompt, sentence_mode=req.sentence_mode, on_chunk=_emit,
+            )
+            parts = [p for p in (builtin, req.direct_prompt, translated) if p]
+            sd_prompt = sep.join(parts)
+        await ws.send_json({"type": "llm_done", "text": translated})
+    else:
+        parts = [p for p in (builtin, req.direct_prompt) if p]
+        sd_prompt = sep.join(parts)
+        await ws.send_json({"type": "log", "message": "[2/4] 跳过 LLM"})
+
+    if not sd_prompt.strip():
+        await ws.send_json({"type": "error", "message": "最终 prompt 为空"})
+        return
+
+    prompt_dict[node_id]["inputs"][input_name] = sd_prompt
+
+    if req.width and req.height and req.width > 0 and req.height > 0:
+        n = apply_resolution(prompt_dict, int(req.width), int(req.height))
+        if n:
+            await ws.send_json({"type": "log", "message": f"分辨率覆盖为 {req.width}x{req.height} ({n} 个节点)"})
+
+    for nid, ndata in prompt_dict.items():
+        if ndata.get("class_type") == "KSampler":
+            inp = ndata.get("inputs", {})
+            if "seed" in inp:
+                inp["seed"] = random.randint(0, 2**63 - 1)
+
+    await ws.send_json({"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
+    prompt_id = await submit_prompt(prompt_dict)
+    await ws.send_json({"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
+    await ws.send_json({"type": "prompt_id", "prompt_id": prompt_id, "final_prompt": sd_prompt})
+
+    await ws.send_json({"type": "log", "message": "[4/4] 等待生成..."})
+    history = await _wait_for(prompt_id, ws, prompt_dict)
+
+    images = []
+    for _, node_output in (history.get("outputs") or {}).items():
+        for img in node_output.get("images", []) or []:
+            images.append({
+                "filename": img.get("filename", ""),
+                "subfolder": img.get("subfolder", ""),
+                "type": img.get("type", "output"),
+            })
+
+    if not images:
+        await ws.send_json({"type": "error", "message": "无图片输出"})
+        return
+
+    for img in images:
+        url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"
+        await ws.send_json({
+            "type": "image",
+            "url": url,
+            "filename": img["filename"],
+            "subfolder": img["subfolder"],
+            "image_type": img["type"],
+        })
+
+    await ws.send_json({"type": "done", "final_prompt": sd_prompt, "count": len(images)})
+
+
+async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any], timeout: int = 600) -> Dict[str, Any]:
+    ws_url = f"{COMFYUI_WS}/ws?clientId={CLIENT_ID}"
+    start = asyncio.get_event_loop().time()
+    completed = False
+    try:
+        async with websockets.connect(ws_url, max_size=None) as cws:
+            while True:
+                if asyncio.get_event_loop().time() - start > timeout:
+                    raise TimeoutError("生成超时")
+                try:
+                    raw = await asyncio.wait_for(cws.recv(), timeout=2)
+                except asyncio.TimeoutError:
+                    continue
+                if isinstance(raw, bytes):
+                    continue
+                try:
+                    msg = json.loads(raw)
+                except Exception:
+                    continue
+                msg_type = msg.get("type", "")
+                data = msg.get("data", {}) or {}
+                if data.get("prompt_id") and data["prompt_id"] != prompt_id:
+                    if msg_type != "status":
+                        continue
+                if msg_type == "progress_state":
+                    nodes = data.get("nodes") or {}
+                    running = None
+                    done = 0
+                    total = len(nodes)
+                    for _, ninfo in nodes.items():
+                        st = ninfo.get("state")
+                        if st == "finished":
+                            done += 1
+                        elif st == "running" and running is None:
+                            running = ninfo
+                    if running:
+                        rid = running.get("node_id")
+                        cls = prompt_dict.get(str(rid), {}).get("class_type", str(rid))
+                        cv = running.get("value", 0)
+                        cm = running.get("max", 0)
+                        await ws.send_json({
+                            "type": "progress",
+                            "node": cls,
+                            "value": cv,
+                            "max": cm,
+                            "done": done,
+                            "total": total,
+                        })
+                elif msg_type == "executing":
+                    node = data.get("node")
+                    if node is not None:
+                        cls = prompt_dict.get(str(node), {}).get("class_type", str(node))
+                        await ws.send_json({"type": "progress", "node": cls})
+                    elif data.get("prompt_id") == prompt_id:
+                        completed = True
+                        break
+                elif msg_type == "execution_success":
+                    completed = True
+                    break
+                elif msg_type == "execution_error":
+                    err = data.get("exception_message", "执行错误")
+                    raise RuntimeError(f"ComfyUI: {err}")
+    except websockets.WebSocketException:
+        pass
+
+    for _ in range(60):
+        h = await get_history(prompt_id)
+        if h:
+            return h
+        if asyncio.get_event_loop().time() - start > timeout:
+            raise TimeoutError("等待 history 超时")
+        await asyncio.sleep(1)
+    raise TimeoutError("无法获取 history")
+
+
+if __name__ == "__main__":
+    import argparse
+    import uvicorn
+
+    parser = argparse.ArgumentParser(description="ComfyUI Web 控制台")
+    parser.add_argument("--host", default=WEB_HOST,
+                        help=f"监听地址，默认 {WEB_HOST}。用 0.0.0.0 监听所有地址")
+    parser.add_argument("--port", type=int, default=WEB_PORT, help=f"端口，默认 {WEB_PORT}")
+    parser.add_argument("--reload", action="store_true",
+                        help="开启代码热重载（py 文件变更自动重启）")
+    args = parser.parse_args()
+
+    if args.reload:
+        # reload 模式必须传 import string
+        # 兼容两种启动方式：
+        #   python -m web.app          → __package__ == "web"
+        #   python web/app.py / uv run → __package__ 为空，需把父目录加进 sys.path
+        import sys
+        here = Path(__file__).parent
+        if not __package__:
+            sys.path.insert(0, str(here.parent))
+        uvicorn.run(
+            "web.app:app",
+            host=args.host,
+            port=args.port,
+            reload=True,
+            reload_dirs=[str(here)],
+            app_dir=str(here.parent),
+        )
+    else:
+        uvicorn.run(app, host=args.host, port=args.port)

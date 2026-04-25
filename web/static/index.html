@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ComfyUI Web</title>
+<link rel="icon" type="image/avif" href="/static/favicon.avif" />
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="max-w-6xl mx-auto p-4">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-bold">🎨 ComfyUI 网页控制台</h1>
+    <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
+       class="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1">
+      <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+        <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      <span>GitHub</span>
+    </a>
+  </div>
+
+  <!-- 当前工作流 -->
+  <div class="bg-white rounded shadow p-4 mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-lg font-semibold">📂 当前工作流</h2>
+      <button id="btn-refresh" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
+    </div>
+    <div id="current-info" class="text-gray-600 text-sm">加载中...</div>
+  </div>
+
+  <!-- 工作流列表 -->
+  <div class="bg-white rounded shadow p-4 mb-4">
+    <h2 class="text-lg font-semibold mb-2">📋 工作流列表</h2>
+    <input id="search" type="text" placeholder="搜索关键词..."
+      class="w-full border rounded px-2 py-1 mb-2 text-sm" />
+    <div id="wf-list" class="max-h-96 overflow-y-auto border rounded text-sm divide-y"></div>
+  </div>
+
+  <!-- 生图表单 -->
+  <div class="bg-white rounded shadow p-4 mb-4">
+    <h2 class="text-lg font-semibold mb-3">🎨 生成图片</h2>
+
+    <label class="block text-sm font-medium mb-1">直接 Tag (-d)</label>
+    <textarea id="direct" rows="2" placeholder="可选：直接英文 tags（逗号分隔）"
+      class="w-full border rounded px-2 py-1 mb-3 text-sm font-mono"></textarea>
+
+    <label class="block text-sm font-medium mb-1">自然语言描述 (-t)</label>
+    <textarea id="nl" rows="3" placeholder="可选：中文/英文自然语言，会经过 LLM 处理"
+      class="w-full border rounded px-2 py-1 mb-3 text-sm"></textarea>
+
+    <div class="flex gap-4 mb-3 text-sm">
+      <label class="flex items-center gap-1"><input type="checkbox" id="rewrite" /> 改写模式 (-r)</label>
+      <label class="flex items-center gap-1"><input type="checkbox" id="sentence" /> 句子模式 (-s)</label>
+    </div>
+
+    <div class="flex gap-2 items-end mb-3 text-sm">
+      <div>
+        <label class="block text-xs text-gray-500 mb-0.5">宽 width</label>
+        <input id="width" type="number" min="64" step="8" placeholder="默认"
+          class="w-28 border rounded px-2 py-1" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-500 mb-0.5">高 height</label>
+        <input id="height" type="number" min="64" step="8" placeholder="默认"
+          class="w-28 border rounded px-2 py-1" />
+      </div>
+      <button id="btn-reset-res" type="button"
+        class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-xs">恢复默认</button>
+      <span id="default-res" class="text-xs text-gray-500"></span>
+    </div>
+
+    <div class="flex gap-2">
+      <button id="btn-run" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400">
+        ▶ 开始生成
+      </button>
+      <button id="btn-cancel" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hidden">
+        ✕ 取消
+      </button>
+    </div>
+  </div>
+
+  <!-- 进度 -->
+  <div id="progress-box" class="bg-white rounded shadow p-4 mb-4 hidden">
+    <h2 class="text-lg font-semibold mb-2">⏳ 进度</h2>
+    <div id="progress-bar-wrap" class="w-full bg-gray-200 rounded h-3 mb-2 overflow-hidden hidden">
+      <div id="progress-bar" class="bg-blue-500 h-3 transition-all" style="width:0%"></div>
+    </div>
+    <div id="progress-text" class="text-sm text-gray-700"></div>
+
+    <div id="llm-box" class="mt-2 hidden">
+      <div class="text-xs text-gray-500 mb-1">🤖 LLM 流式输出：</div>
+      <pre id="llm-stream" class="text-xs bg-yellow-50 border border-yellow-200 p-2 rounded max-h-48 overflow-y-auto whitespace-pre-wrap break-words"></pre>
+    </div>
+
+    <pre id="log" class="mt-2 text-xs bg-gray-50 p-2 rounded max-h-40 overflow-y-auto"></pre>
+  </div>
+
+  <!-- 结果 -->
+  <div id="result-box" class="bg-white rounded shadow p-4 mb-4 hidden">
+    <h2 class="text-lg font-semibold mb-2">🖼️ 结果</h2>
+    <div id="final-prompt" class="text-xs bg-gray-50 p-2 rounded font-mono mb-2 whitespace-pre-wrap"></div>
+    <div id="images" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+  </div>
+
+  <!-- 历史 -->
+  <div class="bg-white rounded shadow p-4 mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-lg font-semibold">📜 本次会话历史 (<span id="history-count">0</span>)</h2>
+      <button id="btn-clear-history"
+        class="text-xs px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">清空</button>
+    </div>
+    <div id="history" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let allWorkflows = [];
+let defaultRes = {w: null, h: null};
+const history = [];  // {url, filename, prompt, time}
+
+function renderHistory() {
+  $('history-count').textContent = history.length;
+  $('history').innerHTML = history.map((h, i) =>
+    `<a href="${h.url}" target="_blank" rel="noopener"
+        title="${h.filename}\n${(h.prompt||'').slice(0,200)}"
+        class="block group">
+       <img src="${h.url}" loading="lazy"
+         class="w-full aspect-square object-cover rounded border hover:ring-2 hover:ring-blue-400" />
+     </a>`
+  ).join('');
+}
+
+function pushHistory(item) {
+  history.unshift(item);
+  renderHistory();
+}
+
+async function loadCurrent() {
+  const r = await fetch('/api/workflows/current');
+  const d = await r.json();
+  if (!d.path) {
+    $('current-info').textContent = '未选中工作流';
+    return;
+  }
+  const thumb = d.thumbnail
+    ? `<img src="/api/thumbnail?path=${encodeURIComponent(d.path)}" class="w-16 h-16 object-cover rounded border flex-shrink-0" />`
+    : '';
+  if (d.error) {
+    $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div>${d.path} (错误: ${d.error})</div></div>`;
+    return;
+  }
+  const s = d.summary;
+  $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div>
+    <div class="font-medium">${d.path}</div>
+    <div class="text-xs text-gray-500">节点 ${s.node_count} | 连线 ${s.link_count} | 分组 ${s.group_count}</div>
+  </div></div>`;
+
+  defaultRes.w = d.default_width;
+  defaultRes.h = d.default_height;
+  if (defaultRes.w && defaultRes.h) {
+    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}（留空即使用默认）`;
+    $('width').placeholder = defaultRes.w;
+    $('height').placeholder = defaultRes.h;
+  } else {
+    $('default-res').textContent = '工作流未声明分辨率';
+    $('width').placeholder = '默认';
+    $('height').placeholder = '默认';
+  }
+}
+
+async function loadList() {
+  $('wf-list').textContent = '加载中...';
+  const r = await fetch('/api/workflows');
+  const d = await r.json();
+  allWorkflows = d.workflows || [];
+  renderList();
+}
+
+function renderList() {
+  const q = $('search').value.toLowerCase().trim();
+  const filtered = q
+    ? allWorkflows.filter(w => (w.path || '').toLowerCase().includes(q))
+    : allWorkflows;
+  if (!filtered.length) {
+    $('wf-list').innerHTML = '<div class="p-2 text-gray-400">无</div>';
+    return;
+  }
+  $('wf-list').innerHTML = filtered.map(w => {
+    const thumb = w.thumbnail
+      ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-12 h-12 object-cover rounded border flex-shrink-0" loading="lazy" />`
+      : `<div class="w-12 h-12 rounded border bg-gray-100 flex items-center justify-center text-gray-300 text-xs flex-shrink-0">无图</div>`;
+    return `<div class="p-2 hover:bg-blue-50 cursor-pointer flex justify-between items-center gap-2 wf-item" data-path="${w.path}">
+       <div class="flex items-center gap-2 min-w-0 flex-1">
+         ${thumb}
+         <span class="text-sm truncate">${w.path}</span>
+       </div>
+       <button class="text-xs px-2 py-0.5 bg-blue-500 text-white rounded flex-shrink-0">选择</button>
+     </div>`;
+  }).join('');
+  document.querySelectorAll('.wf-item').forEach(el => {
+    el.addEventListener('click', () => selectWorkflow(el.dataset.path));
+  });
+}
+
+async function selectWorkflow(path) {
+  $('current-info').textContent = `加载 ${path} ...`;
+  const r = await fetch('/api/workflows/select', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({path})
+  });
+  if (!r.ok) {
+    const e = await r.json();
+    alert('失败: ' + (e.detail || r.status));
+    return;
+  }
+  await loadCurrent();
+}
+
+let activeWS = null;
+let currentPrompt = '';
+
+function appendLog(line) {
+  const el = $('log');
+  el.textContent += line + '\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function startRun() {
+  const direct = $('direct').value.trim();
+  const nl = $('nl').value.trim();
+  if (!direct && !nl) {
+    if (!confirm('未输入任何 prompt，使用工作流内置 prompt？')) return;
+  }
+  const payload = {
+    direct_prompt: direct,
+    nl_prompt: nl,
+    rewrite: $('rewrite').checked,
+    sentence_mode: $('sentence').checked,
+    width: parseInt($('width').value) || null,
+    height: parseInt($('height').value) || null,
+  };
+
+  $('progress-box').classList.remove('hidden');
+  $('result-box').classList.add('hidden');
+  $('log').textContent = '';
+  $('llm-box').classList.add('hidden');
+  $('llm-stream').textContent = '';
+  $('progress-text').textContent = '连接中...';
+  $('progress-bar-wrap').classList.add('hidden');
+  $('btn-run').disabled = true;
+  $('btn-cancel').classList.remove('hidden');
+  $('images').innerHTML = '';
+  $('final-prompt').textContent = '';
+
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/ws/run`);
+  activeWS = ws;
+  ws.onopen = () => ws.send(JSON.stringify(payload));
+  ws.onmessage = (e) => handleMsg(JSON.parse(e.data));
+  ws.onclose = () => finishRun();
+  ws.onerror = () => { appendLog('WS 错误'); finishRun(); };
+}
+
+function handleMsg(m) {
+  if (m.type === 'log') {
+    appendLog(m.message);
+  } else if (m.type === 'llm_start') {
+    $('llm-box').classList.remove('hidden');
+    $('llm-stream').textContent = '';
+  } else if (m.type === 'llm_chunk') {
+    const el = $('llm-stream');
+    el.textContent += m.delta;
+    el.scrollTop = el.scrollHeight;
+  } else if (m.type === 'llm_done') {
+    appendLog('LLM 完成');
+  } else if (m.type === 'progress') {
+    if (m.max && m.max > 1) {
+      const pct = Math.floor((m.value || 0) * 100 / m.max);
+      $('progress-bar-wrap').classList.remove('hidden');
+      $('progress-bar').style.width = pct + '%';
+      $('progress-text').textContent = `${m.node} ${m.value}/${m.max} (${pct}%)  节点 ${m.done||0}/${m.total||0}`;
+    } else {
+      $('progress-text').textContent = `执行: ${m.node}`;
+    }
+  } else if (m.type === 'prompt_id') {
+    currentPrompt = m.final_prompt || '';
+    $('final-prompt').textContent = m.final_prompt;
+    $('result-box').classList.remove('hidden');
+  } else if (m.type === 'image') {
+    const div = document.createElement('div');
+    div.innerHTML = `<a href="${m.url}" target="_blank" rel="noopener">
+        <img src="${m.url}" class="w-full rounded border hover:ring-2 hover:ring-blue-400" loading="lazy" />
+      </a>
+      <div class="text-xs text-gray-500 break-all">${m.filename}</div>`;
+    $('images').appendChild(div);
+    pushHistory({
+      url: m.url,
+      filename: m.filename,
+      prompt: currentPrompt,
+      time: Date.now(),
+    });
+  } else if (m.type === 'done') {
+    appendLog(`✅ 完成，共 ${m.count} 张`);
+    $('progress-text').textContent = '完成';
+    if (m.final_prompt) $('final-prompt').textContent = m.final_prompt;
+    requestAnimationFrame(() => {
+      window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+    });
+  } else if (m.type === 'error') {
+    appendLog('❌ ' + m.message);
+    $('progress-text').textContent = '失败: ' + m.message;
+  }
+}
+
+function finishRun() {
+  $('btn-run').disabled = false;
+  $('btn-cancel').classList.add('hidden');
+  activeWS = null;
+}
+
+async function cancelRun() {
+  appendLog('请求取消...');
+  await fetch('/api/interrupt', {method: 'POST'});
+  if (activeWS) try { activeWS.close(); } catch {}
+}
+
+$('btn-refresh').addEventListener('click', () => { loadCurrent(); loadList(); });
+$('search').addEventListener('input', renderList);
+$('btn-run').addEventListener('click', startRun);
+$('btn-cancel').addEventListener('click', cancelRun);
+$('btn-reset-res').addEventListener('click', () => {
+  $('width').value = '';
+  $('height').value = '';
+});
+$('btn-clear-history').addEventListener('click', () => {
+  if (history.length && !confirm('清空历史记录？')) return;
+  history.length = 0;
+  renderHistory();
+});
+
+loadCurrent();
+loadList();
+</script>
+</body>
+</html>
