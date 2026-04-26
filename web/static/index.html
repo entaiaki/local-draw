@@ -6,28 +6,46 @@
 <title>ComfyUI Web</title>
 <link rel="icon" type="image/avif" href="/static/favicon.avif" />
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 <style>
-  /* 让灯箱内的图片可以被长按保存 / 右键另存 */
-  .gslide-image,
-  .gslide-image img,
-  .gslide-media,
-  .gslide-media img {
-    -webkit-touch-callout: default !important;
-    -webkit-user-select: auto !important;
-    user-select: auto !important;
-    pointer-events: auto !important;
-    touch-action: auto !important;
+  /* 全局：任何内容都不准把布局撑出视口 */
+  html, body { max-width: 100vw; overflow-x: hidden; }
+  *, *::before, *::after {
+    min-width: 0;       /* 取消 flex/grid 子项的默认 min-width:auto，长内容才能换行 */
+    min-height: 0;
   }
-  /* GLightbox 会在图片外层加 .gslide-inline 之类容器，禁止它阻塞触摸 */
-  .gslide,
-  .ginner-container {
-    touch-action: auto !important;
-  }
+  /* 长 URL/无空格文本兜底换行 */
+  a, code, pre, span, div, p, li, td { overflow-wrap: anywhere; word-break: break-word; }
+  pre, code { white-space: pre-wrap; }
+  img, video, canvas, iframe { max-width: 100%; height: auto; }
+  /* 自建灯箱样式 */
+  #lb-root { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.92); display: none; flex-direction: column; }
+  #lb-root.open { display: flex; }
+  #lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 8px; }
+  #lb-img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: auto; -webkit-user-select: auto; -webkit-touch-callout: default; }
+  #lb-bar { color: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,.5); }
+  .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.4); color: #fff; border: 0; width: 44px; height: 64px; font-size: 28px; cursor: pointer; }
+  .lb-nav:hover { background: rgba(0,0,0,.7); }
+  #lb-prev { left: 8px; }
+  #lb-next { right: 8px; }
+  #lb-close { position: absolute; top: 8px; right: 12px; background: transparent; color: #fff; border: 0; font-size: 28px; cursor: pointer; }
+  #lb-title { color: #ddd; font-size: 12px; margin-right: auto; word-break: break-all; }
 </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
+
+
+<!-- 自建灯箱 -->
+<div id="lb-root" role="dialog" aria-modal="true">
+  <button id="lb-close" title="关闭 (Esc)">×</button>
+  <button id="lb-prev" class="lb-nav" title="上一张 (←)">‹</button>
+  <button id="lb-next" class="lb-nav" title="下一张 (→)">›</button>
+  <div id="lb-img-wrap"><img id="lb-img" alt="" /></div>
+  <div id="lb-bar">
+    <span id="lb-title"></span>
+    <button id="lb-fork" class="text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700">🍴 Fork 工作流</button>
+    <span id="lb-status" class="text-xs text-white/80"></span>
+  </div>
+</div>
 
 
 <!-- 全局遮罩：年龄确认前彻底盖住后面所有内容（防止偷瞄生成图） -->
@@ -739,84 +757,98 @@ setInterval(() => {
   }
 }, 1000);
 
-// 灯箱：所有 .glightbox 元素同组，可键盘左右翻页；打开图片时只显示 Fork 工作流按钮
-let lightbox = GLightbox({
-  selector: '.glightbox',
-  loop: true,
-  touchNavigation: false,   // 关掉滑动翻页，避免吞掉长按手势（用左右按钮/键盘翻图）
-  draggable: false,
-  keyboardNavigation: true,
-  descPosition: 'bottom',
-});
+// ========== 自建灯箱（替代 GLightbox，避免它操纵 DOM 把图区搞消失）==========
+const lbState = { items: [], index: 0 };
 
-async function injectPromptIntoLightbox(slide) {
-  if (!slide) return;
-  const a = slide.trigger;
+function collectLightboxItems() {
+  // 所有 .glightbox 链接，按 DOM 顺序
+  return Array.from(document.querySelectorAll('a.glightbox')).map(a => ({
+    url: a.getAttribute('href'),
+    title: a.dataset.title || '',
+    relPath: a.dataset.relPath || '',
+  }));
+}
+
+function openLightboxFromAnchor(a) {
+  lbState.items = collectLightboxItems();
+  lbState.index = Math.max(0, lbState.items.findIndex(it => it.url === a.getAttribute('href')));
+  showLightbox();
+}
+
+function showLightbox() {
+  const it = lbState.items[lbState.index];
+  if (!it) return;
+  $('lb-img').src = it.url;
+  $('lb-title').textContent = it.title || '';
+  $('lb-status').textContent = '';
+  const fb = $('lb-fork');
+  fb.disabled = false;
+  fb.textContent = '🍴 Fork 工作流';
+  fb.dataset.rel = it.relPath || '';
+  $('lb-root').classList.add('open');
+}
+
+function closeLightbox() { $('lb-root').classList.remove('open'); $('lb-img').src = ''; }
+function prevLightbox() { if (!lbState.items.length) return; lbState.index = (lbState.index - 1 + lbState.items.length) % lbState.items.length; showLightbox(); }
+function nextLightbox() { if (!lbState.items.length) return; lbState.index = (lbState.index + 1) % lbState.items.length; showLightbox(); }
+
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a.glightbox');
   if (!a) return;
-  const rel = a.dataset.relPath;
-  if (!rel) return;
-  const descEl = slide.slideNode && slide.slideNode.querySelector('.gdesc-inner');
-  if (!descEl) return;
-
-  descEl.innerHTML = '';
-  const forkBtn = document.createElement('button');
-  forkBtn.type = 'button';
-  forkBtn.className = 'text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700';
-  forkBtn.textContent = '🍴 Fork 工作流';
-  forkBtn.title = '基于此图的 workflow 元信息复制一份新工作流，并自动切换到它';
-  descEl.appendChild(forkBtn);
-
-  const status = document.createElement('span');
-  status.className = 'ml-2 text-xs text-white/80';
-  descEl.appendChild(status);
-
-  forkBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    forkBtn.disabled = true;
-    forkBtn.textContent = 'Fork 中...';
-    status.textContent = '';
-    try {
-      const r = await fetch('/api/output/fork', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({path: rel}),
-      });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
-      // 临时挂在前端内存，不持久化
-      forkedWorkflow = d.workflow;
-      forkedMeta = {
-        source_image: d.source_image || rel,
-        format: d.format,
-        summary: d.summary,
-        default_width: d.default_width,
-        default_height: d.default_height,
-        builtin_prompt: d.builtin_prompt,
-        loras: d.loras,
-      };
-      applyForkedToUI();
-      status.textContent = '✓ 已在本浏览器临时还原，可直接生图';
-      setTimeout(() => lightbox.close(), 600);
-    } catch (err) {
-      status.textContent = '失败: ' + (err.message || err);
-      forkBtn.disabled = false;
-      forkBtn.textContent = '🍴 Fork 工作流';
-    }
-  });
-}
-
-lightbox.on('slide_changed', ({ current }) => injectPromptIntoLightbox(current));
-lightbox.on('open', () => {
-  // 首张
-  setTimeout(() => {
-    const cur = lightbox.getActiveSlide && lightbox.getActiveSlide();
-    if (cur) injectPromptIntoLightbox(cur);
-  }, 50);
+  e.preventDefault();
+  openLightboxFromAnchor(a);
 });
 
-function refreshLightbox() {
-  try { lightbox.reload(); } catch {}
-}
+$('lb-close').addEventListener('click', closeLightbox);
+$('lb-prev').addEventListener('click', prevLightbox);
+$('lb-next').addEventListener('click', nextLightbox);
+$('lb-root').addEventListener('click', (e) => {
+  // 点击空白处关闭（图片本身和工具栏不触发）
+  if (e.target === $('lb-root') || e.target === $('lb-img-wrap')) closeLightbox();
+});
+document.addEventListener('keydown', (e) => {
+  if (!$('lb-root').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft') prevLightbox();
+  else if (e.key === 'ArrowRight') nextLightbox();
+});
+
+$('lb-fork').addEventListener('click', async () => {
+  const rel = $('lb-fork').dataset.rel;
+  if (!rel) { $('lb-status').textContent = '此图无路径信息'; return; }
+  const fb = $('lb-fork');
+  fb.disabled = true;
+  fb.textContent = 'Fork 中...';
+  $('lb-status').textContent = '';
+  try {
+    const r = await fetch('/api/output/fork', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({path: rel}),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
+    forkedWorkflow = d.workflow;
+    forkedMeta = {
+      source_image: d.source_image || rel,
+      format: d.format,
+      summary: d.summary,
+      default_width: d.default_width,
+      default_height: d.default_height,
+      builtin_prompt: d.builtin_prompt,
+      loras: d.loras,
+    };
+    applyForkedToUI();
+    $('lb-status').textContent = '✓ 已在本浏览器临时还原，可直接生图';
+    setTimeout(closeLightbox, 600);
+  } catch (err) {
+    $('lb-status').textContent = '失败: ' + (err.message || err);
+    fb.disabled = false;
+    fb.textContent = '🍴 Fork 工作流';
+  }
+});
+
+function refreshLightbox() { /* 兼容老调用：自建灯箱实时收集，无需 reload */ }
 
 // 18+ 年龄确认
 (function ageGate() {
