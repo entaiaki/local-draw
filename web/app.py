@@ -599,6 +599,17 @@ def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
     return ""
 
 
+@app.get("/api/output/creator")
+async def api_output_creator(path: str):
+    """读取该 PNG 的生图者 IP（写入时由 /ws/run 注入的 creator_ip tEXt chunk）。"""
+    p = _resolve_output_path(path)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    if p.suffix.lower() != ".png":
+        return {"creator_ip": ""}
+    return {"creator_ip": _read_png_text_chunk(p, "creator_ip")}
+
+
 @app.get("/api/output/meta")
 async def api_output_meta(path: str):
     """读取图片元数据（目前主要支持 PNG），返回正向 prompt（若可识别）。"""
@@ -684,6 +695,57 @@ def _read_png_text_chunk(path: Path, key: str) -> str:
     except Exception:
         return ""
     return ""
+
+
+def _png_set_text(path: Path, key: str, value: str) -> bool:
+    """在 PNG 文件中追加/替换一个 tEXt chunk。原子写。
+    保留所有其它 chunk（包括 ComfyUI 写入的 prompt / workflow）。
+    """
+    import struct, zlib, os
+    if not value:
+        return False
+    try:
+        with open(path, "rb") as f:
+            raw = f.read()
+        if raw[:8] != b"\x89PNG\r\n\x1a\n":
+            return False
+        out = bytearray(raw[:8])
+        i = 8
+        target_key = key.encode("latin-1")
+        replaced = False
+        while i + 8 <= len(raw):
+            length = struct.unpack(">I", raw[i:i + 4])[0]
+            ctype = raw[i + 4:i + 8]
+            chunk_end = i + 8 + length + 4
+            data = raw[i + 8:i + 8 + length]
+            if ctype == b"tEXt":
+                k, _, _ = data.partition(b"\x00")
+                if k == target_key:
+                    # 跳过旧的，由后面 IEND 前的新 tEXt 替代
+                    i = chunk_end
+                    replaced = True
+                    continue
+            if ctype == b"IEND":
+                # 在 IEND 前插入我们的 tEXt
+                payload = target_key + b"\x00" + value.encode("utf-8", errors="replace")
+                crc = zlib.crc32(b"tEXt" + payload) & 0xffffffff
+                out += struct.pack(">I", len(payload)) + b"tEXt" + payload + struct.pack(">I", crc)
+                out += raw[i:chunk_end]
+                i = chunk_end
+                # 复制剩余（一般无）
+                if i < len(raw):
+                    out += raw[i:]
+                # 原子替换
+                tmp = path.with_suffix(path.suffix + ".tmp")
+                with open(tmp, "wb") as f:
+                    f.write(out)
+                os.replace(tmp, path)
+                return True
+            out += raw[i:chunk_end]
+            i = chunk_end
+        return False
+    except Exception:
+        return False
 
 
 @app.post("/api/output/fork")
@@ -1043,8 +1105,16 @@ async def ws_run(ws: WebSocket):
             init = await ws.receive_json()
         except Exception:
             return
+        # 提取真实 IP（优先 Cloudflare 头，其次 X-Forwarded-For，最后 socket）
+        h = ws.headers
+        client_ip = (
+            h.get("cf-connecting-ip")
+            or (h.get("x-forwarded-for", "").split(",")[0].strip() if h.get("x-forwarded-for") else "")
+            or (ws.client.host if ws.client else "")
+            or "unknown"
+        )
         try:
-            await _run_task(ws, RunRequest(**init))
+            await _run_task(ws, RunRequest(**init), client_ip=client_ip)
         except WebSocketDisconnect:
             return
         except Exception as e:
@@ -1056,7 +1126,7 @@ async def ws_run(ws: WebSocket):
             await _push_status(reset=True)
 
 
-async def _run_task(ws: WebSocket, req: RunRequest):
+async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown"):
     import time as _time
     path = req.workflow_path
     inline = req.inline_workflow
@@ -1163,6 +1233,17 @@ async def _run_task(ws: WebSocket, req: RunRequest):
     if not images:
         await emit(ws, {"type": "error", "message": "无图片输出"})
         return
+
+    # 把生图者 IP 写入每张输出 PNG 的 tEXt chunk（key=creator_ip）
+    for img in images:
+        if img.get("type") == "output" and img.get("filename", "").lower().endswith(".png"):
+            try:
+                rel = (img.get("subfolder") or "") + ("/" if img.get("subfolder") else "") + img["filename"]
+                fpath = _resolve_output_path(rel.replace("\\", "/"))
+                if fpath.is_file():
+                    _png_set_text(fpath, "creator_ip", client_ip)
+            except Exception:
+                pass
 
     for img in images:
         url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"

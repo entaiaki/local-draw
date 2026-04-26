@@ -18,7 +18,7 @@
   pre, code { white-space: pre-wrap; }
   img, video, canvas, iframe { max-width: 100%; height: auto; }
   /* 自建灯箱样式 */
-  #lb-root { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.92); display: none; flex-direction: column; }
+  #lb-root { position: fixed; inset: 0; z-index: 60; background: #000; display: none; flex-direction: column; }
   #lb-root.open { display: flex; }
   #lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 8px; }
   #lb-img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: auto; -webkit-user-select: auto; -webkit-touch-callout: default; }
@@ -42,6 +42,7 @@
   <div id="lb-img-wrap"><img id="lb-img" alt="" /></div>
   <div id="lb-bar">
     <span id="lb-title"></span>
+    <span id="lb-creator" class="text-xs text-amber-300"></span>
     <a id="lb-download" href="#" target="_blank" rel="noopener" download
        class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">⬇ 下载原图</a>
     <button id="lb-fork" class="text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700">🍴 Fork 工作流</button>
@@ -288,7 +289,7 @@ function pushHistory(item) {
 const galleryState = {
   total: 0,
   loaded: 0,
-  pageSize: 60,
+  pageSize: 5,
 };
 
 function galleryItemHTML(relPath) {
@@ -794,15 +795,14 @@ function openLightboxFromAnchor(a) {
 function showLightbox() {
   const it = lbState.items[lbState.index];
   if (!it) return;
-  // 灯箱也走压缩版（webp + 缩放），节省带宽；点击「下载原图」按钮才拿原图
   $('lb-img').src = it.url;
   $('lb-title').textContent = it.title || '';
   $('lb-status').textContent = '';
+  $('lb-creator').textContent = '';
   const fb = $('lb-fork');
   fb.disabled = false;
   fb.textContent = '🍴 Fork 工作流';
   fb.dataset.rel = it.relPath || '';
-  // 下载原图按钮
   const dl = $('lb-download');
   if (dl) {
     let fullUrl = it.url;
@@ -811,6 +811,15 @@ function showLightbox() {
     }
     dl.href = fullUrl;
     dl.download = it.title || '';
+  }
+  // 异步拉取生图者 IP
+  if (it.relPath) {
+    fetch('/api/output/creator?path=' + encodeURIComponent(it.relPath))
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.creator_ip) $('lb-creator').textContent = '生图者: ' + d.creator_ip;
+      })
+      .catch(() => {});
   }
   $('lb-root').classList.add('open');
 }
