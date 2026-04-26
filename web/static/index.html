@@ -832,13 +832,33 @@ function collectLightboxItems() {
 
 // ========== 全局滚动锁（弹窗用，引用计数避免叠加冲突）==========
 let _scrollLockCount = 0;
+let _scrollLockY = 0;
 function lockScroll() {
   _scrollLockCount += 1;
-  if (_scrollLockCount === 1) document.body.style.overflow = 'hidden';
+  if (_scrollLockCount === 1) {
+    _scrollLockY = window.scrollY || window.pageYOffset || 0;
+    // 锁 html + body 双保险（不同浏览器滚动容器不同），并用 position:fixed 兜底
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${_scrollLockY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+  }
 }
 function unlockScroll() {
   if (_scrollLockCount > 0) _scrollLockCount -= 1;
-  if (_scrollLockCount === 0) document.body.style.overflow = '';
+  if (_scrollLockCount === 0) {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, _scrollLockY);
+  }
 }
 
 function openLightboxFromAnchor(a) {
