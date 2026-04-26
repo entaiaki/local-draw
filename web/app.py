@@ -477,6 +477,70 @@ async def api_output_file(path: str):
     return FileResponse(str(p), media_type=media)
 
 
+def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
+    """从 ComfyUI prompt API JSON 中追正向 CLIPTextEncode 文本。"""
+    if not isinstance(prompt_json, dict):
+        return ""
+    # 1) 找 KSampler 系节点的 positive 引用 → 源 CLIPTextEncode
+    sampler_types = {"KSampler", "KSamplerAdvanced", "SamplerCustom", "SamplerCustomAdvanced"}
+    for nid, ndata in prompt_json.items():
+        if not isinstance(ndata, dict):
+            continue
+        if ndata.get("class_type") in sampler_types:
+            pos = (ndata.get("inputs") or {}).get("positive")
+            if isinstance(pos, list) and len(pos) >= 1:
+                src = prompt_json.get(str(pos[0]))
+                if isinstance(src, dict) and src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
+                    t = (src.get("inputs") or {}).get("text", "")
+                    if isinstance(t, str) and t.strip():
+                        return t.strip()
+    # 2) 兜底：标题包含 positive/[pos]/[prompt] 的 CLIPTextEncode
+    for nid, ndata in prompt_json.items():
+        if not isinstance(ndata, dict):
+            continue
+        if ndata.get("class_type") == "CLIPTextEncode":
+            title = ((ndata.get("_meta") or {}).get("title") or "").lower()
+            if "positive" in title or "[pos]" in title or "[prompt]" in title:
+                t = (ndata.get("inputs") or {}).get("text", "")
+                if isinstance(t, str) and t.strip():
+                    return t.strip()
+    return ""
+
+
+@app.get("/api/output/meta")
+async def api_output_meta(path: str):
+    """读取图片元数据（目前主要支持 PNG），返回正向 prompt（若可识别）。"""
+    p = _resolve_output_path(path)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    if p.suffix.lower() != ".png":
+        return {"path": path, "positive": "", "supported": False}
+    try:
+        from PIL import Image  # 延迟导入
+        im = Image.open(p)
+        info = im.info or {}
+    except Exception as e:
+        return {"path": path, "positive": "", "error": str(e)}
+
+    positive = ""
+    raw_prompt = info.get("prompt")
+    if isinstance(raw_prompt, str):
+        try:
+            pj = json.loads(raw_prompt)
+            positive = _extract_positive_from_prompt_json(pj)
+        except Exception:
+            pass
+    # A1111 webui 风格兜底
+    if not positive:
+        params = info.get("parameters")
+        if isinstance(params, str) and params.strip():
+            # A1111: 第一段直到 "Negative prompt:" 之前
+            head = params.split("Negative prompt:", 1)[0].strip()
+            head = head.split("Steps:", 1)[0].strip()
+            positive = head
+    return {"path": path, "positive": positive, "supported": True}
+
+
 @app.post("/api/workflows/select")
 async def api_select(payload: Dict[str, str]):
     """已废弃：选择由前端 localStorage 维护。
@@ -543,14 +607,21 @@ async def api_current(path: Optional[str] = None):
         data = await get_workflow(path)
     except Exception as e:
         return {"path": path, "error": str(e), "thumbnail": has_thumb}
-    pd, _ = workflow_to_prompt_api(data)
+    pd, positive_ref = workflow_to_prompt_api(data)
     res = detect_default_resolution(pd)
+    builtin_prompt = ""
+    if positive_ref:
+        nid, inp = positive_ref
+        v = pd.get(nid, {}).get("inputs", {}).get(inp, "")
+        if isinstance(v, str):
+            builtin_prompt = v.strip()
     return {
         "path": path,
         "summary": summarize_workflow(data),
         "thumbnail": has_thumb,
         "default_width": res[0] if res else None,
         "default_height": res[1] if res else None,
+        "builtin_prompt": builtin_prompt,
     }
 
 
@@ -592,6 +663,7 @@ class RunRequest(BaseModel):
     direct_prompt: str = ""
     nl_prompt: str = ""
     rewrite: bool = False
+    override: bool = False
     width: Optional[int] = None
     height: Optional[int] = None
 
@@ -735,6 +807,11 @@ async def _run_task(ws: WebSocket, req: RunRequest):
 
     sep = ", "
 
+    # 覆写模式：忽略工作流内置 prompt
+    effective_builtin = "" if req.override else builtin
+    if req.override:
+        await emit(ws, {"type": "log", "message": "覆写模式：忽略工作流内置 prompt"})
+
     if req.nl_prompt:
         await emit(ws, {"type": "log", "message": f"[2/4] LLM {'改写' if req.rewrite else '翻译'}中..."})
         await emit(ws, {"type": "llm_start"})
@@ -743,7 +820,7 @@ async def _run_task(ws: WebSocket, req: RunRequest):
         async def _on_chunk(piece: str):
             await emit(ws, {"type": "llm_chunk", "delta": piece})
 
-        base = req.direct_prompt or builtin
+        base = req.direct_prompt or effective_builtin
         if req.rewrite and base:
             translated = await translate_prompt(
                 req.nl_prompt, original_prompt=base, on_chunk=_on_chunk,
@@ -753,11 +830,11 @@ async def _run_task(ws: WebSocket, req: RunRequest):
             translated = await translate_prompt(
                 req.nl_prompt, on_chunk=_on_chunk,
             )
-            parts = [p for p in (builtin, req.direct_prompt, translated) if p]
+            parts = [p for p in (effective_builtin, req.direct_prompt, translated) if p]
             sd_prompt = sep.join(parts)
         await emit(ws, {"type": "llm_done", "text": translated})
     else:
-        parts = [p for p in (builtin, req.direct_prompt) if p]
+        parts = [p for p in (effective_builtin, req.direct_prompt) if p]
         sd_prompt = sep.join(parts)
         await emit(ws, {"type": "log", "message": "[2/4] 跳过 LLM"})
 

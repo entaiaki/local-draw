@@ -10,6 +10,33 @@
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
+
+
+<!-- 全局遮罩：年龄确认前彻底盖住后面所有内容（防止偷瞄生成图） -->
+<div id="age-blocker" class="fixed inset-0 z-40 bg-black hidden"></div>
+
+<!-- 18+ 年龄确认 -->
+<div id="age-gate" class="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+    <h2 class="text-xl font-bold mb-3 text-red-600">⚠️ 请确认您已年满 18 岁</h2>
+    <p class="text-sm text-gray-700 leading-relaxed mb-4">
+      本站为 AI 绘图工具，所有图片内容均由用户在本机实时生成。
+      由于审查机制可能存在漏洞，生成结果中<strong>可能出现色情、暴力、或其它不符合当地法律法规的内容</strong>。
+      <br><br>
+      继续使用即表示您：<br>
+      ① 已年满 18 周岁；<br>
+      ② 自愿浏览并自行承担相应法律及精神风险；<br>
+      ③ 不会将本站用于违法用途，亦不会向未成年人传播本站生成的内容。
+      <br><br>
+      若您不同意以上任何一条，请立即退出本站。
+    </p>
+    <div class="flex gap-2 justify-end">
+      <button id="age-leave" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">退出</button>
+      <button id="age-accept" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">我已满 18 岁，继续</button>
+    </div>
+  </div>
+</div>
+
 <div class="max-w-6xl mx-auto p-4">
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-bold">🎨 ComfyUI 网页控制台</h1>
@@ -55,6 +82,22 @@
   <div class="bg-white rounded shadow p-4 mb-4">
     <h2 class="text-lg font-semibold mb-3">🎨 生成图片</h2>
 
+    <div class="mb-3 text-xs bg-purple-50 border border-purple-200 text-purple-900 rounded p-2">
+      🎨 想换 <strong>Q 版 / 厚涂 / 像素 / 写实</strong> 等画风？试试在直接 Tag 里加上画师词条，参考
+      <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-artist/"
+         target="_blank" rel="noopener"
+         class="underline hover:text-purple-700">danbooru-artist 画师库</a>
+      （格式如 <code class="bg-white/70 px-1 rounded">artist:xxx</code> 或直接逗号加画师名，权重可加括号）。
+    </div>
+
+    <div class="mb-3 text-xs bg-blue-50 border border-blue-200 text-blue-900 rounded p-2">
+      👤 想画<strong>不同角色</strong>？请切换到<strong>无 Lora</strong> 的工作流（避免 Lora 强行把人物拉回原角色），
+      然后在直接 Tag 里加上角色词条，参考
+      <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-character/"
+         target="_blank" rel="noopener"
+         class="underline hover:text-blue-700">danbooru-character 角色库</a>。
+    </div>
+
     <label class="block text-sm font-medium mb-1">直接 Tag (-d)</label>
     <textarea id="direct" rows="2" placeholder="可选：直接英文 tags（逗号分隔）"
       class="w-full border rounded px-2 py-1 mb-3 text-sm font-mono"></textarea>
@@ -65,11 +108,22 @@
 
     <div class="flex gap-4 mb-1 text-sm">
       <label class="flex items-center gap-1"><input type="checkbox" id="rewrite" checked /> 改写模式 (-r)</label>
+      <label class="flex items-center gap-1"><input type="checkbox" id="override" /> 覆写模式</label>
     </div>
     <p class="text-xs text-gray-500 mb-3">
       改写模式：让 LLM 基于「直接 Tag」（或工作流内置 prompt）作为底本，结合「自然语言描述」整体重写一段新的 prompt，会智能修改、删除、补充原有标签。<br>
-      未勾选时为普通翻译/追加：把自然语言翻译成 tag 后，直接拼接到底本之后，原内容保持不变。
+      未勾选时为普通翻译/追加：把自然语言翻译成 tag 后，直接拼接到底本之后，原内容保持不变。<br>
+      <span class="text-orange-600">覆写模式：完全忽略工作流内置 prompt，最终只用你的输入（直接 Tag + LLM 输出）。</span>
     </p>
+
+    <div id="builtin-box" class="hidden mb-3 border border-gray-200 rounded p-2 bg-gray-50">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-xs text-gray-600">📦 当前工作流内置 prompt：</span>
+        <button id="btn-copy-builtin" type="button"
+          class="text-xs px-2 py-0.5 bg-gray-200 rounded hover:bg-gray-300">复制到「直接 Tag」</button>
+      </div>
+      <pre id="builtin-text" class="text-xs font-mono whitespace-pre-wrap break-words max-h-32 overflow-y-auto"></pre>
+    </div>
 
     <div class="flex gap-2 items-end mb-2 text-sm">
       <div>
@@ -180,7 +234,10 @@ const galleryState = {
 function galleryItemHTML(relPath) {
   const url = '/api/output/file?path=' + encodeURIComponent(relPath);
   const safe = relPath.replace(/"/g, '&quot;');
-  return `<a href="${url}" data-gallery="main" data-title="${safe}"
+  return `<a href="${url}" data-gallery="main"
+    data-title="${safe}"
+    data-description="loading-prompt"
+    data-rel-path="${safe}"
     title="${safe}" class="glightbox block">
     <img src="${url}" loading="lazy" decoding="async"
       class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-blue-400" />
@@ -266,6 +323,15 @@ async function loadCurrent() {
     $('width').placeholder = '默认';
     $('height').placeholder = '默认';
   }
+
+  const bp = (d.builtin_prompt || '').trim();
+  if (bp) {
+    $('builtin-text').textContent = bp;
+    $('builtin-box').classList.remove('hidden');
+  } else {
+    $('builtin-box').classList.add('hidden');
+    $('builtin-text').textContent = '';
+  }
 }
 
 async function loadList() {
@@ -346,6 +412,7 @@ function startRun() {
     direct_prompt: direct,
     nl_prompt: nl,
     rewrite: $('rewrite').checked,
+    override: $('override').checked,
     width: parseInt($('width').value) || null,
     height: parseInt($('height').value) || null,
   };
@@ -447,6 +514,12 @@ $('res-presets').addEventListener('click', (e) => {
 });
 $('btn-reload-gallery').addEventListener('click', () => loadGallery(true));
 $('btn-load-more').addEventListener('click', () => loadGallery(false));
+$('btn-copy-builtin').addEventListener('click', () => {
+  const txt = $('builtin-text').textContent;
+  if (!txt) return;
+  $('direct').value = txt;
+  $('direct').focus();
+});
 
 // ============== 全局状态：跨页面同步 ==============
 let globalBusy = false;
@@ -551,16 +624,101 @@ setInterval(() => {
   }
 }, 1000);
 
-// 灯箱：所有 .glightbox 元素同组，可键盘左右翻页
+// 灯箱：所有 .glightbox 元素同组，可键盘左右翻页；打开后异步注入该图的正向 prompt
+const promptCache = new Map(); // relPath -> string
 let lightbox = GLightbox({
   selector: '.glightbox',
   loop: true,
   touchNavigation: true,
   keyboardNavigation: true,
+  descPosition: 'bottom',
 });
+
+async function injectPromptIntoLightbox(slide) {
+  if (!slide) return;
+  const a = slide.trigger;
+  if (!a) return;
+  const rel = a.dataset.relPath;
+  if (!rel) return;
+  // 找到当前激活幻灯片对应的 description 容器
+  const descEl = slide.slideNode && slide.slideNode.querySelector('.gdesc-inner');
+  if (!descEl) return;
+
+  let txt = promptCache.get(rel);
+  if (txt === undefined) {
+    descEl.textContent = '加载 prompt 中...';
+    try {
+      const r = await fetch('/api/output/meta?path=' + encodeURIComponent(rel));
+      const d = await r.json();
+      txt = d.positive || (d.supported === false ? '（仅支持 PNG 元数据）' : '（无 prompt 元数据）');
+    } catch (e) {
+      txt = '读取失败：' + e;
+    }
+    promptCache.set(rel, txt);
+  }
+  // 清空并构造：文本 + 复制按钮 + 填入按钮
+  descEl.innerHTML = '';
+  const pre = document.createElement('pre');
+  pre.className = 'whitespace-pre-wrap break-words text-xs font-mono max-h-40 overflow-y-auto bg-black/40 p-2 rounded';
+  pre.style.color = '#fff';
+  pre.textContent = txt;
+  const bar = document.createElement('div');
+  bar.className = 'mt-1 flex gap-2';
+  bar.innerHTML = `
+    <button type="button" class="lb-copy text-xs px-2 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600">复制</button>
+    <button type="button" class="lb-fill text-xs px-2 py-0.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">填到「直接 Tag」</button>
+  `;
+  descEl.appendChild(pre);
+  descEl.appendChild(bar);
+  bar.querySelector('.lb-copy').addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(txt);
+      e.target.textContent = '已复制 ✓';
+      setTimeout(() => { e.target.textContent = '复制'; }, 1200);
+    } catch { alert('复制失败'); }
+  });
+  bar.querySelector('.lb-fill').addEventListener('click', (e) => {
+    e.stopPropagation();
+    $('direct').value = txt;
+    lightbox.close();
+    $('direct').focus();
+  });
+}
+
+lightbox.on('slide_changed', ({ current }) => injectPromptIntoLightbox(current));
+lightbox.on('open', () => {
+  // 首张
+  setTimeout(() => {
+    const cur = lightbox.getActiveSlide && lightbox.getActiveSlide();
+    if (cur) injectPromptIntoLightbox(cur);
+  }, 50);
+});
+
 function refreshLightbox() {
   try { lightbox.reload(); } catch {}
 }
+
+// 18+ 年龄确认
+(function ageGate() {
+  if (localStorage.getItem('ageConfirmed') === '1') return;
+  const gate = $('age-gate');
+  const blocker = $('age-blocker');
+  gate.classList.remove('hidden');
+  blocker.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  $('age-accept').addEventListener('click', () => {
+    localStorage.setItem('ageConfirmed', '1');
+    gate.classList.add('hidden');
+    blocker.classList.add('hidden');
+    document.body.style.overflow = '';
+  });
+  $('age-leave').addEventListener('click', () => {
+    window.open('', '_self');
+    window.close();
+    location.replace('https://www.google.com');
+  });
+})();
 
 loadCurrent();
 loadList();
