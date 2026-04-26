@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ComfyUI Web</title>
+<title>自然语言生图</title>
 <link rel="icon" type="image/avif" href="/static/favicon.avif" />
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -42,6 +42,7 @@
   <div id="lb-img-wrap"><img id="lb-img" alt="" /></div>
   <div id="lb-bar">
     <span id="lb-title"></span>
+    <span id="lb-time" class="text-xs text-gray-300"></span>
     <span id="lb-creator" class="text-xs text-amber-300"></span>
     <a id="lb-download" href="#" target="_blank" rel="noopener" download
        class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">⬇ 下载原图</a>
@@ -51,7 +52,31 @@
 </div>
 
 
-<!-- 全局遮罩：年龄确认前彻底盖住后面所有内容（防止偷瞄生成图） -->
+<!-- 生图成功后引流弹窗 -->
+<div id="star-modal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-5">
+    <h3 class="text-lg font-bold mb-2">🎉 生图成功！</h3>
+    <p class="text-sm text-gray-700 leading-relaxed mb-4">
+      如果你觉得这个工具还行用，欢迎：
+    </p>
+    <div class="flex flex-col gap-2 mb-4">
+      <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
+         class="px-3 py-2 bg-gray-900 text-white rounded text-sm text-center hover:bg-gray-800">
+        ⭐ 去 GitHub 点个 Star
+      </a>
+      <a href="https://2x.nz/tg" target="_blank" rel="noopener"
+         class="px-3 py-2 bg-blue-500 text-white rounded text-sm text-center hover:bg-blue-600">
+        💬 加群交流（Telegram）
+      </a>
+    </div>
+    <div class="flex justify-between text-xs">
+      <button id="star-never" class="text-gray-500 hover:text-gray-700">不再提示</button>
+      <button id="star-later" class="text-gray-500 hover:text-gray-700">下次再说</button>
+    </div>
+  </div>
+</div>
+
+
 <div id="age-blocker" class="fixed inset-0 z-40 bg-black hidden"></div>
 
 <!-- 18+ 年龄确认 -->
@@ -78,7 +103,7 @@
 
 <div class="max-w-6xl mx-auto p-4">
   <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-    <h1 class="text-2xl font-bold">🎨 ComfyUI 网页控制台</h1>
+    <h1 class="text-2xl font-bold">🎨 自然语言生图</h1>
     <div class="flex items-center gap-3 flex-wrap">
       <a href="https://space.bilibili.com/325903362" target="_blank" rel="noopener"
          class="text-sm flex items-center gap-1 px-2 py-1 rounded bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-300"
@@ -87,6 +112,11 @@
           <path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.853L4.6 3.4c-.18-.18-.27-.405-.27-.674 0-.27.09-.495.27-.675s.405-.27.674-.27c.27 0 .495.09.675.27L8.728 4.653h6.55L18.6 1.353c.18-.18.405-.27.674-.27.27 0 .495.09.675.27s.27.405.27.674c0 .27-.09.495-.27.675zm.974 1.866H5.333c-.99 0-1.83.345-2.518 1.034-.69.69-1.05 1.53-1.084 2.52v7.36c.034 1.001.395 1.84 1.084 2.518.689.679 1.529 1.018 2.518 1.018h13.454c.99 0 1.83-.339 2.519-1.018.689-.679 1.05-1.517 1.084-2.518v-7.36c-.034-.99-.395-1.83-1.084-2.52-.689-.689-1.529-1.034-2.519-1.034zM8 11.16c.4 0 .742.142 1.025.426.282.282.424.624.424 1.025v1.58c0 .402-.142.745-.424 1.026-.283.282-.624.422-1.025.422-.4 0-.742-.14-1.025-.422-.282-.281-.424-.624-.424-1.026v-1.58c0-.401.142-.743.424-1.025.283-.284.624-.426 1.025-.426zm8 0c.4 0 .742.142 1.025.426.282.282.424.624.424 1.025v1.58c0 .402-.142.745-.424 1.026-.283.282-.624.422-1.025.422-.4 0-.742-.14-1.025-.422-.282-.281-.424-.624-.424-1.026v-1.58c0-.401.142-.743.424-1.025.283-.284.624-.426 1.025-.426z"/>
         </svg>
         <span>关注作者 @二叉树树</span>
+      </a>
+      <a href="https://2x.nz/q" target="_blank" rel="noopener"
+         class="text-sm flex items-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 border border-green-300"
+         title="加群交流">
+        <span>💬</span><span>加群</span>
       </a>
       <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
          class="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1">
@@ -185,12 +215,12 @@
     <div class="flex gap-2 items-end mb-2 text-sm">
       <div>
         <label class="block text-xs text-gray-500 mb-0.5">宽 width</label>
-        <input id="width" type="number" min="64" step="8" placeholder="默认"
+        <input id="width" type="number" min="64" max="1344" step="8" placeholder="默认"
           class="w-28 border rounded px-2 py-1" />
       </div>
       <div>
         <label class="block text-xs text-gray-500 mb-0.5">高 height</label>
-        <input id="height" type="number" min="64" step="8" placeholder="默认"
+        <input id="height" type="number" min="64" max="1344" step="8" placeholder="默认"
           class="w-28 border rounded px-2 py-1" />
       </div>
       <button id="btn-reset-res" type="button"
@@ -292,13 +322,14 @@ const galleryState = {
   pageSize: 5,
 };
 
-function galleryItemHTML(relPath) {
+function galleryItemHTML(relPath, mtime) {
   const url = '/api/output/file?path=' + encodeURIComponent(relPath);
   const safe = relPath.replace(/"/g, '&quot;');
+  const mt = mtime ? ` data-mtime="${mtime}"` : '';
   return `<a href="${url}" data-gallery="main"
     data-title="${safe}"
     data-description="loading-prompt"
-    data-rel-path="${safe}"
+    data-rel-path="${safe}"${mt}
     title="${safe}" class="glightbox block">
     <img src="${url}" loading="lazy" decoding="async"
       class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-blue-400" />
@@ -320,7 +351,7 @@ async function loadGallery(reset = true) {
   const frag = document.createDocumentFragment();
   for (const it of (d.items || [])) {
     const wrap = document.createElement('div');
-    wrap.innerHTML = galleryItemHTML(it.path);
+    wrap.innerHTML = galleryItemHTML(it.path, it.mtime);
     frag.appendChild(wrap.firstElementChild);
   }
   $('gallery').appendChild(frag);
@@ -549,6 +580,13 @@ function startRun() {
   if (!direct && !nl) {
     if (!confirm('未输入任何 prompt，使用工作流内置 prompt？')) return;
   }
+  const MAX_DIM = 1344;
+  let w = parseInt($('width').value) || null;
+  let h = parseInt($('height').value) || null;
+  if ((w && w > MAX_DIM) || (h && h > MAX_DIM)) {
+    alert('宽或高不得大于 ' + MAX_DIM + '（预设最大值）');
+    return;
+  }
   const payload = {
     workflow_path: forkedWorkflow ? '' : getCurrentPath(),
     inline_workflow: forkedWorkflow || null,
@@ -556,8 +594,8 @@ function startRun() {
     nl_prompt: nl,
     rewrite: $('rewrite').checked,
     override: $('override').checked,
-    width: parseInt($('width').value) || null,
-    height: parseInt($('height').value) || null,
+    width: w,
+    height: h,
   };
 
   $('progress-box').classList.remove('hidden');
@@ -623,6 +661,7 @@ function handleMsg(m) {
     appendLog(`✅ 完成，共 ${m.count} 张`);
     $('progress-text').textContent = '完成';
     if (m.final_prompt) $('final-prompt').textContent = m.final_prompt;
+    maybeShowStarPrompt();
   } else if (m.type === 'error') {
     appendLog('❌ ' + m.message);
     $('progress-text').textContent = '失败: ' + m.message;
@@ -778,11 +817,11 @@ setInterval(() => {
 const lbState = { items: [], index: 0 };
 
 function collectLightboxItems() {
-  // 所有 .glightbox 链接，按 DOM 顺序
   return Array.from(document.querySelectorAll('a.glightbox')).map(a => ({
     url: a.getAttribute('href'),
     title: a.dataset.title || '',
     relPath: a.dataset.relPath || '',
+    mtime: parseFloat(a.dataset.mtime) || null,
   }));
 }
 
@@ -799,6 +838,13 @@ function showLightbox() {
   $('lb-title').textContent = it.title || '';
   $('lb-status').textContent = '';
   $('lb-creator').textContent = '';
+  if (it.mtime) {
+    const d = new Date(it.mtime * 1000);
+    const pad = n => String(n).padStart(2, '0');
+    $('lb-time').textContent = `🕒 ${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  } else {
+    $('lb-time').textContent = '';
+  }
   const fb = $('lb-fork');
   fb.disabled = false;
   fb.textContent = '🍴 Fork 工作流';
@@ -885,6 +931,24 @@ $('lb-fork').addEventListener('click', async () => {
 });
 
 function refreshLightbox() { /* 兼容老调用：自建灯箱实时收集，无需 reload */ }
+
+// 生图成功后弹窗：每次成功展示一次，但「不再提示」后永久关闭
+function maybeShowStarPrompt() {
+  if (localStorage.getItem('starPromptDismissed') === '1') return;
+  const m = $('star-modal');
+  if (!m) return;
+  m.classList.remove('hidden');
+}
+$('star-never').addEventListener('click', () => {
+  localStorage.setItem('starPromptDismissed', '1');
+  $('star-modal').classList.add('hidden');
+});
+$('star-later').addEventListener('click', () => {
+  $('star-modal').classList.add('hidden');
+});
+$('star-modal').addEventListener('click', (e) => {
+  if (e.target === $('star-modal')) $('star-modal').classList.add('hidden');
+});
 
 // 18+ 年龄确认
 (function ageGate() {

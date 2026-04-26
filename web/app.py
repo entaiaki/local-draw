@@ -45,7 +45,7 @@ THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
 
-app = FastAPI(title="ComfyUI Web")
+app = FastAPI(title="自然语言生图")
 # 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
 app.add_middleware(GZipMiddleware, minimum_size=512, compresslevel=4)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -1198,6 +1198,10 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
     prompt_dict[node_id]["inputs"][input_name] = sd_prompt
 
     if req.width and req.height and req.width > 0 and req.height > 0:
+        MAX_DIM = 1344
+        if req.width > MAX_DIM or req.height > MAX_DIM:
+            await emit(ws, {"type": "error", "message": f"分辨率不得大于 {MAX_DIM}（请求: {req.width}x{req.height}）"})
+            return
         n = apply_resolution(prompt_dict, int(req.width), int(req.height))
         if n:
             await emit(ws, {"type": "log", "message": f"分辨率覆盖为 {req.width}x{req.height} ({n} 个节点)"})
