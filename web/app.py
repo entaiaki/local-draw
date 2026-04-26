@@ -77,9 +77,10 @@ async def list_workflows() -> List[Dict[str, Any]]:
 
 
 async def get_workflow(path: str) -> Dict[str, Any]:
+    from urllib.parse import quote
     async with httpx.AsyncClient(timeout=10) as client:
         r = await client.get(
-            f"{COMFYUI_API}/api/userdata/workflows%2F{path}",
+            f"{COMFYUI_API}/api/userdata/workflows%2F{quote(path, safe='')}",
             headers={"Comfy-User": ""},
         )
         r.raise_for_status()
@@ -141,6 +142,23 @@ def workflow_to_prompt_api(workflow: Dict[str, Any]) -> Tuple[Dict[str, Any], Op
     """与 dev/comfyui.py workflow_to_prompt_api 同步实现。"""
     prompt: Dict[str, Any] = {}
     positive_ref: Optional[Tuple[str, str]] = None
+
+    # 透传：如果传入的就是 API 格式（顶层每个值都带 class_type），直接当 prompt 用
+    if workflow and "nodes" not in workflow and all(
+        isinstance(v, dict) and "class_type" in v for v in workflow.values()
+    ):
+        prompt = {str(k): v for k, v in workflow.items()}
+        # 尝试找 positive 引用：KSampler.inputs.positive → CLIPTextEncode
+        for nid, ndata in prompt.items():
+            if ndata.get("class_type") in ("KSampler", "KSamplerAdvanced", "SamplerCustom", "SamplerCustomAdvanced"):
+                pos = (ndata.get("inputs") or {}).get("positive")
+                if isinstance(pos, list) and pos:
+                    src_id = str(pos[0])
+                    src = prompt.get(src_id, {})
+                    if src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
+                        positive_ref = (src_id, "text")
+                        break
+        return prompt, positive_ref
 
     top_nodes = workflow.get("nodes", [])
     top_links = workflow.get("links", [])
@@ -542,6 +560,127 @@ async def api_output_meta(path: str):
     return {"path": path, "positive": positive, "supported": True}
 
 
+def _read_png_text_chunk(path: Path, key: str) -> str:
+    """直接扫描 PNG 的 tEXt / zTXt / iTXt chunk，返回指定 key 的文本。
+    不受 Pillow MAX_TEXT_CHUNK 限制；适合读 ComfyUI 写入的大 workflow。
+    """
+    import struct
+    import zlib
+    target = key.encode("latin-1")
+    try:
+        with open(path, "rb") as f:
+            sig = f.read(8)
+            if sig != b"\x89PNG\r\n\x1a\n":
+                return ""
+            while True:
+                head = f.read(8)
+                if len(head) < 8:
+                    return ""
+                length, ctype = struct.unpack(">I4s", head)
+                data = f.read(length)
+                f.read(4)  # crc
+                if ctype == b"IEND":
+                    return ""
+                if ctype == b"tEXt":
+                    k, _, v = data.partition(b"\x00")
+                    if k == target:
+                        return v.decode("utf-8", errors="replace")
+                elif ctype == b"zTXt":
+                    k, _, rest = data.partition(b"\x00")
+                    if k == target and rest:
+                        # rest[0] = compression method (0=deflate)
+                        try:
+                            return zlib.decompress(rest[1:]).decode("utf-8", errors="replace")
+                        except Exception:
+                            return ""
+                elif ctype == b"iTXt":
+                    k, _, rest = data.partition(b"\x00")
+                    if k != target or len(rest) < 2:
+                        continue
+                    comp_flag = rest[0]
+                    # comp_method = rest[1]; 跳过 language tag 和 translated keyword
+                    rest2 = rest[2:]
+                    _, _, rest3 = rest2.partition(b"\x00")  # language
+                    _, _, text_bytes = rest3.partition(b"\x00")  # translated kw
+                    if comp_flag:
+                        try:
+                            text_bytes = zlib.decompress(text_bytes)
+                        except Exception:
+                            return ""
+                    return text_bytes.decode("utf-8", errors="replace")
+    except Exception:
+        return ""
+    return ""
+
+
+@app.post("/api/output/fork")
+async def api_output_fork(payload: Dict[str, Any]):
+    """从输出 PNG 提取 workflow / prompt 元信息，原样返回给前端用于"临时还原"。
+    不持久化、不写盘。前端拿到后存在内存里，下次提交时通过 /ws/run 的 inline_workflow 字段送回。
+
+    入参：{"path": "<相对 OUTPUT_DIR 的图片路径>"}
+    出参：{"workflow": <dict>, "summary": {...}, "default_width": int|None, "default_height": int|None,
+          "builtin_prompt": str, "loras": [str], "format": "api"|"editor"}
+    """
+    rel = (payload or {}).get("path", "")
+    if not rel:
+        raise HTTPException(400, "path required")
+    p = _resolve_output_path(rel)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    if p.suffix.lower() != ".png":
+        raise HTTPException(400, "仅支持从 PNG 中提取工作流")
+    try:
+        from PIL import Image
+        from PIL import PngImagePlugin
+        PngImagePlugin.MAX_TEXT_CHUNK = 100 * 1024 * 1024
+        PngImagePlugin.MAX_TEXT_MEMORY = 100 * 1024 * 1024
+        im = Image.open(p)
+        info = im.info or {}
+    except Exception as e:
+        raise HTTPException(500, f"读取图片失败: {e}")
+
+    raw_wf = info.get("workflow")
+    if not isinstance(raw_wf, str) or not raw_wf.strip():
+        raw_wf = _read_png_text_chunk(p, "workflow")
+    fmt = "editor"
+    if not isinstance(raw_wf, str) or not raw_wf.strip():
+        raw_wf = info.get("prompt") if isinstance(info.get("prompt"), str) else None
+        fmt = "api"
+    if not isinstance(raw_wf, str) or not raw_wf.strip():
+        raw_wf = _read_png_text_chunk(p, "prompt")
+        fmt = "api"
+    if not isinstance(raw_wf, str) or not raw_wf.strip():
+        keys = list(info.keys())
+        raise HTTPException(400, f"图片中没有 workflow / prompt 元信息（可读字段: {keys}）")
+    try:
+        wf_json = json.loads(raw_wf)
+    except Exception as e:
+        raise HTTPException(400, f"workflow 元信息解析失败: {e}")
+
+    pd, positive_ref = workflow_to_prompt_api(wf_json)
+    res = detect_default_resolution(pd)
+    builtin_prompt = ""
+    if positive_ref:
+        nid, inp = positive_ref
+        v = pd.get(nid, {}).get("inputs", {}).get(inp, "")
+        if isinstance(v, str):
+            builtin_prompt = v.strip()
+    summary = summarize_workflow(wf_json) if "nodes" in wf_json and isinstance(wf_json.get("nodes"), list) else {
+        "node_count": len(pd), "link_count": 0, "group_count": 0, "types": {},
+    }
+    return {
+        "workflow": wf_json,
+        "format": fmt,
+        "summary": summary,
+        "default_width": res[0] if res else None,
+        "default_height": res[1] if res else None,
+        "builtin_prompt": builtin_prompt,
+        "loras": extract_loras(pd),
+        "source_image": rel,
+    }
+
+
 @app.post("/api/workflows/select")
 async def api_select(payload: Dict[str, str]):
     """已废弃：选择由前端 localStorage 维护。
@@ -717,6 +856,7 @@ async def api_interrupt():
 
 class RunRequest(BaseModel):
     workflow_path: str = ""
+    inline_workflow: Optional[Dict[str, Any]] = None  # 临时 fork：直接传整份工作流（不持久化）
     direct_prompt: str = ""
     nl_prompt: str = ""
     rewrite: bool = False
@@ -839,19 +979,25 @@ async def ws_run(ws: WebSocket):
 async def _run_task(ws: WebSocket, req: RunRequest):
     import time as _time
     path = req.workflow_path
-    if not path:
-        await emit(ws, {"type": "error", "message": "未指定工作流（前端未传 workflow_path）"})
+    inline = req.inline_workflow
+    if not path and not inline:
+        await emit(ws, {"type": "error", "message": "未指定工作流（前端未传 workflow_path 或 inline_workflow）"})
         return
 
+    display_path = path or "(临时 fork)"
     await _push_status({
         "busy": True,
         "stage": "loading",
-        "workflow": path,
+        "workflow": display_path,
         "started_at": _time.time(),
     })
 
-    await emit(ws, {"type": "log", "message": f"[1/4] 加载工作流 {path}"})
-    data = await get_workflow(path)
+    if inline:
+        await emit(ws, {"type": "log", "message": "[1/4] 使用临时 fork 工作流（内存内，不持久化）"})
+        data = inline
+    else:
+        await emit(ws, {"type": "log", "message": f"[1/4] 加载工作流 {path}"})
+        data = await get_workflow(path)
     prompt_dict, positive_ref = workflow_to_prompt_api(data)
     if not positive_ref:
         await emit(ws, {"type": "error", "message": "未找到正向 CLIPTextEncode 节点"})

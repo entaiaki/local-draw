@@ -304,7 +304,62 @@ function prependGalleryItem(filename) {
   refreshLightbox();
 }
 
+// 临时 fork：只在当前浏览器内存里活着，不持久化到 ComfyUI
+let forkedWorkflow = null;       // 完整工作流 JSON（API 或编辑器格式）
+let forkedMeta = null;           // {source_image, format, summary, default_width, default_height, builtin_prompt, loras}
+
+function applyForkedToUI() {
+  const m = forkedMeta;
+  const escapeHtml = (str) => String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const loras = Array.isArray(m.loras) ? m.loras : [];
+  const lorasHtml = loras.length
+    ? `<div class="text-xs text-gray-700 mt-1">Lora: ${loras.map(n => `<span class="inline-block bg-purple-100 text-purple-700 rounded px-1.5 py-0.5 mr-1 mb-0.5 break-all">${escapeHtml(n)}</span>`).join('')}</div>`
+    : '';
+  const s = m.summary || {node_count:'?',link_count:'?',group_count:'?'};
+  $('current-info').innerHTML = `
+    <div class="border-2 border-emerald-500 bg-emerald-50 rounded p-2 flex gap-3 items-start">
+      <div class="text-2xl">🍴</div>
+      <div class="min-w-0 flex-1">
+        <div class="font-medium text-emerald-800">临时 Fork（仅本浏览器，未保存）</div>
+        <div class="text-xs text-gray-600">来源: ${escapeHtml(m.source_image || '')} · 格式: ${m.format} · 节点 ${s.node_count}</div>
+        ${lorasHtml}
+        <button id="btn-clear-fork" class="mt-1 text-xs px-2 py-0.5 bg-gray-200 hover:bg-gray-300 rounded">✕ 清除 Fork，恢复原工作流</button>
+      </div>
+    </div>`;
+  $('btn-clear-fork').addEventListener('click', clearFork);
+
+  defaultRes.w = m.default_width;
+  defaultRes.h = m.default_height;
+  if (defaultRes.w && defaultRes.h) {
+    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}（留空即使用默认）`;
+    $('width').placeholder = defaultRes.w;
+    $('height').placeholder = defaultRes.h;
+  } else {
+    $('default-res').textContent = '工作流未声明分辨率';
+    $('width').placeholder = '默认';
+    $('height').placeholder = '默认';
+  }
+  const bp = (m.builtin_prompt || '').trim();
+  if (bp) {
+    $('builtin-text').textContent = bp;
+    $('builtin-box').classList.remove('hidden');
+  } else {
+    $('builtin-box').classList.add('hidden');
+    $('builtin-text').textContent = '';
+  }
+}
+
+function clearFork() {
+  forkedWorkflow = null;
+  forkedMeta = null;
+  loadCurrent();
+}
+
 async function loadCurrent() {
+  if (forkedWorkflow) {
+    applyForkedToUI();
+    return;
+  }
   const path = getCurrentPath();
   if (!path) {
     $('current-info').textContent = '未选中工作流';
@@ -397,16 +452,16 @@ function renderList() {
         : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
       const noLora = isNoLora(w);
       const cardCls = noLora
-        ? 'wf-item relative border-2 border-amber-400 ring-2 ring-amber-200 bg-amber-50 rounded p-1.5 cursor-pointer hover:bg-amber-100 flex flex-col items-center gap-0.5 w-16'
-        : 'wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16';
+        ? 'wf-item relative border-2 border-amber-400 ring-2 ring-amber-200 bg-amber-50 rounded p-1.5 cursor-pointer hover:bg-amber-100 flex flex-col items-center gap-0.5 w-16 overflow-hidden'
+        : 'wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
       const badge = noLora
         ? `<span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] leading-none px-1 py-0.5 rounded shadow">★</span>`
         : '';
-      return `<div class="${cardCls}" data-path="${w.path}">
+      return `<div class="${cardCls}" data-path="${w.path}" title="${w.path}">
          ${badge}
          ${thumb}
-         <span class="text-[11px] font-medium whitespace-nowrap">${model}</span>
-         <span class="text-[10px] text-gray-500 whitespace-nowrap">${custom}</span>
+         <span class="text-[11px] font-medium leading-tight break-all text-center w-full line-clamp-2">${model}</span>
+         <span class="text-[10px] text-gray-500 leading-tight break-all text-center w-full line-clamp-1">${custom}</span>
        </div>`;
     }).join('') +
     `</div>`;
@@ -425,6 +480,9 @@ function setCurrentPath(path) {
 }
 
 async function selectWorkflow(path) {
+  // 切换工作流意味着放弃临时 fork
+  forkedWorkflow = null;
+  forkedMeta = null;
   setCurrentPath(path);
   $('current-info').textContent = `加载 ${path} ...`;
   await loadCurrent();
@@ -449,7 +507,8 @@ function startRun() {
     if (!confirm('未输入任何 prompt，使用工作流内置 prompt？')) return;
   }
   const payload = {
-    workflow_path: getCurrentPath(),
+    workflow_path: forkedWorkflow ? '' : getCurrentPath(),
+    inline_workflow: forkedWorkflow || null,
     direct_prompt: direct,
     nl_prompt: nl,
     rewrite: $('rewrite').checked,
@@ -672,8 +731,7 @@ setInterval(() => {
   }
 }, 1000);
 
-// 灯箱：所有 .glightbox 元素同组，可键盘左右翻页；打开后异步注入该图的正向 prompt
-const promptCache = new Map(); // relPath -> string
+// 灯箱：所有 .glightbox 元素同组，可键盘左右翻页；打开图片时只显示 Fork 工作流按钮
 let lightbox = GLightbox({
   selector: '.glightbox',
   loop: true,
@@ -692,61 +750,50 @@ async function injectPromptIntoLightbox(slide) {
   const descEl = slide.slideNode && slide.slideNode.querySelector('.gdesc-inner');
   if (!descEl) return;
 
-  // 默认只显示展开按钮，不预取也不展示 prompt
   descEl.innerHTML = '';
-  const expandBtn = document.createElement('button');
-  expandBtn.type = 'button';
-  expandBtn.className = 'text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600';
-  expandBtn.textContent = '展开 Prompt';
-  descEl.appendChild(expandBtn);
+  const forkBtn = document.createElement('button');
+  forkBtn.type = 'button';
+  forkBtn.className = 'text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700';
+  forkBtn.textContent = '🍴 Fork 工作流';
+  forkBtn.title = '基于此图的 workflow 元信息复制一份新工作流，并自动切换到它';
+  descEl.appendChild(forkBtn);
 
-  expandBtn.addEventListener('click', async (e) => {
+  const status = document.createElement('span');
+  status.className = 'ml-2 text-xs text-white/80';
+  descEl.appendChild(status);
+
+  forkBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
-    let txt = promptCache.get(rel);
-    if (txt === undefined) {
-      expandBtn.disabled = true;
-      expandBtn.textContent = '加载中...';
-      try {
-        const r = await fetch('/api/output/meta?path=' + encodeURIComponent(rel));
-        const d = await r.json();
-        txt = d.positive || (d.supported === false ? '（仅支持 PNG 元数据）' : '（无 prompt 元数据）');
-      } catch (err) {
-        txt = '读取失败：' + err;
-      }
-      promptCache.set(rel, txt);
+    forkBtn.disabled = true;
+    forkBtn.textContent = 'Fork 中...';
+    status.textContent = '';
+    try {
+      const r = await fetch('/api/output/fork', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({path: rel}),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
+      // 临时挂在前端内存，不持久化
+      forkedWorkflow = d.workflow;
+      forkedMeta = {
+        source_image: d.source_image || rel,
+        format: d.format,
+        summary: d.summary,
+        default_width: d.default_width,
+        default_height: d.default_height,
+        builtin_prompt: d.builtin_prompt,
+        loras: d.loras,
+      };
+      applyForkedToUI();
+      status.textContent = '✓ 已在本浏览器临时还原，可直接生图';
+      setTimeout(() => lightbox.close(), 600);
+    } catch (err) {
+      status.textContent = '失败: ' + (err.message || err);
+      forkBtn.disabled = false;
+      forkBtn.textContent = '🍴 Fork 工作流';
     }
-    descEl.innerHTML = '';
-    const pre = document.createElement('pre');
-    pre.className = 'whitespace-pre-wrap break-words text-xs font-mono max-h-40 overflow-y-auto bg-black/40 p-2 rounded';
-    pre.style.color = '#fff';
-    pre.textContent = txt;
-    const bar = document.createElement('div');
-    bar.className = 'mt-1 flex gap-2';
-    bar.innerHTML = `
-      <button type="button" class="lb-copy text-xs px-2 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600">复制</button>
-      <button type="button" class="lb-fill text-xs px-2 py-0.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">填到「直接 Tag」</button>
-      <button type="button" class="lb-collapse text-xs px-2 py-0.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">收起</button>
-    `;
-    descEl.appendChild(pre);
-    descEl.appendChild(bar);
-    bar.querySelector('.lb-copy').addEventListener('click', async (ev) => {
-      ev.stopPropagation();
-      try {
-        await navigator.clipboard.writeText(txt);
-        ev.target.textContent = '已复制 ✓';
-        setTimeout(() => { ev.target.textContent = '复制'; }, 1200);
-      } catch { alert('复制失败'); }
-    });
-    bar.querySelector('.lb-fill').addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      $('direct').value = txt;
-      lightbox.close();
-      $('direct').focus();
-    });
-    bar.querySelector('.lb-collapse').addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      injectPromptIntoLightbox(slide);
-    });
   });
 }
 
