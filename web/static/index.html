@@ -8,6 +8,24 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+<style>
+  /* 让灯箱内的图片可以被长按保存 / 右键另存 */
+  .gslide-image,
+  .gslide-image img,
+  .gslide-media,
+  .gslide-media img {
+    -webkit-touch-callout: default !important;
+    -webkit-user-select: auto !important;
+    user-select: auto !important;
+    pointer-events: auto !important;
+    touch-action: auto !important;
+  }
+  /* GLightbox 会在图片外层加 .gslide-inline 之类容器，禁止它阻塞触摸 */
+  .gslide,
+  .ginner-container {
+    touch-action: auto !important;
+  }
+</style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
@@ -629,7 +647,8 @@ const promptCache = new Map(); // relPath -> string
 let lightbox = GLightbox({
   selector: '.glightbox',
   loop: true,
-  touchNavigation: true,
+  touchNavigation: false,   // 关掉滑动翻页，避免吞掉长按手势（用左右按钮/键盘翻图）
+  draggable: false,
   keyboardNavigation: true,
   descPosition: 'bottom',
 });
