@@ -79,24 +79,29 @@
 
 <div id="age-blocker" class="fixed inset-0 z-40 bg-black hidden"></div>
 
-<!-- 18+ 年龄确认 -->
+<!-- 18+ 年龄确认（每次访问都要确认，不写入 localStorage） -->
 <div id="age-gate" class="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
     <h2 class="text-xl font-bold mb-3 text-red-600">⚠️ 请确认您已年满 18 岁</h2>
-    <p class="text-sm text-gray-700 leading-relaxed mb-4">
-      本站为 AI 绘图工具，所有图片内容均由用户在本机实时生成。
-      由于审查机制可能存在漏洞，生成结果中<strong>可能出现色情、暴力、或其它不符合当地法律法规的内容</strong>。
-      <br><br>
-      继续使用即表示您：<br>
-      ① 已年满 18 周岁；<br>
-      ② 自愿浏览并自行承担相应法律及精神风险；<br>
-      ③ 不会将本站用于违法用途，亦不会向未成年人传播本站生成的内容。
-      <br><br>
+    <p class="text-sm text-gray-700 leading-relaxed mb-3">
+      本站为 AI 绘图<strong>测试展示</strong>工具，所有图片均由用户在本机实时生成。
+      由于审查机制可能存在漏洞，生成结果中<strong>可能出现色情、暴力或其它不符合当地法律法规的内容</strong>。
+    </p>
+    <div class="text-sm text-gray-700 leading-relaxed mb-3 bg-red-50 border border-red-200 rounded p-2">
+      <strong>使用须知 — 继续即代表您同意：</strong><br>
+      ① 已年满 18 周岁，自愿浏览并自行承担相应法律及精神风险；<br>
+      ② 本站<strong>仅供测试与展示</strong>，<strong>禁止任何商业用途</strong>；<br>
+      ③ <strong>不得生成不合规内容</strong>（违反所在地法律法规、涉及未成年人、真实人物色情等）；<br>
+      ④ 生成的内容<strong>必须在 24 小时内删除</strong>，不得长期保存或对外传播；<br>
+      ⑤ 不会将本站用于违法用途，亦不会向未成年人传播本站生成的内容。
+    </div>
+    <p class="text-xs text-gray-500 mb-4">
+      本站<strong>不承担任何法律责任</strong>，使用过程中产生的一切后果由您本人自行承担。
       若您不同意以上任何一条，请立即退出本站。
     </p>
     <div class="flex gap-2 justify-end">
       <button id="age-leave" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">退出</button>
-      <button id="age-accept" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">我已满 18 岁，继续</button>
+      <button id="age-accept" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">我已满 18 岁并同意全部条款</button>
     </div>
   </div>
 </div>
@@ -950,16 +955,14 @@ $('star-modal').addEventListener('click', (e) => {
   if (e.target === $('star-modal')) $('star-modal').classList.add('hidden');
 });
 
-// 18+ 年龄确认
+// 18+ 年龄确认（每次访问都强制确认，不写 localStorage）
 (function ageGate() {
-  if (localStorage.getItem('ageConfirmed') === '1') return;
   const gate = $('age-gate');
   const blocker = $('age-blocker');
   gate.classList.remove('hidden');
   blocker.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   $('age-accept').addEventListener('click', () => {
-    localStorage.setItem('ageConfirmed', '1');
     gate.classList.add('hidden');
     blocker.classList.add('hidden');
     document.body.style.overflow = '';
