@@ -42,6 +42,8 @@
   <div id="lb-img-wrap"><img id="lb-img" alt="" /></div>
   <div id="lb-bar">
     <span id="lb-title"></span>
+    <a id="lb-download" href="#" target="_blank" rel="noopener" download
+       class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">⬇ 下载原图</a>
     <button id="lb-fork" class="text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700">🍴 Fork 工作流</button>
     <span id="lb-status" class="text-xs text-white/80"></span>
   </div>
@@ -74,15 +76,25 @@
 </div>
 
 <div class="max-w-6xl mx-auto p-4">
-  <div class="flex items-center justify-between mb-4">
+  <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
     <h1 class="text-2xl font-bold">🎨 ComfyUI 网页控制台</h1>
-    <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
-       class="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1">
-      <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
-        <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-      </svg>
-      <span>GitHub</span>
-    </a>
+    <div class="flex items-center gap-3 flex-wrap">
+      <a href="https://space.bilibili.com/325903362" target="_blank" rel="noopener"
+         class="text-sm flex items-center gap-1 px-2 py-1 rounded bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-300"
+         title="作者 B 站主页 · 求关注">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.853L4.6 3.4c-.18-.18-.27-.405-.27-.674 0-.27.09-.495.27-.675s.405-.27.674-.27c.27 0 .495.09.675.27L8.728 4.653h6.55L18.6 1.353c.18-.18.405-.27.674-.27.27 0 .495.09.675.27s.27.405.27.674c0 .27-.09.495-.27.675zm.974 1.866H5.333c-.99 0-1.83.345-2.518 1.034-.69.69-1.05 1.53-1.084 2.52v7.36c.034 1.001.395 1.84 1.084 2.518.689.679 1.529 1.018 2.518 1.018h13.454c.99 0 1.83-.339 2.519-1.018.689-.679 1.05-1.517 1.084-2.518v-7.36c-.034-.99-.395-1.83-1.084-2.52-.689-.689-1.529-1.034-2.519-1.034zM8 11.16c.4 0 .742.142 1.025.426.282.282.424.624.424 1.025v1.58c0 .402-.142.745-.424 1.026-.283.282-.624.422-1.025.422-.4 0-.742-.14-1.025-.422-.282-.281-.424-.624-.424-1.026v-1.58c0-.401.142-.743.424-1.025.283-.284.624-.426 1.025-.426zm8 0c.4 0 .742.142 1.025.426.282.282.424.624.424 1.025v1.58c0 .402-.142.745-.424 1.026-.283.282-.624.422-1.025.422-.4 0-.742-.14-1.025-.422-.282-.281-.424-.624-.424-1.026v-1.58c0-.401.142-.743.424-1.025.283-.284.624-.426 1.025-.426z"/>
+        </svg>
+        <span>关注作者 @二叉树树</span>
+      </a>
+      <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
+         class="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1">
+        <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+    </div>
   </div>
 
   <!-- 全局状态横幅 -->
@@ -185,9 +197,13 @@
       <span id="default-res" class="text-xs text-gray-500"></span>
     </div>
     <div class="flex flex-wrap gap-2 mb-3 text-xs" id="res-presets">
+      <button type="button" data-w="1024" data-h="1344"
+        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
+        1024×1344 <span class="text-gray-500">WAI 推荐</span>
+      </button>
       <button type="button" data-w="832" data-h="1216"
         class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
-        832×1216 <span class="text-gray-500">推荐</span>
+        832×1216 <span class="text-gray-500">NoobAI 推荐</span>
       </button>
       <button type="button" data-w="1024" data-h="1024"
         class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
@@ -778,18 +794,24 @@ function openLightboxFromAnchor(a) {
 function showLightbox() {
   const it = lbState.items[lbState.index];
   if (!it) return;
-  // 灯箱里换原图（去掉 webp 转码 + 缩放），但仍带 Accept 给后端按需返回
-  let url = it.url;
-  if (url.startsWith('/api/output/file')) {
-    url += (url.includes('?') ? '&' : '?') + 'full=1';
-  }
-  $('lb-img').src = url;
+  // 灯箱也走压缩版（webp + 缩放），节省带宽；点击「下载原图」按钮才拿原图
+  $('lb-img').src = it.url;
   $('lb-title').textContent = it.title || '';
   $('lb-status').textContent = '';
   const fb = $('lb-fork');
   fb.disabled = false;
   fb.textContent = '🍴 Fork 工作流';
   fb.dataset.rel = it.relPath || '';
+  // 下载原图按钮
+  const dl = $('lb-download');
+  if (dl) {
+    let fullUrl = it.url;
+    if (fullUrl.startsWith('/api/output/file')) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + 'full=1';
+    }
+    dl.href = fullUrl;
+    dl.download = it.title || '';
+  }
   $('lb-root').classList.add('open');
 }
 
