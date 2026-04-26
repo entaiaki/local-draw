@@ -778,7 +778,12 @@ function openLightboxFromAnchor(a) {
 function showLightbox() {
   const it = lbState.items[lbState.index];
   if (!it) return;
-  $('lb-img').src = it.url;
+  // 灯箱里换原图（去掉 webp 转码 + 缩放），但仍带 Accept 给后端按需返回
+  let url = it.url;
+  if (url.startsWith('/api/output/file')) {
+    url += (url.includes('?') ? '&' : '?') + 'full=1';
+  }
+  $('lb-img').src = url;
   $('lb-title').textContent = it.title || '';
   $('lb-status').textContent = '';
   const fb = $('lb-fork');

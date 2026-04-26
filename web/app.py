@@ -26,9 +26,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 import websockets
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 
 COMFYUI_API = f"http://{COMFYUI_HOST}:{COMFYUI_PORT}"
@@ -45,7 +46,77 @@ THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
 
 app = FastAPI(title="ComfyUI Web")
+# 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
+app.add_middleware(GZipMiddleware, minimum_size=512, compresslevel=4)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+# ---------------- WebP 转码（轻量级图片压缩） ----------------
+
+# 进程内缓存：(abs_path, mtime, size) -> webp bytes
+_WEBP_CACHE: "Dict[Tuple[str, float, str], bytes]" = {}
+_WEBP_CACHE_MAX = 64  # LRU 上限，防止内存爆掉
+
+
+def _accepts_webp(request: Request) -> bool:
+    return "image/webp" in (request.headers.get("accept", "") or "").lower()
+
+
+def _encode_webp(src_bytes: bytes, *, quality: int = 80, max_side: Optional[int] = None) -> bytes:
+    """把任意图片字节编码为 webp。max_side 给定时按最长边等比缩放。"""
+    from io import BytesIO
+    from PIL import Image
+    im = Image.open(BytesIO(src_bytes))
+    # webp 不支持 P 模式调色板透明；统一转 RGBA / RGB
+    if im.mode == "P":
+        im = im.convert("RGBA" if "transparency" in im.info else "RGB")
+    elif im.mode not in ("RGB", "RGBA", "L"):
+        im = im.convert("RGBA")
+    if max_side and max_side > 0:
+        w, h = im.size
+        m = max(w, h)
+        if m > max_side:
+            scale = max_side / m
+            im = im.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+    buf = BytesIO()
+    im.save(buf, format="WEBP", quality=quality, method=4)
+    return buf.getvalue()
+
+
+def _serve_image_maybe_webp(
+    request: Request,
+    path: Path,
+    *,
+    quality: int = 80,
+    max_side: Optional[int] = None,
+) -> Response:
+    """根据 Accept 头决定原图直传还是 webp 转码。"""
+    media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(
+        path.suffix.lower().lstrip("."), f"image/{path.suffix.lower().lstrip('.')}"
+    )
+    # 已是 webp / gif / 不接受 webp，直传
+    ext = path.suffix.lower()
+    if ext in (".webp", ".gif") or not _accepts_webp(request):
+        return FileResponse(str(path), media_type=media)
+    try:
+        st = path.stat()
+        key = (str(path), st.st_mtime, f"{quality}@{max_side or 0}")
+        cached = _WEBP_CACHE.get(key)
+        if cached is None:
+            with open(path, "rb") as f:
+                src = f.read()
+            cached = _encode_webp(src, quality=quality, max_side=max_side)
+            if len(_WEBP_CACHE) >= _WEBP_CACHE_MAX:
+                # 朴素 LRU：丢掉最早一个
+                try:
+                    _WEBP_CACHE.pop(next(iter(_WEBP_CACHE)))
+                except StopIteration:
+                    pass
+            _WEBP_CACHE[key] = cached
+        headers = {"Content-Length": str(len(cached)), "Vary": "Accept", "Cache-Control": "public, max-age=300"}
+        return Response(content=cached, media_type="image/webp", headers=headers)
+    except Exception:
+        return FileResponse(str(path), media_type=media)
 
 
 # ---------------- state ----------------
@@ -419,13 +490,12 @@ async def api_list():
 
 
 @app.get("/api/thumbnail")
-async def api_thumbnail(path: str):
+async def api_thumbnail(request: Request, path: str):
     p = find_thumbnail(path)
     if not p:
         raise HTTPException(404, "no thumbnail")
-    ext = p.suffix.lower().lstrip(".")
-    media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, f"image/{ext}")
-    return FileResponse(str(p), media_type=media)
+    # 缩略图固定限制最长边 256，质量更低
+    return _serve_image_maybe_webp(request, p, quality=72, max_side=256)
 
 
 # ============== ComfyUI output 浏览（只读） ==============
@@ -485,15 +555,18 @@ async def api_output_list(limit: int = 500, offset: int = 0):
 
 
 @app.get("/api/output/file")
-async def api_output_file(path: str):
+async def api_output_file(request: Request, path: str, full: int = 0):
     p = _resolve_output_path(path)
     if not p.is_file():
         raise HTTPException(404, "not found")
     if p.suffix.lower() not in OUTPUT_IMAGE_EXTS:
         raise HTTPException(400, "not an image")
-    ext = p.suffix.lower().lstrip(".")
-    media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, f"image/{ext}")
-    return FileResponse(str(p), media_type=media)
+    # 默认走 webp 转码（限制最长边 1600 节省带宽）；?full=1 返回原图
+    if full:
+        ext = p.suffix.lower().lstrip(".")
+        media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, f"image/{ext}")
+        return FileResponse(str(p), media_type=media)
+    return _serve_image_maybe_webp(request, p, quality=82, max_side=1600)
 
 
 def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
@@ -822,12 +895,19 @@ def extract_loras(prompt_dict: Dict[str, Any]) -> List[str]:
 
 
 @app.get("/api/image")
-async def api_image(filename: str, subfolder: str = "", type: str = "output"):
+async def api_image(request: Request, filename: str, subfolder: str = "", type: str = "output"):
     try:
         content, ct = await download_image(filename, subfolder, type)
-        return Response(content=content, media_type=ct)
     except Exception as e:
         raise HTTPException(500, str(e))
+    # 浏览器接受 webp 时即时转码（节省 60-80% 带宽）
+    if _accepts_webp(request) and ct.startswith("image/") and ct not in ("image/webp", "image/gif"):
+        try:
+            webp = _encode_webp(content, quality=82, max_side=1600)
+            return Response(content=webp, media_type="image/webp", headers={"Vary": "Accept"})
+        except Exception:
+            pass
+    return Response(content=content, media_type=ct)
 
 
 @app.post("/api/translate")
