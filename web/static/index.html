@@ -830,6 +830,17 @@ function collectLightboxItems() {
   }));
 }
 
+// ========== 全局滚动锁（弹窗用，引用计数避免叠加冲突）==========
+let _scrollLockCount = 0;
+function lockScroll() {
+  _scrollLockCount += 1;
+  if (_scrollLockCount === 1) document.body.style.overflow = 'hidden';
+}
+function unlockScroll() {
+  if (_scrollLockCount > 0) _scrollLockCount -= 1;
+  if (_scrollLockCount === 0) document.body.style.overflow = '';
+}
+
 function openLightboxFromAnchor(a) {
   lbState.items = collectLightboxItems();
   lbState.index = Math.max(0, lbState.items.findIndex(it => it.url === a.getAttribute('href')));
@@ -873,9 +884,14 @@ function showLightbox() {
       .catch(() => {});
   }
   $('lb-root').classList.add('open');
+  if (!$('lb-root').dataset.locked) { lockScroll(); $('lb-root').dataset.locked = '1'; }
 }
 
-function closeLightbox() { $('lb-root').classList.remove('open'); $('lb-img').src = ''; }
+function closeLightbox() {
+  $('lb-root').classList.remove('open');
+  $('lb-img').src = '';
+  if ($('lb-root').dataset.locked) { unlockScroll(); delete $('lb-root').dataset.locked; }
+}
 function prevLightbox() { if (!lbState.items.length) return; lbState.index = (lbState.index - 1 + lbState.items.length) % lbState.items.length; showLightbox(); }
 function nextLightbox() { if (!lbState.items.length) return; lbState.index = (lbState.index + 1) % lbState.items.length; showLightbox(); }
 
@@ -942,17 +958,26 @@ function maybeShowStarPrompt() {
   if (localStorage.getItem('starPromptDismissed') === '1') return;
   const m = $('star-modal');
   if (!m) return;
-  m.classList.remove('hidden');
+  if (m.classList.contains('hidden')) {
+    m.classList.remove('hidden');
+    lockScroll();
+    m.dataset.locked = '1';
+  }
+}
+function closeStarModal() {
+  const m = $('star-modal');
+  if (!m.classList.contains('hidden')) {
+    m.classList.add('hidden');
+    if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
+  }
 }
 $('star-never').addEventListener('click', () => {
   localStorage.setItem('starPromptDismissed', '1');
-  $('star-modal').classList.add('hidden');
+  closeStarModal();
 });
-$('star-later').addEventListener('click', () => {
-  $('star-modal').classList.add('hidden');
-});
+$('star-later').addEventListener('click', closeStarModal);
 $('star-modal').addEventListener('click', (e) => {
-  if (e.target === $('star-modal')) $('star-modal').classList.add('hidden');
+  if (e.target === $('star-modal')) closeStarModal();
 });
 
 // 18+ 年龄确认（每次访问都强制确认，不写 localStorage）
@@ -961,11 +986,11 @@ $('star-modal').addEventListener('click', (e) => {
   const blocker = $('age-blocker');
   gate.classList.remove('hidden');
   blocker.classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   $('age-accept').addEventListener('click', () => {
     gate.classList.add('hidden');
     blocker.classList.add('hidden');
-    document.body.style.overflow = '';
+    unlockScroll();
   });
   $('age-leave').addEventListener('click', () => {
     window.open('', '_self');
