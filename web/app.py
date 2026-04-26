@@ -48,6 +48,21 @@ LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
 app = FastAPI(title="自然语言生图")
 # 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
 app.add_middleware(GZipMiddleware, minimum_size=512, compresslevel=4)
+
+
+# 全局禁止搜索引擎索引
+@app.middleware("http")
+async def _no_index_headers(request: Request, call_next):
+    resp = await call_next(request)
+    resp.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive, nosnippet, noimageindex"
+    return resp
+
+
+@app.get("/robots.txt")
+async def robots_txt():
+    return Response("User-agent: *\nDisallow: /\n", media_type="text/plain")
+
+
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
