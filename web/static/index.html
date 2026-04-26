@@ -325,9 +325,21 @@ async function loadCurrent() {
     return;
   }
   const s = d.summary;
-  $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div>
+  const loras = Array.isArray(d.loras) ? d.loras : [];
+  const escapeHtml = (str) => String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let lorasHtml = '';
+  if (loras.length) {
+    if (d.lora_link) {
+      const url = escapeHtml(d.lora_link);
+      lorasHtml = `<div class="text-xs mt-1"><a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-block bg-purple-100 text-purple-700 hover:bg-purple-200 underline rounded px-1.5 py-0.5 break-all">🔗 Lora 链接</a></div>`;
+    } else {
+      lorasHtml = `<div class="text-xs text-gray-700 mt-1">Lora: ${loras.map(n => `<span class="inline-block bg-purple-100 text-purple-700 rounded px-1.5 py-0.5 mr-1 mb-0.5 break-all">${escapeHtml(n)}</span>`).join('')}</div>`;
+    }
+  }
+  $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div class="min-w-0">
     <div class="font-medium">${display}</div>
     <div class="text-xs text-gray-500">节点 ${s.node_count} | 连线 ${s.link_count} | 分组 ${s.group_count}</div>
+    ${lorasHtml}
   </div></div>`;
 
   defaultRes.w = d.default_width;
@@ -362,9 +374,12 @@ async function loadList() {
 
 function renderList() {
   const q = $('search').value.toLowerCase().trim();
-  const filtered = q
+  const isNoLora = (w) => /无\s*lora/i.test(w.path || '');
+  let filtered = q
     ? allWorkflows.filter(w => (w.path || '').toLowerCase().includes(q))
-    : allWorkflows;
+    : allWorkflows.slice();
+  // 「无 Lora」工作流置顶
+  filtered.sort((a, b) => (isNoLora(b) ? 1 : 0) - (isNoLora(a) ? 1 : 0));
   if (!filtered.length) {
     $('wf-list').innerHTML = '<div class="p-2 text-gray-400">无</div>';
     return;
@@ -380,7 +395,15 @@ function renderList() {
       const thumb = w.thumbnail
         ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
         : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
-      return `<div class="wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16" data-path="${w.path}">
+      const noLora = isNoLora(w);
+      const cardCls = noLora
+        ? 'wf-item relative border-2 border-amber-400 ring-2 ring-amber-200 bg-amber-50 rounded p-1.5 cursor-pointer hover:bg-amber-100 flex flex-col items-center gap-0.5 w-16'
+        : 'wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16';
+      const badge = noLora
+        ? `<span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] leading-none px-1 py-0.5 rounded shadow">★</span>`
+        : '';
+      return `<div class="${cardCls}" data-path="${w.path}">
+         ${badge}
          ${thumb}
          <span class="text-[11px] font-medium whitespace-nowrap">${model}</span>
          <span class="text-[10px] text-gray-500 whitespace-nowrap">${custom}</span>
@@ -510,10 +533,17 @@ function finishRun() {
   activeWS = null;
 }
 
-async function cancelRun() {
-  appendLog('请求取消...');
-  await fetch('/api/interrupt', {method: 'POST'});
-  if (activeWS) try { activeWS.close(); } catch {}
+function cancelRun() {
+  appendLog('已取消');
+  const ws = activeWS;
+  activeWS = null;
+  if (ws) {
+    ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
+    try { ws.close(); } catch {}
+  }
+  $('progress-text').textContent = '已取消';
+  finishRun();
+  fetch('/api/interrupt', {method: 'POST'}).catch(() => {});
 }
 
 $('btn-refresh').addEventListener('click', () => { loadCurrent(); loadList(); });
@@ -659,49 +689,64 @@ async function injectPromptIntoLightbox(slide) {
   if (!a) return;
   const rel = a.dataset.relPath;
   if (!rel) return;
-  // 找到当前激活幻灯片对应的 description 容器
   const descEl = slide.slideNode && slide.slideNode.querySelector('.gdesc-inner');
   if (!descEl) return;
 
-  let txt = promptCache.get(rel);
-  if (txt === undefined) {
-    descEl.textContent = '加载 prompt 中...';
-    try {
-      const r = await fetch('/api/output/meta?path=' + encodeURIComponent(rel));
-      const d = await r.json();
-      txt = d.positive || (d.supported === false ? '（仅支持 PNG 元数据）' : '（无 prompt 元数据）');
-    } catch (e) {
-      txt = '读取失败：' + e;
-    }
-    promptCache.set(rel, txt);
-  }
-  // 清空并构造：文本 + 复制按钮 + 填入按钮
+  // 默认只显示展开按钮，不预取也不展示 prompt
   descEl.innerHTML = '';
-  const pre = document.createElement('pre');
-  pre.className = 'whitespace-pre-wrap break-words text-xs font-mono max-h-40 overflow-y-auto bg-black/40 p-2 rounded';
-  pre.style.color = '#fff';
-  pre.textContent = txt;
-  const bar = document.createElement('div');
-  bar.className = 'mt-1 flex gap-2';
-  bar.innerHTML = `
-    <button type="button" class="lb-copy text-xs px-2 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600">复制</button>
-    <button type="button" class="lb-fill text-xs px-2 py-0.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">填到「直接 Tag」</button>
-  `;
-  descEl.appendChild(pre);
-  descEl.appendChild(bar);
-  bar.querySelector('.lb-copy').addEventListener('click', async (e) => {
+  const expandBtn = document.createElement('button');
+  expandBtn.type = 'button';
+  expandBtn.className = 'text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600';
+  expandBtn.textContent = '展开 Prompt';
+  descEl.appendChild(expandBtn);
+
+  expandBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(txt);
-      e.target.textContent = '已复制 ✓';
-      setTimeout(() => { e.target.textContent = '复制'; }, 1200);
-    } catch { alert('复制失败'); }
-  });
-  bar.querySelector('.lb-fill').addEventListener('click', (e) => {
-    e.stopPropagation();
-    $('direct').value = txt;
-    lightbox.close();
-    $('direct').focus();
+    let txt = promptCache.get(rel);
+    if (txt === undefined) {
+      expandBtn.disabled = true;
+      expandBtn.textContent = '加载中...';
+      try {
+        const r = await fetch('/api/output/meta?path=' + encodeURIComponent(rel));
+        const d = await r.json();
+        txt = d.positive || (d.supported === false ? '（仅支持 PNG 元数据）' : '（无 prompt 元数据）');
+      } catch (err) {
+        txt = '读取失败：' + err;
+      }
+      promptCache.set(rel, txt);
+    }
+    descEl.innerHTML = '';
+    const pre = document.createElement('pre');
+    pre.className = 'whitespace-pre-wrap break-words text-xs font-mono max-h-40 overflow-y-auto bg-black/40 p-2 rounded';
+    pre.style.color = '#fff';
+    pre.textContent = txt;
+    const bar = document.createElement('div');
+    bar.className = 'mt-1 flex gap-2';
+    bar.innerHTML = `
+      <button type="button" class="lb-copy text-xs px-2 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600">复制</button>
+      <button type="button" class="lb-fill text-xs px-2 py-0.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">填到「直接 Tag」</button>
+      <button type="button" class="lb-collapse text-xs px-2 py-0.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">收起</button>
+    `;
+    descEl.appendChild(pre);
+    descEl.appendChild(bar);
+    bar.querySelector('.lb-copy').addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      try {
+        await navigator.clipboard.writeText(txt);
+        ev.target.textContent = '已复制 ✓';
+        setTimeout(() => { ev.target.textContent = '复制'; }, 1200);
+      } catch { alert('复制失败'); }
+    });
+    bar.querySelector('.lb-fill').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      $('direct').value = txt;
+      lightbox.close();
+      $('direct').focus();
+    });
+    bar.querySelector('.lb-collapse').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      injectPromptIntoLightbox(slide);
+    });
   });
 }
 

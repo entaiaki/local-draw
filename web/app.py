@@ -42,6 +42,7 @@ OUTPUT_DIR = Path(OUTPUT_DIR_STR)
 STATIC_DIR = Path(__file__).parent / "static"
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
+LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
 
 app = FastAPI(title="ComfyUI Web")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -622,7 +623,63 @@ async def api_current(path: Optional[str] = None):
         "default_width": res[0] if res else None,
         "default_height": res[1] if res else None,
         "builtin_prompt": builtin_prompt,
+        "loras": extract_loras(pd),
+        "lora_link": find_lora_link(path),
     }
+
+
+def find_lora_link(wf_path: str) -> Optional[str]:
+    """在 web/lora_links/ 下查找与工作流同名的 .txt（仅一行链接）。
+    匹配规则同缩略图：先按完整 path（保留子目录），再退回 basename。
+    """
+    if not wf_path:
+        return None
+    stem = wf_path[:-5] if wf_path.lower().endswith(".json") else wf_path
+    base = Path(stem)
+    candidates = [
+        LORA_LINKS_DIR / (str(base) + ".txt"),
+        LORA_LINKS_DIR / (base.name + ".txt"),
+    ]
+    root = LORA_LINKS_DIR.resolve()
+    for c in candidates:
+        try:
+            cr = c.resolve()
+            if cr.is_file() and str(cr).startswith(str(root)):
+                line = cr.read_text(encoding="utf-8").strip().splitlines()
+                url = line[0].strip() if line else ""
+                if url:
+                    return url
+        except Exception:
+            continue
+    return None
+
+
+def extract_loras(prompt_dict: Dict[str, Any]) -> List[str]:
+    """从 prompt API 格式中提取所有 Lora 文件名（去重，保持顺序）。
+    覆盖 LoraLoader / LoraLoaderModelOnly / rgthree Power Lora Loader 等。
+    """
+    seen: Dict[str, None] = {}
+    for nid, ndata in prompt_dict.items():
+        if not isinstance(ndata, dict):
+            continue
+        cls = (ndata.get("class_type") or "")
+        if "lora" not in cls.lower():
+            continue
+        inputs = ndata.get("inputs") or {}
+        for k, v in inputs.items():
+            if not isinstance(v, str):
+                # rgthree Power Lora Loader: inputs 形如 {"lora_1": {"on": true, "lora": "xxx.safetensors", ...}}
+                if isinstance(v, dict):
+                    name = v.get("lora")
+                    on = v.get("on", True)
+                    if isinstance(name, str) and name and name.lower() != "none" and on:
+                        seen.setdefault(name, None)
+                continue
+            kl = k.lower()
+            if "lora" in kl and "name" in kl or kl == "lora_name" or kl == "lora":
+                if v and v.lower() != "none":
+                    seen.setdefault(v, None)
+    return list(seen.keys())
 
 
 @app.get("/api/image")
