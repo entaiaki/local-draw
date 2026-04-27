@@ -354,14 +354,14 @@
 const $ = (id) => document.getElementById(id);
 let allWorkflows = [];
 let defaultRes = {w: null, h: null};
-const history = [];  // {url, filename, prompt, time}
+const genHistory = [];  // {url, filename, prompt, time}
 
 function renderHistory() {
   // 已替换为 ComfyUI output 目录浏览，不再渲染会话内历史
 }
 
 function pushHistory(item) {
-  history.unshift(item);
+  genHistory.unshift(item);
   // 新生成的图：插入到 gallery 顶部并刷新计数
   if (item && item.filename) {
     prependGalleryItem(item.filename);
