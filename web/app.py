@@ -669,6 +669,35 @@ async def _creator_map_set(rel: str, ip: str) -> bool:
             return False
 
 
+async def _creator_map_sweep_since(start_ts: float, ip: str) -> int:
+    """扫描 OUTPUT_DIR 下所有 mtime >= start_ts 的图片，把还没记录的写入映射。
+    用于兜底：任务在正常写 IP 那步之前异常退出时（取消、ws 断开、history 缺 outputs 等），
+    ComfyUI 已经保存的图也能被回填。返回新写入条数。
+    """
+    if not ip or not OUTPUT_DIR.exists():
+        return 0
+    written = 0
+    try:
+        for p in OUTPUT_DIR.rglob("*"):
+            if not p.is_file():
+                continue
+            if p.suffix.lower() not in THUMB_EXTS:
+                continue
+            try:
+                if p.stat().st_mtime < start_ts:
+                    continue
+            except Exception:
+                continue
+            rel = _creator_key(p)
+            if _creator_map_get(rel):
+                continue
+            if await _creator_map_set(rel, ip):
+                written += 1
+    except Exception:
+        pass
+    return written
+
+
 @app.get("/api/output/creator")
 async def api_output_creator(path: str):
     """读取该图片的生图者 IP。优先查 creator_ips.txt 映射，回退 PNG tEXt chunk。"""
@@ -1185,6 +1214,8 @@ async def ws_run(ws: WebSocket):
             or (ws.client.host if ws.client else "")
             or "unknown"
         )
+        import time as _time
+        task_started_at = _time.time() - 2  # 留 2s 余量，避免边界 mtime 漏掉
         try:
             await _run_task(ws, RunRequest(**init), client_ip=client_ip)
         except WebSocketDisconnect:
@@ -1195,6 +1226,11 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
         finally:
+            # 兜底：扫描本任务期间新生成的图，补齐 IP 映射（防止取消/异常时正常写入路径被跳过）
+            try:
+                await _creator_map_sweep_since(task_started_at, client_ip)
+            except Exception:
+                pass
             await _push_status(reset=True)
 
 
