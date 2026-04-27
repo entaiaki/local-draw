@@ -58,7 +58,6 @@
   <div id="lb-bar">
     <span id="lb-title"></span>
     <span id="lb-time" class="text-xs text-gray-300"></span>
-    <span id="lb-creator" class="text-xs text-amber-300"></span>
     <a id="lb-download" href="#" target="_blank" rel="noopener" download
        class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">⬇ 下载原图</a>
     <button id="lb-fork" class="text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700">🍴 Fork 工作流</button>
@@ -932,7 +931,6 @@ function showLightbox() {
   $('lb-img').src = it.url;
   $('lb-title').textContent = it.title || '';
   $('lb-status').textContent = '';
-  $('lb-creator').textContent = '';
   if (it.mtime) {
     const d = new Date(it.mtime * 1000);
     const pad = n => String(n).padStart(2, '0');
@@ -952,15 +950,6 @@ function showLightbox() {
     }
     dl.href = fullUrl;
     dl.download = it.title || '';
-  }
-  // 异步拉取生图者 IP
-  if (it.relPath) {
-    fetch('/api/output/creator?path=' + encodeURIComponent(it.relPath))
-      .then(r => r.json())
-      .then(d => {
-        if (d && d.creator_ip) $('lb-creator').textContent = '生图者: ' + d.creator_ip;
-      })
-      .catch(() => {});
   }
   $('lb-root').classList.add('open');
   if (!$('lb-root').dataset.locked) { lockScroll(); $('lb-root').dataset.locked = '1'; }

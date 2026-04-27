@@ -19,9 +19,7 @@ OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
 
 import asyncio
 import json
-import os
 import random
-import re
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -46,8 +44,6 @@ STATIC_DIR = Path(__file__).parent / "static"
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
-CREATOR_MAP_FILE = Path(__file__).parent / "creator_ips.txt"
-_creator_map_lock = asyncio.Lock()
 
 app = FastAPI(title="自然语言生图")
 # 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
@@ -618,115 +614,6 @@ def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
     return ""
 
 
-def _creator_key(p: Path) -> str:
-    """标准化为相对 OUTPUT_DIR 的正斜杠路径，作为映射 key。"""
-    try:
-        rel = p.resolve().relative_to(OUTPUT_DIR.resolve())
-    except Exception:
-        rel = Path(p.name)
-    return str(rel).replace("\\", "/")
-
-
-def _creator_map_get(rel: str) -> str:
-    if not CREATOR_MAP_FILE.is_file():
-        return ""
-    try:
-        with open(CREATOR_MAP_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.rstrip("\r\n")
-                if not line or "\t" not in line:
-                    continue
-                k, _, v = line.partition("\t")
-                if k == rel:
-                    return v
-    except Exception:
-        return ""
-    return ""
-
-
-async def _creator_map_set(rel: str, ip: str) -> bool:
-    """每行 `<rel>\\t<ip>`。同 key 去重保留最新；原子替换。"""
-    if not rel or not ip:
-        return False
-    async with _creator_map_lock:
-        try:
-            lines: list[str] = []
-            if CREATOR_MAP_FILE.is_file():
-                with open(CREATOR_MAP_FILE, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.rstrip("\r\n")
-                        if not line or "\t" not in line:
-                            continue
-                        if line.split("\t", 1)[0] == rel:
-                            continue
-                        lines.append(line)
-            lines.append(f"{rel}\t{ip}")
-            tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
-            with open(tmp, "w", encoding="utf-8") as f:
-                f.write("\n".join(lines) + "\n")
-            os.replace(tmp, CREATOR_MAP_FILE)
-            return True
-        except Exception:
-            return False
-
-
-async def _creator_map_sweep_since(start_ts: float, ip: str) -> int:
-    """扫描 OUTPUT_DIR 下所有 mtime >= start_ts 的图片，把还没记录的写入映射。
-    用于兜底：任务在正常写 IP 那步之前异常退出时（取消、ws 断开、history 缺 outputs 等），
-    ComfyUI 已经保存的图也能被回填。返回新写入条数。
-    """
-    if not ip or not OUTPUT_DIR.exists():
-        return 0
-    written = 0
-    try:
-        for p in OUTPUT_DIR.rglob("*"):
-            if not p.is_file():
-                continue
-            if p.suffix.lower() not in THUMB_EXTS:
-                continue
-            try:
-                if p.stat().st_mtime < start_ts:
-                    continue
-            except Exception:
-                continue
-            rel = _creator_key(p)
-            if _creator_map_get(rel):
-                continue
-            if await _creator_map_set(rel, ip):
-                written += 1
-    except Exception:
-        pass
-    return written
-
-
-_TOKEN_RE = re.compile(r"_t([0-9a-f]{8})_")
-
-
-def _ip_from_filename_token(name: str) -> str:
-    """从 ComfyUI 文件名（如 ComfyUI_ta1b2c3d4_00001_.png）里提取 token，反查 IP。"""
-    m = _TOKEN_RE.search(name)
-    if not m:
-        return ""
-    return _creator_map_get(f"token:{m.group(1)}")
-
-
-@app.get("/api/output/creator")
-async def api_output_creator(path: str):
-    """读取该图片的生图者 IP。
-    优先级：文件名里的 token → 路径直接映射（旧数据） → PNG tEXt chunk（更老的数据）。
-    """
-    p = _resolve_output_path(path)
-    if not p.is_file():
-        raise HTTPException(404, "not found")
-    ip = _ip_from_filename_token(p.name)
-    if not ip:
-        rel = _creator_key(p)
-        ip = _creator_map_get(rel)
-    if not ip and p.suffix.lower() == ".png":
-        ip = _read_png_text_chunk(p, "creator_ip")
-    return {"creator_ip": ip or ""}
-
-
 @app.get("/api/output/meta")
 async def api_output_meta(path: str):
     """读取图片元数据（目前主要支持 PNG），返回正向 prompt（若可识别）。"""
@@ -812,57 +699,6 @@ def _read_png_text_chunk(path: Path, key: str) -> str:
     except Exception:
         return ""
     return ""
-
-
-def _png_set_text(path: Path, key: str, value: str) -> bool:
-    """在 PNG 文件中追加/替换一个 tEXt chunk。原子写。
-    保留所有其它 chunk（包括 ComfyUI 写入的 prompt / workflow）。
-    """
-    import struct, zlib, os
-    if not value:
-        return False
-    try:
-        with open(path, "rb") as f:
-            raw = f.read()
-        if raw[:8] != b"\x89PNG\r\n\x1a\n":
-            return False
-        out = bytearray(raw[:8])
-        i = 8
-        target_key = key.encode("latin-1")
-        replaced = False
-        while i + 8 <= len(raw):
-            length = struct.unpack(">I", raw[i:i + 4])[0]
-            ctype = raw[i + 4:i + 8]
-            chunk_end = i + 8 + length + 4
-            data = raw[i + 8:i + 8 + length]
-            if ctype == b"tEXt":
-                k, _, _ = data.partition(b"\x00")
-                if k == target_key:
-                    # 跳过旧的，由后面 IEND 前的新 tEXt 替代
-                    i = chunk_end
-                    replaced = True
-                    continue
-            if ctype == b"IEND":
-                # 在 IEND 前插入我们的 tEXt
-                payload = target_key + b"\x00" + value.encode("utf-8", errors="replace")
-                crc = zlib.crc32(b"tEXt" + payload) & 0xffffffff
-                out += struct.pack(">I", len(payload)) + b"tEXt" + payload + struct.pack(">I", crc)
-                out += raw[i:chunk_end]
-                i = chunk_end
-                # 复制剩余（一般无）
-                if i < len(raw):
-                    out += raw[i:]
-                # 原子替换
-                tmp = path.with_suffix(path.suffix + ".tmp")
-                with open(tmp, "wb") as f:
-                    f.write(out)
-                os.replace(tmp, path)
-                return True
-            out += raw[i:chunk_end]
-            i = chunk_end
-        return False
-    except Exception:
-        return False
 
 
 @app.post("/api/output/fork")
@@ -1222,18 +1058,8 @@ async def ws_run(ws: WebSocket):
             init = await ws.receive_json()
         except Exception:
             return
-        # 提取真实 IP（优先 Cloudflare 头，其次 X-Forwarded-For，最后 socket）
-        h = ws.headers
-        client_ip = (
-            h.get("cf-connecting-ip")
-            or (h.get("x-forwarded-for", "").split(",")[0].strip() if h.get("x-forwarded-for") else "")
-            or (ws.client.host if ws.client else "")
-            or "unknown"
-        )
-        import time as _time
-        task_started_at = _time.time() - 2  # 留 2s 余量，避免边界 mtime 漏掉
         try:
-            await _run_task(ws, RunRequest(**init), client_ip=client_ip)
+            await _run_task(ws, RunRequest(**init))
         except WebSocketDisconnect:
             return
         except Exception as e:
@@ -1242,15 +1068,10 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
         finally:
-            # 兜底：扫描本任务期间新生成的图，补齐 IP 映射（防止取消/异常时正常写入路径被跳过）
-            try:
-                await _creator_map_sweep_since(task_started_at, client_ip)
-            except Exception:
-                pass
             await _push_status(reset=True)
 
 
-async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown"):
+async def _run_task(ws: WebSocket, req: RunRequest):
     import time as _time
     path = req.workflow_path
     inline = req.inline_workflow
@@ -1336,21 +1157,6 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
             if "seed" in inp:
                 inp["seed"] = random.randint(0, 2**63 - 1)
 
-    # 给每个 SaveImage 的 filename_prefix 注入唯一 token，并立即把 token->IP 落盘。
-    # 这样无论后续生图是否成功，只要 ComfyUI 真的写出了带 token 的文件，就一定能反查到 IP。
-    ip_token = "t" + uuid.uuid4().hex[:8]
-    prefix_changed = 0
-    for nid, ndata in prompt_dict.items():
-        if ndata.get("class_type") == "SaveImage":
-            inp = ndata.get("inputs", {})
-            base_prefix = inp.get("filename_prefix") or "ComfyUI"
-            base_prefix = str(base_prefix).rstrip("/").rstrip("\\")
-            inp["filename_prefix"] = f"{base_prefix}_{ip_token}"
-            prefix_changed += 1
-    if prefix_changed:
-        await _creator_map_set(f"token:{ip_token}", client_ip)
-        await emit(ws, {"type": "log", "message": f"已记录生图者 IP 标记 {ip_token}"})
-
     await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
     prompt_id = await submit_prompt(prompt_dict)
     await emit(ws, {"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
@@ -1376,17 +1182,6 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
     if not images:
         await emit(ws, {"type": "error", "message": "无图片输出"})
         return
-
-    # 把生图者 IP 写入 creator_ips.txt 映射（每行 `<rel>\t<ip>`）
-    for img in images:
-        if img.get("type") != "output":
-            continue
-        try:
-            rel = (img.get("subfolder") or "") + ("/" if img.get("subfolder") else "") + img["filename"]
-            rel = rel.replace("\\", "/")
-            await _creator_map_set(rel, client_ip)
-        except Exception as e:
-            await emit(ws, {"type": "log", "message": f"[warn] 写 creator_ips.txt 失败: {e}"})
 
     for img in images:
         url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"
