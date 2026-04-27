@@ -21,6 +21,7 @@ import asyncio
 import json
 import os
 import random
+import re
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -698,14 +699,29 @@ async def _creator_map_sweep_since(start_ts: float, ip: str) -> int:
     return written
 
 
+_TOKEN_RE = re.compile(r"_t([0-9a-f]{8})_")
+
+
+def _ip_from_filename_token(name: str) -> str:
+    """从 ComfyUI 文件名（如 ComfyUI_ta1b2c3d4_00001_.png）里提取 token，反查 IP。"""
+    m = _TOKEN_RE.search(name)
+    if not m:
+        return ""
+    return _creator_map_get(f"token:{m.group(1)}")
+
+
 @app.get("/api/output/creator")
 async def api_output_creator(path: str):
-    """读取该图片的生图者 IP。优先查 creator_ips.txt 映射，回退 PNG tEXt chunk。"""
+    """读取该图片的生图者 IP。
+    优先级：文件名里的 token → 路径直接映射（旧数据） → PNG tEXt chunk（更老的数据）。
+    """
     p = _resolve_output_path(path)
     if not p.is_file():
         raise HTTPException(404, "not found")
-    rel = _creator_key(p)
-    ip = _creator_map_get(rel)
+    ip = _ip_from_filename_token(p.name)
+    if not ip:
+        rel = _creator_key(p)
+        ip = _creator_map_get(rel)
     if not ip and p.suffix.lower() == ".png":
         ip = _read_png_text_chunk(p, "creator_ip")
     return {"creator_ip": ip or ""}
@@ -1319,6 +1335,21 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
             inp = ndata.get("inputs", {})
             if "seed" in inp:
                 inp["seed"] = random.randint(0, 2**63 - 1)
+
+    # 给每个 SaveImage 的 filename_prefix 注入唯一 token，并立即把 token->IP 落盘。
+    # 这样无论后续生图是否成功，只要 ComfyUI 真的写出了带 token 的文件，就一定能反查到 IP。
+    ip_token = "t" + uuid.uuid4().hex[:8]
+    prefix_changed = 0
+    for nid, ndata in prompt_dict.items():
+        if ndata.get("class_type") == "SaveImage":
+            inp = ndata.get("inputs", {})
+            base_prefix = inp.get("filename_prefix") or "ComfyUI"
+            base_prefix = str(base_prefix).rstrip("/").rstrip("\\")
+            inp["filename_prefix"] = f"{base_prefix}_{ip_token}"
+            prefix_changed += 1
+    if prefix_changed:
+        await _creator_map_set(f"token:{ip_token}", client_ip)
+        await emit(ws, {"type": "log", "message": f"已记录生图者 IP 标记 {ip_token}"})
 
     await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
     prompt_id = await submit_prompt(prompt_dict)
