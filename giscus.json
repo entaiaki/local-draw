@@ -1,0 +1,4 @@
+{
+  "origins": ["https://ai.2x.nz"],
+  "originsRegex": ["http://192.168.124.7:8080"]
+}
