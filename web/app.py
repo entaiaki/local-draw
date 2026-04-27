@@ -19,6 +19,7 @@ OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
 
 import asyncio
 import json
+import os
 import random
 import uuid
 from pathlib import Path
@@ -44,6 +45,8 @@ STATIC_DIR = Path(__file__).parent / "static"
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
+CREATOR_MAP_FILE = Path(__file__).parent / "creator_ips.txt"
+_creator_map_lock = asyncio.Lock()
 
 app = FastAPI(title="自然语言生图")
 # 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
@@ -614,15 +617,69 @@ def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
     return ""
 
 
+def _creator_key(p: Path) -> str:
+    """标准化为相对 OUTPUT_DIR 的正斜杠路径，作为映射 key。"""
+    try:
+        rel = p.resolve().relative_to(OUTPUT_DIR.resolve())
+    except Exception:
+        rel = Path(p.name)
+    return str(rel).replace("\\", "/")
+
+
+def _creator_map_get(rel: str) -> str:
+    if not CREATOR_MAP_FILE.is_file():
+        return ""
+    try:
+        with open(CREATOR_MAP_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.rstrip("\r\n")
+                if not line or "\t" not in line:
+                    continue
+                k, _, v = line.partition("\t")
+                if k == rel:
+                    return v
+    except Exception:
+        return ""
+    return ""
+
+
+async def _creator_map_set(rel: str, ip: str) -> bool:
+    """每行 `<rel>\\t<ip>`。同 key 去重保留最新；原子替换。"""
+    if not rel or not ip:
+        return False
+    async with _creator_map_lock:
+        try:
+            lines: list[str] = []
+            if CREATOR_MAP_FILE.is_file():
+                with open(CREATOR_MAP_FILE, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.rstrip("\r\n")
+                        if not line or "\t" not in line:
+                            continue
+                        if line.split("\t", 1)[0] == rel:
+                            continue
+                        lines.append(line)
+            lines.append(f"{rel}\t{ip}")
+            tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines) + "\n")
+            os.replace(tmp, CREATOR_MAP_FILE)
+            return True
+        except Exception:
+            return False
+
+
 @app.get("/api/output/creator")
 async def api_output_creator(path: str):
-    """读取该 PNG 的生图者 IP（写入时由 /ws/run 注入的 creator_ip tEXt chunk）。"""
+    """读取该图片的生图者 IP。优先查 creator_ips.txt 映射，回退 PNG tEXt chunk。"""
     p = _resolve_output_path(path)
     if not p.is_file():
         raise HTTPException(404, "not found")
-    if p.suffix.lower() != ".png":
-        return {"creator_ip": ""}
-    return {"creator_ip": _read_png_text_chunk(p, "creator_ip")}
+    rel = _creator_key(p)
+    ip = _creator_map_get(rel)
+    if not ip and p.suffix.lower() == ".png":
+        ip = _read_png_text_chunk(p, "creator_ip")
+    return {"creator_ip": ip or ""}
 
 
 @app.get("/api/output/meta")
@@ -1253,16 +1310,16 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
         await emit(ws, {"type": "error", "message": "无图片输出"})
         return
 
-    # 把生图者 IP 写入每张输出 PNG 的 tEXt chunk（key=creator_ip）
+    # 把生图者 IP 写入 creator_ips.txt 映射（每行 `<rel>\t<ip>`）
     for img in images:
-        if img.get("type") == "output" and img.get("filename", "").lower().endswith(".png"):
-            try:
-                rel = (img.get("subfolder") or "") + ("/" if img.get("subfolder") else "") + img["filename"]
-                fpath = _resolve_output_path(rel.replace("\\", "/"))
-                if fpath.is_file():
-                    _png_set_text(fpath, "creator_ip", client_ip)
-            except Exception:
-                pass
+        if img.get("type") != "output":
+            continue
+        try:
+            rel = (img.get("subfolder") or "") + ("/" if img.get("subfolder") else "") + img["filename"]
+            rel = rel.replace("\\", "/")
+            await _creator_map_set(rel, client_ip)
+        except Exception as e:
+            await emit(ws, {"type": "log", "message": f"[warn] 写 creator_ips.txt 失败: {e}"})
 
     for img in images:
         url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"
