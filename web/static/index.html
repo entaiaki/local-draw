@@ -24,8 +24,9 @@
   /* 自建灯箱样式 */
   #lb-root { position: fixed; inset: 0; z-index: 60; background: #000; display: none; flex-direction: column; }
   #lb-root.open { display: flex; }
-  #lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 8px; }
-  #lb-img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: auto; -webkit-user-select: auto; -webkit-touch-callout: default; }
+  #lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 8px; min-height: 0; }
+  /* 等比例填满 wrap，超出按比例缩放，不滚动 */
+  #lb-img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; user-select: auto; -webkit-user-select: auto; -webkit-touch-callout: default; }
   #lb-bar { color: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,.5); }
   .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.4); color: #fff; border: 0; width: 44px; height: 64px; font-size: 28px; cursor: pointer; }
   .lb-nav:hover { background: rgba(0,0,0,.7); }
@@ -58,6 +59,7 @@
   <div id="lb-bar">
     <span id="lb-title"></span>
     <span id="lb-time" class="text-xs text-gray-300"></span>
+    <span id="lb-creator" class="text-xs text-amber-300"></span>
     <a id="lb-download" href="#" target="_blank" rel="noopener" download
        class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">⬇ 下载原图</a>
     <button id="lb-fork" class="text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700">🍴 Fork 工作流</button>
@@ -65,6 +67,40 @@
   </div>
 </div>
 
+
+<!-- 显示图片前的确认（每会话仅首次弹一次） -->
+<div id="reveal-modal" class="fixed inset-0 z-50 bg-black/70 items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-5">
+    <h3 class="text-lg font-bold mb-3 text-orange-600">⚠️ 显示图片确认</h3>
+    <p class="text-sm text-gray-800 leading-relaxed mb-4">
+      您即将进行图片展示操作。操作后本会话内所有图片将立即可见，
+      您可能会看到您自己或其他人通过 AI 生成的各类图片，
+      这些图片<strong>可能会导致您的不适</strong>，请谨慎显示。
+    </p>
+    <div class="flex gap-2 justify-end">
+      <button id="reveal-cancel" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">取消</button>
+      <button id="reveal-accept" class="px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm">我已知悉，显示图片</button>
+    </div>
+  </div>
+</div>
+
+<!-- 生图前公告确认（每次都强制弹出，不可永久关闭） -->
+<div id="gen-notice-modal" class="fixed inset-0 z-50 bg-black/70 items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto">
+    <h3 class="text-lg font-bold mb-3 text-red-600">⚠️ 生图前必读公告</h3>
+    <div class="text-sm text-gray-800 leading-relaxed space-y-2 mb-4">
+      <p>您了解并已知晓自己即将进行生图操作，<strong>您的 IP 将会被记录</strong>。</p>
+      <p>若您恶意生图、滥用 API、生成鬼图、恶心图片，<strong>有可能会遭到不定处罚</strong>。</p>
+      <p>本站<strong>有权随时将您永久禁止生图</strong>，并移除您的所有违规图片。</p>
+      <p>若您为生图小白，请严格按照「生成图片」区块的教程学习正确的生图姿势。<strong>不要随意生图</strong>，任何人生图对所有人都是可见的，大家都想看到美好的、令人身心愉悦的图片。</p>
+      <p class="text-xs text-gray-500">该弹窗在每次生图之前都会提示，<strong>不可取消、不可记住</strong>。</p>
+    </div>
+    <div class="flex gap-2 justify-end">
+      <button id="gen-notice-cancel" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">退出</button>
+      <button id="gen-notice-accept" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">我已知悉，继续生图</button>
+    </div>
+  </div>
+</div>
 
 <!-- 生图成功后引流弹窗 -->
 <div id="star-modal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 hidden">
@@ -145,6 +181,15 @@
         <span>GitHub</span>
       </a>
     </div>
+  </div>
+
+  <!-- GPU 状态条（nvidia-smi） -->
+  <div id="gpu-bar" class="hidden mb-4 bg-white border border-gray-200 rounded shadow-sm p-2 text-xs text-gray-700">
+    <div class="flex items-center justify-between mb-1">
+      <span class="font-semibold">🎮 GPU 状态</span>
+      <span id="gpu-bar-meta" class="text-[10px] text-gray-400"></span>
+    </div>
+    <div id="gpu-bar-list" class="space-y-1"></div>
   </div>
 
   <!-- 全局状态横幅 -->
@@ -304,6 +349,22 @@
     <div id="images" class="grid grid-cols-1 md:grid-cols-2 gap-2 img-hide-zone"></div>
   </div>
 
+  <!-- 精选展示（管理员手动维护） -->
+  <div id="featured-box" class="bg-white rounded shadow p-4 mb-4 hidden">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-lg font-semibold">⭐ 精选展示
+        <span class="text-xs text-gray-500 font-normal">(<span id="featured-count">0</span>)</span>
+      </h2>
+    </div>
+    <div class="mb-3 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded p-2">
+      💡 温馨提示：可以尝试 Fork 优秀作品二改哦，说不定哪天你就被站长精选了呢？！
+    </div>
+    <div class="mb-3 text-xs bg-rose-50 border border-rose-200 text-rose-800 rounded p-2">
+      📌 收录规则：只收录非 R18、作画好看、无明显坏手坏脚、风格独特、吸睛的作品哦！
+    </div>
+    <div id="featured-gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+  </div>
+
   <!-- 全部输出图片 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
@@ -373,6 +434,34 @@ const galleryState = {
   loaded: 0,
   pageSize: 5,
 };
+
+async function loadFeatured() {
+  try {
+    const r = await fetch('/api/output/featured');
+    const d = await r.json();
+    const items = d.items || [];
+    const box = document.getElementById('featured-box');
+    const grid = document.getElementById('featured-gallery');
+    document.getElementById('featured-count').textContent = items.length;
+    if (!items.length) {
+      box.classList.add('hidden');
+      grid.innerHTML = '';
+      return;
+    }
+    box.classList.remove('hidden');
+    grid.innerHTML = items.map(it => {
+      const url = '/api/output/file?path=' + encodeURIComponent(it.path);
+      const safe = it.path.replace(/"/g, '&quot;');
+      const mt = it.mtime ? ` data-mtime="${it.mtime}"` : '';
+      return `<a href="${url}" data-gallery="featured"
+        data-title="${safe}" data-rel-path="${safe}"${mt}
+        title="${safe}" class="glightbox block">
+        <img src="${url}" loading="lazy" decoding="async"
+          class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-amber-400" />
+      </a>`;
+    }).join('');
+  } catch {}
+}
 
 function galleryItemHTML(relPath, mtime) {
   const url = '/api/output/file?path=' + encodeURIComponent(relPath);
@@ -639,6 +728,26 @@ function startRun() {
     alert('宽或高不得大于 ' + MAX_DIM + '（预设最大值）');
     return;
   }
+  // 强制公告确认（每次必弹，不可记住）
+  showGenNotice(() => actuallyStartRun(direct, nl, w, h));
+}
+
+function showGenNotice(onAccept) {
+  const m = $('gen-notice-modal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+  lockScroll();
+  m.dataset.locked = '1';
+  const close = () => {
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+    if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
+  };
+  $('gen-notice-accept').onclick = () => { close(); onAccept(); };
+  $('gen-notice-cancel').onclick = close;
+}
+
+function actuallyStartRun(direct, nl, w, h) {
   const payload = {
     workflow_path: forkedWorkflow ? '' : getCurrentPath(),
     inline_workflow: forkedWorkflow || null,
@@ -661,6 +770,13 @@ function startRun() {
   $('btn-cancel').classList.remove('hidden');
   $('images').innerHTML = '';
   $('final-prompt').textContent = '';
+
+  // 自己生图：默认在结果区显示自己的图（不动画廊里的「他人」开关）
+  const resultToggle = $('result-box').querySelector('.img-reveal-toggle');
+  if (resultToggle) {
+    resultToggle.checked = true;
+    $('images').classList.add('revealed');
+  }
 
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}/ws/run`);
@@ -755,14 +871,41 @@ $('res-presets').addEventListener('click', (e) => {
 });
 $('btn-reload-gallery').addEventListener('click', () => loadGallery(true));
 
-// 显示/隐藏图片切换：默认全部隐藏
+// 显示/隐藏图片切换：默认全部隐藏；首次开启需公告确认（本会话内仅一次）
+// 结果区（自己刚生的图）和全局画廊各自独立控制
+let _revealAcked = false;
+function applyRevealZone(toggleEl) {
+  // 沿 DOM 找最近的 .img-hide-zone（同一区块内）；若 toggle 在父 box 标题里，则匹配该 box 内所有 zone
+  const box = toggleEl.closest('.bg-white');
+  const zones = box ? box.querySelectorAll('.img-hide-zone') : [];
+  zones.forEach(z => z.classList.toggle('revealed', toggleEl.checked));
+}
+function showRevealNotice(onAccept, onCancel) {
+  const m = $('reveal-modal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+  lockScroll();
+  m.dataset.locked = '1';
+  const close = () => {
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+    if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
+  };
+  $('reveal-accept').onclick = () => { close(); onAccept(); };
+  $('reveal-cancel').onclick = () => { close(); onCancel && onCancel(); };
+}
 document.querySelectorAll('.img-reveal-toggle').forEach(cb => {
   cb.checked = false;
   cb.addEventListener('change', () => {
-    const reveal = cb.checked;
-    // 同步所有 toggle 状态
-    document.querySelectorAll('.img-reveal-toggle').forEach(o => { o.checked = reveal; });
-    document.querySelectorAll('.img-hide-zone').forEach(z => z.classList.toggle('revealed', reveal));
+    if (cb.checked && !_revealAcked) {
+      cb.checked = false;
+      showRevealNotice(
+        () => { _revealAcked = true; cb.checked = true; applyRevealZone(cb); },
+        () => applyRevealZone(cb),
+      );
+    } else {
+      applyRevealZone(cb);
+    }
   });
 });
 $('btn-load-more').addEventListener('click', () => loadGallery(false));
@@ -838,6 +981,9 @@ function enterMirrorMode() {
   $('progress-text').textContent = '👀 旁观其它页面的任务';
   $('progress-bar-wrap').classList.add('hidden');
   $('images').innerHTML = '';
+  $('images').classList.remove('revealed');
+  const resultToggle = $('result-box').querySelector('.img-reveal-toggle');
+  if (resultToggle) resultToggle.checked = false;
   $('final-prompt').textContent = '';
   currentPrompt = '';
 }
@@ -931,6 +1077,7 @@ function showLightbox() {
   $('lb-img').src = it.url;
   $('lb-title').textContent = it.title || '';
   $('lb-status').textContent = '';
+  $('lb-creator').textContent = '';
   if (it.mtime) {
     const d = new Date(it.mtime * 1000);
     const pad = n => String(n).padStart(2, '0');
@@ -950,6 +1097,14 @@ function showLightbox() {
     }
     dl.href = fullUrl;
     dl.download = it.title || '';
+  }
+  if (it.relPath) {
+    fetch('/api/output/creator?path=' + encodeURIComponent(it.relPath))
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.creator_ip) $('lb-creator').textContent = '生图者: ' + d.creator_ip;
+      })
+      .catch(() => {});
   }
   $('lb-root').classList.add('open');
   if (!$('lb-root').dataset.locked) { lockScroll(); $('lb-root').dataset.locked = '1'; }
@@ -1067,9 +1222,71 @@ $('star-modal').addEventListener('click', (e) => {
   });
 })();
 
+// ============== GPU 监控 ==============
+function gpuBar(value, max, color) {
+  const pct = (max && value != null) ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+  return `<div class="relative bg-gray-200 rounded h-2 overflow-hidden">
+    <div class="absolute inset-y-0 left-0 ${color}" style="width:${pct.toFixed(1)}%"></div>
+  </div>`;
+}
+async function pollGPU() {
+  try {
+    const r = await fetch('/api/gpu');
+    const d = await r.json();
+    const bar = document.getElementById('gpu-bar');
+    if (!d.available) {
+      bar.classList.remove('hidden');
+      document.getElementById('gpu-bar-meta').textContent = 'GPU 不可用';
+      document.getElementById('gpu-bar-list').innerHTML =
+        `<div class="text-[11px] text-red-600">⚠️ ${d.error || '未知错误'}</div>`;
+      return;
+    }
+    bar.classList.remove('hidden');
+    const gpus = d.gpus || [];
+    document.getElementById('gpu-bar-meta').textContent = gpus.length ? new Date().toLocaleTimeString() : '无 GPU';
+    document.getElementById('gpu-bar-list').innerHTML = gpus.map(g => {
+      const util = g['utilization.gpu'] ?? 0;
+      const memU = g['memory.used'] ?? 0;
+      const memT = g['memory.total'] ?? 1;
+      const memPct = memT ? (memU / memT * 100) : 0;
+      const temp = g['temperature.gpu'] ?? '?';
+      const power = g['power.draw'];
+      const plim = g['power.limit'];
+      const pStr = (power != null && plim != null) ? `${power.toFixed(0)}/${plim.toFixed(0)}W` : (power != null ? `${power.toFixed(0)}W` : '?');
+      const fan = g['fan.speed'];
+      const clkG = g['clocks.current.graphics'];
+      const clkM = g['clocks.current.memory'];
+      const tempColor = temp >= 80 ? 'text-red-600' : temp >= 70 ? 'text-orange-600' : 'text-emerald-600';
+      const utilColor = util >= 90 ? 'bg-red-500' : util >= 60 ? 'bg-amber-400' : 'bg-emerald-500';
+      const memColor = memPct >= 90 ? 'bg-red-500' : memPct >= 70 ? 'bg-amber-400' : 'bg-blue-500';
+      return `<div class="grid grid-cols-12 gap-2 items-center">
+        <span class="col-span-12 sm:col-span-3 truncate"><span class="text-gray-400">#${g.index}</span> ${g.name || ''}</span>
+        <div class="col-span-6 sm:col-span-3">
+          <div class="flex justify-between text-[10px] mb-0.5"><span>GPU</span><span>${util}%</span></div>
+          ${gpuBar(util, 100, utilColor)}
+        </div>
+        <div class="col-span-6 sm:col-span-3">
+          <div class="flex justify-between text-[10px] mb-0.5"><span>VRAM</span><span>${memU}/${memT} MiB</span></div>
+          ${gpuBar(memU, memT, memColor)}
+        </div>
+        <div class="col-span-12 sm:col-span-3 text-[10px] flex flex-wrap gap-x-2 gap-y-0.5">
+          <span class="${tempColor}">🌡 ${temp}°C</span>
+          <span>⚡ ${pStr}</span>
+          ${fan != null ? `<span>🌀 ${fan}%</span>` : ''}
+          ${clkG != null ? `<span>📈 ${clkG}MHz</span>` : ''}
+          ${clkM != null ? `<span>💾 ${clkM}MHz</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch {}
+}
+pollGPU();
+setInterval(pollGPU, 2000);
+
 loadCurrent();
 loadList();
 loadGallery(true);
+loadFeatured();
 </script>
 </body>
 </html>

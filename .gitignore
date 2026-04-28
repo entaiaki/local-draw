@@ -1,2 +1,8 @@
 dev
 web/__pycache__
+web/creator_ips.txt
+web/banned_ips.txt
+web/featured.txt
+web/limits.json
+web/maintenance.json
+.env

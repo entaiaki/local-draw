@@ -19,6 +19,7 @@ OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
 
 import asyncio
 import json
+import os
 import random
 import uuid
 from pathlib import Path
@@ -44,6 +45,215 @@ STATIC_DIR = Path(__file__).parent / "static"
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
+CREATOR_MAP_FILE = Path(__file__).parent / "creator_ips.txt"
+_creator_map_lock = asyncio.Lock()
+
+# ---------------- 管理员 / 封禁列表 / 精选 ----------------
+# 注意：本服务自身不做任何鉴权，/admin 与 /api/admin/* 公开可达。
+# 部署时务必在反向代理（Cloudflare Access、nginx auth_basic、IP 白名单等）
+# 上做访问控制；详见 README「部署与鉴权」一节。
+BANNED_IPS_FILE = Path(__file__).parent / "banned_ips.txt"
+FEATURED_FILE = Path(__file__).parent / "featured.txt"
+LIMITS_FILE = Path(__file__).parent / "limits.json"
+MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
+_banned_lock = asyncio.Lock()
+_featured_lock = asyncio.Lock()
+_limits_lock = asyncio.Lock()
+_RATE_LAST_TS: Dict[str, float] = {}  # client_ip -> 上次开始生图的时间戳（用于生图冷却）
+
+DEFAULT_LIMITS = {
+    "gen_cooldown_sec": 30,    # 单 IP 两次生图最少间隔（秒）
+    "image_rate_window_sec": 60,  # 图片限流滑动窗口（秒）
+    "image_rate_max": 120,        # 每个 IP 在窗口内允许的图片请求数
+}
+
+
+def _load_limits() -> Dict[str, int]:
+    if LIMITS_FILE.is_file():
+        try:
+            data = json.loads(LIMITS_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                merged = dict(DEFAULT_LIMITS)
+                for k, v in data.items():
+                    if k in DEFAULT_LIMITS and isinstance(v, (int, float)) and v >= 0:
+                        merged[k] = int(v)
+                return merged
+        except Exception:
+            pass
+    return dict(DEFAULT_LIMITS)
+
+
+_limits: Dict[str, int] = _load_limits()
+
+
+async def _save_limits(new_limits: Dict[str, int]) -> bool:
+    async with _limits_lock:
+        try:
+            tmp = LIMITS_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(new_limits, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, LIMITS_FILE)
+            return True
+        except Exception:
+            return False
+
+
+# ---------------- 维护模式 ----------------
+DEFAULT_MAINTENANCE = {"enabled": False, "message": "站点维护中，请稍后再试。"}
+_maint_lock = asyncio.Lock()
+
+
+def _load_maintenance() -> Dict[str, Any]:
+    if not MAINTENANCE_FILE.is_file():
+        return dict(DEFAULT_MAINTENANCE)
+    try:
+        d = json.loads(MAINTENANCE_FILE.read_text(encoding="utf-8"))
+        if not isinstance(d, dict):
+            return dict(DEFAULT_MAINTENANCE)
+        return {
+            "enabled": bool(d.get("enabled", False)),
+            "message": str(d.get("message") or DEFAULT_MAINTENANCE["message"]),
+        }
+    except Exception:
+        return dict(DEFAULT_MAINTENANCE)
+
+
+_maintenance: Dict[str, Any] = _load_maintenance()
+
+
+async def _save_maintenance(state: Dict[str, Any]) -> bool:
+    async with _maint_lock:
+        try:
+            tmp = MAINTENANCE_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(state, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, MAINTENANCE_FILE)
+            return True
+        except Exception:
+            return False
+
+
+def _client_ip_from_request(request: Request) -> str:
+    h = request.headers
+    return (
+        h.get("cf-connecting-ip")
+        or (h.get("x-forwarded-for", "").split(",")[0].strip() if h.get("x-forwarded-for") else "")
+        or (request.client.host if request.client else "")
+        or ""
+    )
+
+
+def _read_banned_ips() -> set:
+    if not BANNED_IPS_FILE.is_file():
+        return set()
+    try:
+        return {
+            ln.strip()
+            for ln in BANNED_IPS_FILE.read_text(encoding="utf-8").splitlines()
+            if ln.strip() and not ln.strip().startswith("#")
+        }
+    except Exception:
+        return set()
+
+
+async def _write_banned_ips(ips: set) -> bool:
+    async with _banned_lock:
+        try:
+            tmp = BANNED_IPS_FILE.with_suffix(".txt.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                f.write("\n".join(sorted(ips)) + ("\n" if ips else ""))
+            os.replace(tmp, BANNED_IPS_FILE)
+            return True
+        except Exception:
+            return False
+
+
+def is_ip_banned(ip: str) -> bool:
+    if not ip:
+        return False
+    return ip in _read_banned_ips()
+
+
+def _read_featured() -> List[str]:
+    """精选图片相对路径列表，按管理员设定顺序保留。"""
+    if not FEATURED_FILE.is_file():
+        return []
+    try:
+        out: List[str] = []
+        seen: set = set()
+        for ln in FEATURED_FILE.read_text(encoding="utf-8").splitlines():
+            rel = ln.strip()
+            if not rel or rel.startswith("#") or rel in seen:
+                continue
+            seen.add(rel)
+            out.append(rel)
+        return out
+    except Exception:
+        return []
+
+
+async def _write_featured(items: List[str]) -> bool:
+    async with _featured_lock:
+        try:
+            tmp = FEATURED_FILE.with_suffix(".txt.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                f.write("\n".join(items) + ("\n" if items else ""))
+            os.replace(tmp, FEATURED_FILE)
+            return True
+        except Exception:
+            return False
+
+
+def _creator_key(p: Path) -> str:
+    """相对 OUTPUT_DIR 的正斜杠路径。"""
+    try:
+        rel = p.resolve().relative_to(OUTPUT_DIR.resolve())
+    except Exception:
+        rel = Path(p.name)
+    return str(rel).replace("\\", "/")
+
+
+def _creator_map_get(rel: str) -> str:
+    if not CREATOR_MAP_FILE.is_file():
+        return ""
+    try:
+        with open(CREATOR_MAP_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.rstrip("\r\n")
+                if not line or "\t" not in line:
+                    continue
+                k, _, v = line.partition("\t")
+                if k == rel:
+                    return v
+    except Exception:
+        return ""
+    return ""
+
+
+async def _creator_map_set(rel: str, ip: str) -> bool:
+    """每行 `<rel>\\t<ip>`，同 key 去重保留最新；原子替换。"""
+    if not rel or not ip:
+        return False
+    async with _creator_map_lock:
+        try:
+            lines: list[str] = []
+            if CREATOR_MAP_FILE.is_file():
+                with open(CREATOR_MAP_FILE, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.rstrip("\r\n")
+                        if not line or "\t" not in line:
+                            continue
+                        if line.split("\t", 1)[0] == rel:
+                            continue
+                        lines.append(line)
+            lines.append(f"{rel}\t{ip}")
+            tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines) + "\n")
+            os.replace(tmp, CREATOR_MAP_FILE)
+            return True
+        except Exception:
+            return False
 
 app = FastAPI(title="自然语言生图")
 # 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
@@ -56,6 +266,72 @@ async def _no_index_headers(request: Request, call_next):
     resp = await call_next(request)
     resp.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive, nosnippet, noimageindex"
     return resp
+
+
+# 图片端点的滑动窗口限流：保护 /api/output/file、/api/image、/api/thumbnail
+_IMAGE_RATE_PATHS = ("/api/output/file", "/api/image", "/api/thumbnail")
+_image_rate_buckets: Dict[str, List[float]] = {}
+
+@app.middleware("http")
+async def _image_rate_limit(request: Request, call_next):
+    if not request.url.path.startswith(_IMAGE_RATE_PATHS):
+        return await call_next(request)
+    window = float(_limits.get("image_rate_window_sec", 60))
+    cap = int(_limits.get("image_rate_max", 120))
+    if window <= 0 or cap <= 0:
+        return await call_next(request)
+    ip = _client_ip_from_request(request)
+    if not ip:
+        return await call_next(request)
+    import time as _time
+    now = _time.time()
+    bucket = _image_rate_buckets.get(ip) or []
+    cutoff = now - window
+    bucket = [t for t in bucket if t >= cutoff]
+    if len(bucket) >= cap:
+        retry_after = max(1, int(bucket[0] + window - now))
+        return Response(
+            content=f"请求太频繁，{retry_after}s 后重试",
+            status_code=429,
+            media_type="text/plain; charset=utf-8",
+            headers={"Retry-After": str(retry_after)},
+        )
+    bucket.append(now)
+    _image_rate_buckets[ip] = bucket
+    return await call_next(request)
+
+
+# 维护模式：开启后所有请求统一返回维护页（GET）或 503（其它方法）。
+# 后注册的 @app.middleware 最先执行，所以这条会比上面两条更早。
+# 内网 IP 例外，便于站长继续访问 /admin 关闭维护。
+_MAINT_BYPASS_PREFIXES = ("/static",)
+
+
+@app.middleware("http")
+async def _maintenance_gate(request: Request, call_next):
+    if not _maintenance.get("enabled"):
+        return await call_next(request)
+    path = request.url.path
+    if any(path.startswith(p) for p in _MAINT_BYPASS_PREFIXES):
+        return await call_next(request)
+    msg = str(_maintenance.get("message") or "").strip() or "站点维护中，请稍后再试。"
+    if request.method != "GET":
+        return Response(content=msg, status_code=503, media_type="text/plain; charset=utf-8")
+    # GET：始终返回静态维护页（HTML）
+    import html as _html
+    body = f"""<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>站点维护中</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head><body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 text-center">
+  <div class="text-5xl mb-3">🛠️</div>
+  <h1 class="text-xl font-bold mb-3 text-gray-800">站点维护中</h1>
+  <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{_html.escape(msg)}</p>
+</div></body></html>"""
+    return Response(content=body, status_code=503, media_type="text/html; charset=utf-8")
 
 
 @app.get("/robots.txt")
@@ -569,6 +845,25 @@ async def api_output_list(limit: int = 500, offset: int = 0):
     }
 
 
+@app.get("/api/output/featured")
+async def api_output_featured():
+    """游客可见的精选图片列表，按管理员保存的顺序返回。失效项（文件已删）会过滤掉。"""
+    items: List[Dict[str, Any]] = []
+    for rel in _read_featured():
+        try:
+            p = _resolve_output_path(rel)
+        except Exception:
+            continue
+        if not p.is_file():
+            continue
+        try:
+            mt = p.stat().st_mtime
+        except Exception:
+            mt = None
+        items.append({"path": rel, "mtime": mt})
+    return {"items": items, "total": len(items)}
+
+
 @app.get("/api/output/file")
 async def api_output_file(request: Request, path: str, full: int = 0):
     p = _resolve_output_path(path)
@@ -612,6 +907,15 @@ def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
                 if isinstance(t, str) and t.strip():
                     return t.strip()
     return ""
+
+
+@app.get("/api/output/creator")
+async def api_output_creator(path: str):
+    """读取该图片的生图者 IP（来自 creator_ips.txt 映射）。"""
+    p = _resolve_output_path(path)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    return {"creator_ip": _creator_map_get(_creator_key(p))}
 
 
 @app.get("/api/output/meta")
@@ -925,6 +1229,91 @@ async def api_image(request: Request, filename: str, subfolder: str = "", type: 
     return Response(content=content, media_type=ct)
 
 
+# GPU 状态轻量缓存：500ms 内同一进程复用一次结果，避免被前端 1Hz 轮询打爆
+_gpu_cache: Dict[str, Any] = {"ts": 0.0, "data": None}
+
+
+@app.get("/api/gpu")
+async def api_gpu():
+    """通过 nvidia-smi 读取所有 GPU 关键指标。无 nvidia-smi 时 available=False。
+    用同步 subprocess 走线程池，避开 Windows ProactorEventLoop 子进程偶发卡死。"""
+    import time as _time
+    import subprocess
+    now = _time.time()
+    if _gpu_cache["data"] is not None and now - _gpu_cache["ts"] < 0.5:
+        return _gpu_cache["data"]
+    fields = [
+        "index", "name",
+        "utilization.gpu", "utilization.memory",
+        "memory.used", "memory.total",
+        "temperature.gpu",
+        "power.draw", "power.limit",
+        "clocks.current.graphics", "clocks.current.memory",
+        "fan.speed",
+    ]
+    cmd = [
+        "nvidia-smi",
+        f"--query-gpu={','.join(fields)}",
+        "--format=csv,noheader,nounits",
+    ]
+    flags = 0
+    if hasattr(subprocess, "CREATE_NO_WINDOW"):
+        flags = subprocess.CREATE_NO_WINDOW
+
+    def _run() -> Dict[str, Any]:
+        try:
+            r = subprocess.run(
+                cmd, capture_output=True, timeout=8.0, creationflags=flags,
+            )
+        except FileNotFoundError:
+            return {"available": False, "error": "nvidia-smi 未安装", "gpus": []}
+        except subprocess.TimeoutExpired:
+            return {"available": False, "error": "nvidia-smi 超时", "gpus": []}
+        except Exception as e:  # noqa: BLE001
+            return {"available": False, "error": f"{type(e).__name__}: {e}", "gpus": []}
+        if r.returncode != 0:
+            return {
+                "available": False,
+                "error": (r.stderr or b"").decode("utf-8", "replace").strip() or f"rc={r.returncode}",
+                "gpus": [],
+            }
+        return {"_out": (r.stdout or b"").decode("utf-8", "replace")}
+
+    res = await asyncio.to_thread(_run)
+    if "_out" not in res:
+        _gpu_cache["ts"] = now
+        _gpu_cache["data"] = res
+        return res
+
+    def _num(s: str) -> Any:
+        s = s.strip()
+        if s in ("[N/A]", "[Not Supported]", "N/A", ""):
+            return None
+        try:
+            return float(s) if "." in s else int(s)
+        except ValueError:
+            return s
+
+    gpus: List[Dict[str, Any]] = []
+    for line in res["_out"].strip().splitlines():
+        parts = [p.strip() for p in line.split(",")]
+        if len(parts) != len(fields):
+            continue
+        rec: Dict[str, Any] = {}
+        for k, v in zip(fields, parts):
+            rec[k] = v if k == "name" else _num(v)
+        try:
+            rec["index"] = int(rec["index"])
+        except Exception:
+            pass
+        gpus.append(rec)
+
+    data = {"available": True, "gpus": gpus}
+    _gpu_cache["ts"] = now
+    _gpu_cache["data"] = data
+    return data
+
+
 @app.post("/api/translate")
 async def api_translate(payload: Dict[str, Any]):
     prompt = payload.get("prompt", "")
@@ -1058,8 +1447,47 @@ async def ws_run(ws: WebSocket):
             init = await ws.receive_json()
         except Exception:
             return
+        # 真实 IP：优先 Cloudflare 头 → X-Forwarded-For → socket
+        h = ws.headers
+        client_ip = (
+            h.get("cf-connecting-ip")
+            or (h.get("x-forwarded-for", "").split(",")[0].strip() if h.get("x-forwarded-for") else "")
+            or (ws.client.host if ws.client else "")
+            or "unknown"
+        )
+        if is_ip_banned(client_ip):
+            try:
+                await ws.send_json({"type": "error", "message": "你已被管理员禁止生图"})
+            except Exception:
+                pass
+            try:
+                await ws.close()
+            except Exception:
+                pass
+            return
+        # 单 IP 生图冷却（来自 limits.json，可在管理面板改）
+        # 单 IP 生图冷却（来自 limits.json，可在管理面板改）
+        import time as _time
+        now = _time.time()
+        last = _RATE_LAST_TS.get(client_ip, 0.0)
+        cooldown = float(_limits.get("gen_cooldown_sec", 30))
+        wait = cooldown - (now - last)
+        if wait > 0:
+            try:
+                await ws.send_json({
+                    "type": "error",
+                    "message": f"生图间隔限制：请 {int(wait) + 1}s 后再试",
+                })
+            except Exception:
+                pass
+            try:
+                await ws.close()
+            except Exception:
+                pass
+            return
+        _RATE_LAST_TS[client_ip] = now
         try:
-            await _run_task(ws, RunRequest(**init))
+            await _run_task(ws, RunRequest(**init), client_ip=client_ip)
         except WebSocketDisconnect:
             return
         except Exception as e:
@@ -1071,7 +1499,7 @@ async def ws_run(ws: WebSocket):
             await _push_status(reset=True)
 
 
-async def _run_task(ws: WebSocket, req: RunRequest):
+async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown"):
     import time as _time
     path = req.workflow_path
     inline = req.inline_workflow
@@ -1183,6 +1611,18 @@ async def _run_task(ws: WebSocket, req: RunRequest):
         await emit(ws, {"type": "error", "message": "无图片输出"})
         return
 
+    # 写入 IP 映射：拿到文件名后立刻把 <相对路径> -> <client_ip> 写进 creator_ips.txt
+    for img in images:
+        if img.get("type") != "output":
+            continue
+        try:
+            sub = img.get("subfolder") or ""
+            rel = (sub + "/" + img["filename"]) if sub else img["filename"]
+            rel = rel.replace("\\", "/")
+            await _creator_map_set(rel, client_ip)
+        except Exception as e:
+            await emit(ws, {"type": "log", "message": f"[warn] 写 creator_ips.txt 失败: {e}"})
+
     for img in images:
         url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"
         await emit(ws, {
@@ -1281,6 +1721,233 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any], 
     raise TimeoutError("无法获取 history")
 
 
+# ---------------- 管理员 API ----------------
+
+@app.get("/admin")
+async def admin_page():
+    return FileResponse(str(STATIC_DIR / "admin.html"))
+
+
+@app.get("/api/admin/whoami")
+async def api_admin_whoami():
+    return {"user": "admin"}
+
+
+@app.get("/api/admin/bans")
+async def api_admin_bans():
+    return {"banned": sorted(_read_banned_ips())}
+
+
+@app.post("/api/admin/ban")
+async def api_admin_ban(payload: Dict[str, Any]):
+    ip = (payload or {}).get("ip", "").strip()
+    if not ip:
+        raise HTTPException(400, "ip required")
+    ips = _read_banned_ips()
+    ips.add(ip)
+    if not await _write_banned_ips(ips):
+        raise HTTPException(500, "写入 banned_ips.txt 失败")
+    return {"ok": True, "banned": sorted(ips)}
+
+
+@app.post("/api/admin/unban")
+async def api_admin_unban(payload: Dict[str, Any]):
+    ip = (payload or {}).get("ip", "").strip()
+    if not ip:
+        raise HTTPException(400, "ip required")
+    ips = _read_banned_ips()
+    ips.discard(ip)
+    if not await _write_banned_ips(ips):
+        raise HTTPException(500, "写入 banned_ips.txt 失败")
+    return {"ok": True, "banned": sorted(ips)}
+
+
+@app.get("/api/admin/recent")
+async def api_admin_recent(limit: int = 200, offset: int = 0):
+    """列出 OUTPUT_DIR 下所有图片，按 mtime 倒序分页；IP 来自 creator_ips.txt（无则空串）。"""
+    if not OUTPUT_DIR.exists():
+        return {"items": [], "total": 0, "limit": limit, "offset": offset}
+    # 一次性载入映射到字典，避免每张图都扫整文件
+    ip_map: Dict[str, str] = {}
+    if CREATOR_MAP_FILE.is_file():
+        try:
+            for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                if not ln or "\t" not in ln:
+                    continue
+                k, _, v = ln.partition("\t")
+                ip_map[k] = v
+        except Exception:
+            pass
+    base = OUTPUT_DIR.resolve()
+    raw: List[Tuple[float, str, float]] = []  # (mtime, rel, mtime_for_sort)
+    try:
+        for p in OUTPUT_DIR.rglob("*"):
+            if not p.is_file():
+                continue
+            if p.suffix.lower() not in THUMB_EXTS:
+                continue
+            try:
+                rel = str(p.resolve().relative_to(base)).replace("\\", "/")
+                mt = p.stat().st_mtime
+            except Exception:
+                continue
+            raw.append((mt, rel, mt))
+    except Exception:
+        pass
+    raw.sort(key=lambda x: x[0], reverse=True)
+    total = len(raw)
+    if offset < 0:
+        offset = 0
+    if limit <= 0:
+        limit = 200
+    page = raw[offset:offset + limit]
+    items = [
+        {"path": rel, "ip": ip_map.get(rel, ""), "mtime": mt}
+        for mt, rel, _ in page
+    ]
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
+
+
+@app.post("/api/admin/delete")
+async def api_admin_delete(payload: Dict[str, Any]):
+    """删除 OUTPUT_DIR 下的一张图，并从 creator_ips.txt 移除对应映射。"""
+    rel = (payload or {}).get("path", "").strip()
+    if not rel:
+        raise HTTPException(400, "path required")
+    p = _resolve_output_path(rel)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    try:
+        p.unlink()
+    except Exception as e:
+        raise HTTPException(500, f"删除失败: {e}")
+    # 同步清理映射
+    key = rel.replace("\\", "/")
+    async with _creator_map_lock:
+        try:
+            if CREATOR_MAP_FILE.is_file():
+                kept = []
+                for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                    if not ln or "\t" not in ln:
+                        continue
+                    if ln.split("\t", 1)[0] == key:
+                        continue
+                    kept.append(ln)
+                tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
+                with open(tmp, "w", encoding="utf-8") as f:
+                    f.write("\n".join(kept) + ("\n" if kept else ""))
+                os.replace(tmp, CREATOR_MAP_FILE)
+        except Exception:
+            pass
+    # 删图时同步从精选清掉
+    feats = _read_featured()
+    if rel in feats:
+        feats = [x for x in feats if x != rel]
+        await _write_featured(feats)
+    return {"ok": True}
+
+
+@app.get("/api/admin/featured")
+async def api_admin_featured():
+    return {"items": _read_featured()}
+
+
+@app.post("/api/admin/featured/add")
+async def api_admin_featured_add(payload: Dict[str, Any]):
+    rel = (payload or {}).get("path", "").strip()
+    if not rel:
+        raise HTTPException(400, "path required")
+    p = _resolve_output_path(rel)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    rel = rel.replace("\\", "/")
+    feats = _read_featured()
+    if rel not in feats:
+        feats.insert(0, rel)  # 新加的放最前
+        if not await _write_featured(feats):
+            raise HTTPException(500, "写入 featured.txt 失败")
+    return {"ok": True, "items": feats}
+
+
+@app.post("/api/admin/featured/remove")
+async def api_admin_featured_remove(payload: Dict[str, Any]):
+    rel = (payload or {}).get("path", "").strip()
+    if not rel:
+        raise HTTPException(400, "path required")
+    rel = rel.replace("\\", "/")
+    feats = [x for x in _read_featured() if x != rel]
+    if not await _write_featured(feats):
+        raise HTTPException(500, "写入 featured.txt 失败")
+    return {"ok": True, "items": feats}
+
+
+@app.post("/api/admin/featured/reorder")
+async def api_admin_featured_reorder(payload: Dict[str, Any]):
+    """整体覆写顺序。前端拖拽排序后调一次。"""
+    items = (payload or {}).get("items") or []
+    if not isinstance(items, list):
+        raise HTTPException(400, "items must be list")
+    cleaned: List[str] = []
+    seen: set = set()
+    for it in items:
+        if not isinstance(it, str):
+            continue
+        rel = it.strip().replace("\\", "/")
+        if not rel or rel in seen:
+            continue
+        seen.add(rel)
+        cleaned.append(rel)
+    if not await _write_featured(cleaned):
+        raise HTTPException(500, "写入 featured.txt 失败")
+    return {"ok": True, "items": cleaned}
+
+
+@app.get("/api/admin/limits")
+async def api_admin_limits_get():
+    return {"limits": dict(_limits), "defaults": dict(DEFAULT_LIMITS)}
+
+
+@app.post("/api/admin/limits")
+async def api_admin_limits_set(payload: Dict[str, Any]):
+    """更新限流配置。仅接受白名单字段，非负整数。"""
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    new_limits = dict(_limits)
+    for k in DEFAULT_LIMITS:
+        if k not in payload:
+            continue
+        v = payload[k]
+        if not isinstance(v, (int, float)) or v < 0:
+            raise HTTPException(400, f"{k} 必须为非负数")
+        new_limits[k] = int(v)
+    if not await _save_limits(new_limits):
+        raise HTTPException(500, "写入 limits.json 失败")
+    _limits.clear()
+    _limits.update(new_limits)
+    return {"ok": True, "limits": dict(_limits)}
+
+
+@app.get("/api/admin/maintenance")
+async def api_admin_maintenance_get():
+    return {"maintenance": dict(_maintenance)}
+
+
+@app.post("/api/admin/maintenance")
+async def api_admin_maintenance_set(payload: Dict[str, Any]):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    new_state = {
+        "enabled": bool(payload.get("enabled", _maintenance.get("enabled", False))),
+        "message": str(payload.get("message", _maintenance.get("message", ""))).strip()
+            or DEFAULT_MAINTENANCE["message"],
+    }
+    if not await _save_maintenance(new_state):
+        raise HTTPException(500, "写入 maintenance.json 失败")
+    _maintenance.clear()
+    _maintenance.update(new_state)
+    return {"ok": True, "maintenance": dict(_maintenance)}
+
+
 if __name__ == "__main__":
     import argparse
     import uvicorn
@@ -1291,7 +1958,36 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=WEB_PORT, help=f"端口，默认 {WEB_PORT}")
     parser.add_argument("--reload", action="store_true",
                         help="开启代码热重载（py 文件变更自动重启）")
+    parser.add_argument("--i-have-configured-auth", action="store_true",
+                        help="跳过启动前的鉴权配置确认提示")
     args = parser.parse_args()
+
+    if not args.i_have_configured_auth:
+        banner = (
+            "\n" + "=" * 70 + "\n"
+            "⚠️  安全提示：本服务自身不做任何鉴权！\n"
+            "    /admin 与 /api/admin/* 公开可达，可封禁 IP、删图、维护模式…\n"
+            "    任何能访问本服务端口的人都能调用这些接口。\n\n"
+            "    部署前请务必在反向代理上加访问控制，至少满足其一：\n"
+            "      • Cloudflare Access / Zero Trust 策略\n"
+            "      • Nginx auth_basic\n"
+            "      • IP 白名单（防火墙 / nginx allow/deny）\n"
+            "      • Tailscale / WireGuard 等私有网络\n\n"
+            "    若仅本机使用 (host=127.0.0.1)，可直接继续。\n"
+            "    用 --i-have-configured-auth 跳过本提示。\n"
+            + "=" * 70 + "\n"
+        )
+        print(banner)
+        # 只在 host 不是 loopback 时强制确认
+        loopback_hosts = {"127.0.0.1", "::1", "localhost"}
+        if args.host not in loopback_hosts:
+            try:
+                ans = input("已在反向代理上配置鉴权？输入 yes 继续，其它退出： ").strip().lower()
+            except EOFError:
+                ans = ""
+            if ans != "yes":
+                print("已取消启动。请先配置访问控制，或确认仅监听本机。")
+                raise SystemExit(1)
 
     if args.reload:
         # reload 模式必须传 import string
