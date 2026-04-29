@@ -1838,7 +1838,6 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
             return
-        _RATE_LAST_TS[client_ip] = now
         try:
             await _run_task(ws, RunRequest(**init), client_ip=client_ip)
         except (WebSocketDisconnect, asyncio.CancelledError):
@@ -1937,6 +1936,8 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
             inp = ndata.get("inputs", {})
             if "seed" in inp:
                 inp["seed"] = random.randint(0, 2**63 - 1)
+
+    _RATE_LAST_TS[client_ip] = _time.time()
 
     await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
     prompt_id = await submit_prompt(prompt_dict)
