@@ -105,6 +105,21 @@
         <input id="lim-img-max" type="number" min="0" step="1" class="border rounded px-2 py-1 font-mono" />
         <span class="text-[10px] text-gray-500">/api/output/file、/api/image、/api/thumbnail 三端点合计。</span>
       </label>
+      <label class="flex flex-col gap-1">
+        <span>举报窗口（秒）</span>
+        <input id="lim-report-window" type="number" min="0" step="1" class="border rounded px-2 py-1 font-mono" />
+        <span class="text-[10px] text-gray-500">同一 IP 在此时间内的举报次数受限。</span>
+      </label>
+      <label class="flex flex-col gap-1">
+        <span>窗口内最大举报数</span>
+        <input id="lim-report-max" type="number" min="1" step="1" class="border rounded px-2 py-1 font-mono" />
+        <span class="text-[10px] text-gray-500">窗口内允许的最大举报次数。</span>
+      </label>
+      <label class="flex flex-col gap-1">
+        <span>待处理举报上限</span>
+        <input id="lim-report-pending" type="number" min="1" step="1" class="border rounded px-2 py-1 font-mono" />
+        <span class="text-[10px] text-gray-500">单 IP 最多积压多少条待处理举报。</span>
+      </label>
     </div>
     <div class="mt-3 flex items-center gap-2">
       <button id="btn-save-limits" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
@@ -428,6 +443,9 @@ async function loadLimits() {
     $('lim-gen-cd').value = L.gen_cooldown_sec ?? '';
     $('lim-img-window').value = L.image_rate_window_sec ?? '';
     $('lim-img-max').value = L.image_rate_max ?? '';
+    $('lim-report-window').value = L.report_window_sec ?? '';
+    $('lim-report-max').value = L.report_window_max ?? '';
+    $('lim-report-pending').value = L.report_pending_max ?? '';
     $('lim-status').textContent = '';
   } catch (e) {
     $('lim-status').textContent = '加载失败: ' + e.message;
@@ -439,6 +457,9 @@ async function saveLimits() {
     gen_cooldown_sec: parseInt($('lim-gen-cd').value) || 0,
     image_rate_window_sec: parseInt($('lim-img-window').value) || 0,
     image_rate_max: parseInt($('lim-img-max').value) || 0,
+    report_window_sec: parseInt($('lim-report-window').value) || 0,
+    report_window_max: parseInt($('lim-report-max').value) || 1,
+    report_pending_max: parseInt($('lim-report-pending').value) || 1,
   };
   try {
     await api('POST', '/api/admin/limits', payload);

@@ -68,6 +68,9 @@ DEFAULT_LIMITS = {
     "gen_cooldown_sec": 30,    # 单 IP 两次生图最少间隔（秒）
     "image_rate_window_sec": 60,  # 图片限流滑动窗口（秒）
     "image_rate_max": 120,        # 每个 IP 在窗口内允许的图片请求数
+    "report_window_sec": 300,     # 举报滑动窗口（秒）
+    "report_window_max": 3,       # 窗口内最多举报次数
+    "report_pending_max": 10,     # 单 IP 最多待处理举报数
 }
 
 
@@ -1784,17 +1787,20 @@ async def api_report(payload: Dict[str, Any], request: Request):
         raise HTTPException(404, "图片不存在")
     now = _time.time()
     ts_list = _REPORT_RATE.get(reporter_ip, [])
-    ts_list = [t for t in ts_list if now - t < 300]
-    if len(ts_list) >= 3:
-        raise HTTPException(429, "举报过于频繁，请 5 分钟后再试")
+    window = float(_limits.get("report_window_sec", 300))
+    ts_list = [t for t in ts_list if now - t < window]
+    max_in_window = int(_limits.get("report_window_max", 3))
+    if len(ts_list) >= max_in_window:
+        raise HTTPException(429, f"举报过于频繁，请 {int(window // 60)} 分钟后再试")
     reports = _load_reports()
     pending_count = 0
+    pending_max = int(_limits.get("report_pending_max", 10))
     for r in reports:
         if r.get("reporter_ip") == reporter_ip and r.get("status") == "pending":
             pending_count += 1
             if r.get("image_path") == image_path:
                 raise HTTPException(409, "您已举报过此图片")
-    if pending_count >= 10:
+    if pending_count >= pending_max:
         raise HTTPException(429, "您的待处理举报数已达上限，请等待管理员处理")
     new_report = {
         "id": uuid.uuid4().hex,
