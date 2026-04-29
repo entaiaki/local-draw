@@ -63,7 +63,24 @@
     <a id="lb-download" href="#" target="_blank" rel="noopener" download
        class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">⬇ 下载原图</a>
     <button id="lb-fork" class="text-xs px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700">🍴 Fork 工作流</button>
+    <button id="lb-report" class="text-xs px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 hidden">🚩 举报</button>
     <span id="lb-status" class="text-xs text-white/80"></span>
+  </div>
+</div>
+
+
+<!-- 举报弹窗 -->
+<div id="report-modal" class="fixed inset-0 z-[70] bg-black/70 items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-5">
+    <h3 class="text-lg font-bold mb-3 text-red-600">🚩 举报此图片</h3>
+    <p class="text-sm text-gray-600 mb-2">请简要说明举报原因：</p>
+    <textarea id="report-reason" rows="3" maxlength="500"
+      class="w-full border rounded px-2 py-1 text-sm" placeholder="例如：违规内容、不当图片..."></textarea>
+    <div class="flex gap-2 justify-end mt-3">
+      <button id="report-cancel" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">取消</button>
+      <button id="report-submit" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">提交举报</button>
+    </div>
+    <span id="report-status" class="text-xs text-gray-500 mt-2 block"></span>
   </div>
 </div>
 
@@ -1089,6 +1106,14 @@ function showLightbox() {
   fb.disabled = false;
   fb.textContent = '🍴 Fork 工作流';
   fb.dataset.rel = it.relPath || '';
+  const rptBtn = $('lb-report');
+  if (it.relPath) {
+    rptBtn.classList.remove('hidden');
+    rptBtn.dataset.rel = it.relPath;
+  } else {
+    rptBtn.classList.add('hidden');
+    rptBtn.dataset.rel = '';
+  }
   const dl = $('lb-download');
   if (dl) {
     let fullUrl = it.url;
@@ -1171,6 +1196,52 @@ $('lb-fork').addEventListener('click', async () => {
     $('lb-status').textContent = '失败: ' + (err.message || err);
     fb.disabled = false;
     fb.textContent = '🍴 Fork 工作流';
+  }
+});
+
+// ── 举报 ──
+function openReportModal() {
+  $('report-reason').value = '';
+  $('report-status').textContent = '';
+  $('report-submit').disabled = false;
+  const m = $('report-modal');
+  m.classList.remove('hidden');
+  m.style.display = 'flex';
+  if (!m.dataset.locked) { lockScroll(); m.dataset.locked = '1'; }
+}
+function closeReportModal() {
+  const m = $('report-modal');
+  m.style.display = '';
+  m.classList.add('hidden');
+  if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
+}
+$('lb-report').addEventListener('click', () => {
+  if (!$('lb-report').dataset.rel) return;
+  openReportModal();
+});
+$('report-cancel').addEventListener('click', closeReportModal);
+$('report-modal').addEventListener('click', (e) => { if (e.target === $('report-modal')) closeReportModal(); });
+$('report-submit').addEventListener('click', async () => {
+  const rel = $('lb-report').dataset.rel;
+  const reason = $('report-reason').value.trim();
+  if (!reason) { $('report-status').textContent = '请填写举报原因'; return; }
+  $('report-submit').disabled = true;
+  $('report-status').textContent = '提交中...';
+  try {
+    const r = await fetch('/api/report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({image_path: rel, reason}),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
+    $('report-status').textContent = '✓ 举报已提交，感谢反馈';
+    $('report-status').className = 'text-xs text-green-600 mt-2 block';
+    setTimeout(closeReportModal, 1200);
+  } catch (err) {
+    $('report-status').textContent = err.message || '提交失败';
+    $('report-status').className = 'text-xs text-red-500 mt-2 block';
+    $('report-submit').disabled = false;
   }
 });
 

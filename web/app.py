@@ -56,9 +56,12 @@ BANNED_IPS_FILE = Path(__file__).parent / "banned_ips.txt"
 FEATURED_FILE = Path(__file__).parent / "featured.txt"
 LIMITS_FILE = Path(__file__).parent / "limits.json"
 MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
+REPORTS_FILE = Path(__file__).parent / "reports.json"
 _banned_lock = asyncio.Lock()
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
+_reports_lock = asyncio.Lock()
+_REPORT_RATE: Dict[str, List[float]] = {}
 _RATE_LAST_TS: Dict[str, float] = {}  # client_ip -> 上次开始生图的时间戳（用于生图冷却）
 
 DEFAULT_LIMITS = {
@@ -99,7 +102,7 @@ async def _save_limits(new_limits: Dict[str, int]) -> bool:
 
 
 # ---------------- 维护模式 ----------------
-DEFAULT_MAINTENANCE = {"enabled": False, "message": "站点维护中，请稍后再试。"}
+DEFAULT_MAINTENANCE = {"enabled": False, "mode": "full", "message": "站点维护中，请稍后再试。"}
 _maint_lock = asyncio.Lock()
 
 
@@ -112,6 +115,7 @@ def _load_maintenance() -> Dict[str, Any]:
             return dict(DEFAULT_MAINTENANCE)
         return {
             "enabled": bool(d.get("enabled", False)),
+            "mode": d.get("mode", "full") if d.get("mode") in ("full", "no_gen") else "full",
             "message": str(d.get("message") or DEFAULT_MAINTENANCE["message"]),
         }
     except Exception:
@@ -128,6 +132,29 @@ async def _save_maintenance(state: Dict[str, Any]) -> bool:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(state, f, ensure_ascii=False, indent=2)
             os.replace(tmp, MAINTENANCE_FILE)
+            return True
+        except Exception:
+            return False
+
+
+def _load_reports() -> list:
+    if REPORTS_FILE.is_file():
+        try:
+            data = json.loads(REPORTS_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                return data
+        except Exception:
+            pass
+    return []
+
+
+async def _save_reports(reports: list) -> bool:
+    async with _reports_lock:
+        try:
+            tmp = REPORTS_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(reports, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, REPORTS_FILE)
             return True
         except Exception:
             return False
@@ -311,6 +338,9 @@ _MAINT_BYPASS_PREFIXES = ("/static", "/admin", "/api/admin/", "/api/output/file"
 @app.middleware("http")
 async def _maintenance_gate(request: Request, call_next):
     if not _maintenance.get("enabled"):
+        return await call_next(request)
+    mode = _maintenance.get("mode", "full")
+    if mode == "no_gen":
         return await call_next(request)
     path = request.url.path
     if any(path.startswith(p) for p in _MAINT_BYPASS_PREFIXES):
@@ -1466,7 +1496,17 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
             return
-        # 单 IP 生图冷却（来自 limits.json，可在管理面板改）
+        if _maintenance.get("enabled") and _maintenance.get("mode") in ("full", "no_gen"):
+            msg = str(_maintenance.get("message") or "").strip() or "站点维护中，暂停生图"
+            try:
+                await ws.send_json({"type": "error", "message": msg})
+            except Exception:
+                pass
+            try:
+                await ws.close()
+            except Exception:
+                pass
+            return
         # 单 IP 生图冷却（来自 limits.json，可在管理面板改）
         import time as _time
         now = _time.time()
@@ -1720,6 +1760,52 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any], 
             raise TimeoutError("等待 history 超时")
         await asyncio.sleep(1)
     raise TimeoutError("无法获取 history")
+
+
+# ---------------- 举报 ----------------
+
+@app.post("/api/report")
+async def api_report(payload: Dict[str, Any], request: Request):
+    import time as _time
+    reporter_ip = _client_ip_from_request(request)
+    if is_ip_banned(reporter_ip):
+        raise HTTPException(403, "你已被封禁")
+    image_path = str((payload or {}).get("image_path", "")).strip()
+    reason = str((payload or {}).get("reason", "")).strip()[:500]
+    if not image_path:
+        raise HTTPException(400, "image_path required")
+    if not reason:
+        raise HTTPException(400, "请填写举报原因")
+    try:
+        p = _resolve_output_path(image_path)
+    except HTTPException:
+        raise HTTPException(404, "图片不存在")
+    if not p.is_file():
+        raise HTTPException(404, "图片不存在")
+    now = _time.time()
+    ts_list = _REPORT_RATE.get(reporter_ip, [])
+    ts_list = [t for t in ts_list if now - t < 60]
+    if len(ts_list) >= 5:
+        raise HTTPException(429, "举报过于频繁，请稍后再试")
+    reports = _load_reports()
+    for r in reports:
+        if r.get("status") == "pending" and r.get("image_path") == image_path and r.get("reporter_ip") == reporter_ip:
+            raise HTTPException(409, "您已举报过此图片")
+    new_report = {
+        "id": uuid.uuid4().hex,
+        "image_path": image_path,
+        "reporter_ip": reporter_ip,
+        "reason": reason,
+        "timestamp": now,
+        "status": "pending",
+        "resolved_action": None,
+    }
+    reports.append(new_report)
+    if not await _save_reports(reports):
+        raise HTTPException(500, "保存举报失败")
+    ts_list.append(now)
+    _REPORT_RATE[reporter_ip] = ts_list
+    return {"ok": True}
 
 
 # ---------------- 管理员 API ----------------
@@ -2024,6 +2110,7 @@ async def api_admin_maintenance_set(payload: Dict[str, Any]):
         raise HTTPException(400, "payload must be object")
     new_state = {
         "enabled": bool(payload.get("enabled", _maintenance.get("enabled", False))),
+        "mode": payload.get("mode", _maintenance.get("mode", "full")) if payload.get("mode", _maintenance.get("mode", "full")) in ("full", "no_gen") else "full",
         "message": str(payload.get("message", _maintenance.get("message", ""))).strip()
             or DEFAULT_MAINTENANCE["message"],
     }
@@ -2032,6 +2119,89 @@ async def api_admin_maintenance_set(payload: Dict[str, Any]):
     _maintenance.clear()
     _maintenance.update(new_state)
     return {"ok": True, "maintenance": dict(_maintenance)}
+
+
+@app.get("/api/admin/reports")
+async def api_admin_reports():
+    reports = _load_reports()
+    pending = [r for r in reports if r.get("status") == "pending"]
+    pending.sort(key=lambda r: r.get("timestamp", 0), reverse=True)
+    for r in pending:
+        r["creator_ip"] = _creator_map_get(r.get("image_path", ""))
+        try:
+            p = _resolve_output_path(r["image_path"])
+            r["image_exists"] = p.is_file()
+        except Exception:
+            r["image_exists"] = False
+    return {"reports": pending, "total": len(pending)}
+
+
+@app.post("/api/admin/report/resolve")
+async def api_admin_report_resolve(payload: Dict[str, Any]):
+    report_id = str((payload or {}).get("report_id", "")).strip()
+    action = str((payload or {}).get("action", "")).strip()
+    if not report_id:
+        raise HTTPException(400, "report_id required")
+    if action not in ("delete", "ban_creator", "ban_reporter", "dismiss"):
+        raise HTTPException(400, "action must be one of: delete, ban_creator, ban_reporter, dismiss")
+    reports = _load_reports()
+    target = None
+    for r in reports:
+        if r.get("id") == report_id:
+            target = r
+            break
+    if not target:
+        raise HTTPException(404, "举报记录不存在")
+    if target.get("status") != "pending":
+        raise HTTPException(400, "此举报已被处理")
+    image_path = target.get("image_path", "")
+    if action == "delete":
+        try:
+            p = _resolve_output_path(image_path)
+            if p.is_file():
+                p.unlink()
+        except Exception:
+            pass
+        key = image_path.replace("\\", "/")
+        async with _creator_map_lock:
+            try:
+                if CREATOR_MAP_FILE.is_file():
+                    kept = []
+                    for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                        if not ln or "\t" not in ln:
+                            continue
+                        if ln.split("\t", 1)[0] == key:
+                            continue
+                        kept.append(ln)
+                    tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
+                    with open(tmp, "w", encoding="utf-8") as f:
+                        f.write("\n".join(kept) + ("\n" if kept else ""))
+                    os.replace(tmp, CREATOR_MAP_FILE)
+            except Exception:
+                pass
+        feats = _read_featured()
+        if image_path in feats:
+            feats = [x for x in feats if x != image_path]
+            await _write_featured(feats)
+    elif action == "ban_creator":
+        creator_ip = _creator_map_get(image_path)
+        if creator_ip:
+            ips = _read_banned_ips()
+            ips.add(creator_ip)
+            await _write_banned_ips(ips)
+        else:
+            raise HTTPException(400, "未找到该图片的绘图者 IP")
+    elif action == "ban_reporter":
+        reporter_ip = target.get("reporter_ip", "")
+        if reporter_ip:
+            ips = _read_banned_ips()
+            ips.add(reporter_ip)
+            await _write_banned_ips(ips)
+    target["status"] = "resolved"
+    target["resolved_action"] = action
+    if not await _save_reports(reports):
+        raise HTTPException(500, "保存举报记录失败")
+    return {"ok": True, "action": action}
 
 
 if __name__ == "__main__":
