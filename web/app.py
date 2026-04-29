@@ -56,11 +56,15 @@ BANNED_IPS_FILE = Path(__file__).parent / "banned_ips.txt"
 FEATURED_FILE = Path(__file__).parent / "featured.txt"
 LIMITS_FILE = Path(__file__).parent / "limits.json"
 MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
+ANNOUNCEMENT_FILE = Path(__file__).parent / "announcement.json"
+LLM_CONFIG_FILE = Path(__file__).parent / "llm_config.json"
 REPORTS_FILE = Path(__file__).parent / "reports.json"
 _banned_lock = asyncio.Lock()
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
+_announcement_lock = asyncio.Lock()
+_llm_config_lock = asyncio.Lock()
 _REPORT_RATE: Dict[str, List[float]] = {}
 _RATE_LAST_TS: Dict[str, float] = {}  # client_ip -> 上次开始生图的时间戳（用于生图冷却）
 
@@ -71,6 +75,9 @@ DEFAULT_LIMITS = {
     "report_window_sec": 300,     # 举报滑动窗口（秒）
     "report_window_max": 3,       # 窗口内最多举报次数
     "report_pending_max": 10,     # 单 IP 最多待处理举报数
+    "gpu_poll_interval_ms": 5000,  # 前端轮询 GPU 状态间隔（毫秒）
+    "gpu_cache_ttl_ms": 5000,      # 后端 nvidia-smi 缓存有效期（毫秒）
+    "gc_interval_hours": 6,        # 定时 GC 执行间隔（小时），0 = 禁用
 }
 
 
@@ -140,6 +147,92 @@ async def _save_maintenance(state: Dict[str, Any]) -> bool:
             return False
 
 
+# ---------------- 公告 ----------------
+DEFAULT_ANNOUNCEMENT = {"enabled": False, "title": "", "content": ""}
+
+
+def _load_announcement() -> Dict[str, Any]:
+    if not ANNOUNCEMENT_FILE.is_file():
+        return dict(DEFAULT_ANNOUNCEMENT)
+    try:
+        d = json.loads(ANNOUNCEMENT_FILE.read_text(encoding="utf-8"))
+        if not isinstance(d, dict):
+            return dict(DEFAULT_ANNOUNCEMENT)
+        return {
+            "enabled": bool(d.get("enabled", False)),
+            "title": str(d.get("title") or ""),
+            "content": str(d.get("content") or ""),
+        }
+    except Exception:
+        return dict(DEFAULT_ANNOUNCEMENT)
+
+
+_announcement: Dict[str, Any] = _load_announcement()
+
+
+async def _save_announcement(state: Dict[str, Any]) -> bool:
+    async with _announcement_lock:
+        try:
+            tmp = ANNOUNCEMENT_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(state, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, ANNOUNCEMENT_FILE)
+            return True
+        except Exception:
+            return False
+
+
+# ---------------- LLM 配置 ----------------
+DEFAULT_LLM_CONFIG = {
+    "provider": "local",           # "local" | "google" | "custom"
+    "local_endpoint": f"http://{LMS_HOST}:{LMS_PORT}",
+    "google_api_key": "",          # Google AI Studio API Key
+    "google_model": "gemma-4-31b-it",
+    "google_thinking": "off",      # "off" | "auto" | 具体 thinkingBudget 数值字符串
+    "custom_endpoint": "",         # 自定义 OpenAI 兼容 API 的 base URL
+    "custom_api_key": "",
+    "custom_model": "",
+}
+
+_GOOGLE_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
+
+
+def _load_llm_config() -> Dict[str, Any]:
+    if not LLM_CONFIG_FILE.is_file():
+        return dict(DEFAULT_LLM_CONFIG)
+    try:
+        d = json.loads(LLM_CONFIG_FILE.read_text(encoding="utf-8"))
+        if not isinstance(d, dict):
+            return dict(DEFAULT_LLM_CONFIG)
+        return {
+            "provider": d.get("provider") if d.get("provider") in ("local", "google", "custom") else "local",
+            "local_endpoint": str(d.get("local_endpoint") or DEFAULT_LLM_CONFIG["local_endpoint"]),
+            "google_api_key": str(d.get("google_api_key") or ""),
+            "google_model": str(d.get("google_model") or DEFAULT_LLM_CONFIG["google_model"]),
+            "google_thinking": str(d.get("google_thinking") or "off"),
+            "custom_endpoint": str(d.get("custom_endpoint") or ""),
+            "custom_api_key": str(d.get("custom_api_key") or ""),
+            "custom_model": str(d.get("custom_model") or ""),
+        }
+    except Exception:
+        return dict(DEFAULT_LLM_CONFIG)
+
+
+_llm_config: Dict[str, Any] = _load_llm_config()
+
+
+async def _save_llm_config(state: Dict[str, Any]) -> bool:
+    async with _llm_config_lock:
+        try:
+            tmp = LLM_CONFIG_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(state, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, LLM_CONFIG_FILE)
+            return True
+        except Exception:
+            return False
+
+
 def _load_reports() -> list:
     if REPORTS_FILE.is_file():
         try:
@@ -161,6 +254,19 @@ async def _save_reports(reports: list) -> bool:
             return True
         except Exception:
             return False
+
+
+async def _auto_dismiss_reports_for_image(image_path: str):
+    """图片被删除后，自动忽略该图所有剩余待处理举报。"""
+    reports = _load_reports()
+    changed = False
+    for r in reports:
+        if r.get("status") == "pending" and r.get("image_path") == image_path:
+            r["status"] = "resolved"
+            r["resolved_action"] = "dismiss"
+            changed = True
+    if changed:
+        await _save_reports(reports)
 
 
 def _client_ip_from_request(request: Request) -> str:
@@ -329,6 +435,91 @@ async def _image_rate_limit(request: Request, call_next):
     bucket.append(now)
     _image_rate_buckets[ip] = bucket
     return await call_next(request)
+
+
+# ---------------- 定时 GC ----------------
+_gc_task: Optional[asyncio.Task] = None
+
+
+async def _run_gc():
+    """清理已处理举报、过期内存限流数据、孤儿 creator 映射。"""
+    import time as _time
+    now = _time.time()
+    cleaned: Dict[str, int] = {}
+
+    # 1. 清理已处理/无效举报（status != "pending"）
+    reports = _load_reports()
+    before = len(reports)
+    reports = [r for r in reports if r.get("status") == "pending"]
+    removed_reports = before - len(reports)
+    if removed_reports > 0:
+        await _save_reports(reports)
+    cleaned["resolved_reports"] = removed_reports
+
+    # 2. 清理内存中过期的限流条目
+    window_report = float(_limits.get("report_window_sec", 300))
+    stale_keys = [k for k, v in _REPORT_RATE.items() if all(now - t >= window_report for t in v)]
+    for k in stale_keys:
+        del _REPORT_RATE[k]
+    cleaned["report_rate_entries"] = len(stale_keys)
+
+    cooldown = float(_limits.get("gen_cooldown_sec", 30))
+    stale_keys = [k for k, ts in _RATE_LAST_TS.items() if now - ts >= cooldown]
+    for k in stale_keys:
+        del _RATE_LAST_TS[k]
+    cleaned["gen_cooldown_entries"] = len(stale_keys)
+
+    window_img = float(_limits.get("image_rate_window_sec", 60))
+    stale_keys = [k for k, v in _image_rate_buckets.items() if all(now - t >= window_img for t in v)]
+    for k in stale_keys:
+        del _image_rate_buckets[k]
+    cleaned["image_rate_entries"] = len(stale_keys)
+
+    # 3. 清理孤儿 creator 映射（图片已不存在）
+    orphan_count = 0
+    async with _creator_map_lock:
+        try:
+            if CREATOR_MAP_FILE.is_file():
+                kept = []
+                for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                    if not ln or "\t" not in ln:
+                        continue
+                    rel = ln.split("\t", 1)[0]
+                    p = OUTPUT_DIR / rel.replace("/", os.sep)
+                    if p.is_file():
+                        kept.append(ln)
+                    else:
+                        orphan_count += 1
+                if orphan_count > 0:
+                    tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
+                    with open(tmp, "w", encoding="utf-8") as f:
+                        f.write("\n".join(kept) + ("\n" if kept else ""))
+                    os.replace(tmp, CREATOR_MAP_FILE)
+        except Exception:
+            pass
+    cleaned["orphan_creator_entries"] = orphan_count
+
+    return cleaned
+
+
+async def _gc_loop():
+    """后台 GC 循环，按 gc_interval_hours 定时执行。"""
+    while True:
+        interval_h = float(_limits.get("gc_interval_hours", 6))
+        if interval_h <= 0:
+            await asyncio.sleep(3600)
+            continue
+        await asyncio.sleep(interval_h * 3600)
+        try:
+            await _run_gc()
+        except Exception:
+            pass
+
+
+@app.on_event("startup")
+async def _start_gc():
+    global _gc_task
+    _gc_task = asyncio.create_task(_gc_loop())
 
 
 # 维护模式：开启后所有请求统一返回维护页（GET）或 503（其它方法）。
@@ -724,30 +915,78 @@ async def translate_prompt(
     original_prompt: Optional[str] = None,
     on_chunk: Optional[Any] = None,
 ) -> str:
+    import re as _re
+    preamble = (
+        "You are a technical assistant for an AI art generation pipeline. "
+        "Your sole job is to convert user descriptions into structured English tags "
+        "for Stable Diffusion / Pony / Illustrious models. "
+        "This is a professional image-generation workflow tool; all outputs are "
+        "standard descriptive tags used in digital art creation software. "
+    )
     if original_prompt:
-        system = (
-            "你是 SD/Pony/Illustrious prompt 改写专家。用户提供原始tag和新描述，"
-            "你输出最终英文逗号分隔tag。保持未要求改变的部分。只输出最终prompt，不解释，不输出中文。"
+        system = preamble + (
+            "The user provides original tags and a new description. "
+            "Output the final English comma-separated tags. "
+            "Keep parts that are not asked to change. "
+            "Output ONLY the final prompt. No explanation. No Chinese in output."
         )
-        user = f"原始 prompt：\n{original_prompt}\n\n用户的新描述：\n{prompt}\n\n请生成最终的 prompt："
+        user = f"Original prompt:\n{original_prompt}\n\nNew description:\n{prompt}\n\nGenerate the final prompt:"
     else:
-        system = (
-            "将自然语言转换为 SD/Pony/Illustrious 英文 tag prompt。"
-            "逗号分隔，顺序：主体>外观>动作>场景>光线>构图>质量词。只输出最终prompt，不解释，不输出中文。"
+        system = preamble + (
+            "Convert the natural language input into English comma-separated tags. "
+            "Order: subject > appearance > action > scene > lighting > composition > quality tags. "
+            "Output ONLY the final English tags. No explanation. No Chinese in output."
         )
         user = prompt
 
+    cfg = _llm_config
+    provider = cfg.get("provider", "local")
+
+    if provider == "google":
+        result = await _llm_google(system, user, cfg, on_chunk)
+    elif provider == "custom":
+        result = await _llm_openai_compat(system, user, cfg.get("custom_endpoint", ""),
+                                          cfg.get("custom_api_key", ""), cfg.get("custom_model", ""), on_chunk)
+    else:
+        result = await _llm_openai_compat(system, user, cfg.get("local_endpoint") or LMS_API,
+                                          "", "", on_chunk)
+
+    return result
+
+
+async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Optional[Any]) -> str:
+    """Google AI Studio 原生流式 API。"""
+    api_key = cfg.get("google_api_key") or ""
+    model = cfg.get("google_model") or "gemma-4-31b-it"
+    if not api_key:
+        raise RuntimeError("Google API Key 未配置")
+
     body = {
-        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-        "temperature": 0.7,
-        "max_tokens": 999999,
-        "stream": True,
+        "contents": [{"role": "user", "parts": [{"text": f"{system}\n\n{user}"}]}],
+        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1024},
+        "safetySettings": [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ],
     }
+    thinking = cfg.get("google_thinking", "off")
+    if thinking == "auto":
+        body["generationConfig"]["thinkingConfig"] = {"thinkingBudget": -1}
+    elif thinking not in ("off", ""):
+        try:
+            body["generationConfig"]["thinkingConfig"] = {"thinkingBudget": int(thinking)}
+        except ValueError:
+            pass
+    url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
 
     chunks: List[str] = []
     async with httpx.AsyncClient(timeout=120) as client:
-        async with client.stream("POST", f"{LMS_API}/v1/chat/completions", json=body) as r:
-            r.raise_for_status()
+        async with client.stream("POST", url, json=body) as r:
+            if r.status_code >= 400:
+                text = await r.aread()
+                raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
             async for line in r.aiter_lines():
                 if not line or not line.startswith("data:"):
                     continue
@@ -758,17 +997,75 @@ async def translate_prompt(
                     obj = json.loads(data)
                 except Exception:
                     continue
-                delta = (obj.get("choices") or [{}])[0].get("delta", {}) or {}
-                piece = delta.get("content") or ""
-                if not piece:
+                candidates = obj.get("candidates") or []
+                if not candidates:
                     continue
-                chunks.append(piece)
-                if on_chunk is not None:
-                    try:
-                        await on_chunk(piece)
-                    except Exception:
-                        pass
-    return "".join(chunks).strip()
+                parts = (candidates[0].get("content") or {}).get("parts") or []
+                for p in parts:
+                    piece = p.get("text") or ""
+                    if not piece:
+                        continue
+                    is_thought = p.get("thought", False)
+                    if on_chunk is not None:
+                        try:
+                            await on_chunk(piece)
+                        except Exception:
+                            pass
+                    if not is_thought:
+                        chunks.append(piece)
+    full = "".join(chunks).strip()
+    if not full:
+        raise RuntimeError("Google LLM 返回空内容")
+    return full
+
+
+async def _llm_openai_compat(system: str, user: str, endpoint: str,
+                             api_key: str, model: str, on_chunk: Optional[Any]) -> str:
+    """OpenAI 兼容格式（LM Studio / 自定义 API）流式调用。"""
+    endpoint = endpoint.rstrip("/")
+    if not endpoint:
+        raise RuntimeError("LLM 端点未配置")
+    headers: Dict[str, str] = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    body: Dict[str, Any] = {
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+        "temperature": 0.7,
+        "max_tokens": 1024,
+        "stream": True,
+    }
+    if model:
+        body["model"] = model
+
+    chunks: List[str] = []
+    async with httpx.AsyncClient(timeout=120, headers=headers) as client:
+        async with client.stream("POST", f"{endpoint}/v1/chat/completions", json=body) as r:
+            if r.status_code >= 400:
+                text = await r.aread()
+                raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
+            async for line in r.aiter_lines():
+                if not line or not line.startswith("data:"):
+                    continue
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(data)
+                except Exception:
+                    continue
+                delta = ((obj.get("choices") or [{}])[0].get("delta") or {})
+                piece = delta.get("content") or ""
+                if piece:
+                    chunks.append(piece)
+                    if on_chunk is not None:
+                        try:
+                            await on_chunk(piece)
+                        except Exception:
+                            pass
+    full = "".join(chunks).strip()
+    if not full:
+        raise RuntimeError("LLM 返回空内容")
+    return full
 
 
 # ---------------- routes ----------------
@@ -1274,8 +1571,9 @@ async def api_gpu():
     import time as _time
     import subprocess
     now = _time.time()
-    if _gpu_cache["data"] is not None and now - _gpu_cache["ts"] < 0.5:
-        return _gpu_cache["data"]
+    poll_ms = _limits.get("gpu_poll_interval_ms", 5000)
+    if _gpu_cache["data"] is not None and now - _gpu_cache["ts"] < _limits.get("gpu_cache_ttl_ms", 5000) / 1000:
+        return {**_gpu_cache["data"], "poll_interval_ms": poll_ms}
     fields = [
         "index", "name",
         "utilization.gpu", "utilization.memory",
@@ -1317,7 +1615,7 @@ async def api_gpu():
     if "_out" not in res:
         _gpu_cache["ts"] = now
         _gpu_cache["data"] = res
-        return res
+        return {**res, "poll_interval_ms": poll_ms}
 
     def _num(s: str) -> Any:
         s = s.strip()
@@ -1345,7 +1643,7 @@ async def api_gpu():
     data = {"available": True, "gpus": gpus}
     _gpu_cache["ts"] = now
     _gpu_cache["data"] = data
-    return data
+    return {**data, "poll_interval_ms": poll_ms}
 
 
 @app.post("/api/translate")
@@ -1370,6 +1668,17 @@ async def api_interrupt():
         return {"ok": True}
     except Exception as e:
         raise HTTPException(500, str(e))
+
+
+@app.post("/api/admin/force-restart")
+async def api_admin_force_restart():
+    """强制杀死后端进程，uvicorn --reload 会自动拉起。"""
+    import os as _os
+    try:
+        await interrupt_prompt()
+    except Exception:
+        pass
+    _os._exit(0)
 
 
 class RunRequest(BaseModel):
@@ -1532,7 +1841,7 @@ async def ws_run(ws: WebSocket):
         _RATE_LAST_TS[client_ip] = now
         try:
             await _run_task(ws, RunRequest(**init), client_ip=client_ip)
-        except WebSocketDisconnect:
+        except (WebSocketDisconnect, asyncio.CancelledError):
             return
         except Exception as e:
             try:
@@ -1680,7 +1989,8 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
     await emit(ws, {"type": "done", "final_prompt": sd_prompt, "count": len(images)})
 
 
-async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any], timeout: int = 600) -> Dict[str, Any]:
+async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
+                    timeout: int = 600) -> Dict[str, Any]:
     ws_url = f"{COMFYUI_WS}/ws?clientId={CLIENT_ID}"
     start = asyncio.get_event_loop().time()
     completed = False
@@ -1942,6 +2252,8 @@ async def api_admin_delete(payload: Dict[str, Any]):
     if rel in feats:
         feats = [x for x in feats if x != rel]
         await _write_featured(feats)
+    # 自动忽略该图所有待处理举报
+    await _auto_dismiss_reports_for_image(rel)
     return {"ok": True}
 
 
@@ -2027,6 +2339,16 @@ async def api_admin_delete_batch(payload: Dict[str, Any]):
                 changed = True
         if changed:
             await _write_featured(feats)
+        # 自动忽略已删图片的所有待处理举报
+        reports = _load_reports()
+        report_changed = False
+        for r in reports:
+            if r.get("status") == "pending" and r.get("image_path") in del_set:
+                r["status"] = "resolved"
+                r["resolved_action"] = "dismiss"
+                report_changed = True
+        if report_changed:
+            await _save_reports(reports)
     return {"ok": True, "deleted": len(deleted), "failed": len(failed)}
 
 
@@ -2110,6 +2432,13 @@ async def api_admin_limits_set(payload: Dict[str, Any]):
     return {"ok": True, "limits": dict(_limits)}
 
 
+@app.post("/api/admin/gc")
+async def api_admin_gc_run():
+    """手动触发一次 GC。"""
+    result = await _run_gc()
+    return {"ok": True, "cleaned": result}
+
+
 @app.get("/api/admin/maintenance")
 async def api_admin_maintenance_get():
     return {"maintenance": dict(_maintenance)}
@@ -2130,6 +2459,183 @@ async def api_admin_maintenance_set(payload: Dict[str, Any]):
     _maintenance.clear()
     _maintenance.update(new_state)
     return {"ok": True, "maintenance": dict(_maintenance)}
+
+
+# ---------------- 公告端点 ----------------
+
+@app.get("/api/announcement")
+async def api_announcement():
+    return {"announcement": dict(_announcement)}
+
+
+@app.get("/api/admin/announcement")
+async def api_admin_announcement_get():
+    return {"announcement": dict(_announcement)}
+
+
+@app.post("/api/admin/announcement")
+async def api_admin_announcement_set(payload: Dict[str, Any]):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    new_state = {
+        "enabled": bool(payload.get("enabled", _announcement.get("enabled", False))),
+        "title": str(payload.get("title", _announcement.get("title", ""))).strip(),
+        "content": str(payload.get("content", _announcement.get("content", ""))).strip(),
+    }
+    if not await _save_announcement(new_state):
+        raise HTTPException(500, "写入 announcement.json 失败")
+    _announcement.clear()
+    _announcement.update(new_state)
+    return {"ok": True, "announcement": dict(_announcement)}
+
+
+# ---------------- LLM 配置端点 ----------------
+
+@app.get("/api/admin/llm")
+async def api_admin_llm_get():
+    safe = dict(_llm_config)
+    for key_field in ("google_api_key", "custom_api_key"):
+        k = safe.pop(key_field, "")
+        safe[f"{key_field}_masked"] = (k[:4] + "****" + k[-4:]) if len(k) > 8 else ("****" if k else "")
+    return {"llm": safe}
+
+
+@app.post("/api/admin/llm")
+async def api_admin_llm_set(payload: Dict[str, Any]):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    provider = payload.get("provider", _llm_config.get("provider", "local"))
+    if provider not in ("local", "google", "custom"):
+        raise HTTPException(400, "provider must be 'local', 'google', or 'custom'")
+    new_state = {
+        "provider": provider,
+        "local_endpoint": str(payload.get("local_endpoint", _llm_config.get("local_endpoint", ""))).strip()
+            or DEFAULT_LLM_CONFIG["local_endpoint"],
+        "google_api_key": str(payload.get("google_api_key", _llm_config.get("google_api_key", ""))).strip(),
+        "google_model": str(payload.get("google_model", _llm_config.get("google_model", ""))).strip()
+            or DEFAULT_LLM_CONFIG["google_model"],
+        "google_thinking": str(payload.get("google_thinking", _llm_config.get("google_thinking", "off"))).strip()
+            or "off",
+        "custom_endpoint": str(payload.get("custom_endpoint", _llm_config.get("custom_endpoint", ""))).strip(),
+        "custom_api_key": str(payload.get("custom_api_key", _llm_config.get("custom_api_key", ""))).strip(),
+        "custom_model": str(payload.get("custom_model", _llm_config.get("custom_model", ""))).strip(),
+    }
+    if not await _save_llm_config(new_state):
+        raise HTTPException(500, "写入 llm_config.json 失败")
+    _llm_config.clear()
+    _llm_config.update(new_state)
+    return {"ok": True}
+
+
+@app.post("/api/admin/llm/test")
+async def api_admin_llm_test(payload: Dict[str, Any]):
+    """测试 LLM 连接是否可用。"""
+    cfg = dict(_llm_config)
+    if isinstance(payload, dict):
+        for k in cfg:
+            if k in payload and payload[k] is not None:
+                cfg[k] = str(payload[k]).strip()
+
+    provider = cfg.get("provider", "local")
+    try:
+        if provider == "google":
+            api_key = cfg.get("google_api_key") or ""
+            model = cfg.get("google_model") or "gemma-4-31b-it"
+            if not api_key:
+                return {"ok": False, "error": "API Key 未填写"}
+            body = {
+                "contents": [{"role": "user", "parts": [{"text": "Hi"}]}],
+                "generationConfig": {"maxOutputTokens": 10},
+            }
+            url = f"{_GOOGLE_API_BASE}/models/{model}:generateContent?key={api_key}"
+            async with httpx.AsyncClient(timeout=15) as client:
+                r = await client.post(url, json=body)
+                if r.status_code >= 400:
+                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}"}
+                data = r.json()
+                parts = ((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
+                reply = "".join(p.get("text", "") for p in parts)
+                return {"ok": True, "reply": reply[:100]}
+        else:
+            endpoint = (cfg.get("custom_endpoint") if provider == "custom"
+                        else cfg.get("local_endpoint") or LMS_API).rstrip("/") or ""
+            if not endpoint:
+                return {"ok": False, "error": "端点未填写"}
+            headers: Dict[str, str] = {}
+            api_key = cfg.get("custom_api_key", "") if provider == "custom" else ""
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
+            body_oai: Dict[str, Any] = {"messages": [{"role": "user", "content": "Hi"}],
+                                        "max_tokens": 5, "stream": False}
+            model = cfg.get("custom_model", "") if provider == "custom" else ""
+            if model:
+                body_oai["model"] = model
+            async with httpx.AsyncClient(timeout=15, headers=headers) as client:
+                r = await client.post(f"{endpoint}/v1/chat/completions", json=body_oai)
+                if r.status_code >= 400:
+                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}"}
+                data = r.json()
+                reply = (data.get("choices") or [{}])[0].get("message", {}).get("content", "")
+                return {"ok": True, "reply": reply[:100]}
+    except httpx.ConnectError:
+        return {"ok": False, "error": "连接失败，请检查端点地址"}
+    except httpx.TimeoutException:
+        return {"ok": False, "error": "请求超时（15s）"}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+@app.post("/api/admin/llm/models")
+async def api_admin_llm_models(payload: Dict[str, Any]):
+    """探测可用模型列表。"""
+    cfg = dict(_llm_config)
+    if isinstance(payload, dict):
+        for k in cfg:
+            if k in payload and payload[k] is not None:
+                cfg[k] = str(payload[k]).strip()
+
+    provider = cfg.get("provider", "local")
+    try:
+        if provider == "google":
+            api_key = cfg.get("google_api_key") or ""
+            if not api_key:
+                return {"ok": False, "error": "API Key 未填写"}
+            url = f"{_GOOGLE_API_BASE}/models?key={api_key}"
+            async with httpx.AsyncClient(timeout=15) as client:
+                r = await client.get(url)
+                if r.status_code >= 400:
+                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:200]}"}
+                data = r.json()
+                models = []
+                for m in data.get("models", []):
+                    name = m.get("name", "")
+                    display = m.get("displayName", name)
+                    model_id = name.replace("models/", "") if name.startswith("models/") else name
+                    if "generateContent" in str(m.get("supportedGenerationMethods", [])):
+                        models.append({"id": model_id, "name": display})
+                return {"ok": True, "models": models}
+        else:
+            endpoint = (cfg.get("custom_endpoint") if provider == "custom"
+                        else cfg.get("local_endpoint") or LMS_API).rstrip("/") or ""
+            if not endpoint:
+                return {"ok": False, "error": "端点未填写"}
+            headers: Dict[str, str] = {}
+            api_key = cfg.get("custom_api_key", "") if provider == "custom" else ""
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
+            async with httpx.AsyncClient(timeout=15, headers=headers) as client:
+                r = await client.get(f"{endpoint}/v1/models")
+                if r.status_code >= 400:
+                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:200]}"}
+                data = r.json()
+                models = [{"id": m.get("id", ""), "name": m.get("id", "")} for m in data.get("data", [])]
+                return {"ok": True, "models": models}
+    except httpx.ConnectError:
+        return {"ok": False, "error": "连接失败，请检查端点地址"}
+    except httpx.TimeoutException:
+        return {"ok": False, "error": "请求超时（15s）"}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
 @app.get("/api/admin/reports")
@@ -2194,6 +2700,10 @@ async def api_admin_report_resolve(payload: Dict[str, Any]):
         if image_path in feats:
             feats = [x for x in feats if x != image_path]
             await _write_featured(feats)
+        for r in reports:
+            if r.get("status") == "pending" and r.get("image_path") == image_path and r.get("id") != report_id:
+                r["status"] = "resolved"
+                r["resolved_action"] = "dismiss"
     elif action == "ban_creator":
         creator_ip = _creator_map_get(image_path)
         if creator_ip:

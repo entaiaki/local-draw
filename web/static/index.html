@@ -86,22 +86,7 @@
 
 
 <!-- 显示图片前的确认（每会话仅首次弹一次） -->
-<div id="reveal-modal" class="fixed inset-0 z-50 bg-black/70 items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-5">
-    <h3 class="text-lg font-bold mb-3 text-orange-600">⚠️ 显示图片确认</h3>
-    <p class="text-sm text-gray-800 leading-relaxed mb-4">
-      您即将进行图片展示操作。操作后本会话内所有图片将立即可见，
-      您可能会看到您自己或其他人通过 AI 生成的各类图片，
-      这些图片<strong>可能会导致您的不适</strong>，请谨慎显示。
-    </p>
-    <div class="flex gap-2 justify-end">
-      <button id="reveal-cancel" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">取消</button>
-      <button id="reveal-accept" class="px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm">我已知悉，显示图片</button>
-    </div>
-  </div>
-</div>
-
-<!-- 生图前公告确认（每次都强制弹出，不可永久关闭） -->
+<!-- 生图前公告确认（会话内仅弹一次） -->
 <div id="gen-notice-modal" class="fixed inset-0 z-50 bg-black/70 items-center justify-center p-4 hidden">
   <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto">
     <h3 class="text-lg font-bold mb-3 text-red-600">⚠️ 生图前必读公告</h3>
@@ -110,7 +95,7 @@
       <p>若您恶意生图、滥用 API、生成鬼图、恶心图片，<strong>有可能会遭到不定处罚</strong>。</p>
       <p>本站<strong>有权随时将您永久禁止生图</strong>，并移除您的所有违规图片。</p>
       <p>若您为生图小白，请严格按照「生成图片」区块的教程学习正确的生图姿势。<strong>不要随意生图</strong>，任何人生图对所有人都是可见的，大家都想看到美好的、令人身心愉悦的图片。</p>
-      <p class="text-xs text-gray-500">该弹窗在每次生图之前都会提示，<strong>不可取消、不可记住</strong>。</p>
+      <p class="text-xs text-gray-500">该弹窗仅在本次会话首次生图时提示。</p>
     </div>
     <div class="flex gap-2 justify-end">
       <button id="gen-notice-cancel" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">退出</button>
@@ -144,34 +129,6 @@
 </div>
 
 
-<div id="age-blocker" class="fixed inset-0 z-40 bg-black hidden"></div>
-
-<!-- 18+ 年龄确认（每次访问都要确认，不写入 localStorage） -->
-<div id="age-gate" class="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-    <h2 class="text-xl font-bold mb-3 text-red-600">⚠️ 请确认您已年满 18 岁</h2>
-    <p class="text-sm text-gray-700 leading-relaxed mb-3">
-      本站为 AI 绘图<strong>测试展示</strong>工具，所有图片均由用户在本机实时生成。
-      由于审查机制可能存在漏洞，生成结果中<strong>可能出现色情、暴力或其它不符合当地法律法规的内容</strong>。
-    </p>
-    <div class="text-sm text-gray-700 leading-relaxed mb-3 bg-red-50 border border-red-200 rounded p-2">
-      <strong>使用须知 — 继续即代表您同意：</strong><br>
-      ① 已年满 18 周岁，自愿浏览并自行承担相应法律及精神风险；<br>
-      ② 本站<strong>仅供测试与展示</strong>，<strong>禁止任何商业用途</strong>；<br>
-      ③ <strong>不得生成不合规内容</strong>（违反所在地法律法规、涉及未成年人、真实人物色情等）；<br>
-      ④ 生成的内容<strong>必须在 24 小时内删除</strong>，不得长期保存或对外传播；<br>
-      ⑤ 不会将本站用于违法用途，亦不会向未成年人传播本站生成的内容。
-    </div>
-    <p class="text-xs text-gray-500 mb-4">
-      本站<strong>不承担任何法律责任</strong>，使用过程中产生的一切后果由您本人自行承担。
-      若您不同意以上任何一条，请立即退出本站。
-    </p>
-    <div class="flex gap-2 justify-end">
-      <button id="age-leave" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">退出</button>
-      <button id="age-accept" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">我已满 18 岁并同意全部条款</button>
-    </div>
-  </div>
-</div>
 
 <div class="max-w-6xl mx-auto p-4">
   <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -207,6 +164,12 @@
       <span id="gpu-bar-meta" class="text-[10px] text-gray-400"></span>
     </div>
     <div id="gpu-bar-list" class="space-y-1"></div>
+  </div>
+
+  <!-- 公告横幅 -->
+  <div id="announcement-bar" class="hidden mb-4 rounded border p-3 text-sm bg-blue-50 border-blue-300 text-blue-900">
+    <div id="ann-bar-title" class="font-semibold"></div>
+    <div id="ann-bar-content" class="mt-1 text-xs whitespace-pre-wrap"></div>
   </div>
 
   <!-- 全局状态横幅 -->
@@ -331,9 +294,6 @@
       <button id="btn-run" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400">
         ▶ 开始生成
       </button>
-      <button id="btn-cancel" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hidden">
-        ✕ 取消
-      </button>
     </div>
   </div>
 
@@ -362,6 +322,7 @@
         <span>显示图片</span>
       </label>
     </div>
+    <div class="text-xs text-gray-500 mb-1">发送给 ComfyUI 的 Prompt：</div>
     <div id="final-prompt" class="text-xs bg-gray-50 p-2 rounded font-mono mb-2 whitespace-pre-wrap"></div>
     <div id="images" class="grid grid-cols-1 md:grid-cols-2 gap-2 img-hide-zone"></div>
   </div>
@@ -429,6 +390,8 @@
 
 <script>
 const $ = (id) => document.getElementById(id);
+let _genNoticeAcked = document.cookie.includes('genNoticeAcked=1');
+console.log('[genNotice] init, cookie:', document.cookie, '_genNoticeAcked:', _genNoticeAcked);
 let allWorkflows = [];
 let defaultRes = {w: null, h: null};
 const genHistory = [];  // {url, filename, prompt, time}
@@ -729,28 +692,28 @@ function appendLog(line) {
 }
 
 function startRun() {
+  console.log('[startRun] called, globalBusy:', globalBusy, '_genNoticeAcked:', _genNoticeAcked);
   if (globalBusy) {
-    alert('服务器繁忙：已有任务在执行（其它页面/会话正在生图）');
     return;
   }
   const direct = $('direct').value.trim();
   const nl = $('nl').value.trim();
-  if (!direct && !nl) {
-    if (!confirm('未输入任何 prompt，使用工作流内置 prompt？')) return;
-  }
   const MAX_DIM = 1344;
   let w = parseInt($('width').value) || null;
   let h = parseInt($('height').value) || null;
   if ((w && w > MAX_DIM) || (h && h > MAX_DIM)) {
-    alert('宽或高不得大于 ' + MAX_DIM + '（预设最大值）');
     return;
   }
-  // 强制公告确认（每次必弹，不可记住）
-  showGenNotice(() => actuallyStartRun(direct, nl, w, h));
+  if (!_genNoticeAcked) {
+    showGenNotice(direct, nl, w, h);
+  } else {
+    actuallyStartRun(direct, nl, w, h);
+  }
 }
 
-function showGenNotice(onAccept) {
+function showGenNotice(direct, nl, w, h) {
   const m = $('gen-notice-modal');
+  console.log('[genNotice] showGenNotice called, modal:', m);
   m.classList.remove('hidden');
   m.classList.add('flex');
   lockScroll();
@@ -760,7 +723,16 @@ function showGenNotice(onAccept) {
     m.classList.remove('flex');
     if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
   };
-  $('gen-notice-accept').onclick = () => { close(); onAccept(); };
+  const btn = $('gen-notice-accept');
+  console.log('[genNotice] accept btn element:', btn);
+  btn.onclick = () => {
+    console.log('[genNotice] accept clicked');
+    close();
+    _genNoticeAcked = true;
+    document.cookie = 'genNoticeAcked=1; path=/; max-age=31536000';
+    console.log('[genNotice] cookie after set:', document.cookie);
+    actuallyStartRun(direct, nl, w, h);
+  };
   $('gen-notice-cancel').onclick = close;
 }
 
@@ -784,7 +756,6 @@ function actuallyStartRun(direct, nl, w, h) {
   $('progress-text').textContent = '连接中...';
   $('progress-bar-wrap').classList.add('hidden');
   $('btn-run').disabled = true;
-  $('btn-cancel').classList.remove('hidden');
   $('images').innerHTML = '';
   $('final-prompt').textContent = '';
 
@@ -813,6 +784,7 @@ function handleMsg(m) {
   } else if (m.type === 'llm_chunk') {
     const el = $('llm-stream');
     el.textContent += m.delta;
+    el.scrollTop = el.scrollHeight;
   } else if (m.type === 'llm_done') {
     appendLog('LLM 完成');
   } else if (m.type === 'progress') {
@@ -855,27 +827,12 @@ function handleMsg(m) {
 
 function finishRun() {
   $('btn-run').disabled = !!globalBusy;
-  $('btn-cancel').classList.add('hidden');
   activeWS = null;
-}
-
-function cancelRun() {
-  appendLog('已取消');
-  const ws = activeWS;
-  activeWS = null;
-  if (ws) {
-    ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
-    try { ws.close(); } catch {}
-  }
-  $('progress-text').textContent = '已取消';
-  finishRun();
-  fetch('/api/interrupt', {method: 'POST'}).catch(() => {});
 }
 
 $('btn-refresh').addEventListener('click', () => { loadCurrent(); loadList(); });
 $('search').addEventListener('input', renderList);
 $('btn-run').addEventListener('click', startRun);
-$('btn-cancel').addEventListener('click', cancelRun);
 $('btn-reset-res').addEventListener('click', () => {
   $('width').value = '';
   $('height').value = '';
@@ -897,32 +854,10 @@ function applyRevealZone(toggleEl) {
   const zones = box ? box.querySelectorAll('.img-hide-zone') : [];
   zones.forEach(z => z.classList.toggle('revealed', toggleEl.checked));
 }
-function showRevealNotice(onAccept, onCancel) {
-  const m = $('reveal-modal');
-  m.classList.remove('hidden');
-  m.classList.add('flex');
-  lockScroll();
-  m.dataset.locked = '1';
-  const close = () => {
-    m.classList.add('hidden');
-    m.classList.remove('flex');
-    if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
-  };
-  $('reveal-accept').onclick = () => { close(); onAccept(); };
-  $('reveal-cancel').onclick = () => { close(); onCancel && onCancel(); };
-}
 document.querySelectorAll('.img-reveal-toggle').forEach(cb => {
   cb.checked = false;
   cb.addEventListener('change', () => {
-    if (cb.checked && !_revealAcked) {
-      cb.checked = false;
-      showRevealNotice(
-        () => { _revealAcked = true; cb.checked = true; applyRevealZone(cb); },
-        () => applyRevealZone(cb),
-      );
-    } else {
-      applyRevealZone(cb);
-    }
+    applyRevealZone(cb);
   });
 });
 $('btn-load-more').addEventListener('click', () => loadGallery(false));
@@ -1275,23 +1210,6 @@ $('star-modal').addEventListener('click', (e) => {
 });
 
 // 18+ 年龄确认（每次访问都强制确认，不写 localStorage）
-(function ageGate() {
-  const gate = $('age-gate');
-  const blocker = $('age-blocker');
-  gate.classList.remove('hidden');
-  blocker.classList.remove('hidden');
-  lockScroll();
-  $('age-accept').addEventListener('click', () => {
-    gate.classList.add('hidden');
-    blocker.classList.add('hidden');
-    unlockScroll();
-  });
-  $('age-leave').addEventListener('click', () => {
-    window.open('', '_self');
-    window.close();
-    location.replace('https://www.google.com');
-  });
-})();
 
 // ============== GPU 监控 ==============
 function gpuBar(value, max, color) {
@@ -1304,6 +1222,11 @@ async function pollGPU() {
   try {
     const r = await fetch('/api/gpu');
     const d = await r.json();
+    if (d.poll_interval_ms && d.poll_interval_ms !== _gpuInterval) {
+      _gpuInterval = d.poll_interval_ms;
+      clearInterval(_gpuTimer);
+      _gpuTimer = setInterval(pollGPU, _gpuInterval);
+    }
     const bar = document.getElementById('gpu-bar');
     if (!d.available) {
       bar.classList.remove('hidden');
@@ -1351,9 +1274,31 @@ async function pollGPU() {
     }).join('');
   } catch {}
 }
+let _gpuInterval = 5000;
+let _gpuTimer = setInterval(pollGPU, _gpuInterval);
 pollGPU();
-setInterval(pollGPU, 2000);
 
+async function loadAnnouncement() {
+  try {
+    const r = await fetch('/api/announcement');
+    const d = await r.json();
+    const a = d.announcement || {};
+    const bar = document.getElementById('announcement-bar');
+    if (a.enabled && (a.title || a.content)) {
+      const titleEl = document.getElementById('ann-bar-title');
+      const contentEl = document.getElementById('ann-bar-content');
+      titleEl.textContent = a.title ? '📢 ' + a.title : '';
+      titleEl.classList.toggle('hidden', !a.title);
+      contentEl.textContent = a.content || '';
+      contentEl.classList.toggle('hidden', !a.content);
+      bar.classList.remove('hidden');
+    } else {
+      bar.classList.add('hidden');
+    }
+  } catch {}
+}
+
+loadAnnouncement();
 loadCurrent();
 loadList();
 loadGallery(true);

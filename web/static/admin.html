@@ -79,6 +79,122 @@
     </div>
   </div>
 
+  <!-- 公告管理 -->
+  <div class="bg-white rounded shadow p-4 mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="ann-body">
+        <span class="inline-block w-4 text-gray-400" data-arrow="ann-body">▸</span>
+        📢 公告管理
+        <span id="ann-state-badge" class="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700">未开启</span>
+      </h2>
+      <button id="btn-refresh-ann" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
+    </div>
+    <div id="ann-body" class="hidden">
+      <div class="flex items-center gap-4 text-sm mb-3">
+        <label class="flex items-center gap-1"><input type="radio" name="ann-enabled" value="off" checked /> 关闭</label>
+        <label class="flex items-center gap-1"><input type="radio" name="ann-enabled" value="on" /> 开启</label>
+      </div>
+      <div class="flex flex-col gap-2 text-sm">
+        <label class="flex flex-col gap-1">
+          <span>公告标题</span>
+          <input id="ann-title" type="text" maxlength="100" class="border rounded px-2 py-1" placeholder="可选，留空则不显示标题" />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span>公告内容</span>
+          <textarea id="ann-content" rows="3" class="border rounded px-2 py-1 text-sm" placeholder="公告正文"></textarea>
+        </label>
+      </div>
+      <div class="mt-3 flex items-center gap-2">
+        <button id="btn-save-ann" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
+        <span id="ann-status" class="text-xs text-gray-500"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LLM 配置 -->
+  <div class="bg-white rounded shadow p-4 mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="llm-body">
+        <span class="inline-block w-4 text-gray-400" data-arrow="llm-body">▸</span>
+        🤖 LLM 配置
+        <span id="llm-state-badge" class="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700">本地</span>
+      </h2>
+      <button id="btn-refresh-llm" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
+    </div>
+    <div id="llm-body" class="hidden">
+      <div class="flex items-center gap-4 text-sm mb-3 flex-wrap">
+        <label class="flex items-center gap-1"><input type="radio" name="llm-provider" value="local" checked /> LM Studio（本地）</label>
+        <label class="flex items-center gap-1"><input type="radio" name="llm-provider" value="google" /> Google AI Studio</label>
+        <label class="flex items-center gap-1"><input type="radio" name="llm-provider" value="custom" /> 自定义 API</label>
+      </div>
+      <!-- 本地 -->
+      <div id="llm-section-local" class="text-sm mb-3">
+        <label class="flex flex-col gap-1 max-w-md">
+          <span>本地端点</span>
+          <input id="llm-local-endpoint" type="text" class="border rounded px-2 py-1 font-mono text-xs" placeholder="http://127.0.0.1:1234" />
+          <span class="text-[10px] text-gray-500">LM Studio 本地服务地址。</span>
+        </label>
+      </div>
+      <!-- Google AI Studio -->
+      <div id="llm-section-google" class="hidden text-sm mb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span>API Key</span>
+            <input id="llm-google-key" type="password" class="border rounded px-2 py-1 font-mono text-xs" placeholder="AIza..." autocomplete="off" />
+            <span id="llm-google-key-hint" class="text-[10px] text-gray-500">留空则不修改已保存的密钥。</span>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span>模型</span>
+            <input id="llm-google-model" type="text" class="border rounded px-2 py-1 font-mono text-xs" placeholder="gemma-4-31b-it" />
+            <span class="text-[10px] text-gray-500">Google AI Studio 模型 ID。</span>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span>思考 (Thinking)</span>
+            <select id="llm-google-thinking" class="border rounded px-2 py-1 text-xs">
+              <option value="off">关闭</option>
+              <option value="auto">自动 (thinkingBudget=-1)</option>
+              <option value="1024">1024 tokens</option>
+              <option value="2048">2048 tokens</option>
+              <option value="4096">4096 tokens</option>
+              <option value="8192">8192 tokens</option>
+              <option value="16384">16384 tokens</option>
+              <option value="24576">24576 tokens</option>
+              <option value="32768">32768 tokens</option>
+            </select>
+            <span class="text-[10px] text-gray-500">Gemini 2.5+ 思考预算；不支持的模型请保持关闭。</span>
+          </label>
+        </div>
+      </div>
+      <!-- 自定义 API -->
+      <div id="llm-section-custom" class="hidden text-sm mb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span>API 端点</span>
+            <input id="llm-custom-endpoint" type="text" class="border rounded px-2 py-1 font-mono text-xs" placeholder="https://api.openai.com" />
+            <span class="text-[10px] text-gray-500">兼容 OpenAI 格式的 Base URL。</span>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span>API 密钥</span>
+            <input id="llm-custom-key" type="password" class="border rounded px-2 py-1 font-mono text-xs" placeholder="sk-..." autocomplete="off" />
+            <span id="llm-custom-key-hint" class="text-[10px] text-gray-500">留空则不修改已保存的密钥。</span>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span>模型名称</span>
+            <input id="llm-custom-model" type="text" class="border rounded px-2 py-1 font-mono text-xs" placeholder="gpt-4o" />
+            <span class="text-[10px] text-gray-500">API 的 model 参数。</span>
+          </label>
+        </div>
+      </div>
+      <div class="mt-3 flex items-center gap-2 flex-wrap">
+        <button id="btn-save-llm" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
+        <button id="btn-test-llm" class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 text-sm">测试连接</button>
+        <button id="btn-models-llm" class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm">探测模型</button>
+        <span id="llm-status" class="text-xs text-gray-500"></span>
+      </div>
+      <div id="llm-models-list" class="hidden mt-2 max-h-40 overflow-y-auto border rounded p-2 text-xs bg-gray-50"></div>
+    </div>
+  </div>
+
   <!-- 限流配置 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
@@ -120,9 +236,25 @@
         <input id="lim-report-pending" type="number" min="1" step="1" class="border rounded px-2 py-1 font-mono" />
         <span class="text-[10px] text-gray-500">单 IP 最多积压多少条待处理举报。</span>
       </label>
+      <label class="flex flex-col gap-1">
+        <span>GPU轮询间隔（ms）</span>
+        <input id="lim-gpu-poll" type="number" min="1000" step="500" class="border rounded px-2 py-1 font-mono" />
+        <span class="text-[10px] text-gray-500">前端获取 GPU 状态的间隔（毫秒）。最小 1000。</span>
+      </label>
+      <label class="flex flex-col gap-1">
+        <span>GPU缓存有效期（ms）</span>
+        <input id="lim-gpu-cache" type="number" min="500" step="500" class="border rounded px-2 py-1 font-mono" />
+        <span class="text-[10px] text-gray-500">后端 nvidia-smi 结果缓存时间（毫秒）。最小 500。</span>
+      </label>
+      <label class="flex flex-col gap-1">
+        <span>GC 间隔（小时）</span>
+        <input id="lim-gc-interval" type="number" min="0" step="1" class="border rounded px-2 py-1 font-mono" />
+        <span class="text-[10px] text-gray-500">定时清理已处理举报和过期数据的间隔。0 = 禁用自动 GC。</span>
+      </label>
     </div>
     <div class="mt-3 flex items-center gap-2">
       <button id="btn-save-limits" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
+      <button id="btn-run-gc" class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm">立即 GC</button>
       <span id="lim-status" class="text-xs text-gray-500"></span>
     </div>
     </div>
@@ -446,6 +578,9 @@ async function loadLimits() {
     $('lim-report-window').value = L.report_window_sec ?? '';
     $('lim-report-max').value = L.report_window_max ?? '';
     $('lim-report-pending').value = L.report_pending_max ?? '';
+    $('lim-gpu-poll').value = L.gpu_poll_interval_ms ?? '';
+    $('lim-gpu-cache').value = L.gpu_cache_ttl_ms ?? '';
+    $('lim-gc-interval').value = L.gc_interval_hours ?? '';
     $('lim-status').textContent = '';
   } catch (e) {
     $('lim-status').textContent = '加载失败: ' + e.message;
@@ -460,6 +595,9 @@ async function saveLimits() {
     report_window_sec: parseInt($('lim-report-window').value) || 0,
     report_window_max: parseInt($('lim-report-max').value) || 1,
     report_pending_max: parseInt($('lim-report-pending').value) || 1,
+    gpu_poll_interval_ms: parseInt($('lim-gpu-poll').value) || 5000,
+    gpu_cache_ttl_ms: parseInt($('lim-gpu-cache').value) || 5000,
+    gc_interval_hours: parseInt($('lim-gc-interval').value) || 0,
   };
   try {
     await api('POST', '/api/admin/limits', payload);
@@ -475,6 +613,17 @@ $('btn-refresh-recent').addEventListener('click', () => loadRecent(true));
 $('btn-refresh-featured').addEventListener('click', loadFeatured);
 $('btn-refresh-limits').addEventListener('click', loadLimits);
 $('btn-save-limits').addEventListener('click', saveLimits);
+$('btn-run-gc').addEventListener('click', async () => {
+  $('lim-status').textContent = 'GC 执行中…';
+  try {
+    const d = await api('POST', '/api/admin/gc');
+    const c = d.cleaned || {};
+    $('lim-status').textContent = `✓ GC 完成：举报 ${c.resolved_reports || 0}，限流 ${(c.report_rate_entries||0)+(c.gen_cooldown_entries||0)+(c.image_rate_entries||0)}，孤儿映射 ${c.orphan_creator_entries||0}`;
+    setTimeout(() => { $('lim-status').textContent = ''; }, 5000);
+  } catch (e) {
+    $('lim-status').textContent = 'GC 失败: ' + e.message;
+  }
+});
 async function loadMaintenance() {
   try {
     const d = await api('GET', '/api/admin/maintenance');
@@ -526,6 +675,181 @@ $('btn-refresh-maint').addEventListener('click', loadMaintenance);
 $('btn-save-maint').addEventListener('click', saveMaintenance);
 
 loadMaintenance();
+
+function _annBadge(enabled) {
+  const badge = $('ann-state-badge');
+  if (enabled) {
+    badge.textContent = '已开启';
+    badge.className = 'ml-2 text-xs px-2 py-0.5 rounded bg-blue-500 text-white';
+  } else {
+    badge.textContent = '未开启';
+    badge.className = 'ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700';
+  }
+}
+
+async function loadAnnouncement() {
+  try {
+    const d = await api('GET', '/api/admin/announcement');
+    const a = d.announcement || {};
+    document.querySelector(`input[name="ann-enabled"][value="${a.enabled ? 'on' : 'off'}"]`).checked = true;
+    $('ann-title').value = a.title || '';
+    $('ann-content').value = a.content || '';
+    _annBadge(a.enabled);
+    $('ann-status').textContent = '';
+  } catch (e) { $('ann-status').textContent = '加载失败: ' + e.message; }
+}
+
+async function saveAnnouncement() {
+  try {
+    const enabled = document.querySelector('input[name="ann-enabled"]:checked').value === 'on';
+    const d = await api('POST', '/api/admin/announcement', {
+      enabled,
+      title: $('ann-title').value,
+      content: $('ann-content').value,
+    });
+    _annBadge((d.announcement || {}).enabled);
+    $('ann-status').textContent = '✓ 已保存';
+    setTimeout(() => { $('ann-status').textContent = ''; }, 2000);
+  } catch (e) { $('ann-status').textContent = '保存失败: ' + e.message; }
+}
+
+$('btn-refresh-ann').addEventListener('click', loadAnnouncement);
+$('btn-save-ann').addEventListener('click', saveAnnouncement);
+
+loadAnnouncement();
+
+function _llmBadge(provider) {
+  const badge = $('llm-state-badge');
+  const map = {
+    google: ['Google AI Studio', 'ml-2 text-xs px-2 py-0.5 rounded bg-green-500 text-white'],
+    custom: ['自定义 API', 'ml-2 text-xs px-2 py-0.5 rounded bg-purple-500 text-white'],
+  };
+  const [text, cls] = map[provider] || ['本地', 'ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700'];
+  badge.textContent = text;
+  badge.className = cls;
+}
+
+function _llmShowSection(provider) {
+  $('llm-section-local').classList.toggle('hidden', provider !== 'local');
+  $('llm-section-google').classList.toggle('hidden', provider !== 'google');
+  $('llm-section-custom').classList.toggle('hidden', provider !== 'custom');
+}
+
+document.querySelectorAll('input[name="llm-provider"]').forEach(r => {
+  r.addEventListener('change', () => _llmShowSection(r.value));
+});
+
+async function loadLLM() {
+  try {
+    const d = await api('GET', '/api/admin/llm');
+    const c = d.llm || {};
+    const provider = c.provider || 'local';
+    const radio = document.querySelector(`input[name="llm-provider"][value="${provider}"]`);
+    if (radio) radio.checked = true;
+    _llmShowSection(provider);
+    $('llm-local-endpoint').value = c.local_endpoint || '';
+    $('llm-google-key').value = '';
+    $('llm-google-key-hint').textContent = c.google_api_key_masked ? `当前: ${c.google_api_key_masked}，留空不修改` : '留空则不修改已保存的密钥。';
+    $('llm-google-model').value = c.google_model || '';
+    $('llm-google-thinking').value = c.google_thinking || 'off';
+    $('llm-custom-endpoint').value = c.custom_endpoint || '';
+    $('llm-custom-key').value = '';
+    $('llm-custom-key-hint').textContent = c.custom_api_key_masked ? `当前: ${c.custom_api_key_masked}，留空不修改` : '留空则不修改已保存的密钥。';
+    $('llm-custom-model').value = c.custom_model || '';
+    _llmBadge(provider);
+    $('llm-status').textContent = '';
+  } catch (e) { $('llm-status').textContent = '加载失败: ' + e.message; }
+}
+
+async function saveLLM() {
+  const provider = document.querySelector('input[name="llm-provider"]:checked').value;
+  const payload = {
+    provider,
+    local_endpoint: $('llm-local-endpoint').value,
+    google_model: $('llm-google-model').value,
+    google_thinking: $('llm-google-thinking').value,
+    custom_endpoint: $('llm-custom-endpoint').value,
+    custom_model: $('llm-custom-model').value,
+  };
+  const gKey = $('llm-google-key').value;
+  if (gKey) payload.google_api_key = gKey;
+  const cKey = $('llm-custom-key').value;
+  if (cKey) payload.custom_api_key = cKey;
+  try {
+    await api('POST', '/api/admin/llm', payload);
+    _llmBadge(provider);
+    $('llm-status').textContent = '✓ 已保存';
+    setTimeout(() => { $('llm-status').textContent = ''; }, 2000);
+  } catch (e) { $('llm-status').textContent = '保存失败: ' + e.message; }
+}
+
+$('btn-refresh-llm').addEventListener('click', loadLLM);
+$('btn-save-llm').addEventListener('click', saveLLM);
+
+function _llmPayload() {
+  const provider = document.querySelector('input[name="llm-provider"]:checked').value;
+  const p = {
+    provider,
+    local_endpoint: $('llm-local-endpoint').value,
+    google_model: $('llm-google-model').value,
+    google_thinking: $('llm-google-thinking').value,
+    custom_endpoint: $('llm-custom-endpoint').value,
+    custom_model: $('llm-custom-model').value,
+  };
+  const gKey = $('llm-google-key').value;
+  if (gKey) p.google_api_key = gKey;
+  const cKey = $('llm-custom-key').value;
+  if (cKey) p.custom_api_key = cKey;
+  return p;
+}
+
+$('btn-test-llm').addEventListener('click', async () => {
+  $('llm-status').textContent = '测试中…';
+  try {
+    const d = await api('POST', '/api/admin/llm/test', _llmPayload());
+    if (d.ok) {
+      $('llm-status').textContent = `✓ 连接成功：${d.reply || '(空回复)'}`;
+    } else {
+      $('llm-status').textContent = `✗ 失败：${d.error}`;
+    }
+    setTimeout(() => { $('llm-status').textContent = ''; }, 6000);
+  } catch (e) { $('llm-status').textContent = '测试失败: ' + e.message; }
+});
+
+$('btn-models-llm').addEventListener('click', async () => {
+  $('llm-status').textContent = '探测中…';
+  const list = $('llm-models-list');
+  list.classList.add('hidden');
+  try {
+    const d = await api('POST', '/api/admin/llm/models', _llmPayload());
+    if (!d.ok) {
+      $('llm-status').textContent = `✗ 失败：${d.error}`;
+      return;
+    }
+    const models = d.models || [];
+    if (!models.length) {
+      $('llm-status').textContent = '未发现可用模型';
+      return;
+    }
+    $('llm-status').textContent = `发现 ${models.length} 个模型`;
+    list.innerHTML = models.map(m =>
+      `<div class="flex items-center justify-between py-0.5 border-b last:border-0 cursor-pointer hover:bg-blue-50 px-1 rounded" data-model-id="${m.id}"><span>${m.name || m.id}</span><span class="text-[10px] text-gray-400">${m.id}</span></div>`
+    ).join('');
+    list.classList.remove('hidden');
+    list.querySelectorAll('[data-model-id]').forEach(el => {
+      el.addEventListener('click', () => {
+        const prov = document.querySelector('input[name="llm-provider"]:checked').value;
+        const target = prov === 'google' ? $('llm-google-model') : $('llm-custom-model');
+        target.value = el.dataset.modelId;
+        list.classList.add('hidden');
+        $('llm-status').textContent = `已选择: ${el.dataset.modelId}`;
+        setTimeout(() => { $('llm-status').textContent = ''; }, 2000);
+      });
+    });
+  } catch (e) { $('llm-status').textContent = '探测失败: ' + e.message; }
+});
+
+loadLLM();
 $('btn-load-more-recent').addEventListener('click', () => loadRecent(false));
 $('btn-add-ban').addEventListener('click', () => ban($('ban-input').value.trim()));
 $('ban-input').addEventListener('keydown', e => { if (e.key === 'Enter') ban($('ban-input').value.trim()); });
