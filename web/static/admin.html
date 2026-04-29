@@ -46,11 +46,14 @@
   <!-- 维护模式 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">🛠️ 维护模式
+      <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="maint-body">
+        <span class="inline-block w-4 text-gray-400" data-arrow="maint-body">▸</span>
+        🛠️ 维护模式
         <span id="maint-state-badge" class="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700">未开启</span>
       </h2>
       <button id="btn-refresh-maint" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
+    <div id="maint-body" class="hidden">
     <p class="text-xs text-gray-500 mb-2">选择维护模式：「仅禁止生图」允许用户浏览看图但不可调用显卡生图；「完全维护」所有请求返回维护页/503。</p>
     <div class="flex flex-col gap-1 text-sm mb-2">
       <label class="flex items-center gap-2">
@@ -73,14 +76,19 @@
       <button id="btn-save-maint" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
       <span id="maint-status" class="text-xs text-gray-500"></span>
     </div>
+    </div>
   </div>
 
   <!-- 限流配置 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">⚙️ 限流配置</h2>
+      <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="limits-body">
+        <span class="inline-block w-4 text-gray-400" data-arrow="limits-body">▸</span>
+        ⚙️ 限流配置
+      </h2>
       <button id="btn-refresh-limits" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
+    <div id="limits-body" class="hidden">
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
       <label class="flex flex-col gap-1">
         <span>生图冷却（秒/IP）</span>
@@ -102,14 +110,19 @@
       <button id="btn-save-limits" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
       <span id="lim-status" class="text-xs text-gray-500"></span>
     </div>
+    </div>
   </div>
 
   <!-- 封禁列表 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">🚫 当前封禁的 IP</h2>
+      <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="bans-body">
+        <span class="inline-block w-4 text-gray-400" data-arrow="bans-body">▸</span>
+        🚫 当前封禁的 IP
+      </h2>
       <button id="btn-refresh-bans" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
+    <div id="bans-body" class="hidden">
     <div class="flex gap-2 mb-2">
       <input id="ban-input" type="text" placeholder="手动输入 IP 添加到封禁列表"
         class="flex-1 border rounded px-2 py-1 text-sm font-mono" />
@@ -127,19 +140,20 @@
       </div>
       <div id="ip-images-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
     </div>
+    </div>
   </div>
 
   <!-- 举报管理 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
       <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="reports-body">
-        <span class="inline-block w-4 text-gray-400" data-arrow="reports-body">▾</span>
+        <span class="inline-block w-4 text-gray-400" data-arrow="reports-body">▸</span>
         🚩 举报管理
         <span class="text-xs text-gray-500 font-normal">(<span id="reports-count">0</span> 待处理)</span>
       </h2>
       <button id="btn-refresh-reports" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
-    <div id="reports-body">
+    <div id="reports-body" class="hidden">
       <div id="reports-list" class="text-sm">加载中...</div>
     </div>
   </div>
@@ -148,13 +162,13 @@
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
       <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="featured-body">
-        <span class="inline-block w-4 text-gray-400" data-arrow="featured-body">▾</span>
+        <span class="inline-block w-4 text-gray-400" data-arrow="featured-body">▸</span>
         ⭐ 精选展示
         <span class="text-xs text-gray-500 font-normal">(<span id="featured-count">0</span>) — 拖拽卡片可排序</span>
       </h2>
       <button id="btn-refresh-featured" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
-    <div id="featured-body">
+    <div id="featured-body" class="hidden">
       <div id="featured-list" class="text-sm">加载中...</div>
     </div>
   </div>
@@ -163,13 +177,13 @@
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
       <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="recent-body">
-        <span class="inline-block w-4 text-gray-400" data-arrow="recent-body">▾</span>
+        <span class="inline-block w-4 text-gray-400" data-arrow="recent-body">▸</span>
         📋 生图记录
         <span class="text-xs text-gray-500 font-normal">(<span id="recent-shown">0</span>/<span id="recent-total">0</span>)</span>
       </h2>
       <button id="btn-refresh-recent" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
-    <div id="recent-body">
+    <div id="recent-body" class="hidden">
       <div id="recent-list" class="text-sm">加载中...</div>
       <div class="mt-3 text-center">
         <button id="btn-load-more-recent"
