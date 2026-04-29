@@ -2197,6 +2197,10 @@ async def api_admin_report_resolve(payload: Dict[str, Any]):
             ips = _read_banned_ips()
             ips.add(reporter_ip)
             await _write_banned_ips(ips)
+            for r in reports:
+                if r.get("status") == "pending" and r.get("reporter_ip") == reporter_ip and r.get("id") != report_id:
+                    r["status"] = "resolved"
+                    r["resolved_action"] = "dismiss"
     target["status"] = "resolved"
     target["resolved_action"] = action
     if not await _save_reports(reports):
