@@ -6,8 +6,37 @@
 <meta name="robots" content="noindex, nofollow" />
 <title>管理员 · 自然语言生图</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<style>
+  #lb-root { position: fixed; inset: 0; z-index: 60; background: #000; display: none; flex-direction: column; }
+  #lb-root.open { display: flex; }
+  #lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 8px; min-height: 0; }
+  #lb-img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; user-select: auto; -webkit-user-select: auto; -webkit-touch-callout: default; }
+  #lb-bar { color: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,.5); }
+  .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.4); color: #fff; border: 0; width: 44px; height: 64px; font-size: 28px; cursor: pointer; }
+  .lb-nav:hover { background: rgba(0,0,0,.7); }
+  #lb-prev { left: 8px; }
+  #lb-next { right: 8px; }
+  #lb-close { position: absolute; top: 8px; right: 12px; background: transparent; color: #fff; border: 0; font-size: 28px; cursor: pointer; z-index: 1; }
+  #lb-title { color: #ddd; font-size: 12px; margin-right: auto; word-break: break-all; }
+</style>
 </head>
 <body class="bg-gray-100 min-h-screen">
+
+<!-- 灯箱 -->
+<div id="lb-root" role="dialog" aria-modal="true">
+  <button id="lb-close" title="关闭 (Esc)">×</button>
+  <button id="lb-prev" class="lb-nav" title="上一张 (←)">‹</button>
+  <button id="lb-next" class="lb-nav" title="下一张 (→)">›</button>
+  <div id="lb-img-wrap"><img id="lb-img" alt="" /></div>
+  <div id="lb-bar">
+    <span id="lb-title"></span>
+    <span id="lb-time" class="text-xs text-gray-300"></span>
+    <span id="lb-creator" class="text-xs text-amber-300"></span>
+    <a id="lb-download" href="#" target="_blank" rel="noopener" download
+       class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">⬇ 下载原图</a>
+  </div>
+</div>
+
 <div class="max-w-6xl mx-auto p-4">
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-bold">🛡️ 管理员控制台</h1>
@@ -77,6 +106,17 @@
       <button id="btn-add-ban" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm">封禁</button>
     </div>
     <div id="ban-list" class="text-sm">加载中...</div>
+    <div id="ip-images-panel" class="hidden mt-3 border-t pt-3">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-semibold">📷 <span id="ip-images-title"></span> 的生图记录 (<span id="ip-images-count">0</span>)</h3>
+        <div class="flex gap-2">
+          <button id="btn-ip-select-all" class="text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">全选</button>
+          <button id="btn-ip-del-selected" class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 hidden">🗑 删除选中</button>
+          <button id="btn-ip-images-close" class="text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">关闭</button>
+        </div>
+      </div>
+      <div id="ip-images-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
+    </div>
   </div>
 
   <!-- 精选 -->
@@ -142,10 +182,11 @@ async function loadBans() {
     if (!ips.length) { $('ban-list').innerHTML = '<div class="text-gray-400">暂无</div>'; return; }
     $('ban-list').innerHTML = '<div class="flex flex-wrap gap-2">' +
       ips.map(ip => `<span class="inline-flex items-center gap-1 bg-red-100 text-red-800 rounded px-2 py-1 font-mono text-xs">
-        ${escHtml(ip)}
+        <a href="#" data-ip="${escHtml(ip)}" class="btn-show-ip-imgs hover:underline cursor-pointer">${escHtml(ip)}</a>
         <button data-ip="${escHtml(ip)}" class="btn-unban hover:text-red-600 font-bold">×</button>
       </span>`).join('') + '</div>';
     document.querySelectorAll('.btn-unban').forEach(b => b.addEventListener('click', () => unban(b.dataset.ip)));
+    document.querySelectorAll('.btn-show-ip-imgs').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); showIpImages(a.dataset.ip); }));
   } catch (e) { $('ban-list').textContent = '失败: ' + e.message; }
 }
 
@@ -185,10 +226,9 @@ function rowHTML(it) {
     ? `<button class="btn-unfeat-row mt-1 w-full text-[10px] bg-amber-500 text-white rounded px-1 py-0.5 hover:bg-amber-600" data-path="${escHtml(it.path)}">★ 已精选 (取消)</button>`
     : `<button class="btn-feat-row mt-1 w-full text-[10px] bg-yellow-100 text-amber-700 border border-amber-300 rounded px-1 py-0.5 hover:bg-yellow-200" data-path="${escHtml(it.path)}">☆ 加入精选</button>`;
   return `<div class="border rounded p-1 bg-gray-50" data-row-path="${escHtml(it.path)}">
-    <a href="/api/output/file?path=${encodeURIComponent(it.path)}" target="_blank">
-      <img src="/api/output/file?path=${encodeURIComponent(it.path)}" loading="lazy"
-        class="w-full aspect-square object-cover rounded bg-white" />
-    </a>
+    <img src="/api/output/file?path=${encodeURIComponent(it.path)}" loading="lazy"
+      class="lb-thumb w-full aspect-square object-cover rounded bg-white cursor-pointer"
+      data-path="${escHtml(it.path)}" data-mtime="${it.mtime || ''}" data-ip="${escHtml(it.ip || '?')}" />
     <div class="text-[10px] mt-1 break-all">${escHtml(it.path)}</div>
     <div class="text-[10px] text-gray-500">${t}</div>
     <div class="flex items-center justify-between gap-1 mt-1">
@@ -254,7 +294,8 @@ function renderFeatured(items) {
   $('featured-list').innerHTML = '<div id="featured-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">' +
     items.map(p => `<div class="border rounded p-1 bg-amber-50 cursor-move" draggable="true" data-feat-path="${escHtml(p)}">
       <img src="/api/output/file?path=${encodeURIComponent(p)}" loading="lazy"
-        class="w-full aspect-square object-cover rounded bg-white" />
+        class="lb-thumb w-full aspect-square object-cover rounded bg-white cursor-pointer"
+        data-path="${escHtml(p)}" data-mtime="" data-ip="" />
       <div class="text-[10px] mt-1 break-all">${escHtml(p)}</div>
       <button class="btn-unfeat-feat mt-1 w-full text-[10px] bg-amber-500 text-white rounded px-1 py-0.5 hover:bg-amber-600"
         data-path="${escHtml(p)}">移出精选</button>
@@ -432,6 +473,156 @@ document.querySelectorAll('[data-toggle]').forEach(h => {
     const collapsed = body.classList.toggle('hidden');
     if (arrow) arrow.textContent = collapsed ? '▸' : '▾';
   });
+});
+
+// ── IP 图片查看 ──
+let ipImagesSelected = new Set();
+
+async function showIpImages(ip) {
+  const panel = $('ip-images-panel');
+  const grid = $('ip-images-grid');
+  $('ip-images-title').textContent = ip;
+  grid.innerHTML = '<div class="col-span-full text-gray-400">加载中...</div>';
+  panel.classList.remove('hidden');
+  ipImagesSelected.clear();
+  updateIpDelBtn();
+  try {
+    const d = await api('GET', '/api/admin/images_by_ip?ip=' + encodeURIComponent(ip));
+    const items = d.items || [];
+    $('ip-images-count').textContent = items.length;
+    if (!items.length) {
+      grid.innerHTML = '<div class="col-span-full text-gray-400">该 IP 没有关联的图片记录</div>';
+      return;
+    }
+    grid.innerHTML = items.map(it => {
+      const t = it.mtime ? new Date(it.mtime * 1000).toLocaleString('zh-CN') : '?';
+      return `<div class="border rounded p-1 bg-gray-50 relative" data-ip-img-path="${escHtml(it.path)}">
+        <div class="absolute top-2 left-2 z-10">
+          <input type="checkbox" class="ip-img-check w-4 h-4 cursor-pointer" data-path="${escHtml(it.path)}" />
+        </div>
+        <img src="/api/output/file?path=${encodeURIComponent(it.path)}" loading="lazy"
+          class="lb-thumb w-full aspect-square object-cover rounded bg-white cursor-pointer"
+          data-path="${escHtml(it.path)}" data-mtime="${it.mtime || ''}" data-ip="${escHtml(ip)}" />
+        <div class="text-[10px] mt-1 break-all">${escHtml(it.path)}</div>
+        <div class="text-[10px] text-gray-500">${t}</div>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.ip-img-check').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) ipImagesSelected.add(cb.dataset.path);
+        else ipImagesSelected.delete(cb.dataset.path);
+        updateIpDelBtn();
+      });
+    });
+  } catch (e) {
+    grid.innerHTML = `<div class="col-span-full text-red-500">加载失败: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function updateIpDelBtn() {
+  const btn = $('btn-ip-del-selected');
+  if (ipImagesSelected.size > 0) {
+    btn.classList.remove('hidden');
+    btn.textContent = `🗑 删除选中 (${ipImagesSelected.size})`;
+  } else {
+    btn.classList.add('hidden');
+  }
+}
+
+$('btn-ip-select-all').addEventListener('click', () => {
+  const checks = $('ip-images-grid').querySelectorAll('.ip-img-check');
+  const allChecked = Array.from(checks).every(c => c.checked);
+  checks.forEach(c => {
+    c.checked = !allChecked;
+    if (c.checked) ipImagesSelected.add(c.dataset.path);
+    else ipImagesSelected.delete(c.dataset.path);
+  });
+  updateIpDelBtn();
+});
+
+$('btn-ip-del-selected').addEventListener('click', async () => {
+  if (!ipImagesSelected.size) return;
+  if (!confirm(`确定删除选中的 ${ipImagesSelected.size} 张图片？此操作不可撤销。`)) return;
+  const paths = Array.from(ipImagesSelected);
+  try {
+    await api('POST', '/api/admin/delete_batch', { paths });
+    paths.forEach(p => {
+      const card = $('ip-images-grid').querySelector(`[data-ip-img-path="${CSS.escape(p)}"]`);
+      if (card) card.remove();
+      const rowCard = document.querySelector(`[data-row-path="${CSS.escape(p)}"]`);
+      if (rowCard) rowCard.remove();
+    });
+    ipImagesSelected.clear();
+    updateIpDelBtn();
+    const remaining = $('ip-images-grid').querySelectorAll('[data-ip-img-path]').length;
+    $('ip-images-count').textContent = remaining;
+    if (!remaining) {
+      $('ip-images-grid').innerHTML = '<div class="col-span-full text-gray-400">已全部删除</div>';
+    }
+  } catch (e) { alert('删除失败: ' + e.message); }
+});
+
+$('btn-ip-images-close').addEventListener('click', () => {
+  $('ip-images-panel').classList.add('hidden');
+  ipImagesSelected.clear();
+});
+
+// ── 灯箱 ──
+const lbState = { items: [], index: 0 };
+
+function collectLightboxItems() {
+  const imgs = document.querySelectorAll('.lb-thumb');
+  return Array.from(imgs).map(img => ({
+    url: img.src,
+    path: img.dataset.path || '',
+    mtime: img.dataset.mtime || '',
+    ip: img.dataset.ip || '',
+  }));
+}
+
+function showLightbox() {
+  const it = lbState.items[lbState.index];
+  if (!it) return;
+  $('lb-img').src = it.url;
+  const name = it.path.split('/').pop() || it.path;
+  $('lb-title').textContent = name;
+  $('lb-time').textContent = it.mtime ? new Date(it.mtime * 1000).toLocaleString('zh-CN') : '';
+  $('lb-creator').textContent = it.ip ? ('IP: ' + it.ip) : '';
+  $('lb-download').href = it.url + (it.url.includes('?') ? '&' : '?') + 'full=1';
+  $('lb-root').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  $('lb-root').classList.remove('open');
+  $('lb-img').src = '';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('click', (e) => {
+  const img = e.target.closest('.lb-thumb');
+  if (!img) return;
+  if (e.target.closest('button') || e.target.closest('.btn-del-row') || e.target.closest('.btn-ban-row')) return;
+  e.preventDefault();
+  e.stopPropagation();
+  lbState.items = collectLightboxItems();
+  const url = img.src;
+  lbState.index = Math.max(0, lbState.items.findIndex(it => it.url === url));
+  showLightbox();
+});
+
+$('lb-close').addEventListener('click', closeLightbox);
+$('lb-prev').addEventListener('click', () => { lbState.index = (lbState.index - 1 + lbState.items.length) % lbState.items.length; showLightbox(); });
+$('lb-next').addEventListener('click', () => { lbState.index = (lbState.index + 1) % lbState.items.length; showLightbox(); });
+
+$('lb-img-wrap').addEventListener('click', (e) => { if (e.target === $('lb-img-wrap')) closeLightbox(); });
+$('lb-root').addEventListener('click', (e) => { if (e.target === $('lb-root')) closeLightbox(); });
+
+document.addEventListener('keydown', (e) => {
+  if (!$('lb-root').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') { lbState.index = (lbState.index - 1 + lbState.items.length) % lbState.items.length; showLightbox(); }
+  if (e.key === 'ArrowRight') { lbState.index = (lbState.index + 1) % lbState.items.length; showLightbox(); }
 });
 
 loadLimits();

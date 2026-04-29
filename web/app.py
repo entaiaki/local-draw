@@ -303,8 +303,9 @@ async def _image_rate_limit(request: Request, call_next):
 
 # 维护模式：开启后所有请求统一返回维护页（GET）或 503（其它方法）。
 # 后注册的 @app.middleware 最先执行，所以这条会比上面两条更早。
-# 内网 IP 例外，便于站长继续访问 /admin 关闭维护。
-_MAINT_BYPASS_PREFIXES = ("/static",)
+# /admin 和 /api/admin/ 放行：管理员需要在维护期间操作后台。
+# /api/output/file 放行：管理页面需要加载缩略图。
+_MAINT_BYPASS_PREFIXES = ("/static", "/admin", "/api/admin/", "/api/output/file")
 
 
 @app.middleware("http")
@@ -1845,6 +1846,91 @@ async def api_admin_delete(payload: Dict[str, Any]):
         feats = [x for x in feats if x != rel]
         await _write_featured(feats)
     return {"ok": True}
+
+
+@app.get("/api/admin/images_by_ip")
+async def api_admin_images_by_ip(ip: str = ""):
+    """列出某个 IP 生成的所有图片。"""
+    ip = ip.strip()
+    if not ip:
+        raise HTTPException(400, "ip required")
+    ip_map: Dict[str, str] = {}
+    if CREATOR_MAP_FILE.is_file():
+        try:
+            for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                if not ln or "\t" not in ln:
+                    continue
+                k, _, v = ln.partition("\t")
+                ip_map[k] = v
+        except Exception:
+            pass
+    base = OUTPUT_DIR.resolve()
+    results: list = []
+    for rel, rel_ip in ip_map.items():
+        if rel_ip != ip:
+            continue
+        p = base / rel.replace("/", os.sep)
+        if not p.is_file():
+            continue
+        try:
+            mt = p.stat().st_mtime
+        except Exception:
+            mt = 0
+        results.append({"path": rel, "ip": ip, "mtime": mt})
+    results.sort(key=lambda x: x["mtime"], reverse=True)
+    return {"items": results, "total": len(results)}
+
+
+@app.post("/api/admin/delete_batch")
+async def api_admin_delete_batch(payload: Dict[str, Any]):
+    """批量删除多张图。"""
+    paths = (payload or {}).get("paths", [])
+    if not paths or not isinstance(paths, list):
+        raise HTTPException(400, "paths (list) required")
+    deleted = []
+    failed = []
+    for rel in paths:
+        rel = str(rel).strip()
+        if not rel:
+            continue
+        try:
+            p = _resolve_output_path(rel)
+            if p.is_file():
+                p.unlink()
+                deleted.append(rel)
+            else:
+                failed.append(rel)
+        except Exception:
+            failed.append(rel)
+    # 批量清理 creator_ips.txt 映射
+    del_set = set(r.replace("\\", "/") for r in deleted)
+    if del_set:
+        async with _creator_map_lock:
+            try:
+                if CREATOR_MAP_FILE.is_file():
+                    kept = []
+                    for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                        if not ln or "\t" not in ln:
+                            continue
+                        if ln.split("\t", 1)[0] in del_set:
+                            continue
+                        kept.append(ln)
+                    tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
+                    with open(tmp, "w", encoding="utf-8") as f:
+                        f.write("\n".join(kept) + ("\n" if kept else ""))
+                    os.replace(tmp, CREATOR_MAP_FILE)
+            except Exception:
+                pass
+        # 同步清理精选
+        feats = _read_featured()
+        changed = False
+        for rel in deleted:
+            if rel in feats:
+                feats = [x for x in feats if x != rel]
+                changed = True
+        if changed:
+            await _write_featured(feats)
+    return {"ok": True, "deleted": len(deleted), "failed": len(failed)}
 
 
 @app.get("/api/admin/featured")
