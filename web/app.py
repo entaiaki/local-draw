@@ -972,11 +972,13 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
         ],
     }
     thinking = cfg.get("google_thinking", "off")
-    if thinking == "auto":
+    if thinking.startswith("level_"):
+        body["generationConfig"]["thinkingConfig"] = {"thinkingLevel": thinking[6:]}
+    elif thinking == "budget_auto":
         body["generationConfig"]["thinkingConfig"] = {"thinkingBudget": -1}
-    elif thinking not in ("off", ""):
+    elif thinking.startswith("budget_"):
         try:
-            body["generationConfig"]["thinkingConfig"] = {"thinkingBudget": int(thinking)}
+            body["generationConfig"]["thinkingConfig"] = {"thinkingBudget": int(thinking[7:])}
         except ValueError:
             pass
     url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"

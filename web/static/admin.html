@@ -151,17 +151,26 @@
           <label class="flex flex-col gap-1">
             <span>思考 (Thinking)</span>
             <select id="llm-google-thinking" class="border rounded px-2 py-1 text-xs">
-              <option value="off">关闭</option>
-              <option value="auto">自动 (thinkingBudget=-1)</option>
-              <option value="1024">1024 tokens</option>
-              <option value="2048">2048 tokens</option>
-              <option value="4096">4096 tokens</option>
-              <option value="8192">8192 tokens</option>
-              <option value="16384">16384 tokens</option>
-              <option value="24576">24576 tokens</option>
-              <option value="32768">32768 tokens</option>
+              <option value="off">关闭（不发送 thinkingConfig）</option>
+              <optgroup label="── Gemini 3 系列 (thinkingLevel) ──">
+                <option value="level_minimal">minimal（几乎不思考）</option>
+                <option value="level_low">low（低延迟）</option>
+                <option value="level_medium">medium（平衡）</option>
+                <option value="level_high">high（深度推理，默认）</option>
+              </optgroup>
+              <optgroup label="── Gemini 2.5 系列 (thinkingBudget) ──">
+                <option value="budget_auto">自动 (thinkingBudget=-1)</option>
+                <option value="budget_0">0（关闭思考，仅 Flash/Lite）</option>
+                <option value="budget_1024">1024 tokens</option>
+                <option value="budget_2048">2048 tokens</option>
+                <option value="budget_4096">4096 tokens</option>
+                <option value="budget_8192">8192 tokens</option>
+                <option value="budget_16384">16384 tokens</option>
+                <option value="budget_24576">24576 tokens</option>
+                <option value="budget_32768">32768 tokens</option>
+              </optgroup>
             </select>
-            <span class="text-[10px] text-gray-500">Gemini 2.5+ 思考预算；不支持的模型请保持关闭。</span>
+            <span class="text-[10px] text-gray-500">Gemini 3 用 thinkingLevel，Gemini 2.5 用 thinkingBudget；不支持的模型请关闭。</span>
           </label>
         </div>
       </div>
