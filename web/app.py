@@ -1043,15 +1043,22 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                         chunks.append(piece)
     full = "".join(chunks).strip()
     if thought_chunks:
+        import re as _re
         thought_text = "".join(thought_chunks)
-        lines = thought_text.strip().splitlines()
-        thought_candidate = ""
-        for line in reversed(lines):
+        candidates = []
+        for line in thought_text.splitlines():
             cleaned = line.strip().strip("`").strip()
-            if "," in cleaned and len(cleaned) > 10 and not cleaned.startswith("*"):
-                thought_candidate = cleaned
-                break
-        if thought_candidate:
+            if "," in cleaned and len(cleaned) > 20:
+                tag_part = cleaned.split(":")[-1].strip() if cleaned.count(":") == 1 and cleaned.index(":") < 20 else cleaned
+                if tag_part.startswith("`"):
+                    tag_part = tag_part.strip("`").strip()
+                candidates.append(tag_part)
+        backtick_blocks = _re.findall(r"`([^`]{20,})`", thought_text)
+        for block in backtick_blocks:
+            if "," in block:
+                candidates.append(block.strip())
+        if candidates:
+            thought_candidate = max(candidates, key=lambda c: c.count(","))
             if not full or thought_candidate.count(",") > full.count(","):
                 full = thought_candidate
     if not full:
