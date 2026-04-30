@@ -5,4 +5,10 @@ web/banned_ips.txt
 web/featured.txt
 web/limits.json
 web/styles.json
+web/llm_config.json
+web/announcement.json
+web/reports.json
+.claude/settings.local.json
+.vscode/settings.json
+
 .env
