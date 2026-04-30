@@ -45,6 +45,7 @@ STATIC_DIR = Path(__file__).parent / "static"
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
+WORKFLOW_META_FILE = Path(__file__).parent / "workflow_meta.json"
 CREATOR_MAP_FILE = Path(__file__).parent / "creator_ips.txt"
 _creator_map_lock = asyncio.Lock()
 
@@ -60,13 +61,11 @@ LLM_CONFIG_FILE = Path(__file__).parent / "llm_config.json"
 REPORTS_FILE = Path(__file__).parent / "reports.json"
 STYLES_FILE = Path(__file__).parent / "styles.json"
 STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
-WORKFLOWS_FILE = Path(__file__).parent / "workflows.json"
 _banned_lock = asyncio.Lock()
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
 _styles_lock = asyncio.Lock()
-_workflows_lock = asyncio.Lock()
 _announcement_lock = asyncio.Lock()
 _llm_config_lock = asyncio.Lock()
 _REPORT_RATE: Dict[str, List[float]] = {}
@@ -182,40 +181,50 @@ async def _save_styles(data: List[Dict[str, Any]]) -> bool:
             return False
 
 
-# ---------------- 工作流配置 ----------------
-def _load_workflows() -> List[Dict[str, Any]]:
-    if not WORKFLOWS_FILE.is_file():
-        return []
+# ---------------- 工作流元数据（缩略图 + Lora 链接） ----------------
+def _load_workflow_meta() -> Dict[str, Dict[str, str]]:
+    if not WORKFLOW_META_FILE.is_file():
+        return {}
     try:
-        d = json.loads(WORKFLOWS_FILE.read_text(encoding="utf-8"))
+        d = json.loads(WORKFLOW_META_FILE.read_text(encoding="utf-8"))
         if not isinstance(d, list):
-            return []
-        return [
-            {
-                "name": str(w.get("name", "")),
-                "path": str(w.get("path", "")),
-                "thumbnail": str(w.get("thumbnail", "")),
-                "lora_link": str(w.get("lora_link", ""))
-            }
-            for w in d if isinstance(w, dict) and str(w.get("path", "")).strip()
-        ]
+            return {}
+        result = {}
+        for item in d:
+            if not isinstance(item, dict):
+                continue
+            wf = str(item.get("workflow", "")).strip()
+            if not wf:
+                continue
+            entry = {}
+            if item.get("thumbnail"):
+                entry["thumbnail"] = str(item["thumbnail"])
+            if item.get("lora_link"):
+                entry["lora_link"] = str(item["lora_link"])
+            if entry:
+                result[wf] = entry
+        return result
     except Exception:
-        return []
+        return {}
 
 
-_workflows: List[Dict[str, Any]] = _load_workflows()
+def _save_workflow_meta_file(data: Dict[str, Dict[str, str]]) -> bool:
+    try:
+        arr = []
+        for wf in sorted(data):
+            entry = {"workflow": wf}
+            entry.update(data[wf])
+            arr.append(entry)
+        tmp = WORKFLOW_META_FILE.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(arr, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, WORKFLOW_META_FILE)
+        return True
+    except Exception:
+        return False
 
 
-async def _save_workflows(data: List[Dict[str, Any]]) -> bool:
-    async with _workflows_lock:
-        try:
-            tmp = WORKFLOWS_FILE.with_suffix(".json.tmp")
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            os.replace(tmp, WORKFLOWS_FILE)
-            return True
-        except Exception:
-            return False
+_workflow_meta: Dict[str, Dict[str, str]] = _load_workflow_meta()
 
 
 # ---------------- LLM 配置 ----------------
@@ -1135,12 +1144,21 @@ async def index():
 def find_thumbnail(wf_path: str) -> Optional[Path]:
     """按工作流路径在 web/thumbnails/ 下查找同名图片。
 
-    支持：
-    - 完整 path（保留子目录），如 workflows/foo/bar.json → thumbnails/foo/bar.png
-    - 仅 basename，去掉 .json 后缀
+    优先从 workflow_meta.json 配置读取，找不到则回退到文件名约定匹配。
     """
     if not wf_path:
         return None
+    # 1. 从 workflow_meta.json 查找
+    meta = _workflow_meta.get(wf_path, {})
+    fname = meta.get("thumbnail", "")
+    if fname:
+        p = (THUMB_DIR / fname).resolve()
+        try:
+            if p.is_file() and str(p).startswith(str(THUMB_DIR.resolve())):
+                return p
+        except Exception:
+            pass
+    # 2. 回退：文件名约定匹配
     stem = wf_path[:-5] if wf_path.lower().endswith(".json") else wf_path
     base = Path(stem)
     candidates = []
@@ -1575,11 +1593,18 @@ async def api_current(path: Optional[str] = None):
 
 
 def find_lora_link(wf_path: str) -> Optional[str]:
-    """在 web/lora_links/ 下查找与工作流同名的 .txt（仅一行链接）。
-    匹配规则同缩略图：先按完整 path（保留子目录），再退回 basename。
+    """查找与工作流关联的 Lora 链接。
+
+    优先从 workflow_meta.json 配置读取，找不到则回退到 lora_links/*.txt 文件。
     """
     if not wf_path:
         return None
+    # 1. 从 workflow_meta.json 查找
+    meta = _workflow_meta.get(wf_path, {})
+    url = meta.get("lora_link", "").strip()
+    if url:
+        return url
+    # 2. 回退：lora_links/*.txt 文件
     stem = wf_path[:-5] if wf_path.lower().endswith(".json") else wf_path
     base = Path(stem)
     candidates = [
@@ -2603,57 +2628,55 @@ async def api_admin_style_thumbnail_upload(file: UploadFile):
     return {"ok": True, "filename": safe_name}
 
 
-# ---------------- 工作流缩略图管理 ----------------
+# ---------------- 工作流元数据端点 ----------------
 
-@app.get("/api/admin/workflows")
-async def api_admin_workflows_get():
-    """获取工作流配置列表"""
-    return {"workflows": list(_workflows)}
+@app.get("/api/admin/workflow_meta")
+async def api_admin_workflow_meta_get():
+    arr = []
+    for wf in sorted(_workflow_meta):
+        entry = {"workflow": wf}
+        entry.update(_workflow_meta[wf])
+        arr.append(entry)
+    return {"workflow_meta": arr}
 
 
-@app.post("/api/admin/workflows")
-async def api_admin_workflows_set(payload: Dict[str, Any]):
-    """保存工作流配置"""
+@app.post("/api/admin/workflow_meta")
+async def api_admin_workflow_meta_set(payload: Dict[str, Any]):
     if not isinstance(payload, dict):
         raise HTTPException(400, "payload must be object")
-    raw = payload.get("workflows")
+    raw = payload.get("workflow_meta")
     if not isinstance(raw, list):
-        raise HTTPException(400, "workflows must be array")
-    cleaned = []
-    for w in raw:
-        if not isinstance(w, dict):
+        raise HTTPException(400, "workflow_meta must be array")
+    cleaned = {}
+    for item in raw:
+        if not isinstance(item, dict):
             continue
-        path = str(w.get("path", "")).strip()
-        if not path:
+        wf = str(item.get("workflow", "")).strip()
+        if not wf:
             continue
-        cleaned.append({
-            "name": str(w.get("name", "")).strip(),
-            "path": path,
-            "thumbnail": str(w.get("thumbnail", "")).strip(),
-            "lora_link": str(w.get("lora_link", "")).strip(),
-        })
-    if not await _save_workflows(cleaned):
-        raise HTTPException(500, "写入 workflows.json 失败")
-    _workflows.clear()
-    _workflows.extend(cleaned)
-    return {"ok": True, "workflows": list(_workflows)}
+        entry = {}
+        thumb = str(item.get("thumbnail", "")).strip()
+        link = str(item.get("lora_link", "")).strip()
+        if thumb:
+            entry["thumbnail"] = thumb
+        if link:
+            entry["lora_link"] = link
+        if entry:
+            cleaned[wf] = entry
+    if not _save_workflow_meta_file(cleaned):
+        raise HTTPException(500, "写入 workflow_meta.json 失败")
+    _workflow_meta.clear()
+    _workflow_meta.update(cleaned)
+    arr = []
+    for wf in sorted(_workflow_meta):
+        entry = {"workflow": wf}
+        entry.update(_workflow_meta[wf])
+        arr.append(entry)
+    return {"ok": True, "workflow_meta": arr}
 
 
-@app.get("/api/admin/workflow_thumbnails")
-async def api_admin_workflow_thumbnails():
-    """列出所有工作流缩略图文件"""
-    if not THUMB_DIR.exists():
-        return {"thumbnails": []}
-    thumbnails = []
-    for p in THUMB_DIR.iterdir():
-        if p.is_file() and p.suffix.lower() in THUMB_EXTS:
-            thumbnails.append({"filename": p.name})
-    return {"thumbnails": sorted(thumbnails, key=lambda x: x["filename"])}
-
-
-@app.post("/api/admin/workflow_thumbnail")
-async def api_admin_workflow_thumbnail_upload(file: UploadFile):
-    """上传工作流缩略图"""
+@app.post("/api/admin/wf_thumbnail")
+async def api_admin_wf_thumbnail_upload(file: UploadFile):
     if not file.filename:
         raise HTTPException(400, "no filename")
     ext = Path(file.filename).suffix.lower()
@@ -2665,89 +2688,11 @@ async def api_admin_workflow_thumbnail_upload(file: UploadFile):
         raise HTTPException(400, "invalid filename")
     dest = THUMB_DIR / safe_name
     data = await file.read()
-    if len(data) > 10 * 1024 * 1024:
-        raise HTTPException(400, "文件过大（上限 10 MB）")
+    if len(data) > 5 * 1024 * 1024:
+        raise HTTPException(400, "文件过大（上限 5 MB）")
     with open(dest, "wb") as f:
         f.write(data)
     return {"ok": True, "filename": safe_name}
-
-
-@app.delete("/api/admin/workflow_thumbnail")
-async def api_admin_workflow_thumbnail_delete(filename: str):
-    """删除工作流缩略图文件"""
-    if not filename or ".." in filename or "/" in filename or "\\" in filename:
-        raise HTTPException(400, "invalid filename")
-    p = THUMB_DIR / filename
-    try:
-        pr = p.resolve()
-        if not str(pr).startswith(str(THUMB_DIR.resolve())):
-            raise HTTPException(400, "invalid path")
-        if pr.is_file():
-            pr.unlink()
-            return {"ok": True}
-        else:
-            raise HTTPException(404, "file not found")
-    except Exception as e:
-        raise HTTPException(500, f"删除失败: {e}")
-
-
-# ---------------- Lora 链接管理 ----------------
-
-@app.get("/api/admin/lora_links")
-async def api_admin_lora_links():
-    """列出所有 Lora 链接配置"""
-    if not LORA_LINKS_DIR.exists():
-        return {"links": []}
-    links = []
-    for p in LORA_LINKS_DIR.iterdir():
-        if p.is_file() and p.suffix.lower() == ".txt":
-            try:
-                content = p.read_text(encoding="utf-8").strip()
-                url = content.splitlines()[0].strip() if content else ""
-                links.append({"filename": p.name, "url": url})
-            except Exception:
-                links.append({"filename": p.name, "url": ""})
-    return {"links": sorted(links, key=lambda x: x["filename"])}
-
-
-@app.post("/api/admin/lora_link")
-async def api_admin_lora_link_save(payload: Dict[str, Any]):
-    """保存或更新 Lora 链接"""
-    filename = str((payload or {}).get("filename", "")).strip()
-    url = str((payload or {}).get("url", "")).strip()
-    if not filename:
-        raise HTTPException(400, "filename required")
-    if not filename.endswith(".txt"):
-        filename += ".txt"
-    if ".." in filename or "/" in filename or "\\" in filename:
-        raise HTTPException(400, "invalid filename")
-    LORA_LINKS_DIR.mkdir(parents=True, exist_ok=True)
-    dest = LORA_LINKS_DIR / filename
-    try:
-        with open(dest, "w", encoding="utf-8") as f:
-            f.write(url + "\n" if url else "")
-        return {"ok": True, "filename": filename}
-    except Exception as e:
-        raise HTTPException(500, f"保存失败: {e}")
-
-
-@app.delete("/api/admin/lora_link")
-async def api_admin_lora_link_delete(filename: str):
-    """删除 Lora 链接"""
-    if not filename or ".." in filename or "/" in filename or "\\" in filename:
-        raise HTTPException(400, "invalid filename")
-    p = LORA_LINKS_DIR / filename
-    try:
-        pr = p.resolve()
-        if not str(pr).startswith(str(LORA_LINKS_DIR.resolve())):
-            raise HTTPException(400, "invalid path")
-        if pr.is_file():
-            pr.unlink()
-            return {"ok": True}
-        else:
-            raise HTTPException(404, "file not found")
-    except Exception as e:
-        raise HTTPException(500, f"删除失败: {e}")
 
 
 # ---------------- LLM 配置端点 ----------------

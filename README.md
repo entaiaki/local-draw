@@ -168,7 +168,8 @@ web/
 │   └── favicon.avif
 ├── thumbnails/             工作流缩略图
 ├── style_thumbnails/       画风缩略图
-├── lora_links/             Lora 链接（每个工作流可配同名 .txt）
+├── lora_links/             Lora 链接（旧方式，已被 workflow_meta.json 取代）
+├── workflow_meta.json      工作流元数据（缩略图 + Lora 链接）
 ├── creator_ips.txt         生图者 IP 映射（gitignored）
 ├── banned_ips.txt          封禁 IP 列表（gitignored）
 ├── featured.txt            精选图片相对路径（gitignored）
@@ -210,6 +211,8 @@ web/
 | `GET  /api/admin/whoami` | 占位 |
 | `GET  /api/admin/limits` / `POST` | 限流配置 |
 | `GET  /api/admin/styles` / `POST` | 画风管理 |
+| `GET  /api/admin/workflow_meta` / `POST` | 工作流缩略图 & Lora 链接 |
+| `POST /api/admin/wf_thumbnail` | 上传工作流缩略图 |
 | `GET  /api/admin/bans` | 封禁 IP 列表 |
 | `POST /api/admin/ban` / `unban` | 加/解封 IP |
 | `GET  /api/admin/recent?limit=&offset=` | 全输出图分页（管理用） |
