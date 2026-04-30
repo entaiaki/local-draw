@@ -23,6 +23,7 @@ import os
 import random
 import uuid
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
@@ -1164,7 +1165,7 @@ def find_thumbnail(wf_path: str) -> Optional[Path]:
     if fname:
         p = (THUMB_DIR / fname).resolve()
         try:
-            if p.is_file() and str(p).startswith(str(THUMB_DIR.resolve())):
+            if p.is_file() and p.is_relative_to(THUMB_DIR.resolve()):
                 return p
         except Exception:
             pass
@@ -1178,7 +1179,7 @@ def find_thumbnail(wf_path: str) -> Optional[Path]:
     for c in candidates:
         try:
             cr = c.resolve()
-            if cr.is_file() and str(cr).startswith(str(THUMB_DIR.resolve())):
+            if cr.is_file() and cr.is_relative_to(THUMB_DIR.resolve()):
                 return cr
         except Exception:
             continue
@@ -1218,14 +1219,14 @@ async def api_style_thumbnail(request: Request, name: str):
         candidate = STYLE_THUMB_DIR / (name + ext)
         try:
             cr = candidate.resolve()
-            if cr.is_file() and str(cr).startswith(str(STYLE_THUMB_DIR.resolve())):
+            if cr.is_file() and cr.is_relative_to(STYLE_THUMB_DIR.resolve()):
                 return _serve_image_maybe_webp(request, cr, quality=72, max_side=256)
         except Exception:
             continue
     p = STYLE_THUMB_DIR / name
     try:
         cr = p.resolve()
-        if cr.is_file() and str(cr).startswith(str(STYLE_THUMB_DIR.resolve())):
+        if cr.is_file() and cr.is_relative_to(STYLE_THUMB_DIR.resolve()):
             return _serve_image_maybe_webp(request, cr, quality=72, max_side=256)
     except Exception:
         pass
@@ -1625,7 +1626,7 @@ def find_lora_link(wf_path: str) -> Optional[str]:
     for c in candidates:
         try:
             cr = c.resolve()
-            if cr.is_file() and str(cr).startswith(str(root)):
+            if cr.is_file() and cr.is_relative_to(root):
                 line = cr.read_text(encoding="utf-8").strip().splitlines()
                 url = line[0].strip() if line else ""
                 if url:
@@ -2618,24 +2619,39 @@ async def api_admin_styles_set(payload: Dict[str, Any]):
     return {"ok": True, "styles": list(_styles)}
 
 
-@app.post("/api/admin/style_thumbnail")
-async def api_admin_style_thumbnail_upload(file: UploadFile):
+async def _save_upload(file: UploadFile, dest_dir: Path) -> str:
+    """流式保存上传文件，边写边校验大小（上限 5 MB）。"""
     if not file.filename:
         raise HTTPException(400, "no filename")
     ext = Path(file.filename).suffix.lower()
     if ext not in THUMB_EXTS:
         raise HTTPException(400, f"不支持的格式，仅限 {', '.join(THUMB_EXTS)}")
-    STYLE_THUMB_DIR.mkdir(parents=True, exist_ok=True)
+    dest_dir.mkdir(parents=True, exist_ok=True)
     safe_name = Path(file.filename).name
     if not safe_name or ".." in safe_name:
         raise HTTPException(400, "invalid filename")
-    dest = STYLE_THUMB_DIR / safe_name
-    data = await file.read()
-    if len(data) > 5 * 1024 * 1024:
-        raise HTTPException(400, "文件过大（上限 5 MB）")
+    dest = dest_dir / safe_name
+    MAX_SIZE = 5 * 1024 * 1024
+    written = 0
+    CHUNK = 256 * 1024
     with open(dest, "wb") as f:
-        f.write(data)
-    return {"ok": True, "filename": safe_name}
+        while True:
+            chunk = await file.read(CHUNK)
+            if not chunk:
+                break
+            written += len(chunk)
+            if written > MAX_SIZE:
+                f.close()
+                dest.unlink(missing_ok=True)
+                raise HTTPException(400, "文件过大（上限 5 MB）")
+            f.write(chunk)
+    return safe_name
+
+
+@app.post("/api/admin/style_thumbnail")
+async def api_admin_style_thumbnail_upload(file: UploadFile):
+    filename = await _save_upload(file, STYLE_THUMB_DIR)
+    return {"ok": True, "filename": filename}
 
 
 # ---------------- 工作流元数据端点 ----------------
@@ -2670,6 +2686,9 @@ async def api_admin_workflow_meta_set(payload: Dict[str, Any]):
         if thumb:
             entry["thumbnail"] = thumb
         if link:
+            parsed = urlparse(link)
+            if parsed.scheme and parsed.scheme not in ("http", "https"):
+                raise HTTPException(400, f"lora_link 仅支持 http/https 协议")
             entry["lora_link"] = link
         if entry:
             cleaned[wf] = entry
@@ -2687,21 +2706,7 @@ async def api_admin_workflow_meta_set(payload: Dict[str, Any]):
 
 @app.post("/api/admin/wf_thumbnail")
 async def api_admin_wf_thumbnail_upload(file: UploadFile):
-    if not file.filename:
-        raise HTTPException(400, "no filename")
-    ext = Path(file.filename).suffix.lower()
-    if ext not in THUMB_EXTS:
-        raise HTTPException(400, f"不支持的格式，仅限 {', '.join(THUMB_EXTS)}")
-    THUMB_DIR.mkdir(parents=True, exist_ok=True)
-    safe_name = Path(file.filename).name
-    if not safe_name or ".." in safe_name:
-        raise HTTPException(400, "invalid filename")
-    dest = THUMB_DIR / safe_name
-    data = await file.read()
-    if len(data) > 5 * 1024 * 1024:
-        raise HTTPException(400, "文件过大（上限 5 MB）")
-    with open(dest, "wb") as f:
-        f.write(data)
+    safe_name = await _save_upload(file, THUMB_DIR)
     return {"ok": True, "filename": safe_name}
 
 
