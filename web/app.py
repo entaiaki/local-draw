@@ -188,10 +188,11 @@ DEFAULT_LLM_CONFIG = {
     "local_endpoint": f"http://{LMS_HOST}:{LMS_PORT}",
     "google_api_key": "",          # Google AI Studio API Key
     "google_model": "gemma-4-31b-it",
-    "google_thinking": "off",      # "off" | "auto" | 具体 thinkingBudget 数值字符串
+    "google_thinking": "off",      # "off" | "level_*" | "budget_*"
     "custom_endpoint": "",         # 自定义 OpenAI 兼容 API 的 base URL
     "custom_api_key": "",
     "custom_model": "",
+    "llm_stream": True,            # True=SSE 流式，False=普通请求（所有 provider 通用）
 }
 
 _GOOGLE_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
@@ -213,6 +214,7 @@ def _load_llm_config() -> Dict[str, Any]:
             "custom_endpoint": str(d.get("custom_endpoint") or ""),
             "custom_api_key": str(d.get("custom_api_key") or ""),
             "custom_model": str(d.get("custom_model") or ""),
+            "llm_stream": bool(d.get("llm_stream", True)),
         }
     except Exception:
         return dict(DEFAULT_LLM_CONFIG)
@@ -941,21 +943,24 @@ async def translate_prompt(
 
     cfg = _llm_config
     provider = cfg.get("provider", "local")
+    use_stream = cfg.get("llm_stream", True)
 
     if provider == "google":
-        result = await _llm_google(system, user, cfg, on_chunk)
+        result = await _llm_google(system, user, cfg, on_chunk, use_stream)
     elif provider == "custom":
         result = await _llm_openai_compat(system, user, cfg.get("custom_endpoint", ""),
-                                          cfg.get("custom_api_key", ""), cfg.get("custom_model", ""), on_chunk)
+                                          cfg.get("custom_api_key", ""), cfg.get("custom_model", ""),
+                                          on_chunk, use_stream)
     else:
         result = await _llm_openai_compat(system, user, cfg.get("local_endpoint") or LMS_API,
-                                          "", "", on_chunk)
+                                          "", "", on_chunk, use_stream)
 
     return result
 
 
-async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Optional[Any]) -> str:
-    """Google AI Studio 原生流式 API。"""
+async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Optional[Any],
+                      use_stream: bool = True) -> str:
+    """Google AI Studio API，支持流式与非流式。"""
     api_key = cfg.get("google_api_key") or ""
     model = cfg.get("google_model") or "gemma-4-31b-it"
     if not api_key:
@@ -981,39 +986,51 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
             body["generationConfig"]["thinkingConfig"] = {"thinkingBudget": int(thinking[7:])}
         except ValueError:
             pass
-    url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
 
     chunks: List[str] = []
     async with httpx.AsyncClient(timeout=120) as client:
-        async with client.stream("POST", url, json=body) as r:
-            if r.status_code >= 400:
-                text = await r.aread()
-                raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
-            async for line in r.aiter_lines():
-                if not line or not line.startswith("data:"):
-                    continue
-                data = line[5:].strip()
-                if data == "[DONE]":
-                    break
-                try:
-                    obj = json.loads(data)
-                except Exception:
-                    continue
-                candidates = obj.get("candidates") or []
-                if not candidates:
-                    continue
-                parts = (candidates[0].get("content") or {}).get("parts") or []
-                for p in parts:
-                    piece = p.get("text") or ""
-                    if not piece:
+        if use_stream:
+            url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
+            async with client.stream("POST", url, json=body) as r:
+                if r.status_code >= 400:
+                    text = await r.aread()
+                    raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
+                async for line in r.aiter_lines():
+                    if not line or not line.startswith("data:"):
                         continue
-                    is_thought = p.get("thought", False)
-                    if on_chunk is not None:
-                        try:
-                            await on_chunk(piece)
-                        except Exception:
-                            pass
-                    if not is_thought:
+                    data = line[5:].strip()
+                    if data == "[DONE]":
+                        break
+                    try:
+                        obj = json.loads(data)
+                    except Exception:
+                        continue
+                    candidates = obj.get("candidates") or []
+                    if not candidates:
+                        continue
+                    parts = (candidates[0].get("content") or {}).get("parts") or []
+                    for p in parts:
+                        piece = p.get("text") or ""
+                        if not piece:
+                            continue
+                        is_thought = p.get("thought", False)
+                        if on_chunk is not None:
+                            try:
+                                await on_chunk(piece)
+                            except Exception:
+                                pass
+                        if not is_thought:
+                            chunks.append(piece)
+        else:
+            url = f"{_GOOGLE_API_BASE}/models/{model}:generateContent?key={api_key}"
+            r = await client.post(url, json=body)
+            if r.status_code >= 400:
+                raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {r.text[:500]}")
+            resp = r.json()
+            for cand in resp.get("candidates") or []:
+                for p in (cand.get("content") or {}).get("parts") or []:
+                    piece = p.get("text") or ""
+                    if piece and not p.get("thought", False):
                         chunks.append(piece)
     full = "".join(chunks).strip()
     if not full:
@@ -1022,8 +1039,9 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
 
 
 async def _llm_openai_compat(system: str, user: str, endpoint: str,
-                             api_key: str, model: str, on_chunk: Optional[Any]) -> str:
-    """OpenAI 兼容格式（LM Studio / 自定义 API）流式调用。"""
+                             api_key: str, model: str, on_chunk: Optional[Any],
+                             use_stream: bool = True) -> str:
+    """OpenAI 兼容格式（LM Studio / 自定义 API），支持流式与非流式。"""
     endpoint = endpoint.rstrip("/")
     if not endpoint:
         raise RuntimeError("LLM 端点未配置")
@@ -1034,36 +1052,45 @@ async def _llm_openai_compat(system: str, user: str, endpoint: str,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         "temperature": 0.7,
         "max_tokens": 1024,
-        "stream": True,
+        "stream": use_stream,
     }
     if model:
         body["model"] = model
 
     chunks: List[str] = []
     async with httpx.AsyncClient(timeout=120, headers=headers) as client:
-        async with client.stream("POST", f"{endpoint}/v1/chat/completions", json=body) as r:
+        if use_stream:
+            async with client.stream("POST", f"{endpoint}/v1/chat/completions", json=body) as r:
+                if r.status_code >= 400:
+                    text = await r.aread()
+                    raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
+                async for line in r.aiter_lines():
+                    if not line or not line.startswith("data:"):
+                        continue
+                    data = line[5:].strip()
+                    if data == "[DONE]":
+                        break
+                    try:
+                        obj = json.loads(data)
+                    except Exception:
+                        continue
+                    delta = ((obj.get("choices") or [{}])[0].get("delta") or {})
+                    piece = delta.get("content") or ""
+                    if piece:
+                        chunks.append(piece)
+                        if on_chunk is not None:
+                            try:
+                                await on_chunk(piece)
+                            except Exception:
+                                pass
+        else:
+            r = await client.post(f"{endpoint}/v1/chat/completions", json=body)
             if r.status_code >= 400:
-                text = await r.aread()
-                raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
-            async for line in r.aiter_lines():
-                if not line or not line.startswith("data:"):
-                    continue
-                data = line[5:].strip()
-                if data == "[DONE]":
-                    break
-                try:
-                    obj = json.loads(data)
-                except Exception:
-                    continue
-                delta = ((obj.get("choices") or [{}])[0].get("delta") or {})
-                piece = delta.get("content") or ""
-                if piece:
-                    chunks.append(piece)
-                    if on_chunk is not None:
-                        try:
-                            await on_chunk(piece)
-                        except Exception:
-                            pass
+                raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {r.text[:500]}")
+            resp = r.json()
+            content = ((resp.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+            if content:
+                chunks.append(content)
     full = "".join(chunks).strip()
     if not full:
         raise RuntimeError("LLM 返回空内容")
@@ -2522,6 +2549,7 @@ async def api_admin_llm_set(payload: Dict[str, Any]):
         "custom_endpoint": str(payload.get("custom_endpoint", _llm_config.get("custom_endpoint", ""))).strip(),
         "custom_api_key": str(payload.get("custom_api_key", _llm_config.get("custom_api_key", ""))).strip(),
         "custom_model": str(payload.get("custom_model", _llm_config.get("custom_model", ""))).strip(),
+        "llm_stream": payload.get("llm_stream", _llm_config.get("llm_stream", True)) in (True, "true", 1),
     }
     if not await _save_llm_config(new_state):
         raise HTTPException(500, "写入 llm_config.json 失败")

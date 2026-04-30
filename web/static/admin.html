@@ -194,6 +194,13 @@
           </label>
         </div>
       </div>
+      <div class="mt-3 flex items-center gap-3 flex-wrap text-sm">
+        <label class="flex items-center gap-1">
+          <input id="llm-stream" type="checkbox" checked />
+          <span>流式输出 (SSE)</span>
+        </label>
+        <span class="text-[10px] text-gray-500">关闭后使用普通请求，适用于不支持 SSE 的网络环境。</span>
+      </div>
       <div class="mt-3 flex items-center gap-2 flex-wrap">
         <button id="btn-save-llm" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
         <button id="btn-test-llm" class="px-3 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 text-sm">测试连接</button>
@@ -765,6 +772,7 @@ async function loadLLM() {
     $('llm-custom-key').value = '';
     $('llm-custom-key-hint').textContent = c.custom_api_key_masked ? `当前: ${c.custom_api_key_masked}，留空不修改` : '留空则不修改已保存的密钥。';
     $('llm-custom-model').value = c.custom_model || '';
+    $('llm-stream').checked = c.llm_stream !== false;
     _llmBadge(provider);
     $('llm-status').textContent = '';
   } catch (e) { $('llm-status').textContent = '加载失败: ' + e.message; }
@@ -779,6 +787,7 @@ async function saveLLM() {
     google_thinking: $('llm-google-thinking').value,
     custom_endpoint: $('llm-custom-endpoint').value,
     custom_model: $('llm-custom-model').value,
+    llm_stream: $('llm-stream').checked,
   };
   const gKey = $('llm-google-key').value;
   if (gKey) payload.google_api_key = gKey;
@@ -804,6 +813,7 @@ function _llmPayload() {
     google_thinking: $('llm-google-thinking').value,
     custom_endpoint: $('llm-custom-endpoint').value,
     custom_model: $('llm-custom-model').value,
+    llm_stream: $('llm-stream').checked,
   };
   const gKey = $('llm-google-key').value;
   if (gKey) p.google_api_key = gKey;
