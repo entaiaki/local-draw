@@ -1042,15 +1042,18 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                     else:
                         chunks.append(piece)
     full = "".join(chunks).strip()
-    if not full and thought_chunks:
-        import re as _re
+    if thought_chunks:
         thought_text = "".join(thought_chunks)
         lines = thought_text.strip().splitlines()
+        thought_candidate = ""
         for line in reversed(lines):
             cleaned = line.strip().strip("`").strip()
             if "," in cleaned and len(cleaned) > 10 and not cleaned.startswith("*"):
-                full = cleaned
+                thought_candidate = cleaned
                 break
+        if thought_candidate:
+            if not full or thought_candidate.count(",") > full.count(","):
+                full = thought_candidate
     if not full:
         raise RuntimeError("Google LLM 返回空内容")
     return full
