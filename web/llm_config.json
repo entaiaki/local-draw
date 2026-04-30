@@ -1,0 +1,11 @@
+{
+  "provider": "google",
+  "local_endpoint": "http://127.0.0.1:1234",
+  "google_api_key": "AIzaSyBi-ntcjA8nI859Q5MUrTF_hJYqI-R0Vjs",
+  "google_model": "gemma-4-31b-it",
+  "google_thinking": "level_high",
+  "custom_endpoint": "http://localhost:1234",
+  "custom_api_key": "",
+  "custom_model": "qwen3.5-35b-a3b-uncensored",
+  "llm_stream": true
+}

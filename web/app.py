@@ -27,7 +27,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 import websockets
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, UploadFile
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
@@ -55,14 +55,16 @@ _creator_map_lock = asyncio.Lock()
 BANNED_IPS_FILE = Path(__file__).parent / "banned_ips.txt"
 FEATURED_FILE = Path(__file__).parent / "featured.txt"
 LIMITS_FILE = Path(__file__).parent / "limits.json"
-MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
 ANNOUNCEMENT_FILE = Path(__file__).parent / "announcement.json"
 LLM_CONFIG_FILE = Path(__file__).parent / "llm_config.json"
 REPORTS_FILE = Path(__file__).parent / "reports.json"
+STYLES_FILE = Path(__file__).parent / "styles.json"
+STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
 _banned_lock = asyncio.Lock()
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
+_styles_lock = asyncio.Lock()
 _announcement_lock = asyncio.Lock()
 _llm_config_lock = asyncio.Lock()
 _REPORT_RATE: Dict[str, List[float]] = {}
@@ -111,41 +113,6 @@ async def _save_limits(new_limits: Dict[str, int]) -> bool:
             return False
 
 
-# ---------------- 维护模式 ----------------
-DEFAULT_MAINTENANCE = {"enabled": False, "mode": "full", "message": "站点维护中，请稍后再试。"}
-_maint_lock = asyncio.Lock()
-
-
-def _load_maintenance() -> Dict[str, Any]:
-    if not MAINTENANCE_FILE.is_file():
-        return dict(DEFAULT_MAINTENANCE)
-    try:
-        d = json.loads(MAINTENANCE_FILE.read_text(encoding="utf-8"))
-        if not isinstance(d, dict):
-            return dict(DEFAULT_MAINTENANCE)
-        return {
-            "enabled": bool(d.get("enabled", False)),
-            "mode": d.get("mode", "full") if d.get("mode") in ("full", "no_gen") else "full",
-            "message": str(d.get("message") or DEFAULT_MAINTENANCE["message"]),
-        }
-    except Exception:
-        return dict(DEFAULT_MAINTENANCE)
-
-
-_maintenance: Dict[str, Any] = _load_maintenance()
-
-
-async def _save_maintenance(state: Dict[str, Any]) -> bool:
-    async with _maint_lock:
-        try:
-            tmp = MAINTENANCE_FILE.with_suffix(".json.tmp")
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump(state, f, ensure_ascii=False, indent=2)
-            os.replace(tmp, MAINTENANCE_FILE)
-            return True
-        except Exception:
-            return False
-
 
 # ---------------- 公告 ----------------
 DEFAULT_ANNOUNCEMENT = {"enabled": False, "title": "", "content": ""}
@@ -177,6 +144,37 @@ async def _save_announcement(state: Dict[str, Any]) -> bool:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(state, f, ensure_ascii=False, indent=2)
             os.replace(tmp, ANNOUNCEMENT_FILE)
+            return True
+        except Exception:
+            return False
+
+
+# ---------------- 画风配置 ----------------
+def _load_styles() -> List[Dict[str, Any]]:
+    if not STYLES_FILE.is_file():
+        return []
+    try:
+        d = json.loads(STYLES_FILE.read_text(encoding="utf-8"))
+        if not isinstance(d, list):
+            return []
+        return [
+            {"name": str(s.get("name", "")), "tags": str(s.get("tags", "")), "image": str(s.get("image", ""))}
+            for s in d if isinstance(s, dict) and str(s.get("tags", "")).strip()
+        ]
+    except Exception:
+        return []
+
+
+_styles: List[Dict[str, Any]] = _load_styles()
+
+
+async def _save_styles(data: List[Dict[str, Any]]) -> bool:
+    async with _styles_lock:
+        try:
+            tmp = STYLES_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, STYLES_FILE)
             return True
         except Exception:
             return False
@@ -523,42 +521,6 @@ async def _start_gc():
     global _gc_task
     _gc_task = asyncio.create_task(_gc_loop())
 
-
-# 维护模式：开启后所有请求统一返回维护页（GET）或 503（其它方法）。
-# 后注册的 @app.middleware 最先执行，所以这条会比上面两条更早。
-# /admin 和 /api/admin/ 放行：管理员需要在维护期间操作后台。
-# /api/output/file 放行：管理页面需要加载缩略图。
-_MAINT_BYPASS_PREFIXES = ("/static", "/admin", "/api/admin/", "/api/output/file")
-
-
-@app.middleware("http")
-async def _maintenance_gate(request: Request, call_next):
-    if not _maintenance.get("enabled"):
-        return await call_next(request)
-    mode = _maintenance.get("mode", "full")
-    if mode == "no_gen":
-        return await call_next(request)
-    path = request.url.path
-    if any(path.startswith(p) for p in _MAINT_BYPASS_PREFIXES):
-        return await call_next(request)
-    msg = str(_maintenance.get("message") or "").strip() or "站点维护中，请稍后再试。"
-    if request.method != "GET":
-        return Response(content=msg, status_code=503, media_type="text/plain; charset=utf-8")
-    # GET：始终返回静态维护页（HTML）
-    import html as _html
-    body = f"""<!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="robots" content="noindex, nofollow" />
-<title>站点维护中</title>
-<script src="https://cdn.tailwindcss.com"></script>
-</head><body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-<div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 text-center">
-  <div class="text-5xl mb-3">🛠️</div>
-  <h1 class="text-xl font-bold mb-3 text-gray-800">站点维护中</h1>
-  <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{_html.escape(msg)}</p>
-</div></body></html>"""
-    return Response(content=body, status_code=503, media_type="text/html; charset=utf-8")
 
 
 @app.get("/robots.txt")
@@ -1177,6 +1139,33 @@ async def api_thumbnail(request: Request, path: str):
     return _serve_image_maybe_webp(request, p, quality=72, max_side=256)
 
 
+@app.get("/api/styles")
+async def api_styles_public():
+    return {"styles": list(_styles)}
+
+
+@app.get("/api/style_thumbnail")
+async def api_style_thumbnail(request: Request, name: str):
+    if not name or ".." in name or "/" in name or "\\" in name:
+        raise HTTPException(400, "invalid name")
+    for ext in THUMB_EXTS:
+        candidate = STYLE_THUMB_DIR / (name + ext)
+        try:
+            cr = candidate.resolve()
+            if cr.is_file() and str(cr).startswith(str(STYLE_THUMB_DIR.resolve())):
+                return _serve_image_maybe_webp(request, cr, quality=72, max_side=256)
+        except Exception:
+            continue
+    p = STYLE_THUMB_DIR / name
+    try:
+        cr = p.resolve()
+        if cr.is_file() and str(cr).startswith(str(STYLE_THUMB_DIR.resolve())):
+            return _serve_image_maybe_webp(request, cr, quality=72, max_side=256)
+    except Exception:
+        pass
+    raise HTTPException(404, "no style thumbnail")
+
+
 # ============== ComfyUI output 浏览（只读） ==============
 
 OUTPUT_IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
@@ -1747,6 +1736,7 @@ class RunRequest(BaseModel):
     override: bool = False
     width: Optional[int] = None
     height: Optional[int] = None
+    style_tags: str = ""
 
 
 # 单一并发锁
@@ -1865,17 +1855,6 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
             return
-        if _maintenance.get("enabled") and _maintenance.get("mode") in ("full", "no_gen"):
-            msg = str(_maintenance.get("message") or "").strip() or "站点维护中，暂停生图"
-            try:
-                await ws.send_json({"type": "error", "message": msg})
-            except Exception:
-                pass
-            try:
-                await ws.close()
-            except Exception:
-                pass
-            return
         # 单 IP 生图冷却（来自 limits.json，可在管理面板改）
         import time as _time
         now = _time.time()
@@ -1942,6 +1921,10 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
 
     sep = ", "
 
+    style_tags = req.style_tags.strip()
+    if style_tags:
+        await emit(ws, {"type": "log", "message": f"画风词条：{style_tags}"})
+
     # 覆写模式：忽略工作流内置 prompt
     effective_builtin = "" if req.override else builtin
     if req.override:
@@ -1972,6 +1955,9 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
         parts = [p for p in (effective_builtin, req.direct_prompt) if p]
         sd_prompt = sep.join(parts)
         await emit(ws, {"type": "log", "message": "[2/4] 跳过 LLM"})
+
+    if style_tags:
+        sd_prompt = sep.join([style_tags, sd_prompt]) if sd_prompt else style_tags
 
     if not sd_prompt.strip():
         await emit(ws, {"type": "error", "message": "最终 prompt 为空"})
@@ -2497,27 +2483,6 @@ async def api_admin_gc_run():
     return {"ok": True, "cleaned": result}
 
 
-@app.get("/api/admin/maintenance")
-async def api_admin_maintenance_get():
-    return {"maintenance": dict(_maintenance)}
-
-
-@app.post("/api/admin/maintenance")
-async def api_admin_maintenance_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    new_state = {
-        "enabled": bool(payload.get("enabled", _maintenance.get("enabled", False))),
-        "mode": payload.get("mode", _maintenance.get("mode", "full")) if payload.get("mode", _maintenance.get("mode", "full")) in ("full", "no_gen") else "full",
-        "message": str(payload.get("message", _maintenance.get("message", ""))).strip()
-            or DEFAULT_MAINTENANCE["message"],
-    }
-    if not await _save_maintenance(new_state):
-        raise HTTPException(500, "写入 maintenance.json 失败")
-    _maintenance.clear()
-    _maintenance.update(new_state)
-    return {"ok": True, "maintenance": dict(_maintenance)}
-
 
 # ---------------- 公告端点 ----------------
 
@@ -2545,6 +2510,172 @@ async def api_admin_announcement_set(payload: Dict[str, Any]):
     _announcement.clear()
     _announcement.update(new_state)
     return {"ok": True, "announcement": dict(_announcement)}
+
+
+# ---------------- 画风端点 ----------------
+
+@app.get("/api/admin/styles")
+async def api_admin_styles_get():
+    return {"styles": list(_styles)}
+
+
+@app.post("/api/admin/styles")
+async def api_admin_styles_set(payload: Dict[str, Any]):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    raw = payload.get("styles")
+    if not isinstance(raw, list):
+        raise HTTPException(400, "styles must be array")
+    cleaned = []
+    for s in raw:
+        if not isinstance(s, dict):
+            continue
+        tags = str(s.get("tags", "")).strip()
+        if not tags:
+            continue
+        cleaned.append({
+            "name": str(s.get("name", "")).strip(),
+            "tags": tags,
+            "image": str(s.get("image", "")).strip(),
+        })
+    if not await _save_styles(cleaned):
+        raise HTTPException(500, "写入 styles.json 失败")
+    _styles.clear()
+    _styles.extend(cleaned)
+    return {"ok": True, "styles": list(_styles)}
+
+
+@app.post("/api/admin/style_thumbnail")
+async def api_admin_style_thumbnail_upload(file: UploadFile):
+    if not file.filename:
+        raise HTTPException(400, "no filename")
+    ext = Path(file.filename).suffix.lower()
+    if ext not in THUMB_EXTS:
+        raise HTTPException(400, f"不支持的格式，仅限 {', '.join(THUMB_EXTS)}")
+    STYLE_THUMB_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = Path(file.filename).name
+    if not safe_name or ".." in safe_name:
+        raise HTTPException(400, "invalid filename")
+    dest = STYLE_THUMB_DIR / safe_name
+    data = await file.read()
+    if len(data) > 5 * 1024 * 1024:
+        raise HTTPException(400, "文件过大（上限 5 MB）")
+    with open(dest, "wb") as f:
+        f.write(data)
+    return {"ok": True, "filename": safe_name}
+
+
+# ---------------- 工作流缩略图管理 ----------------
+
+@app.get("/api/admin/workflow_thumbnails")
+async def api_admin_workflow_thumbnails():
+    """列出所有工作流缩略图配置"""
+    if not THUMB_DIR.exists():
+        return {"thumbnails": []}
+    thumbnails = []
+    for p in THUMB_DIR.iterdir():
+        if p.is_file() and p.suffix.lower() in THUMB_EXTS:
+            thumbnails.append({"filename": p.name})
+    return {"thumbnails": sorted(thumbnails, key=lambda x: x["filename"])}
+
+
+@app.post("/api/admin/workflow_thumbnail")
+async def api_admin_workflow_thumbnail_upload(file: UploadFile):
+    """上传工作流缩略图"""
+    if not file.filename:
+        raise HTTPException(400, "no filename")
+    ext = Path(file.filename).suffix.lower()
+    if ext not in THUMB_EXTS:
+        raise HTTPException(400, f"不支持的格式，仅限 {', '.join(THUMB_EXTS)}")
+    THUMB_DIR.mkdir(parents=True, exist_ok=True)
+    safe_name = Path(file.filename).name
+    if not safe_name or ".." in safe_name:
+        raise HTTPException(400, "invalid filename")
+    dest = THUMB_DIR / safe_name
+    data = await file.read()
+    if len(data) > 10 * 1024 * 1024:
+        raise HTTPException(400, "文件过大（上限 10 MB）")
+    with open(dest, "wb") as f:
+        f.write(data)
+    return {"ok": True, "filename": safe_name}
+
+
+@app.delete("/api/admin/workflow_thumbnail")
+async def api_admin_workflow_thumbnail_delete(filename: str):
+    """删除工作流缩略图"""
+    if not filename or ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(400, "invalid filename")
+    p = THUMB_DIR / filename
+    try:
+        pr = p.resolve()
+        if not str(pr).startswith(str(THUMB_DIR.resolve())):
+            raise HTTPException(400, "invalid path")
+        if pr.is_file():
+            pr.unlink()
+            return {"ok": True}
+        else:
+            raise HTTPException(404, "file not found")
+    except Exception as e:
+        raise HTTPException(500, f"删除失败: {e}")
+
+
+# ---------------- Lora 链接管理 ----------------
+
+@app.get("/api/admin/lora_links")
+async def api_admin_lora_links():
+    """列出所有 Lora 链接配置"""
+    if not LORA_LINKS_DIR.exists():
+        return {"links": []}
+    links = []
+    for p in LORA_LINKS_DIR.iterdir():
+        if p.is_file() and p.suffix.lower() == ".txt":
+            try:
+                content = p.read_text(encoding="utf-8").strip()
+                url = content.splitlines()[0].strip() if content else ""
+                links.append({"filename": p.name, "url": url})
+            except Exception:
+                links.append({"filename": p.name, "url": ""})
+    return {"links": sorted(links, key=lambda x: x["filename"])}
+
+
+@app.post("/api/admin/lora_link")
+async def api_admin_lora_link_save(payload: Dict[str, Any]):
+    """保存或更新 Lora 链接"""
+    filename = str((payload or {}).get("filename", "")).strip()
+    url = str((payload or {}).get("url", "")).strip()
+    if not filename:
+        raise HTTPException(400, "filename required")
+    if not filename.endswith(".txt"):
+        filename += ".txt"
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(400, "invalid filename")
+    LORA_LINKS_DIR.mkdir(parents=True, exist_ok=True)
+    dest = LORA_LINKS_DIR / filename
+    try:
+        with open(dest, "w", encoding="utf-8") as f:
+            f.write(url + "\n" if url else "")
+        return {"ok": True, "filename": filename}
+    except Exception as e:
+        raise HTTPException(500, f"保存失败: {e}")
+
+
+@app.delete("/api/admin/lora_link")
+async def api_admin_lora_link_delete(filename: str):
+    """删除 Lora 链接"""
+    if not filename or ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(400, "invalid filename")
+    p = LORA_LINKS_DIR / filename
+    try:
+        pr = p.resolve()
+        if not str(pr).startswith(str(LORA_LINKS_DIR.resolve())):
+            raise HTTPException(400, "invalid path")
+        if pr.is_file():
+            pr.unlink()
+            return {"ok": True}
+        else:
+            raise HTTPException(404, "file not found")
+    except Exception as e:
+        raise HTTPException(500, f"删除失败: {e}")
 
 
 # ---------------- LLM 配置端点 ----------------

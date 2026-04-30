@@ -201,6 +201,12 @@
     <div id="wf-list" class="max-h-[32rem] overflow-y-auto"></div>
   </div>
 
+  <!-- 画风选择 -->
+  <div id="style-section" class="bg-white rounded shadow p-4 mb-4 hidden">
+    <h2 class="text-lg font-semibold mb-2">🖌️ 画风</h2>
+    <div id="style-list" class="flex flex-wrap gap-2"></div>
+  </div>
+
   <!-- 生图表单 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <h2 class="text-lg font-semibold mb-3">🎨 生成图片</h2>
@@ -683,6 +689,65 @@ async function selectWorkflow(path) {
   await loadCurrent();
 }
 
+// -------- 画风 --------
+let allStyles = [];
+
+function getSelectedStyle() {
+  return localStorage.getItem('currentStyle') || '';
+}
+function setSelectedStyle(tags) {
+  if (tags) localStorage.setItem('currentStyle', tags);
+  else localStorage.removeItem('currentStyle');
+}
+function getSelectedStyleTags() {
+  return getSelectedStyle();
+}
+
+async function loadStyles() {
+  try {
+    const r = await fetch('/api/styles');
+    const d = await r.json();
+    allStyles = d.styles || [];
+  } catch (e) {
+    allStyles = [];
+  }
+  renderStyles();
+}
+
+function renderStyles() {
+  const section = $('style-section');
+  if (!allStyles.length) {
+    section.classList.add('hidden');
+    return;
+  }
+  section.classList.remove('hidden');
+  const selected = getSelectedStyle();
+  $('style-list').innerHTML = allStyles.map(s => {
+    const active = s.tags === selected;
+    const cls = active
+      ? 'style-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden'
+      : 'style-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+    const thumb = s.image
+      ? `<img src="/api/style_thumbnail?name=${encodeURIComponent(s.image)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
+      : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
+    const label = s.name || s.tags;
+    return `<div class="${cls}" data-style-tags="${s.tags.replace(/"/g, '&quot;')}" title="${s.tags}">
+      ${thumb}
+      <span class="text-[11px] font-medium leading-tight break-all text-center w-full line-clamp-2">${label}</span>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.style-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const tags = el.dataset.styleTags;
+      if (getSelectedStyle() === tags) setSelectedStyle('');
+      else setSelectedStyle(tags);
+      renderStyles();
+    });
+  });
+}
+
+loadStyles();
+
 let activeWS = null;
 let currentPrompt = '';
 
@@ -746,6 +811,7 @@ function actuallyStartRun(direct, nl, w, h) {
     override: $('override').checked,
     width: w,
     height: h,
+    style_tags: getSelectedStyleTags(),
   };
 
   $('progress-box').classList.remove('hidden');
@@ -836,12 +902,14 @@ $('btn-run').addEventListener('click', startRun);
 $('btn-reset-res').addEventListener('click', () => {
   $('width').value = '';
   $('height').value = '';
+  saveFormState();
 });
 $('res-presets').addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-w]');
   if (!btn) return;
   $('width').value = btn.dataset.w;
   $('height').value = btn.dataset.h;
+  saveFormState();
 });
 $('btn-reload-gallery').addEventListener('click', () => loadGallery(true));
 
@@ -866,6 +934,7 @@ $('btn-copy-builtin').addEventListener('click', () => {
   if (!txt) return;
   $('direct').value = txt;
   $('direct').focus();
+  saveFormState();
 });
 
 // ============== 全局状态：跨页面同步 ==============
@@ -1297,6 +1366,43 @@ async function loadAnnouncement() {
     }
   } catch {}
 }
+
+// -------- 表单状态持久化 --------
+const _FORM_KEY = 'formState';
+const _FORM_FIELDS = [
+  {id: 'direct', type: 'text'},
+  {id: 'nl', type: 'text'},
+  {id: 'rewrite', type: 'check'},
+  {id: 'override', type: 'check'},
+  {id: 'width', type: 'text'},
+  {id: 'height', type: 'text'},
+];
+function saveFormState() {
+  const s = {};
+  _FORM_FIELDS.forEach(f => {
+    const el = $(f.id);
+    s[f.id] = f.type === 'check' ? el.checked : el.value;
+  });
+  localStorage.setItem(_FORM_KEY, JSON.stringify(s));
+}
+function restoreFormState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(_FORM_KEY));
+    if (!s) return;
+    _FORM_FIELDS.forEach(f => {
+      const el = $(f.id);
+      if (f.id in s) {
+        if (f.type === 'check') el.checked = !!s[f.id];
+        else el.value = s[f.id] || '';
+      }
+    });
+  } catch {}
+}
+_FORM_FIELDS.forEach(f => {
+  const el = $(f.id);
+  el.addEventListener(f.type === 'check' ? 'change' : 'input', saveFormState);
+});
+restoreFormState();
 
 loadAnnouncement();
 loadCurrent();

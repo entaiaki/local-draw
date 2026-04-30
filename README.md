@@ -167,12 +167,13 @@ web/
 │   ├── admin.html          管理控制台
 │   └── favicon.avif
 ├── thumbnails/             工作流缩略图
+├── style_thumbnails/       画风缩略图
 ├── lora_links/             Lora 链接（每个工作流可配同名 .txt）
 ├── creator_ips.txt         生图者 IP 映射（gitignored）
 ├── banned_ips.txt          封禁 IP 列表（gitignored）
 ├── featured.txt            精选图片相对路径（gitignored）
 ├── limits.json             限流配置（gitignored）
-└── maintenance.json        维护模式状态（gitignored）
+├── styles.json             画风配置（gitignored）
 ```
 
 工作流选择是**纯前端**的，存在浏览器 `localStorage` 里——多人共用同一后端不会互相覆盖。
@@ -186,6 +187,8 @@ web/
 | `GET  /api/workflows` | 列出所有工作流 |
 | `GET  /api/workflows/current?path=` | 工作流摘要 + 默认分辨率 + 内置 prompt |
 | `GET  /api/thumbnail?path=` | 工作流缩略图 |
+| `GET  /api/styles` | 画风列表 |
+| `GET  /api/style_thumbnail?name=` | 画风缩略图 |
 | `GET  /api/output/list?limit=&offset=` | 输出目录分页（mtime 倒序） |
 | `GET  /api/output/file?path=` | 取输出图（路径穿越防护） |
 | `GET  /api/output/meta?path=` | 读 PNG 元数据，提取正向 prompt |
@@ -205,8 +208,8 @@ web/
 |---|---|
 | `GET  /admin` | 管理页 |
 | `GET  /api/admin/whoami` | 占位 |
-| `GET  /api/admin/maintenance` / `POST` | 维护模式 |
 | `GET  /api/admin/limits` / `POST` | 限流配置 |
+| `GET  /api/admin/styles` / `POST` | 画风管理 |
 | `GET  /api/admin/bans` | 封禁 IP 列表 |
 | `POST /api/admin/ban` / `unban` | 加/解封 IP |
 | `GET  /api/admin/recent?limit=&offset=` | 全输出图分页（管理用） |
