@@ -326,25 +326,31 @@ def _client_ip_from_request(request: Request) -> str:
     )
 
 
-def _read_banned_ips() -> set:
+def _read_banned_ips() -> list:
+    """返回封禁 IP 列表，保持文件中的顺序（最后一个是最新封禁的）。"""
     if not BANNED_IPS_FILE.is_file():
-        return set()
+        return []
     try:
-        return {
-            ln.strip()
-            for ln in BANNED_IPS_FILE.read_text(encoding="utf-8").splitlines()
-            if ln.strip() and not ln.strip().startswith("#")
-        }
+        seen = []
+        for ln in BANNED_IPS_FILE.read_text(encoding="utf-8").splitlines():
+            ip = ln.strip()
+            if ip and not ip.startswith("#"):
+                seen.append(ip)
+        return seen
     except Exception:
-        return set()
+        return []
 
 
-async def _write_banned_ips(ips: set) -> bool:
+def _read_banned_ips_set() -> set:
+    return set(_read_banned_ips())
+
+
+async def _write_banned_ips(ips: list) -> bool:
     async with _banned_lock:
         try:
             tmp = BANNED_IPS_FILE.with_suffix(".txt.tmp")
             with open(tmp, "w", encoding="utf-8") as f:
-                f.write("\n".join(sorted(ips)) + ("\n" if ips else ""))
+                f.write("\n".join(ips) + ("\n" if ips else ""))
             os.replace(tmp, BANNED_IPS_FILE)
             return True
         except Exception:
@@ -354,7 +360,7 @@ async def _write_banned_ips(ips: set) -> bool:
 def is_ip_banned(ip: str) -> bool:
     if not ip:
         return False
-    return ip in _read_banned_ips()
+    return ip in _read_banned_ips_set()
 
 
 def _read_featured() -> List[str]:
@@ -2254,7 +2260,7 @@ async def api_admin_whoami():
 
 @app.get("/api/admin/bans")
 async def api_admin_bans():
-    return {"banned": sorted(_read_banned_ips())}
+    return {"banned": list(reversed(_read_banned_ips()))}
 
 
 @app.post("/api/admin/ban")
@@ -2263,10 +2269,11 @@ async def api_admin_ban(payload: Dict[str, Any]):
     if not ip:
         raise HTTPException(400, "ip required")
     ips = _read_banned_ips()
-    ips.add(ip)
+    if ip not in ips:
+        ips.append(ip)
     if not await _write_banned_ips(ips):
         raise HTTPException(500, "写入 banned_ips.txt 失败")
-    return {"ok": True, "banned": sorted(ips)}
+    return {"ok": True, "banned": list(reversed(ips))}
 
 
 @app.post("/api/admin/unban")
@@ -2274,11 +2281,10 @@ async def api_admin_unban(payload: Dict[str, Any]):
     ip = (payload or {}).get("ip", "").strip()
     if not ip:
         raise HTTPException(400, "ip required")
-    ips = _read_banned_ips()
-    ips.discard(ip)
+    ips = [x for x in _read_banned_ips() if x != ip]
     if not await _write_banned_ips(ips):
         raise HTTPException(500, "写入 banned_ips.txt 失败")
-    return {"ok": True, "banned": sorted(ips)}
+    return {"ok": True, "banned": list(reversed(ips))}
 
 
 @app.get("/api/admin/recent")
@@ -2919,7 +2925,8 @@ async def api_admin_report_resolve(payload: Dict[str, Any]):
         creator_ip = _creator_map_get(image_path)
         if creator_ip:
             ips = _read_banned_ips()
-            ips.add(creator_ip)
+            if creator_ip not in ips:
+                ips.append(creator_ip)
             await _write_banned_ips(ips)
         else:
             raise HTTPException(400, "未找到该图片的绘图者 IP")
@@ -2927,7 +2934,8 @@ async def api_admin_report_resolve(payload: Dict[str, Any]):
         reporter_ip = target.get("reporter_ip", "")
         if reporter_ip:
             ips = _read_banned_ips()
-            ips.add(reporter_ip)
+            if reporter_ip not in ips:
+                ips.append(reporter_ip)
             await _write_banned_ips(ips)
             for r in reports:
                 if r.get("status") == "pending" and r.get("reporter_ip") == reporter_ip and r.get("id") != report_id:

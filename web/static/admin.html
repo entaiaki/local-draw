@@ -389,11 +389,12 @@ async function loadBans() {
     const d = await api('GET', '/api/admin/bans');
     const ips = d.banned || [];
     if (!ips.length) { $('ban-list').innerHTML = '<div class="text-gray-400">暂无</div>'; return; }
-    $('ban-list').innerHTML = '<div class="flex flex-wrap gap-2">' +
-      ips.map(ip => `<span class="inline-flex items-center gap-1 bg-red-100 text-red-800 rounded px-2 py-1 font-mono text-xs">
-        <a href="#" data-ip="${escHtml(ip)}" class="btn-show-ip-imgs hover:underline cursor-pointer">${escHtml(ip)}</a>
-        <button data-ip="${escHtml(ip)}" class="btn-unban hover:text-red-600 font-bold">×</button>
-      </span>`).join('') + '</div>';
+    $('ban-list').innerHTML = '<div class="flex flex-col gap-1 max-h-96 overflow-y-auto">' +
+      ips.map((ip, i) => `<div class="inline-flex items-center gap-2 ${i === 0 ? 'bg-red-200' : 'bg-red-50'} rounded px-2 py-1 font-mono text-xs">
+        <span class="text-gray-400 text-[10px] w-6 text-right">${i + 1}</span>
+        <a href="#" data-ip="${escHtml(ip)}" class="btn-show-ip-imgs hover:underline cursor-pointer text-red-800">${escHtml(ip)}</a>
+        <button data-ip="${escHtml(ip)}" class="btn-unban hover:text-red-600 font-bold ml-auto text-red-500">×</button>
+      </div>`).join('') + '</div>';
     document.querySelectorAll('.btn-unban').forEach(b => b.addEventListener('click', () => unban(b.dataset.ip)));
     document.querySelectorAll('.btn-show-ip-imgs').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); showIpImages(a.dataset.ip); }));
   } catch (e) { $('ban-list').textContent = '失败: ' + e.message; }
