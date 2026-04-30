@@ -60,11 +60,13 @@ LLM_CONFIG_FILE = Path(__file__).parent / "llm_config.json"
 REPORTS_FILE = Path(__file__).parent / "reports.json"
 STYLES_FILE = Path(__file__).parent / "styles.json"
 STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
+WORKFLOWS_FILE = Path(__file__).parent / "workflows.json"
 _banned_lock = asyncio.Lock()
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
 _styles_lock = asyncio.Lock()
+_workflows_lock = asyncio.Lock()
 _announcement_lock = asyncio.Lock()
 _llm_config_lock = asyncio.Lock()
 _REPORT_RATE: Dict[str, List[float]] = {}
@@ -175,6 +177,42 @@ async def _save_styles(data: List[Dict[str, Any]]) -> bool:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             os.replace(tmp, STYLES_FILE)
+            return True
+        except Exception:
+            return False
+
+
+# ---------------- 工作流配置 ----------------
+def _load_workflows() -> List[Dict[str, Any]]:
+    if not WORKFLOWS_FILE.is_file():
+        return []
+    try:
+        d = json.loads(WORKFLOWS_FILE.read_text(encoding="utf-8"))
+        if not isinstance(d, list):
+            return []
+        return [
+            {
+                "name": str(w.get("name", "")),
+                "path": str(w.get("path", "")),
+                "thumbnail": str(w.get("thumbnail", "")),
+                "lora_link": str(w.get("lora_link", ""))
+            }
+            for w in d if isinstance(w, dict) and str(w.get("path", "")).strip()
+        ]
+    except Exception:
+        return []
+
+
+_workflows: List[Dict[str, Any]] = _load_workflows()
+
+
+async def _save_workflows(data: List[Dict[str, Any]]) -> bool:
+    async with _workflows_lock:
+        try:
+            tmp = WORKFLOWS_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, WORKFLOWS_FILE)
             return True
         except Exception:
             return False
@@ -2567,9 +2605,43 @@ async def api_admin_style_thumbnail_upload(file: UploadFile):
 
 # ---------------- 工作流缩略图管理 ----------------
 
+@app.get("/api/admin/workflows")
+async def api_admin_workflows_get():
+    """获取工作流配置列表"""
+    return {"workflows": list(_workflows)}
+
+
+@app.post("/api/admin/workflows")
+async def api_admin_workflows_set(payload: Dict[str, Any]):
+    """保存工作流配置"""
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    raw = payload.get("workflows")
+    if not isinstance(raw, list):
+        raise HTTPException(400, "workflows must be array")
+    cleaned = []
+    for w in raw:
+        if not isinstance(w, dict):
+            continue
+        path = str(w.get("path", "")).strip()
+        if not path:
+            continue
+        cleaned.append({
+            "name": str(w.get("name", "")).strip(),
+            "path": path,
+            "thumbnail": str(w.get("thumbnail", "")).strip(),
+            "lora_link": str(w.get("lora_link", "")).strip(),
+        })
+    if not await _save_workflows(cleaned):
+        raise HTTPException(500, "写入 workflows.json 失败")
+    _workflows.clear()
+    _workflows.extend(cleaned)
+    return {"ok": True, "workflows": list(_workflows)}
+
+
 @app.get("/api/admin/workflow_thumbnails")
 async def api_admin_workflow_thumbnails():
-    """列出所有工作流缩略图配置"""
+    """列出所有工作流缩略图文件"""
     if not THUMB_DIR.exists():
         return {"thumbnails": []}
     thumbnails = []
@@ -2602,7 +2674,7 @@ async def api_admin_workflow_thumbnail_upload(file: UploadFile):
 
 @app.delete("/api/admin/workflow_thumbnail")
 async def api_admin_workflow_thumbnail_delete(filename: str):
-    """删除工作流缩略图"""
+    """删除工作流缩略图文件"""
     if not filename or ".." in filename or "/" in filename or "\\" in filename:
         raise HTTPException(400, "invalid filename")
     p = THUMB_DIR / filename

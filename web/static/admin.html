@@ -120,23 +120,32 @@
   <!-- 工作流缩略图管理 -->
   <div class="bg-white rounded shadow p-4 mb-4">
     <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="wf-thumb-body">
-        <span class="inline-block w-4 text-gray-400" data-arrow="wf-thumb-body">▸</span>
-        🖼️ 工作流缩略图管理
-        <span id="wf-thumb-count-badge" class="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700">0</span>
+      <h2 class="text-lg font-semibold cursor-pointer select-none" data-toggle="wf-body">
+        <span class="inline-block w-4 text-gray-400" data-arrow="wf-body">▸</span>
+        🖼️ 工作流配置管理
+        <span id="wf-count-badge" class="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700">0</span>
       </h2>
-      <button id="btn-refresh-wf-thumb" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
+      <button id="btn-refresh-wf" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
-    <div id="wf-thumb-body" class="hidden">
-      <p class="text-xs text-gray-500 mb-2">上传工作流缩略图。文件名需与工作流名称对应（如 WAI - 莫宁.png 对应 WAI - 莫宁.json）。</p>
-      <div class="mb-3">
-        <label class="flex flex-col gap-1 text-sm">
-          <span>上传缩略图</span>
-          <input id="wf-thumb-upload" type="file" accept="image/*" class="border rounded px-2 py-1 text-sm" />
-        </label>
+    <div id="wf-body" class="hidden">
+      <p class="text-xs text-gray-500 mb-2">配置工作流的显示名称、缩略图和 Lora 链接。path 为工作流路径（必填），name 为显示名称（可选），thumbnail 为缩略图文件名，lora_link 为 Lora 下载链接。</p>
+      <div id="wf-entries" class="flex flex-col gap-2 mb-3"></div>
+      <div class="flex items-center gap-2 mb-3">
+        <button id="btn-add-wf" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">+ 添加工作流</button>
+        <button id="btn-save-wf" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
+        <span id="wf-status" class="text-xs text-gray-500"></span>
       </div>
-      <div id="wf-thumb-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-3"></div>
-      <span id="wf-thumb-status" class="text-xs text-gray-500"></span>
+      <div class="border-t pt-3">
+        <h3 class="text-sm font-semibold mb-2">📁 缩略图文件管理</h3>
+        <div class="mb-2">
+          <label class="flex flex-col gap-1 text-sm">
+            <span>上传缩略图</span>
+            <input id="wf-thumb-upload" type="file" accept="image/*" class="border rounded px-2 py-1 text-sm" />
+          </label>
+        </div>
+        <div id="wf-thumb-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
+        <span id="wf-thumb-status" class="text-xs text-gray-500"></span>
+      </div>
     </div>
   </div>
 
@@ -890,16 +899,130 @@ $('btn-refresh-lora').addEventListener('click', loadLoraLinks);
 
 loadLoraLinks();
 
-// -------- 工作流缩略图管理 --------
+// -------- 工作流配置管理 --------
+
+let adminWorkflows = [];
+
+async function loadWorkflows() {
+  $('wf-entries').innerHTML = '加载中...';
+  try {
+    const d = await api('GET', '/api/admin/workflows');
+    adminWorkflows = d.workflows || [];
+    $('wf-count-badge').textContent = adminWorkflows.length;
+    renderWorkflowEntries();
+    loadWorkflowThumbnails();
+  } catch (e) {
+    $('wf-entries').innerHTML = `<div class="text-red-500 text-xs">加载失败: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function renderWorkflowEntries() {
+  const entries = $('wf-entries');
+  if (!adminWorkflows.length) {
+    entries.innerHTML = '<div class="text-gray-400 text-xs">暂无配置，点击"+ 添加工作流"开始</div>';
+    return;
+  }
+  entries.innerHTML = adminWorkflows.map((w, i) => `
+    <div class="border rounded p-2 bg-gray-50">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs mb-2">
+        <label class="flex flex-col gap-1">
+          <span>工作流路径 *</span>
+          <input type="text" value="${escHtml(w.path)}" 
+            class="wf-path-input border rounded px-2 py-1 font-mono" 
+            data-idx="${i}" placeholder="如: WAI - 莫宁.json" />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span>显示名称</span>
+          <input type="text" value="${escHtml(w.name)}" 
+            class="wf-name-input border rounded px-2 py-1" 
+            data-idx="${i}" placeholder="可选，留空则显示路径" />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span>缩略图文件名</span>
+          <input type="text" value="${escHtml(w.thumbnail)}" 
+            class="wf-thumb-input border rounded px-2 py-1 font-mono" 
+            data-idx="${i}" placeholder="如: WAI - 莫宁.png" />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span>Lora 链接</span>
+          <input type="text" value="${escHtml(w.lora_link)}" 
+            class="wf-lora-input border rounded px-2 py-1 font-mono" 
+            data-idx="${i}" placeholder="Lora 下载链接" />
+        </label>
+      </div>
+      <button class="btn-del-wf px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs" 
+        data-idx="${i}">删除</button>
+    </div>
+  `).join('');
+  
+  document.querySelectorAll('.wf-path-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx);
+      adminWorkflows[idx].path = inp.value.trim();
+    });
+  });
+  document.querySelectorAll('.wf-name-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx);
+      adminWorkflows[idx].name = inp.value.trim();
+    });
+  });
+  document.querySelectorAll('.wf-thumb-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx);
+      adminWorkflows[idx].thumbnail = inp.value.trim();
+    });
+  });
+  document.querySelectorAll('.wf-lora-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx);
+      adminWorkflows[idx].lora_link = inp.value.trim();
+    });
+  });
+  document.querySelectorAll('.btn-del-wf').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      adminWorkflows.splice(idx, 1);
+      renderWorkflowEntries();
+    });
+  });
+}
+
+async function saveWorkflows() {
+  $('wf-status').textContent = '保存中...';
+  try {
+    const d = await api('POST', '/api/admin/workflows', { workflows: adminWorkflows });
+    adminWorkflows = d.workflows || [];
+    $('wf-count-badge').textContent = adminWorkflows.length;
+    $('wf-status').textContent = '✓ 已保存';
+    setTimeout(() => $('wf-status').textContent = '', 2000);
+    renderWorkflowEntries();
+  } catch (e) {
+    $('wf-status').textContent = '✗ ' + e.message;
+  }
+}
+
+$('btn-add-wf').addEventListener('click', () => {
+  adminWorkflows.push({ name: '', path: '', thumbnail: '', lora_link: '' });
+  renderWorkflowEntries();
+  const entries = $('wf-entries');
+  if (entries.children.length) entries.children[entries.children.length - 1].querySelector('.wf-path-input').focus();
+});
+
+$('btn-save-wf').addEventListener('click', saveWorkflows);
+$('btn-refresh-wf').addEventListener('click', loadWorkflows);
+
+loadWorkflows();
+
+// -------- 工作流缩略图文件管理 --------
 
 async function loadWorkflowThumbnails() {
   $('wf-thumb-grid').innerHTML = '加载中...';
   try {
     const d = await api('GET', '/api/admin/workflow_thumbnails');
     const thumbs = d.thumbnails || [];
-    $('wf-thumb-count-badge').textContent = thumbs.length;
     if (!thumbs.length) {
-      $('wf-thumb-grid').innerHTML = '<div class="text-gray-400 text-xs col-span-full">暂无缩略图</div>';
+      $('wf-thumb-grid').innerHTML = '<div class="text-gray-400 text-xs col-span-full">暂无缩略图文件</div>';
       return;
     }
     $('wf-thumb-grid').innerHTML = thumbs.map(thumb => `
@@ -952,10 +1075,6 @@ $('wf-thumb-upload').addEventListener('change', async (e) => {
     $('wf-thumb-status').textContent = '✗ ' + e.message;
   }
 });
-
-$('btn-refresh-wf-thumb').addEventListener('click', loadWorkflowThumbnails);
-
-loadWorkflowThumbnails();
 
 // -------- LLM 配置 --------
 
