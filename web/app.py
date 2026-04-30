@@ -918,26 +918,28 @@ async def translate_prompt(
     on_chunk: Optional[Any] = None,
 ) -> str:
     import re as _re
-    preamble = (
-        "You are a technical assistant for an AI art generation pipeline. "
-        "Your sole job is to convert user descriptions into structured English tags "
-        "for Stable Diffusion / Pony / Illustrious models. "
-        "This is a professional image-generation workflow tool; all outputs are "
-        "standard descriptive tags used in digital art creation software. "
-    )
     if original_prompt:
-        system = preamble + (
-            "The user provides original tags and a new description. "
-            "Output the final English comma-separated tags. "
-            "Keep parts that are not asked to change. "
-            "Output ONLY the final prompt. No explanation. No Chinese in output."
+        system = (
+            "You are a Chinese-to-English dictionary for Danbooru image tags.\n"
+            "The user provides original tags and a new description.\n"
+            "Translate the new description into standard English Danbooru tags, "
+            "then merge them into the original tags.\n"
+            "Keep all original tags that are not asked to change.\n"
+            "Output ONLY the final comma-separated tags. No explanation. No Chinese in output."
         )
         user = f"Original prompt:\n{original_prompt}\n\nNew description:\n{prompt}\n\nGenerate the final prompt:"
     else:
-        system = preamble + (
-            "Convert the natural language input into English comma-separated tags. "
-            "Order: subject > appearance > action > scene > lighting > composition > quality tags. "
-            "Output ONLY the final English tags. No explanation. No Chinese in output."
+        system = (
+            "You are a Chinese-to-English dictionary for Danbooru image tags.\n"
+            "For each Chinese word or phrase in the input, output the matching English Danbooru tag.\n"
+            "Output all tags on one line separated by commas. No other text.\n\n"
+            "Tag vocabulary reference (use these exact tags when applicable):\n"
+            "- Body: breasts, large_breasts, huge_breasts, nipples, penis, vagina, ass, feet, soles, toes\n"
+            "- Positions: doggystyle, missionary, cowgirl, from_behind, reverse_cowgirl\n"
+            "- Actions: sex, vaginal, anal, oral, footjob, handjob, kissing, groping, masturbation, squirting, ejaculation\n"
+            "- States: nude, topless, bottomless, cum, wet, spread_legs, barefoot, penetration\n"
+            "- Subjects: 1girl, 1boy, 2girls, multiple_girls, hetero, yuri\n\n"
+            "Output: tags only, one line, no other text."
         )
         user = prompt
 
@@ -988,6 +990,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
             pass
 
     chunks: List[str] = []
+    thought_chunks: List[str] = []
     async with httpx.AsyncClient(timeout=120) as client:
         if use_stream:
             url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
@@ -1019,7 +1022,9 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                                 await on_chunk(piece)
                             except Exception:
                                 pass
-                        if not is_thought:
+                        if is_thought:
+                            thought_chunks.append(piece)
+                        else:
                             chunks.append(piece)
         else:
             url = f"{_GOOGLE_API_BASE}/models/{model}:generateContent?key={api_key}"
@@ -1030,9 +1035,22 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
             for cand in resp.get("candidates") or []:
                 for p in (cand.get("content") or {}).get("parts") or []:
                     piece = p.get("text") or ""
-                    if piece and not p.get("thought", False):
+                    if not piece:
+                        continue
+                    if p.get("thought", False):
+                        thought_chunks.append(piece)
+                    else:
                         chunks.append(piece)
     full = "".join(chunks).strip()
+    if not full and thought_chunks:
+        import re as _re
+        thought_text = "".join(thought_chunks)
+        lines = thought_text.strip().splitlines()
+        for line in reversed(lines):
+            cleaned = line.strip().strip("`").strip()
+            if "," in cleaned and len(cleaned) > 10 and not cleaned.startswith("*"):
+                full = cleaned
+                break
     if not full:
         raise RuntimeError("Google LLM 返回空内容")
     return full
