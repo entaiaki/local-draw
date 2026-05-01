@@ -107,11 +107,9 @@
       <button id="btn-refresh-wfmeta" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
     <div id="wfmeta-body" class="hidden">
-      <p class="text-xs text-gray-500 mb-2">为每个工作流配置缩略图和 Lora 链接。缩略图可直接上传（保存到 <code>web/thumbnails/</code>），Lora 链接为 Civitai 模型页 URL。仅需配置有 Lora 的工作流。</p>
+      <p class="text-xs text-gray-500 mb-2">自动从 ComfyUI 工作流目录扫描。为每个工作流配置缩略图和 Lora 链接，修改后自动保存。</p>
       <div id="wfmeta-entries" class="flex flex-col gap-2 mb-3"></div>
       <div class="flex items-center gap-2">
-        <button id="btn-add-wfmeta" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">+ 添加条目</button>
-        <button id="btn-save-wfmeta" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
         <span id="wfmeta-status" class="text-xs text-gray-500"></span>
       </div>
     </div>
@@ -815,24 +813,18 @@ function renderWfMetaEntries() {
         </label>
       </div>
       <div class="flex flex-col gap-1 flex-1 text-sm">
-        <input type="text" value="${m.workflow.replace(/"/g, '&quot;')}" placeholder="工作流文件名（如 WAI - 莫宁.json）"
-          class="wfmeta-workflow border rounded px-2 py-1 font-mono text-xs" data-idx="${i}" />
+        <span class="font-mono text-xs text-gray-700 truncate" title="${m.workflow.replace(/"/g, '&quot;')}">${m.workflow}</span>
         <input type="text" value="${(m.lora_link || '').replace(/"/g, '&quot;')}" placeholder="Lora 链接 URL（可选）"
           class="wfmeta-link border rounded px-2 py-1 font-mono text-xs" data-idx="${i}" />
-        ${m.thumbnail ? `<span class="text-[10px] text-gray-400">缩略图: ${m.thumbnail}</span>` : ''}
       </div>
       <div class="flex flex-col gap-1">
         <button class="wfmeta-up text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300" data-idx="${i}" ${i === 0 ? 'disabled' : ''}>▲</button>
         <button class="wfmeta-down text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300" data-idx="${i}" ${i === adminWfMeta.length - 1 ? 'disabled' : ''}>▼</button>
-        <button class="wfmeta-del text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" data-idx="${i}">✕</button>
       </div>
     </div>`;
   }).join('');
-  container.querySelectorAll('.wfmeta-workflow').forEach(el => {
-    el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].workflow = el.value; });
-  });
   container.querySelectorAll('.wfmeta-link').forEach(el => {
-    el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].lora_link = el.value; });
+    el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].lora_link = el.value; autoSaveWfMeta(); });
   });
   container.querySelectorAll('.wfmeta-upload').forEach(el => {
     el.addEventListener('change', async () => {
@@ -847,40 +839,26 @@ function renderWfMetaEntries() {
         const d = await r.json();
         adminWfMeta[idx].thumbnail = d.filename;
         renderWfMetaEntries();
+        autoSaveWfMeta();
       } catch (e) { $('wfmeta-status').textContent = '上传失败: ' + e.message; }
     });
   });
   container.querySelectorAll('.wfmeta-up').forEach(el => {
     el.addEventListener('click', () => {
       const i = +el.dataset.idx;
-      if (i > 0) { [adminWfMeta[i-1], adminWfMeta[i]] = [adminWfMeta[i], adminWfMeta[i-1]]; renderWfMetaEntries(); }
+      if (i > 0) { [adminWfMeta[i-1], adminWfMeta[i]] = [adminWfMeta[i], adminWfMeta[i-1]]; renderWfMetaEntries(); autoSaveWfMeta(); }
     });
   });
   container.querySelectorAll('.wfmeta-down').forEach(el => {
     el.addEventListener('click', () => {
       const i = +el.dataset.idx;
-      if (i < adminWfMeta.length - 1) { [adminWfMeta[i], adminWfMeta[i+1]] = [adminWfMeta[i+1], adminWfMeta[i]]; renderWfMetaEntries(); }
+      if (i < adminWfMeta.length - 1) { [adminWfMeta[i], adminWfMeta[i+1]] = [adminWfMeta[i+1], adminWfMeta[i]]; renderWfMetaEntries(); autoSaveWfMeta(); }
     });
-  });
-  container.querySelectorAll('.wfmeta-del').forEach(el => {
-    el.addEventListener('click', () => { adminWfMeta.splice(+el.dataset.idx, 1); renderWfMetaEntries(); });
   });
   $('wfmeta-count-badge').textContent = adminWfMeta.length;
 }
 
-async function loadWfMeta() {
-  try {
-    const d = await api('GET', '/api/admin/workflow_meta');
-    adminWfMeta = (d.workflow_meta || []).map(m => ({
-      workflow: m.workflow || '',
-      thumbnail: m.thumbnail || '',
-      lora_link: m.lora_link || '',
-    }));
-    renderWfMetaEntries();
-    $('wfmeta-status').textContent = '';
-  } catch (e) { $('wfmeta-status').textContent = '加载失败: ' + e.message; }
-}
-
+let _saveWfMetaTimer = null;
 async function saveWfMeta() {
   try {
     const d = await api('POST', '/api/admin/workflow_meta', { workflow_meta: adminWfMeta });
@@ -889,19 +867,38 @@ async function saveWfMeta() {
       thumbnail: m.thumbnail || '',
       lora_link: m.lora_link || '',
     }));
-    renderWfMetaEntries();
     $('wfmeta-status').textContent = '✓ 已保存';
     setTimeout(() => { $('wfmeta-status').textContent = ''; }, 2000);
   } catch (e) { $('wfmeta-status').textContent = '保存失败: ' + e.message; }
 }
+function autoSaveWfMeta() {
+  clearTimeout(_saveWfMetaTimer);
+  $('wfmeta-status').textContent = '保存中…';
+  _saveWfMetaTimer = setTimeout(saveWfMeta, 600);
+}
 
-$('btn-add-wfmeta').addEventListener('click', () => {
-  adminWfMeta.push({workflow: '', thumbnail: '', lora_link: ''});
-  renderWfMetaEntries();
-  const entries = $('wfmeta-entries').querySelectorAll('.wfmeta-workflow');
-  if (entries.length) entries[entries.length - 1].focus();
-});
-$('btn-save-wfmeta').addEventListener('click', saveWfMeta);
+async function loadWfMeta() {
+  try {
+    const [filesRes, metaRes] = await Promise.all([
+      api('GET', '/api/admin/workflow_files'),
+      api('GET', '/api/admin/workflow_meta'),
+    ]);
+    const files = filesRes.files || [];
+    const metaMap = {};
+    for (const m of (metaRes.workflow_meta || [])) {
+      metaMap[m.workflow] = { thumbnail: m.thumbnail || '', lora_link: m.lora_link || '' };
+    }
+    // 用目录扫描结果作为主列表，合并已有 meta
+    adminWfMeta = files.map(f => ({
+      workflow: f,
+      thumbnail: (metaMap[f] || {}).thumbnail || '',
+      lora_link: (metaMap[f] || {}).lora_link || '',
+    }));
+    renderWfMetaEntries();
+    $('wfmeta-status').textContent = '';
+  } catch (e) { $('wfmeta-status').textContent = '加载失败: ' + e.message; }
+}
+
 $('btn-refresh-wfmeta').addEventListener('click', loadWfMeta);
 
 loadWfMeta();

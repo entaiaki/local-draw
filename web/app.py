@@ -15,6 +15,8 @@ WEB_PORT = 8080
 
 # ComfyUI 输出目录（只读浏览）
 OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
+# ComfyUI 工作流目录（自动扫描）
+COMFYUI_WORKFLOWS_DIR = r"C:\Users\acofo\Documents\ComfyUI\user\default\workflows"
 # ===================================
 
 import asyncio
@@ -2655,6 +2657,22 @@ async def api_admin_style_thumbnail_upload(file: UploadFile):
 
 
 # ---------------- 工作流元数据端点 ----------------
+
+def scan_workflow_files() -> List[str]:
+    """扫描 ComfyUI 工作流目录，返回所有 .json 文件的相对路径列表。"""
+    root = Path(COMFYUI_WORKFLOWS_DIR)
+    if not root.is_dir():
+        return []
+    results = []
+    for p in sorted(root.rglob("*.json")):
+        rel = str(p.relative_to(root)).replace("\\", "/")
+        results.append(rel)
+    return results
+
+
+@app.get("/api/admin/workflow_files")
+async def api_admin_workflow_files():
+    return {"files": scan_workflow_files()}
 
 @app.get("/api/admin/workflow_meta")
 async def api_admin_workflow_meta_get():
