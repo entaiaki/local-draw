@@ -512,10 +512,8 @@ function applyForkedToUI() {
     $('height').placeholder = '默认';
   }
   const bp = (m.builtin_prompt || '').trim();
-  if (bp) {
-    $('direct').value = bp;
-    saveFormState();
-  }
+  $('direct').value = bp;
+  saveFormState();
 }
 
 function clearFork() {
