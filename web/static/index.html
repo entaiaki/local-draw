@@ -678,7 +678,7 @@ function renderStyles() {
     const active = s.tags === selected;
     const cls = active
       ? 'style-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden'
-      : 'style-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+      : 'style-item border-2 border-transparent rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
     const thumb = s.image
       ? `<img src="/api/style_thumbnail?name=${encodeURIComponent(s.image)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
       : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
