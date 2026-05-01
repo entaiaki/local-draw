@@ -64,6 +64,7 @@ LLM_CONFIG_FILE = Path(__file__).parent / "llm_config.json"
 REPORTS_FILE = Path(__file__).parent / "reports.json"
 STYLES_FILE = Path(__file__).parent / "styles.json"
 STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
+RESOLUTIONS_FILE = Path(__file__).parent / "resolutions.json"
 _banned_lock = asyncio.Lock()
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
@@ -179,6 +180,54 @@ async def _save_styles(data: List[Dict[str, Any]]) -> bool:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             os.replace(tmp, STYLES_FILE)
+            return True
+        except Exception:
+            return False
+
+
+DEFAULT_RESOLUTIONS = {
+    "max_dim": 1344,
+    "presets": [
+        {"w": 1024, "h": 1344, "label": "WAI 推荐"},
+        {"w": 832,  "h": 1216, "label": "NoobAI 推荐"},
+        {"w": 1024, "h": 1024, "label": "大头照"},
+        {"w": 512,  "h": 512,  "label": "测试模型"},
+    ]
+}
+_resolutions_lock = asyncio.Lock()
+
+
+def _load_resolutions() -> Dict[str, Any]:
+    if not RESOLUTIONS_FILE.is_file():
+        return dict(DEFAULT_RESOLUTIONS)
+    try:
+        d = json.loads(RESOLUTIONS_FILE.read_text(encoding="utf-8"))
+        if not isinstance(d, dict):
+            return dict(DEFAULT_RESOLUTIONS)
+        result = {"max_dim": int(d.get("max_dim", DEFAULT_RESOLUTIONS["max_dim"]))}
+        presets = d.get("presets", [])
+        if isinstance(presets, list):
+            result["presets"] = [
+                {"w": int(p["w"]), "h": int(p["h"]), "label": str(p.get("label", ""))}
+                for p in presets if isinstance(p, dict) and "w" in p and "h" in p
+            ]
+        else:
+            result["presets"] = list(DEFAULT_RESOLUTIONS["presets"])
+        return result
+    except Exception:
+        return dict(DEFAULT_RESOLUTIONS)
+
+
+_resolutions: Dict[str, Any] = _load_resolutions()
+
+
+async def _save_resolutions(data: Dict[str, Any]) -> bool:
+    async with _resolutions_lock:
+        try:
+            tmp = RESOLUTIONS_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, RESOLUTIONS_FILE)
             return True
         except Exception:
             return False
@@ -1213,6 +1262,11 @@ async def api_styles_public():
     return {"styles": list(_styles)}
 
 
+@app.get("/api/resolutions")
+async def api_resolutions_public():
+    return dict(_resolutions)
+
+
 @app.get("/api/style_thumbnail")
 async def api_style_thumbnail(request: Request, name: str):
     if not name or ".." in name or "/" in name or "\\" in name:
@@ -2042,13 +2096,19 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
     prompt_dict[node_id]["inputs"][input_name] = sd_prompt
 
     if req.width and req.height and req.width > 0 and req.height > 0:
-        MAX_DIM = 1344
-        if req.width > MAX_DIM or req.height > MAX_DIM:
-            await emit(ws, {"type": "error", "message": f"分辨率不得大于 {MAX_DIM}（请求: {req.width}x{req.height}）"})
+        max_dim = _resolutions.get("max_dim", 1344)
+        presets = _resolutions.get("presets", [])
+        allowed = {(p["w"], p["h"]) for p in presets}
+        rw, rh = int(req.width), int(req.height)
+        if rw > max_dim or rh > max_dim:
+            await emit(ws, {"type": "error", "message": f"分辨率不得大于 {max_dim}（请求: {rw}x{rh}）"})
             return
-        n = apply_resolution(prompt_dict, int(req.width), int(req.height))
+        if allowed and (rw, rh) not in allowed:
+            await emit(ws, {"type": "error", "message": f"不支持的分辨率 {rw}x{rh}，请从预设中选择"})
+            return
+        n = apply_resolution(prompt_dict, rw, rh)
         if n:
-            await emit(ws, {"type": "log", "message": f"分辨率覆盖为 {req.width}x{req.height} ({n} 个节点)"})
+            await emit(ws, {"type": "log", "message": f"分辨率覆盖为 {rw}x{rh} ({n} 个节点)"})
 
     for nid, ndata in prompt_dict.items():
         if ndata.get("class_type") == "KSampler":
@@ -2619,6 +2679,42 @@ async def api_admin_styles_set(payload: Dict[str, Any]):
     _styles.clear()
     _styles.extend(cleaned)
     return {"ok": True, "styles": list(_styles)}
+
+
+# ---------------- 分辨率端点 ----------------
+
+@app.get("/api/admin/resolutions")
+async def api_admin_resolutions_get():
+    return dict(_resolutions)
+
+
+@app.post("/api/admin/resolutions")
+async def api_admin_resolutions_set(payload: Dict[str, Any]):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    max_dim = int(payload.get("max_dim", DEFAULT_RESOLUTIONS["max_dim"]))
+    if max_dim < 64 or max_dim > 4096:
+        raise HTTPException(400, "max_dim 范围 64-4096")
+    raw = payload.get("presets")
+    if not isinstance(raw, list):
+        raise HTTPException(400, "presets must be array")
+    presets = []
+    for p in raw:
+        if not isinstance(p, dict):
+            continue
+        try:
+            w, h = int(p["w"]), int(p["h"])
+        except (KeyError, ValueError, TypeError):
+            continue
+        if w < 64 or h < 64 or w > max_dim or h > max_dim:
+            raise HTTPException(400, f"分辨率 {w}x{h} 超出范围 (64-{max_dim})")
+        presets.append({"w": w, "h": h, "label": str(p.get("label", "")).strip()})
+    data = {"max_dim": max_dim, "presets": presets}
+    if not await _save_resolutions(data):
+        raise HTTPException(500, "写入 resolutions.json 失败")
+    _resolutions.clear()
+    _resolutions.update(data)
+    return {"ok": True, **data}
 
 
 async def _save_upload(file: UploadFile, dest_dir: Path) -> str:

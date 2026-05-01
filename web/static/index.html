@@ -265,36 +265,19 @@
     <div class="flex gap-2 items-end mb-2 text-sm">
       <div>
         <label class="block text-xs text-gray-500 mb-0.5">宽 width</label>
-        <input id="width" type="number" min="64" max="1344" step="8" placeholder="默认"
+        <input id="width" type="number" min="64" step="8" placeholder="默认"
           class="w-28 border rounded px-2 py-1" />
       </div>
       <div>
         <label class="block text-xs text-gray-500 mb-0.5">高 height</label>
-        <input id="height" type="number" min="64" max="1344" step="8" placeholder="默认"
+        <input id="height" type="number" min="64" step="8" placeholder="默认"
           class="w-28 border rounded px-2 py-1" />
       </div>
       <button id="btn-reset-res" type="button"
         class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-xs">恢复默认</button>
       <span id="default-res" class="text-xs text-gray-500"></span>
     </div>
-    <div class="flex flex-wrap gap-2 mb-3 text-xs" id="res-presets">
-      <button type="button" data-w="1024" data-h="1344"
-        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
-        1024×1344 <span class="text-gray-500">WAI 推荐</span>
-      </button>
-      <button type="button" data-w="832" data-h="1216"
-        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
-        832×1216 <span class="text-gray-500">NoobAI 推荐</span>
-      </button>
-      <button type="button" data-w="1024" data-h="1024"
-        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
-        1024×1024 <span class="text-gray-500">大头照</span>
-      </button>
-      <button type="button" data-w="512" data-h="512"
-        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
-        512×512 <span class="text-gray-500">测试模型</span>
-      </button>
-    </div>
+    <div class="flex flex-wrap gap-2 mb-3 text-xs" id="res-presets"></div>
 
     <div class="flex gap-2">
       <button id="btn-run" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400">
@@ -703,6 +686,27 @@ function getSelectedStyleTags() {
   return getSelectedStyle();
 }
 
+let _resMaxDim = 1344;
+
+async function loadResolutions() {
+  try {
+    const r = await fetch('/api/resolutions');
+    const d = await r.json();
+    _resMaxDim = d.max_dim || 1344;
+    $('width').max = _resMaxDim;
+    $('height').max = _resMaxDim;
+    const presets = d.presets || [];
+    $('res-presets').innerHTML = presets.map(p =>
+      `<button type="button" data-w="${p.w}" data-h="${p.h}"
+        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
+        ${p.w}×${p.h}${p.label ? ` <span class="text-gray-500">${p.label}</span>` : ''}
+      </button>`
+    ).join('');
+  } catch (e) {}
+}
+
+loadResolutions();
+
 async function loadStyles() {
   try {
     const r = await fetch('/api/styles');
@@ -783,10 +787,9 @@ function startRun() {
   }
   const direct = $('direct').value.trim();
   const nl = $('nl').value.trim();
-  const MAX_DIM = 1344;
   let w = parseInt($('width').value) || null;
   let h = parseInt($('height').value) || null;
-  if ((w && w > MAX_DIM) || (h && h > MAX_DIM)) {
+  if (w && h && _resMaxDim && (w > _resMaxDim || h > _resMaxDim)) {
     return;
   }
   if (!_genNoticeAcked) {
