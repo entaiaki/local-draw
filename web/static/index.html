@@ -184,13 +184,9 @@
     <div id="gs-text" class="text-xs mt-1"></div>
   </div>
 
-  <!-- 当前工作流 -->
-  <div class="bg-white rounded shadow p-4 mb-4">
-    <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">📂 当前工作流</h2>
-      <button id="btn-refresh" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
-    </div>
-    <div id="current-info" class="text-gray-600 text-sm">加载中...</div>
+  <!-- Fork 信息（仅 Fork 时可见） -->
+  <div id="fork-section" class="hidden mb-4">
+    <div id="current-info" class="text-gray-600 text-sm"></div>
   </div>
 
   <!-- 工作流列表 -->
@@ -489,7 +485,7 @@ function applyForkedToUI() {
     : '';
   const s = m.summary || {node_count:'?',link_count:'?',group_count:'?'};
   $('current-info').innerHTML = `
-    <div class="border-2 border-emerald-500 bg-emerald-50 rounded p-2 flex gap-3 items-start">
+    <div class="border-2 border-emerald-500 bg-emerald-50 rounded shadow p-3 flex gap-3 items-start">
       <div class="text-2xl">🍴</div>
       <div class="min-w-0 flex-1">
         <div class="font-medium text-emerald-800">临时 Fork（仅本浏览器，未保存）</div>
@@ -498,6 +494,7 @@ function applyForkedToUI() {
         <button id="btn-clear-fork" class="mt-1 text-xs px-2 py-0.5 bg-gray-200 hover:bg-gray-300 rounded">✕ 清除 Fork，恢复原工作流</button>
       </div>
     </div>`;
+  $('fork-section').classList.remove('hidden');
   $('btn-clear-fork').addEventListener('click', clearFork);
 
   defaultRes.w = m.default_width;
@@ -527,42 +524,12 @@ async function loadCurrent() {
     applyForkedToUI();
     return;
   }
+  $('fork-section').classList.add('hidden');
   const path = getCurrentPath();
-  if (!path) {
-    $('current-info').textContent = '未选中工作流';
-    return;
-  }
+  if (!path) return;
   const r = await fetch('/api/workflows/current?path=' + encodeURIComponent(path));
   const d = await r.json();
-  if (!d.path) {
-    $('current-info').textContent = '未选中工作流';
-    return;
-  }
-  const display = d.path.replace(/\.json$/i, '');
-  const thumb = d.thumbnail
-    ? `<img src="/api/thumbnail?path=${encodeURIComponent(d.path)}" class="w-16 h-16 object-cover rounded border flex-shrink-0" />`
-    : '';
-  if (d.error) {
-    $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div>${display} (错误: ${d.error})</div></div>`;
-    return;
-  }
-  const s = d.summary;
-  const loras = Array.isArray(d.loras) ? d.loras : [];
-  const escapeHtml = (str) => String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let lorasHtml = '';
-  if (loras.length) {
-    if (d.lora_link) {
-      const url = escapeHtml(d.lora_link);
-      lorasHtml = `<div class="text-xs mt-1"><a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-block bg-purple-100 text-purple-700 hover:bg-purple-200 underline rounded px-1.5 py-0.5 break-all">🔗 Lora 链接</a></div>`;
-    } else {
-      lorasHtml = `<div class="text-xs text-gray-700 mt-1">Lora: ${loras.map(n => `<span class="inline-block bg-purple-100 text-purple-700 rounded px-1.5 py-0.5 mr-1 mb-0.5 break-all">${escapeHtml(n)}</span>`).join('')}</div>`;
-    }
-  }
-  $('current-info').innerHTML = `<div class="flex gap-3 items-center">${thumb}<div class="min-w-0">
-    <div class="font-medium">${display}</div>
-    <div class="text-xs text-gray-500">节点 ${s.node_count} | 连线 ${s.link_count} | 分组 ${s.group_count}</div>
-    ${lorasHtml}
-  </div></div>`;
+  if (!d.path || d.error) return;
 
   defaultRes.w = d.default_width;
   defaultRes.h = d.default_height;
@@ -646,7 +613,6 @@ async function selectWorkflow(path) {
   forkedWorkflow = null;
   forkedMeta = null;
   setCurrentPath(path);
-  $('current-info').textContent = `加载 ${path} ...`;
   await loadCurrent();
 }
 
@@ -888,7 +854,6 @@ function finishRun() {
   activeWS = null;
 }
 
-$('btn-refresh').addEventListener('click', () => { loadCurrent(); loadList(); });
 $('search').addEventListener('input', renderList);
 $('btn-run').addEventListener('click', startRun);
 $('btn-reset-res').addEventListener('click', () => {
