@@ -707,7 +707,7 @@ async function loadStyles() {
   try {
     const r = await fetch('/api/styles');
     const d = await r.json();
-    allStyles = d.styles || [];
+    allStyles = (d.styles || []).sort((a, b) => (b.name ? 1 : 0) - (a.name ? 1 : 0));
   } catch (e) {
     allStyles = [];
   }
