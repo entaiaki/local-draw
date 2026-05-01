@@ -306,12 +306,7 @@
         <span class="text-xs text-gray-500 font-normal">(<span id="featured-count">0</span>)</span>
       </h2>
     </div>
-    <div class="mb-3 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded p-2">
-      💡 温馨提示：可以尝试 Fork 优秀作品二改哦，说不定哪天你就被站长精选了呢？！
-    </div>
-    <div class="mb-3 text-xs bg-rose-50 border border-rose-200 text-rose-800 rounded p-2">
-      📌 收录规则：只收录非 R18、作画好看、无明显坏手坏脚、风格独特、吸睛的作品哦！
-    </div>
+    <div id="featured-tip" class="hidden mb-3 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded p-2"></div>
     <div id="featured-gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
   </div>
 
@@ -402,6 +397,14 @@ async function loadFeatured() {
       return;
     }
     box.classList.remove('hidden');
+    const tipEl = document.getElementById('featured-tip');
+    const tip = (d.tip || '').trim();
+    if (tip) {
+      tipEl.textContent = tip;
+      tipEl.classList.remove('hidden');
+    } else {
+      tipEl.classList.add('hidden');
+    }
     grid.innerHTML = items.map(it => {
       const url = '/api/output/file?path=' + encodeURIComponent(it.path);
       const safe = it.path.replace(/"/g, '&quot;');

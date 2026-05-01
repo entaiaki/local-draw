@@ -294,6 +294,11 @@
         <span class="text-[10px] text-gray-500">定时清理已处理举报和过期数据的间隔。0 = 禁用自动 GC。</span>
       </label>
     </div>
+    <label class="flex flex-col gap-1 mt-3 text-sm">
+      <span>精选展示提示语</span>
+      <input id="lim-featured-tip" type="text" class="border rounded px-2 py-1 text-xs" placeholder="留空则不显示提示" />
+      <span class="text-[10px] text-gray-500">显示在精选展示区块顶部的提示文案。</span>
+    </label>
     <div class="mt-3 flex items-center gap-2">
       <button id="btn-save-limits" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
       <button id="btn-run-gc" class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm">立即 GC</button>
@@ -624,6 +629,7 @@ async function loadLimits() {
     $('lim-gpu-poll').value = L.gpu_poll_interval_ms ?? '';
     $('lim-gpu-cache').value = L.gpu_cache_ttl_ms ?? '';
     $('lim-gc-interval').value = L.gc_interval_hours ?? '';
+    $('lim-featured-tip').value = L.featured_tip ?? '';
     $('lim-status').textContent = '';
   } catch (e) {
     $('lim-status').textContent = '加载失败: ' + e.message;
@@ -641,6 +647,7 @@ async function saveLimits() {
     gpu_poll_interval_ms: parseInt($('lim-gpu-poll').value) || 5000,
     gpu_cache_ttl_ms: parseInt($('lim-gpu-cache').value) || 5000,
     gc_interval_hours: parseInt($('lim-gc-interval').value) || 0,
+    featured_tip: $('lim-featured-tip').value.trim(),
   };
   try {
     await api('POST', '/api/admin/limits', payload);

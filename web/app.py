@@ -75,26 +75,31 @@ _REPORT_RATE: Dict[str, List[float]] = {}
 _RATE_LAST_TS: Dict[str, float] = {}  # client_ip -> 上次开始生图的时间戳（用于生图冷却）
 
 DEFAULT_LIMITS = {
-    "gen_cooldown_sec": 30,    # 单 IP 两次生图最少间隔（秒）
-    "image_rate_window_sec": 60,  # 图片限流滑动窗口（秒）
-    "image_rate_max": 120,        # 每个 IP 在窗口内允许的图片请求数
-    "report_window_sec": 300,     # 举报滑动窗口（秒）
-    "report_window_max": 3,       # 窗口内最多举报次数
-    "report_pending_max": 10,     # 单 IP 最多待处理举报数
-    "gpu_poll_interval_ms": 5000,  # 前端轮询 GPU 状态间隔（毫秒）
-    "gpu_cache_ttl_ms": 5000,      # 后端 nvidia-smi 缓存有效期（毫秒）
-    "gc_interval_hours": 6,        # 定时 GC 执行间隔（小时），0 = 禁用
+    "gen_cooldown_sec": 30,
+    "image_rate_window_sec": 60,
+    "image_rate_max": 120,
+    "report_window_sec": 300,
+    "report_window_max": 3,
+    "report_pending_max": 10,
+    "gpu_poll_interval_ms": 5000,
+    "gpu_cache_ttl_ms": 5000,
+    "gc_interval_hours": 6,
+    "featured_tip": "💡 温馨提示：可以尝试 Fork 优秀作品二改哦！只收录非 R18、作画好看、无明显坏手坏脚、风格独特的作品。",
 }
 
 
-def _load_limits() -> Dict[str, int]:
+def _load_limits() -> Dict[str, Any]:
     if LIMITS_FILE.is_file():
         try:
             data = json.loads(LIMITS_FILE.read_text(encoding="utf-8"))
             if isinstance(data, dict):
                 merged = dict(DEFAULT_LIMITS)
                 for k, v in data.items():
-                    if k in DEFAULT_LIMITS and isinstance(v, (int, float)) and v >= 0:
+                    if k not in DEFAULT_LIMITS:
+                        continue
+                    if isinstance(DEFAULT_LIMITS[k], str):
+                        merged[k] = str(v)
+                    elif isinstance(v, (int, float)) and v >= 0:
                         merged[k] = int(v)
                 return merged
         except Exception:
@@ -102,7 +107,7 @@ def _load_limits() -> Dict[str, int]:
     return dict(DEFAULT_LIMITS)
 
 
-_limits: Dict[str, int] = _load_limits()
+_limits: Dict[str, Any] = _load_limits()
 
 
 async def _save_limits(new_limits: Dict[str, int]) -> bool:
@@ -1359,7 +1364,7 @@ async def api_output_featured():
         except Exception:
             mt = None
         items.append({"path": rel, "mtime": mt})
-    return {"items": items, "total": len(items)}
+    return {"items": items, "total": len(items), "tip": _limits.get("featured_tip", "")}
 
 
 @app.get("/api/output/file")
@@ -2585,9 +2590,12 @@ async def api_admin_limits_set(payload: Dict[str, Any]):
         if k not in payload:
             continue
         v = payload[k]
-        if not isinstance(v, (int, float)) or v < 0:
+        if isinstance(DEFAULT_LIMITS[k], str):
+            new_limits[k] = str(v)
+        elif isinstance(v, (int, float)) and v >= 0:
+            new_limits[k] = int(v)
+        else:
             raise HTTPException(400, f"{k} 必须为非负数")
-        new_limits[k] = int(v)
     if not await _save_limits(new_limits):
         raise HTTPException(500, "写入 limits.json 失败")
     _limits.clear()
