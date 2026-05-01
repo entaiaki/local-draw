@@ -589,11 +589,7 @@ function renderList() {
       } else {
         cardCls = 'wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
       }
-      const badge = noLora
-        ? `<span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] leading-none px-1 py-0.5 rounded shadow">★</span>`
-        : '';
       return `<div class="${cardCls}" data-path="${w.path}" title="${w.path}">
-         ${badge}
          ${thumb}
          <span class="text-[11px] font-medium leading-tight break-all text-center w-full line-clamp-2">${model}</span>
          <span class="text-[10px] text-gray-500 leading-tight break-all text-center w-full line-clamp-1">${custom}</span>
