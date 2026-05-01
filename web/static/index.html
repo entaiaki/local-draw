@@ -212,6 +212,7 @@
       ，在「直接 Tag」中输入 <code class="bg-purple-50 px-1 rounded">by xxx</code> 即可。
     </div>
     <div id="style-list" class="flex flex-wrap gap-2"></div>
+    <button id="style-toggle-btn" class="hidden mt-1 text-xs text-purple-600 hover:text-purple-800 underline"></button>
   </div>
 
   <!-- 生图表单 -->
@@ -713,6 +714,8 @@ async function loadStyles() {
   renderStyles();
 }
 
+let showAllStyles = false;
+
 function renderStyles() {
   const section = $('style-section');
   if (!allStyles.length) {
@@ -721,7 +724,12 @@ function renderStyles() {
   }
   section.classList.remove('hidden');
   const selected = getSelectedStyle();
-  $('style-list').innerHTML = allStyles.map(s => {
+  const hasAlias = allStyles.filter(s => s.name);
+  const noAlias = allStyles.filter(s => !s.name);
+  // 无别名的画风中，被选中的始终显示
+  const selectedInNoAlias = noAlias.some(s => s.tags === selected);
+  const visible = showAllStyles ? allStyles : (selectedInNoAlias ? [...hasAlias, noAlias.find(s => s.tags === selected)] : hasAlias);
+  $('style-list').innerHTML = visible.map(s => {
     const active = s.tags === selected;
     const cls = active
       ? 'style-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden'
@@ -735,6 +743,14 @@ function renderStyles() {
       <span class="text-[11px] font-medium leading-tight break-all text-center w-full line-clamp-2">${label}</span>
     </div>`;
   }).join('');
+  // 更多/收起按钮
+  const toggleBtn = $('style-toggle-btn');
+  if (noAlias.length) {
+    toggleBtn.classList.remove('hidden');
+    toggleBtn.textContent = showAllStyles ? '收起' : `更多 (${noAlias.length})`;
+  } else {
+    toggleBtn.classList.add('hidden');
+  }
   document.querySelectorAll('.style-item').forEach(el => {
     el.addEventListener('click', () => {
       const tags = el.dataset.styleTags;
@@ -744,6 +760,11 @@ function renderStyles() {
     });
   });
 }
+
+$('style-toggle-btn').addEventListener('click', () => {
+  showAllStyles = !showAllStyles;
+  renderStyles();
+});
 
 loadStyles();
 
