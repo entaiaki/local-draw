@@ -580,9 +580,15 @@ function renderList() {
         ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
         : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
       const noLora = isNoLora(w);
-      const cardCls = noLora
-        ? 'wf-item relative border-2 border-amber-400 ring-2 ring-amber-200 bg-amber-50 rounded p-1.5 cursor-pointer hover:bg-amber-100 flex flex-col items-center gap-0.5 w-16 overflow-hidden'
-        : 'wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+      const isSelected = w.path === getCurrentPath();
+      let cardCls;
+      if (isSelected) {
+        cardCls = 'wf-item relative border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+      } else if (noLora) {
+        cardCls = 'wf-item relative border border-amber-300 bg-amber-50 rounded p-1.5 cursor-pointer hover:bg-amber-100 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+      } else {
+        cardCls = 'wf-item border rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+      }
       const badge = noLora
         ? `<span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] leading-none px-1 py-0.5 rounded shadow">★</span>`
         : '';
@@ -609,10 +615,10 @@ function setCurrentPath(path) {
 }
 
 async function selectWorkflow(path) {
-  // 切换工作流意味着放弃临时 fork
   forkedWorkflow = null;
   forkedMeta = null;
   setCurrentPath(path);
+  renderList();
   await loadCurrent();
 }
 
