@@ -89,12 +89,7 @@
       <button id="btn-refresh-res" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
     <div id="res-body" class="hidden">
-      <p class="text-xs text-gray-500 mb-2">管理允许的分辨率预设和最大边长限制。前端只能从预设中选择，后端会拒绝不在预设列表中的分辨率。</p>
-      <div class="flex items-center gap-2 mb-3 text-sm">
-        <label class="text-xs text-gray-600">最大边长</label>
-        <input id="res-max-dim" type="number" min="64" max="4096" step="1"
-          class="w-24 border rounded px-2 py-1 font-mono text-xs" />
-      </div>
+      <p class="text-xs text-gray-500 mb-2">管理允许的分辨率预设。前端只能从预设中选择，后端会拒绝不在预设列表中的分辨率。</p>
       <div id="res-entries" class="flex flex-col gap-2 mb-3"></div>
       <div class="flex items-center gap-2">
         <button id="btn-add-res" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">+ 添加预设</button>
@@ -715,7 +710,7 @@ $('btn-save-ann').addEventListener('click', saveAnnouncement);
 loadAnnouncement();
 
 // -------- 分辨率管理 --------
-let adminRes = {max_dim: 1344, presets: []};
+let adminRes = {presets: []};
 
 function renderResEntries() {
   const container = $('res-entries');
@@ -763,9 +758,8 @@ function renderResEntries() {
 let _saveResTimer = null;
 async function saveRes() {
   try {
-    adminRes.max_dim = parseInt($('res-max-dim').value) || 1344;
     const d = await api('POST', '/api/admin/resolutions', adminRes);
-    adminRes = {max_dim: d.max_dim, presets: d.presets || []};
+    adminRes = {presets: d.presets || []};
     $('res-status').textContent = '✓ 已保存';
     setTimeout(() => { $('res-status').textContent = ''; }, 2000);
   } catch (e) { $('res-status').textContent = '保存失败: ' + e.message; }
@@ -779,14 +773,12 @@ function autoSaveRes() {
 async function loadRes() {
   try {
     const d = await api('GET', '/api/admin/resolutions');
-    adminRes = {max_dim: d.max_dim || 1344, presets: d.presets || []};
-    $('res-max-dim').value = adminRes.max_dim;
+    adminRes = {presets: d.presets || []};
     renderResEntries();
     $('res-status').textContent = '';
   } catch (e) { $('res-status').textContent = '加载失败: ' + e.message; }
 }
 
-$('res-max-dim').addEventListener('input', autoSaveRes);
 $('btn-add-res').addEventListener('click', () => {
   adminRes.presets.push({w: 1024, h: 1024, label: ''});
   renderResEntries();

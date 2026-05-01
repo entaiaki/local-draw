@@ -186,7 +186,6 @@ async def _save_styles(data: List[Dict[str, Any]]) -> bool:
 
 
 DEFAULT_RESOLUTIONS = {
-    "max_dim": 1344,
     "presets": [
         {"w": 1024, "h": 1344, "label": "WAI 推荐"},
         {"w": 832,  "h": 1216, "label": "NoobAI 推荐"},
@@ -204,7 +203,7 @@ def _load_resolutions() -> Dict[str, Any]:
         d = json.loads(RESOLUTIONS_FILE.read_text(encoding="utf-8"))
         if not isinstance(d, dict):
             return dict(DEFAULT_RESOLUTIONS)
-        result = {"max_dim": int(d.get("max_dim", DEFAULT_RESOLUTIONS["max_dim"]))}
+        result = {}
         presets = d.get("presets", [])
         if isinstance(presets, list):
             result["presets"] = [
@@ -2096,13 +2095,9 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
     prompt_dict[node_id]["inputs"][input_name] = sd_prompt
 
     if req.width and req.height and req.width > 0 and req.height > 0:
-        max_dim = _resolutions.get("max_dim", 1344)
         presets = _resolutions.get("presets", [])
         allowed = {(p["w"], p["h"]) for p in presets}
         rw, rh = int(req.width), int(req.height)
-        if rw > max_dim or rh > max_dim:
-            await emit(ws, {"type": "error", "message": f"分辨率不得大于 {max_dim}（请求: {rw}x{rh}）"})
-            return
         if allowed and (rw, rh) not in allowed:
             await emit(ws, {"type": "error", "message": f"不支持的分辨率 {rw}x{rh}，请从预设中选择"})
             return
@@ -2692,9 +2687,6 @@ async def api_admin_resolutions_get():
 async def api_admin_resolutions_set(payload: Dict[str, Any]):
     if not isinstance(payload, dict):
         raise HTTPException(400, "payload must be object")
-    max_dim = int(payload.get("max_dim", DEFAULT_RESOLUTIONS["max_dim"]))
-    if max_dim < 64 or max_dim > 4096:
-        raise HTTPException(400, "max_dim 范围 64-4096")
     raw = payload.get("presets")
     if not isinstance(raw, list):
         raise HTTPException(400, "presets must be array")
@@ -2706,10 +2698,10 @@ async def api_admin_resolutions_set(payload: Dict[str, Any]):
             w, h = int(p["w"]), int(p["h"])
         except (KeyError, ValueError, TypeError):
             continue
-        if w < 64 or h < 64 or w > max_dim or h > max_dim:
-            raise HTTPException(400, f"分辨率 {w}x{h} 超出范围 (64-{max_dim})")
+        if w < 64 or h < 64:
+            raise HTTPException(400, f"分辨率 {w}x{h} 不得小于 64")
         presets.append({"w": w, "h": h, "label": str(p.get("label", "")).strip()})
-    data = {"max_dim": max_dim, "presets": presets}
+    data = {"presets": presets}
     if not await _save_resolutions(data):
         raise HTTPException(500, "写入 resolutions.json 失败")
     _resolutions.clear()

@@ -686,15 +686,10 @@ function getSelectedStyleTags() {
   return getSelectedStyle();
 }
 
-let _resMaxDim = 1344;
-
 async function loadResolutions() {
   try {
     const r = await fetch('/api/resolutions');
     const d = await r.json();
-    _resMaxDim = d.max_dim || 1344;
-    $('width').max = _resMaxDim;
-    $('height').max = _resMaxDim;
     const presets = d.presets || [];
     $('res-presets').innerHTML = presets.map(p =>
       `<button type="button" data-w="${p.w}" data-h="${p.h}"
@@ -789,9 +784,6 @@ function startRun() {
   const nl = $('nl').value.trim();
   let w = parseInt($('width').value) || null;
   let h = parseInt($('height').value) || null;
-  if (w && h && _resMaxDim && (w > _resMaxDim || h > _resMaxDim)) {
-    return;
-  }
   if (!_genNoticeAcked) {
     showGenNotice(direct, nl, w, h);
   } else {
