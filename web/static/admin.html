@@ -91,7 +91,6 @@
       <div id="styles-entries" class="flex flex-col gap-2 mb-3"></div>
       <div class="flex items-center gap-2">
         <button id="btn-add-style" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">+ 添加画风</button>
-        <button id="btn-save-styles" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">保存</button>
         <span id="styles-status" class="text-xs text-gray-500"></span>
       </div>
     </div>
@@ -722,10 +721,10 @@ function renderStyleEntries() {
     </div>`;
   }).join('');
   container.querySelectorAll('.style-name').forEach(el => {
-    el.addEventListener('input', () => { adminStyles[+el.dataset.idx].name = el.value; });
+    el.addEventListener('input', () => { adminStyles[+el.dataset.idx].name = el.value; autoSaveStyles(); });
   });
   container.querySelectorAll('.style-tags').forEach(el => {
-    el.addEventListener('input', () => { adminStyles[+el.dataset.idx].tags = el.value; });
+    el.addEventListener('input', () => { adminStyles[+el.dataset.idx].tags = el.value; autoSaveStyles(); });
   });
   container.querySelectorAll('.style-upload').forEach(el => {
     el.addEventListener('change', async () => {
@@ -740,23 +739,24 @@ function renderStyleEntries() {
         const d = await r.json();
         adminStyles[idx].image = d.filename;
         renderStyleEntries();
+        autoSaveStyles();
       } catch (e) { $('styles-status').textContent = '上传失败: ' + e.message; }
     });
   });
   container.querySelectorAll('.style-up').forEach(el => {
     el.addEventListener('click', () => {
       const i = +el.dataset.idx;
-      if (i > 0) { [adminStyles[i-1], adminStyles[i]] = [adminStyles[i], adminStyles[i-1]]; renderStyleEntries(); }
+      if (i > 0) { [adminStyles[i-1], adminStyles[i]] = [adminStyles[i], adminStyles[i-1]]; renderStyleEntries(); autoSaveStyles(); }
     });
   });
   container.querySelectorAll('.style-down').forEach(el => {
     el.addEventListener('click', () => {
       const i = +el.dataset.idx;
-      if (i < adminStyles.length - 1) { [adminStyles[i], adminStyles[i+1]] = [adminStyles[i+1], adminStyles[i]]; renderStyleEntries(); }
+      if (i < adminStyles.length - 1) { [adminStyles[i], adminStyles[i+1]] = [adminStyles[i+1], adminStyles[i]]; renderStyleEntries(); autoSaveStyles(); }
     });
   });
   container.querySelectorAll('.style-del').forEach(el => {
-    el.addEventListener('click', () => { adminStyles.splice(+el.dataset.idx, 1); renderStyleEntries(); });
+    el.addEventListener('click', () => { adminStyles.splice(+el.dataset.idx, 1); renderStyleEntries(); autoSaveStyles(); });
   });
   $('styles-count-badge').textContent = adminStyles.length;
 }
@@ -770,23 +770,28 @@ async function loadStyles() {
   } catch (e) { $('styles-status').textContent = '加载失败: ' + e.message; }
 }
 
+let _saveStylesTimer = null;
 async function saveStyles() {
   try {
     const d = await api('POST', '/api/admin/styles', { styles: adminStyles });
     adminStyles = (d.styles || []).map(s => ({name: s.name || '', tags: s.tags || '', image: s.image || ''}));
-    renderStyleEntries();
     $('styles-status').textContent = '✓ 已保存';
     setTimeout(() => { $('styles-status').textContent = ''; }, 2000);
   } catch (e) { $('styles-status').textContent = '保存失败: ' + e.message; }
+}
+function autoSaveStyles() {
+  clearTimeout(_saveStylesTimer);
+  $('styles-status').textContent = '保存中…';
+  _saveStylesTimer = setTimeout(saveStyles, 600);
 }
 
 $('btn-add-style').addEventListener('click', () => {
   adminStyles.push({name: '', tags: '', image: ''});
   renderStyleEntries();
-  const entries = $('styles-entries').querySelectorAll('.style-name');
+  autoSaveStyles();
+  const entries = $('styles-entries').querySelectorAll('.style-tags');
   if (entries.length) entries[entries.length - 1].focus();
 });
-$('btn-save-styles').addEventListener('click', saveStyles);
 $('btn-refresh-styles').addEventListener('click', loadStyles);
 
 loadStyles();
