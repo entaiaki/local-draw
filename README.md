@@ -96,6 +96,7 @@ WEB_HOST = "127.0.0.1"
 WEB_PORT = 8080
 
 OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
+COMFYUI_WORKFLOWS_DIR = r"C:\Users\acofo\Documents\ComfyUI\user\default\workflows"
 ```
 
 LM Studio 需开启 OpenAI 兼容服务（默认 `http://127.0.0.1:1234/v1`）并加载任意聊天模型。纯 Tag 模式不会触发 LLM。
@@ -212,6 +213,7 @@ web/
 | `GET  /api/admin/limits` / `POST` | 限流配置 |
 | `GET  /api/admin/styles` / `POST` | 画风管理 |
 | `GET  /api/admin/workflow_meta` / `POST` | 工作流缩略图 & Lora 链接 |
+| `GET  /api/admin/workflow_files` | 扫描 ComfyUI 工作流目录 |
 | `POST /api/admin/wf_thumbnail` | 上传工作流缩略图 |
 | `GET  /api/admin/bans` | 封禁 IP 列表 |
 | `POST /api/admin/ban` / `unban` | 加/解封 IP |
