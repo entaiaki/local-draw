@@ -25,7 +25,6 @@ import os
 import random
 import uuid
 from pathlib import Path
-from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
@@ -2098,7 +2097,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
         presets = _resolutions.get("presets", [])
         allowed = {(p["w"], p["h"]) for p in presets}
         rw, rh = int(req.width), int(req.height)
-        if allowed and (rw, rh) not in allowed:
+        if (rw, rh) not in allowed:
             await emit(ws, {"type": "error", "message": f"不支持的分辨率 {rw}x{rh}，请从预设中选择"})
             return
         n = apply_resolution(prompt_dict, rw, rh)
@@ -2792,9 +2791,8 @@ async def api_admin_workflow_meta_set(payload: Dict[str, Any]):
         if thumb:
             entry["thumbnail"] = thumb
         if link:
-            parsed = urlparse(link)
-            if parsed.scheme and parsed.scheme not in ("http", "https"):
-                raise HTTPException(400, f"lora_link 仅支持 http/https 协议")
+            if not link.startswith(("http://", "https://")):
+                raise HTTPException(400, "lora_link 必须以 http:// 或 https:// 开头")
             entry["lora_link"] = link
         if entry:
             cleaned[wf] = entry
