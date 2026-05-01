@@ -577,10 +577,8 @@ async function loadCurrent() {
   }
 
   const bp = (d.builtin_prompt || '').trim();
-  if (bp) {
-    $('direct').value = bp;
-    saveFormState();
-  }
+  $('direct').value = bp;
+  saveFormState();
 }
 
 async function loadList() {
