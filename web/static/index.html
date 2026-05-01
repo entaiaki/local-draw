@@ -1148,6 +1148,20 @@ $('lb-fork').addEventListener('click', async () => {
       builtin_prompt: d.builtin_prompt,
       loras: d.loras,
     };
+    // 尝试从 prompt 开头匹配画风并自动选择
+    let bp = (d.builtin_prompt || '').trim();
+    let matched = false;
+    for (const s of allStyles) {
+      if (s.tags && bp.startsWith(s.tags)) {
+        setSelectedStyle(s.tags);
+        bp = bp.slice(s.tags.length).replace(/^,\s*/, '').trim();
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) setSelectedStyle('');
+    forkedMeta.builtin_prompt = bp;
+    renderStyles();
     applyForkedToUI();
     $('lb-status').textContent = '✓ 已在本浏览器临时还原，可直接生图';
     setTimeout(closeLightbox, 600);
