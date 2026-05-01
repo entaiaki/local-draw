@@ -243,22 +243,11 @@
 
     <div class="flex gap-4 mb-1 text-sm">
       <label class="flex items-center gap-1"><input type="checkbox" id="rewrite" checked /> 改写模式 (-r)</label>
-      <label class="flex items-center gap-1"><input type="checkbox" id="override" /> 覆写模式</label>
     </div>
     <p class="text-xs text-gray-500 mb-3">
-      改写模式：让 LLM 基于「直接 Tag」（或工作流内置 prompt）作为底本，结合「自然语言描述」整体重写一段新的 prompt，会智能修改、删除、补充原有标签。<br>
-      未勾选时为普通翻译/追加：把自然语言翻译成 tag 后，直接拼接到底本之后，原内容保持不变。<br>
-      <span class="text-orange-600">覆写模式：完全忽略工作流内置 prompt，最终只用你的输入（直接 Tag + LLM 输出）。</span>
+      改写模式：让 LLM 基于「直接 Tag」作为底本，结合「自然语言描述」整体重写一段新的 prompt，会智能修改、删除、补充原有标签。<br>
+      未勾选时为普通翻译/追加：把自然语言翻译成 tag 后，直接拼接到底本之后，原内容保持不变。
     </p>
-
-    <div id="builtin-box" class="hidden mb-3 border border-gray-200 rounded p-2 bg-gray-50">
-      <div class="flex items-center justify-between mb-1">
-        <span class="text-xs text-gray-600">📦 当前工作流内置 prompt：</span>
-        <button id="btn-copy-builtin" type="button"
-          class="text-xs px-2 py-0.5 bg-gray-200 rounded hover:bg-gray-300">复制到「直接 Tag」</button>
-      </div>
-      <pre id="builtin-text" class="text-xs font-mono whitespace-pre-wrap break-words max-h-32 overflow-y-auto"></pre>
-    </div>
 
     <div class="flex gap-2 items-end mb-2 text-sm">
       <div>
@@ -524,11 +513,8 @@ function applyForkedToUI() {
   }
   const bp = (m.builtin_prompt || '').trim();
   if (bp) {
-    $('builtin-text').textContent = bp;
-    $('builtin-box').classList.remove('hidden');
-  } else {
-    $('builtin-box').classList.add('hidden');
-    $('builtin-text').textContent = '';
+    $('direct').value = bp;
+    saveFormState();
   }
 }
 
@@ -594,11 +580,8 @@ async function loadCurrent() {
 
   const bp = (d.builtin_prompt || '').trim();
   if (bp) {
-    $('builtin-text').textContent = bp;
-    $('builtin-box').classList.remove('hidden');
-  } else {
-    $('builtin-box').classList.add('hidden');
-    $('builtin-text').textContent = '';
+    $('direct').value = bp;
+    saveFormState();
   }
 }
 
@@ -822,7 +805,6 @@ function actuallyStartRun(direct, nl, w, h) {
     direct_prompt: direct,
     nl_prompt: nl,
     rewrite: $('rewrite').checked,
-    override: $('override').checked,
     width: w,
     height: h,
     style_tags: getSelectedStyleTags(),
@@ -943,13 +925,6 @@ document.querySelectorAll('.img-reveal-toggle').forEach(cb => {
   });
 });
 $('btn-load-more').addEventListener('click', () => loadGallery(false));
-$('btn-copy-builtin').addEventListener('click', () => {
-  const txt = $('builtin-text').textContent;
-  if (!txt) return;
-  $('direct').value = txt;
-  $('direct').focus();
-  saveFormState();
-});
 
 // ============== 全局状态：跨页面同步 ==============
 let globalBusy = false;
@@ -1387,7 +1362,6 @@ const _FORM_FIELDS = [
   {id: 'direct', type: 'text'},
   {id: 'nl', type: 'text'},
   {id: 'rewrite', type: 'check'},
-  {id: 'override', type: 'check'},
   {id: 'width', type: 'text'},
   {id: 'height', type: 'text'},
 ];

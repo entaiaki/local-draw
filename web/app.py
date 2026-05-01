@@ -1857,11 +1857,10 @@ async def api_admin_force_restart():
 
 class RunRequest(BaseModel):
     workflow_path: str = ""
-    inline_workflow: Optional[Dict[str, Any]] = None  # 临时 fork：直接传整份工作流（不持久化）
+    inline_workflow: Optional[Dict[str, Any]] = None
     direct_prompt: str = ""
     nl_prompt: str = ""
     rewrite: bool = False
-    override: bool = False
     width: Optional[int] = None
     height: Optional[int] = None
     style_tags: str = ""
@@ -2042,21 +2041,12 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
         await emit(ws, {"type": "error", "message": "未找到正向 CLIPTextEncode 节点"})
         return
     node_id, input_name = positive_ref
-    builtin = prompt_dict[node_id]["inputs"].get(input_name, "") or ""
-    if not isinstance(builtin, str):
-        builtin = str(builtin)
-    builtin = builtin.strip()
 
     sep = ", "
 
     style_tags = req.style_tags.strip()
     if style_tags:
         await emit(ws, {"type": "log", "message": f"画风词条：{style_tags}"})
-
-    # 覆写模式：忽略工作流内置 prompt
-    effective_builtin = "" if req.override else builtin
-    if req.override:
-        await emit(ws, {"type": "log", "message": "覆写模式：忽略工作流内置 prompt"})
 
     if req.nl_prompt:
         await emit(ws, {"type": "log", "message": f"[2/4] LLM {'改写' if req.rewrite else '翻译'}中..."})
@@ -2066,7 +2056,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
         async def _on_chunk(piece: str):
             await emit(ws, {"type": "llm_chunk", "delta": piece})
 
-        base = req.direct_prompt or effective_builtin
+        base = req.direct_prompt
         if req.rewrite and base:
             translated = await translate_prompt(
                 req.nl_prompt, original_prompt=base, on_chunk=_on_chunk,
@@ -2076,12 +2066,11 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
             translated = await translate_prompt(
                 req.nl_prompt, on_chunk=_on_chunk,
             )
-            parts = [p for p in (effective_builtin, req.direct_prompt, translated) if p]
+            parts = [p for p in (req.direct_prompt, translated) if p]
             sd_prompt = sep.join(parts)
         await emit(ws, {"type": "llm_done", "text": translated})
     else:
-        parts = [p for p in (effective_builtin, req.direct_prompt) if p]
-        sd_prompt = sep.join(parts)
+        sd_prompt = req.direct_prompt
         await emit(ws, {"type": "log", "message": "[2/4] 跳过 LLM"})
 
     if style_tags:
