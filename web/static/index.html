@@ -301,13 +301,15 @@
 
   <!-- 精选展示（管理员手动维护） -->
   <div id="featured-box" class="bg-white rounded shadow p-4 mb-4 hidden">
-    <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">⭐ 精选展示
-        <span class="text-xs text-gray-500 font-normal">(<span id="featured-count">0</span>)</span>
-      </h2>
+    <h2 class="text-lg font-semibold cursor-pointer select-none" id="featured-toggle">
+      <span id="featured-arrow" class="inline-block w-4 text-gray-400">▾</span>
+      ⭐ 精选展示
+      <span class="text-xs text-gray-500 font-normal">(<span id="featured-count">0</span>)</span>
+    </h2>
+    <div id="featured-body">
+      <div id="featured-tip" class="hidden mt-2 mb-3 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded p-2"></div>
+      <div id="featured-gallery" class="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
     </div>
-    <div id="featured-tip" class="hidden mb-3 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded p-2"></div>
-    <div id="featured-gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
   </div>
 
   <!-- 全部输出图片 -->
@@ -418,6 +420,13 @@ async function loadFeatured() {
     }).join('');
   } catch {}
 }
+
+$('featured-toggle').addEventListener('click', () => {
+  const body = $('featured-body');
+  const arrow = $('featured-arrow');
+  const hidden = body.classList.toggle('hidden');
+  arrow.textContent = hidden ? '▸' : '▾';
+});
 
 function galleryItemHTML(relPath, mtime) {
   const url = '/api/output/file?path=' + encodeURIComponent(relPath);
