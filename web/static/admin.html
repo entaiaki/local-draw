@@ -921,7 +921,8 @@ function renderWfMetaEntries() {
         </label>
       </div>
       <div class="flex flex-col gap-1 flex-1 text-sm">
-        <span class="font-mono text-xs text-gray-700 truncate" title="${m.workflow.replace(/"/g, '&quot;')}">${m.workflow}</span>
+        <input type="text" value="${m.workflow.replace(/"/g, '&quot;')}" placeholder="工作流文件名"
+          class="wfmeta-workflow border rounded px-2 py-1 font-mono text-xs" data-idx="${i}" />
         <input type="text" value="${(m.lora_link || '').replace(/"/g, '&quot;')}" placeholder="Lora 链接 URL（可选）"
           class="wfmeta-link border rounded px-2 py-1 font-mono text-xs" data-idx="${i}" />
       </div>
@@ -931,6 +932,9 @@ function renderWfMetaEntries() {
       </div>
     </div>`;
   }).join('');
+  container.querySelectorAll('.wfmeta-workflow').forEach(el => {
+    el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].workflow = el.value; autoSaveWfMeta(); });
+  });
   container.querySelectorAll('.wfmeta-link').forEach(el => {
     el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].lora_link = el.value; autoSaveWfMeta(); });
   });
