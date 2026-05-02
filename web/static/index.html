@@ -595,11 +595,11 @@ function renderList() {
       const isSelected = w.path === getCurrentPath();
       let cardCls;
       if (isSelected) {
-        cardCls = 'wf-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 overflow-hidden';
+        cardCls = 'wf-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden';
       } else if (noLora) {
-        cardCls = 'wf-item border-2 border-amber-300 bg-amber-50 rounded p-1.5 cursor-pointer hover:bg-amber-100 flex flex-col items-center gap-0.5 overflow-hidden';
+        cardCls = 'wf-item border-2 border-amber-300 bg-amber-50 rounded p-1.5 cursor-pointer hover:bg-amber-100 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
       } else {
-        cardCls = 'wf-item border-2 border-transparent rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 overflow-hidden';
+        cardCls = 'wf-item border-2 border-transparent rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
       }
       return `<div class="${cardCls}" data-path="${w.path}" title="${w.path}">
          ${thumb}
