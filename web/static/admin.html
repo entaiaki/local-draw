@@ -920,10 +920,10 @@ function renderWfMetaEntries() {
           <input type="file" accept="image/*" class="wfmeta-upload hidden" data-idx="${i}" />
         </label>
       </div>
-      <div class="flex flex-col gap-1 flex-1 text-sm">
+      <div class="flex flex-col gap-1 flex-1 text-sm min-w-0">
         <div class="flex items-center gap-1">
           <input type="text" value="${m.workflow.replace(/\.json$/i, '').replace(/"/g, '&quot;')}" placeholder="工作流名称"
-            class="wfmeta-workflow flex-1 border rounded px-2 py-1 font-mono text-xs" data-idx="${i}" />
+            class="wfmeta-workflow flex-1 min-w-0 border rounded px-2 py-1 font-mono text-xs" data-idx="${i}" />
           <span class="text-xs text-gray-400">.json</span>
         </div>
         <input type="text" value="${(m.lora_link || '').replace(/"/g, '&quot;')}" placeholder="Lora 链接 URL（可选）"
