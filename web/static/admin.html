@@ -950,8 +950,9 @@ function renderWfMetaEntries() {
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
         const d = await r.json();
         adminWfMeta[idx].thumbnail = d.filename;
+        clearTimeout(_saveWfMetaTimer);
+        await saveWfMeta();
         renderWfMetaEntries();
-        autoSaveWfMeta();
       } catch (e) { $('wfmeta-status').textContent = '上传失败: ' + e.message; }
     });
   });
