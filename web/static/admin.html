@@ -933,7 +933,22 @@ function renderWfMetaEntries() {
     </div>`;
   }).join('');
   container.querySelectorAll('.wfmeta-workflow').forEach(el => {
-    el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].workflow = el.value; autoSaveWfMeta(); });
+    const origVal = el.value;
+    el.addEventListener('change', async () => {
+      const idx = +el.dataset.idx;
+      const newName = el.value.trim();
+      if (!newName || newName === origVal) { el.value = origVal; return; }
+      $('wfmeta-status').textContent = '重命名中…';
+      try {
+        await api('POST', '/api/admin/workflow_rename', { old: origVal, new: newName });
+        adminWfMeta[idx].workflow = newName;
+        $('wfmeta-status').textContent = '✓ 已重命名';
+        setTimeout(() => { $('wfmeta-status').textContent = ''; }, 2000);
+      } catch (e) {
+        el.value = origVal;
+        $('wfmeta-status').textContent = '重命名失败: ' + e.message;
+      }
+    });
   });
   container.querySelectorAll('.wfmeta-link').forEach(el => {
     el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].lora_link = el.value; autoSaveWfMeta(); });

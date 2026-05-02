@@ -2758,6 +2758,43 @@ def scan_workflow_files() -> List[str]:
 async def api_admin_workflow_files():
     return {"files": scan_workflow_files()}
 
+
+@app.post("/api/admin/workflow_rename")
+async def api_admin_workflow_rename(payload: Dict[str, Any]):
+    """通过 ComfyUI userdata API 重命名工作流，并同步迁移 workflow_meta 映射。"""
+    old = str(payload.get("old", "")).strip()
+    new = str(payload.get("new", "")).strip()
+    if not old or not new:
+        raise HTTPException(400, "old 和 new 不能为空")
+    if old == new:
+        return {"ok": True}
+    if ".." in old or ".." in new:
+        raise HTTPException(400, "路径不合法")
+    from urllib.parse import quote
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await client.get(
+            f"{COMFYUI_API}/api/userdata/workflows%2F{quote(old, safe='')}",
+            headers={"Comfy-User": ""},
+        )
+        if r.status_code != 200:
+            raise HTTPException(400, f"读取旧工作流失败: {r.status_code}")
+        content = r.content
+        r2 = await client.post(
+            f"{COMFYUI_API}/api/userdata/workflows%2F{quote(new, safe='')}",
+            content=content,
+            headers={"Comfy-User": "", "Content-Type": "application/json"},
+        )
+        if r2.status_code not in (200, 201):
+            raise HTTPException(500, f"写入新工作流失败: {r2.status_code}")
+        await client.delete(
+            f"{COMFYUI_API}/api/userdata/workflows%2F{quote(old, safe='')}",
+            headers={"Comfy-User": ""},
+        )
+    if old in _workflow_meta:
+        _workflow_meta[new] = _workflow_meta.pop(old)
+        await _save_workflow_meta_file(_workflow_meta)
+    return {"ok": True}
+
 @app.get("/api/admin/workflow_meta")
 async def api_admin_workflow_meta_get():
     arr = []
