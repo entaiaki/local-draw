@@ -28,11 +28,6 @@
   #lb-next { right: 8px; }
   #lb-close { position: absolute; top: 8px; right: 12px; background: transparent; color: #fff; border: 0; font-size: 28px; cursor: pointer; z-index: 1; }
   #lb-title { color: #ddd; font-size: 12px; margin-right: auto; word-break: break-all; }
-  /* 图片隐藏 */
-  .img-hide-zone:not(.revealed) img { visibility: hidden; }
-  .img-hide-zone:not(.revealed) a { background: repeating-linear-gradient(45deg, #f3f4f6 0 8px, #e5e7eb 8px 16px); }
-  .img-hide-zone:not(.revealed) a::after { content: "🔒 已隐藏"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 11px; }
-  .img-hide-zone a { position: relative; }
   /* Tab 布局 */
   .tab-page { position: fixed; top: 0; left: 0; right: 0; bottom: 52px; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; }
   .tab-page.active { display: block; }
@@ -201,13 +196,9 @@
     <div id="result-box" class="bg-white rounded-lg shadow-sm p-2 hidden">
       <div class="flex items-center justify-between mb-1">
         <span class="text-xs font-semibold">🖼️ 结果</span>
-        <label class="flex items-center gap-1 text-[10px] cursor-pointer">
-          <input type="checkbox" class="img-reveal-toggle" />
-          <span>显示</span>
-        </label>
       </div>
       <div id="final-prompt" class="text-[9px] bg-gray-50 p-1 rounded font-mono mb-1 whitespace-pre-wrap max-h-12 overflow-y-auto"></div>
-      <div id="images" class="grid grid-cols-3 gap-1 img-hide-zone max-h-32 overflow-y-auto"></div>
+      <div id="images" class="grid grid-cols-3 gap-1 max-h-32 overflow-y-auto"></div>
     </div>
   </div>
 </div>
@@ -220,15 +211,11 @@
         <span class="text-xs text-gray-500 font-normal">(<span id="gallery-shown">0</span>/<span id="gallery-total">0</span>)</span>
       </h1>
       <div class="flex items-center gap-2">
-        <label class="flex items-center gap-1 text-[10px] cursor-pointer">
-          <input type="checkbox" class="img-reveal-toggle" />
-          <span>显示图片</span>
-        </label>
         <button id="btn-reload-gallery" class="text-[10px] px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">重载</button>
       </div>
     </div>
     <div id="gallery-dir" class="text-[10px] text-gray-400"></div>
-    <div id="gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5 img-hide-zone"></div>
+    <div id="gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5"></div>
     <div class="text-center">
       <button id="btn-load-more" class="hidden text-xs px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">加载更多</button>
     </div>
@@ -703,8 +690,6 @@ function actuallyStartRun(direct, nl, w, h) {
   $('btn-run').disabled = true;
   $('images').innerHTML = '';
   $('final-prompt').textContent = '';
-  const resultToggle = $('result-box').querySelector('.img-reveal-toggle');
-  if (resultToggle) { resultToggle.checked = true; $('images').classList.add('revealed'); }
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}/ws/run`);
   activeWS = ws;
@@ -780,18 +765,6 @@ $('res-presets').addEventListener('click', (e) => {
 $('btn-reload-gallery').addEventListener('click', () => { _tabLoaded.gallery = false; loadGallery(true); });
 $('btn-load-more').addEventListener('click', () => loadGallery(false));
 
-// 图片显示开关
-let _revealAcked = false;
-function applyRevealZone(toggleEl) {
-  const page = toggleEl.closest('.tab-page') || toggleEl.closest('.bg-white') || toggleEl.closest('[id]');
-  const zones = page ? page.querySelectorAll('.img-hide-zone') : [];
-  zones.forEach(z => z.classList.toggle('revealed', toggleEl.checked));
-}
-document.querySelectorAll('.img-reveal-toggle').forEach(cb => {
-  cb.checked = false;
-  cb.addEventListener('change', () => applyRevealZone(cb));
-});
-
 // ==================== 全局状态 ====================
 let globalBusy = false;
 function applyGlobalStatus(s) {
@@ -817,9 +790,7 @@ function enterMirrorMode() {
   $('progress-text').textContent = '👀 旁观其它页面的任务';
   $('progress-bar-wrap').classList.add('hidden');
   $('images').innerHTML = '';
-  $('images').classList.remove('revealed');
-  const resultToggle = $('result-box').querySelector('.img-reveal-toggle');
-  if (resultToggle) resultToggle.checked = false;
+  $('final-prompt').textContent = '';
   $('final-prompt').textContent = '';
   currentPrompt = '';
 }
