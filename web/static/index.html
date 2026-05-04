@@ -179,15 +179,14 @@
     </div>
 
     <!-- 进度 -->
-    <div id="progress-box" class="bg-white rounded-lg shadow-sm p-2 hidden">
-      <div id="progress-bar-wrap" class="w-full bg-gray-200 rounded h-1.5 mb-1 overflow-hidden hidden">
-        <div id="progress-bar" class="bg-blue-500 h-1.5 transition-all" style="width:0%"></div>
+    <div id="progress-box" class="hidden">
+      <div id="progress-bar-wrap" class="w-full bg-gray-200 rounded-full h-2 overflow-hidden hidden">
+        <div id="progress-bar" class="bg-blue-500 h-2 transition-all rounded-full" style="width:0%"></div>
       </div>
-      <div id="progress-text" class="text-[10px] text-gray-700"></div>
-      <div id="llm-box" class="mt-1 hidden">
-        <pre id="llm-stream" class="text-[10px] bg-yellow-50 border border-yellow-200 p-1 rounded max-h-20 overflow-y-auto whitespace-pre-wrap break-words"></pre>
-      </div>
-      <pre id="log" class="mt-1 text-[10px] bg-gray-50 p-1 rounded max-h-16 overflow-y-auto"></pre>
+      <div id="progress-text" class="text-[10px] text-gray-500 text-center mt-0.5"></div>
+      <div id="llm-box" class="hidden"></div>
+      <pre id="llm-stream" class="hidden"></pre>
+      <pre id="log" class="hidden"></pre>
     </div>
 
     <!-- 结果 -->
