@@ -571,7 +571,14 @@ async function loadList() {
   renderList();
 }
 
-function _wfCard(w) {
+function _highlight(text, q) {
+  if (!q) return _esc(text);
+  const escaped = _esc(text);
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return escaped.replace(re, '<mark class="bg-yellow-200 rounded px-0.5">$1</mark>');
+}
+
+function _wfCard(w, q) {
   const stem = w.path.replace(/\.json$/i, '');
   const thumb = w.thumbnail
     ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
@@ -580,9 +587,12 @@ function _wfCard(w) {
   const cardCls = isSelected
     ? 'wf-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden'
     : 'wf-item border-2 border-transparent rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
-  return `<div class="${cardCls}" data-path="${w.path}" title="${w.path}">
+  const cat = (w.category || '').trim();
+  const catTag = q && cat ? `<span class="text-[9px] text-gray-400 leading-tight text-center w-full truncate">${_highlight(cat, q)}</span>` : '';
+  return `<div class="${cardCls}" data-path="${w.path}" title="${w.path}${cat ? ' [' + cat + ']' : ''}">
      ${thumb}
-     <span class="text-[11px] font-medium leading-tight break-all text-center w-full">${_esc(stem)}</span>
+     <span class="text-[11px] font-medium leading-tight break-all text-center w-full">${_highlight(stem, q)}</span>
+     ${catTag}
    </div>`;
 }
 
@@ -598,7 +608,7 @@ function renderList() {
   }
 
   if (q) {
-    $('wf-list').innerHTML = `<div class="flex flex-wrap gap-2">${filtered.map(_wfCard).join('')}</div>`;
+    $('wf-list').innerHTML = `<div class="flex flex-wrap gap-2">${filtered.map(w => _wfCard(w, q)).join('')}</div>`;
   } else {
     const groups = {};
     const uncategorized = [];
