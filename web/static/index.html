@@ -744,13 +744,29 @@ function finishRun() { $('btn-run').disabled = !!globalBusy; activeWS = null; }
 $('search').addEventListener('input', renderList);
 $('btn-wf-search').addEventListener('click', () => {
   const el = $('search');
-  el.classList.toggle('hidden');
-  if (!el.classList.contains('hidden')) { el.focus(); } else { el.value = ''; renderList(); }
+  if (el.classList.contains('hidden')) {
+    el.classList.remove('hidden');
+    el.focus();
+  } else if (el.value.trim()) {
+    el.value = '';
+    renderList();
+    el.focus();
+  } else {
+    el.classList.add('hidden');
+  }
 });
 $('btn-style-search').addEventListener('click', () => {
   const el = $('style-search');
-  el.classList.toggle('hidden');
-  if (!el.classList.contains('hidden')) { el.focus(); } else { el.value = ''; renderStyles(); }
+  if (el.classList.contains('hidden')) {
+    el.classList.remove('hidden');
+    el.focus();
+  } else if (el.value.trim()) {
+    el.value = '';
+    renderStyles();
+    el.focus();
+  } else {
+    el.classList.add('hidden');
+  }
 });
 $('style-search').addEventListener('input', renderStyles);
 $('btn-run').addEventListener('click', startRun);
