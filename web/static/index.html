@@ -490,7 +490,11 @@ async function loadCurrent() {
   if (!path) return;
   const r = await fetch('/api/workflows/current?path=' + encodeURIComponent(path));
   const d = await r.json();
-  if (!d.path || d.error) return;
+  if (!d.path || d.error) {
+    setCurrentPath('');
+    renderList();
+    return;
+  }
   defaultRes.w = d.default_width;
   defaultRes.h = d.default_height;
   if (defaultRes.w && defaultRes.h) {
