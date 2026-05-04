@@ -177,14 +177,9 @@
           <input type="checkbox" id="rewrite" checked /> 改写
           <span class="text-gray-400 cursor-help" title="勾选：LLM 基于「直接 Tag」结合「自然语言描述」整体重写 prompt&#10;不勾选：LLM 翻译后追加到原 prompt 后面">?</span>
         </label>
-        <div class="flex gap-1 items-center text-[10px]">
-          <input id="width" type="number" min="64" step="8" placeholder="宽" class="w-14 border rounded px-1 py-0.5 text-[10px]" />
-          <span class="text-gray-400">×</span>
-          <input id="height" type="number" min="64" step="8" placeholder="高" class="w-14 border rounded px-1 py-0.5 text-[10px]" />
-          <button id="btn-reset-res" type="button" class="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 text-[9px]">重置</button>
-          <span id="default-res" class="text-[9px] text-gray-400"></span>
-        </div>
+        <span id="default-res" class="text-[9px] text-gray-400"></span>
       </div>
+      <input id="width" type="hidden" /><input id="height" type="hidden" />
       <div class="flex flex-wrap gap-1 mb-1.5" id="res-presets"></div>
 
       <button id="btn-run" class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 font-medium text-sm">
@@ -778,7 +773,6 @@ $('btn-style-search').addEventListener('click', () => {
 });
 $('style-search').addEventListener('input', renderStyles);
 $('btn-run').addEventListener('click', startRun);
-$('btn-reset-res').addEventListener('click', () => { $('width').value = ''; $('height').value = ''; saveFormState(); });
 $('res-presets').addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-w]');
   if (!btn) return;
