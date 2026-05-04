@@ -151,13 +151,18 @@
 
     <!-- 生图表单 -->
     <div class="bg-white rounded-lg shadow-sm p-2">
-      <label class="block text-[10px] font-medium mb-0.5">直接 Tag</label>
-      <textarea id="direct" rows="2" placeholder="英文 tags，选择工作流后自动填入"
-        class="w-full border rounded px-1.5 py-1 mb-1.5 text-[10px] font-mono"></textarea>
-
-      <label class="block text-[10px] font-medium mb-0.5">自然语言描述</label>
-      <textarea id="nl" rows="1" placeholder="中文/英文，LLM 翻译"
-        class="w-full border rounded px-1.5 py-1 mb-1.5 text-[10px]"></textarea>
+      <div class="flex gap-2 mb-1.5">
+        <div class="flex-1 min-w-0">
+          <label class="block text-[10px] font-medium mb-0.5">直接 Tag</label>
+          <textarea id="direct" rows="3" placeholder="英文 tags，选择工作流后自动填入"
+            class="w-full border rounded px-1.5 py-1 text-[10px] font-mono"></textarea>
+        </div>
+        <div class="flex-1 min-w-0">
+          <label class="block text-[10px] font-medium mb-0.5">自然语言描述</label>
+          <textarea id="nl" rows="3" placeholder="中文/英文，LLM 翻译"
+            class="w-full border rounded px-1.5 py-1 text-[10px]"></textarea>
+        </div>
+      </div>
 
       <div class="flex items-center gap-3 mb-1.5">
         <label class="flex items-center gap-1 text-[10px]">
