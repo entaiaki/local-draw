@@ -115,17 +115,6 @@
 
 <!-- ==================== Tab 1: 生图 ==================== -->
 <div id="page-generate" class="tab-page active">
-  <!-- 全局状态（内嵌在内容流中，不固定顶部） -->
-  <div id="global-status" class="hidden mx-2 mt-1 rounded border p-1.5 text-[10px] bg-yellow-50 border-yellow-300 text-yellow-900">
-    <div class="flex items-center justify-between gap-2">
-      <span class="font-semibold">⚙️ <span id="gs-stage">服务器忙</span></span>
-      <span id="gs-meta" class="text-yellow-700"></span>
-    </div>
-    <div id="gs-bar-wrap" class="hidden w-full bg-yellow-200 rounded h-1 mt-0.5 overflow-hidden">
-      <div id="gs-bar" class="bg-yellow-500 h-1 transition-all" style="width:0%"></div>
-    </div>
-    <div id="gs-text" class="mt-0.5"></div>
-  </div>
 
   <div class="p-2 space-y-2 max-w-3xl mx-auto">
     <!-- 标题 -->
@@ -786,28 +775,10 @@ document.querySelectorAll('.img-reveal-toggle').forEach(cb => {
 let globalBusy = false;
 function applyGlobalStatus(s) {
   globalBusy = !!s.busy;
-  const box = $('global-status');
   if (!s.busy) {
-    box.classList.add('hidden');
     if (!activeWS) $('btn-run').disabled = false;
     mirroring = false;
     return;
-  }
-  box.classList.remove('hidden');
-  const stageMap = { loading: '加载工作流', llm: 'LLM 处理中', generating: '生图中' };
-  $('gs-stage').textContent = stageMap[s.stage] || '处理中';
-  const meta = [];
-  if (s.workflow) meta.push(s.workflow.replace(/\.json$/i, ''));
-  if (s.started_at) { const sec = Math.floor(Date.now()/1000 - s.started_at); meta.push(sec + 's'); }
-  $('gs-meta').textContent = meta.join(' · ');
-  if (s.max && s.max > 1) {
-    const pct = Math.floor((s.value || 0) * 100 / s.max);
-    $('gs-bar-wrap').classList.remove('hidden');
-    $('gs-bar').style.width = pct + '%';
-    $('gs-text').textContent = `${s.node || ''} ${s.value}/${s.max} (${pct}%)`;
-  } else {
-    $('gs-bar-wrap').classList.add('hidden');
-    $('gs-text').textContent = s.node ? `执行: ${s.node}` : '';
   }
   if (!activeWS) $('btn-run').disabled = true;
   if (!activeWS && !mirroring) enterMirrorMode();
