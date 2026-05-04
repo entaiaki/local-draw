@@ -131,112 +131,91 @@
     </div>
   </div>
 
-  <div class="p-3 space-y-3 max-w-3xl mx-auto">
+  <div class="p-2 space-y-2 max-w-3xl mx-auto">
     <!-- 标题 -->
-    <div class="flex items-center justify-between flex-wrap gap-2">
-      <h1 class="text-lg font-bold">🎨 自然语言生图</h1>
-      <div class="flex items-center gap-2 text-xs">
-        <a href="https://space.bilibili.com/325903362" target="_blank" rel="noopener"
-           class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-700 hover:bg-pink-200">B站</a>
-        <a href="https://2x.nz/q" target="_blank" rel="noopener"
-           class="px-1.5 py-0.5 rounded bg-green-100 text-green-700 hover:bg-green-200">💬加群</a>
-        <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
-           class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 hover:bg-gray-200">GitHub</a>
+    <div class="flex items-center justify-between">
+      <h1 class="text-sm font-bold">🎨 自然语言生图</h1>
+      <div class="flex items-center gap-1.5 text-[10px]">
+        <a href="https://space.bilibili.com/325903362" target="_blank" rel="noopener" class="px-1 py-0.5 rounded bg-pink-100 text-pink-700">B站</a>
+        <a href="https://2x.nz/q" target="_blank" rel="noopener" class="px-1 py-0.5 rounded bg-green-100 text-green-700">💬群</a>
+        <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener" class="px-1 py-0.5 rounded bg-gray-100 text-gray-600">GitHub</a>
       </div>
     </div>
 
     <!-- Fork 信息 -->
     <div id="fork-section" class="hidden">
-      <div id="current-info" class="text-gray-600 text-sm"></div>
+      <div id="current-info" class="text-gray-600 text-xs"></div>
     </div>
 
-    <!-- 工作流 -->
-    <div class="bg-white rounded-lg shadow-sm p-3">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-sm font-semibold">📋 工作流</h2>
+    <!-- 工作流 + 画风 左右并排 -->
+    <div class="flex gap-2">
+      <!-- 工作流 -->
+      <div class="flex-1 bg-white rounded-lg shadow-sm p-2 min-w-0">
+        <h2 class="text-xs font-semibold mb-1">📋 工作流</h2>
+        <input id="search" type="text" placeholder="搜索..."
+          class="w-full border rounded px-1.5 py-0.5 mb-1 text-[10px]" />
+        <div id="wf-list" class="max-h-28 overflow-y-auto"></div>
       </div>
-      <input id="search" type="text" placeholder="搜索工作流或分类..."
-        class="w-full border rounded px-2 py-1 mb-2 text-xs" />
-      <div id="wf-list" class="max-h-48 overflow-y-auto"></div>
-    </div>
-
-    <!-- 画风 -->
-    <div id="style-section" class="bg-white rounded-lg shadow-sm p-3 hidden">
-      <h2 class="text-sm font-semibold mb-1">🖌️ 画风</h2>
-      <div class="mb-1 text-[10px] text-purple-600">
-        💡 点击切换画风。更多参考
-        <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-artist/" target="_blank" rel="noopener"
-           class="underline">danbooru-artist</a>
+      <!-- 画风 -->
+      <div id="style-section" class="w-2/5 bg-white rounded-lg shadow-sm p-2 hidden flex-shrink-0">
+        <h2 class="text-xs font-semibold mb-1">🖌️ 画风</h2>
+        <div id="style-list" class="flex flex-wrap gap-1 max-h-28 overflow-y-auto"></div>
+        <button id="style-toggle-btn" class="hidden mt-0.5 text-[9px] text-purple-600 hover:text-purple-800 underline"></button>
       </div>
-      <div id="style-list" class="flex flex-wrap gap-1.5"></div>
-      <button id="style-toggle-btn" class="hidden mt-1 text-[10px] text-purple-600 hover:text-purple-800 underline"></button>
     </div>
 
     <!-- 生图表单 -->
-    <div class="bg-white rounded-lg shadow-sm p-3">
-      <div class="mb-2 text-[10px] bg-pink-50 border border-pink-200 text-pink-900 rounded p-1.5">
-        💕 新手？看教程：
-        <a href="https://2x.nz/posts/ai-wife" target="_blank" rel="noopener"
-           class="underline hover:text-pink-700">从零开始造老婆 →</a>
-      </div>
+    <div class="bg-white rounded-lg shadow-sm p-2">
+      <label class="block text-[10px] font-medium mb-0.5">直接 Tag</label>
+      <textarea id="direct" rows="2" placeholder="英文 tags，选择工作流后自动填入"
+        class="w-full border rounded px-1.5 py-1 mb-1.5 text-[10px] font-mono"></textarea>
 
-      <label class="block text-xs font-medium mb-0.5">直接 Tag</label>
-      <textarea id="direct" rows="2" placeholder="英文 tags（逗号分隔），选择工作流后自动填入"
-        class="w-full border rounded px-2 py-1 mb-2 text-xs font-mono"></textarea>
+      <label class="block text-[10px] font-medium mb-0.5">自然语言描述</label>
+      <textarea id="nl" rows="1" placeholder="中文/英文，LLM 翻译"
+        class="w-full border rounded px-1.5 py-1 mb-1.5 text-[10px]"></textarea>
 
-      <label class="block text-xs font-medium mb-0.5">自然语言描述</label>
-      <textarea id="nl" rows="2" placeholder="中文/英文，LLM 翻译成 tags"
-        class="w-full border rounded px-2 py-1 mb-2 text-xs"></textarea>
-
-      <label class="flex items-center gap-1 text-xs mb-2">
-        <input type="checkbox" id="rewrite" checked /> 改写模式
-        <span class="text-gray-400">（LLM 重写整个 prompt）</span>
-      </label>
-
-      <div class="flex flex-wrap gap-1.5 mb-2" id="res-presets"></div>
-      <div class="flex gap-2 items-end mb-2">
-        <div class="flex gap-1 items-center text-xs">
-          <input id="width" type="number" min="64" step="8" placeholder="宽"
-            class="w-16 border rounded px-1.5 py-1 text-xs" />
+      <div class="flex items-center gap-3 mb-1.5">
+        <label class="flex items-center gap-1 text-[10px]">
+          <input type="checkbox" id="rewrite" checked /> 改写模式
+        </label>
+        <div class="flex gap-1 items-center text-[10px]">
+          <input id="width" type="number" min="64" step="8" placeholder="宽" class="w-14 border rounded px-1 py-0.5 text-[10px]" />
           <span class="text-gray-400">×</span>
-          <input id="height" type="number" min="64" step="8" placeholder="高"
-            class="w-16 border rounded px-1.5 py-1 text-xs" />
-          <button id="btn-reset-res" type="button" class="px-1.5 py-1 bg-gray-200 rounded hover:bg-gray-300 text-[10px]">重置</button>
+          <input id="height" type="number" min="64" step="8" placeholder="高" class="w-14 border rounded px-1 py-0.5 text-[10px]" />
+          <button id="btn-reset-res" type="button" class="px-1 py-0.5 bg-gray-200 rounded hover:bg-gray-300 text-[9px]">重置</button>
+          <span id="default-res" class="text-[9px] text-gray-400"></span>
         </div>
-        <span id="default-res" class="text-[10px] text-gray-400"></span>
       </div>
+      <div class="flex flex-wrap gap-1 mb-1.5" id="res-presets"></div>
 
-      <button id="btn-run" class="w-full py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 font-medium text-sm">
+      <button id="btn-run" class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 font-medium text-sm">
         ▶ 开始生成
       </button>
     </div>
 
     <!-- 进度 -->
-    <div id="progress-box" class="bg-white rounded-lg shadow-sm p-3 hidden">
-      <h2 class="text-sm font-semibold mb-1">⏳ 进度</h2>
-      <div id="progress-bar-wrap" class="w-full bg-gray-200 rounded h-2 mb-1 overflow-hidden hidden">
-        <div id="progress-bar" class="bg-blue-500 h-2 transition-all" style="width:0%"></div>
+    <div id="progress-box" class="bg-white rounded-lg shadow-sm p-2 hidden">
+      <div id="progress-bar-wrap" class="w-full bg-gray-200 rounded h-1.5 mb-1 overflow-hidden hidden">
+        <div id="progress-bar" class="bg-blue-500 h-1.5 transition-all" style="width:0%"></div>
       </div>
-      <div id="progress-text" class="text-xs text-gray-700"></div>
+      <div id="progress-text" class="text-[10px] text-gray-700"></div>
       <div id="llm-box" class="mt-1 hidden">
-        <div class="text-[10px] text-gray-500 mb-0.5">🤖 LLM：</div>
-        <pre id="llm-stream" class="text-[10px] bg-yellow-50 border border-yellow-200 p-1.5 rounded max-h-32 overflow-y-auto whitespace-pre-wrap break-words"></pre>
+        <pre id="llm-stream" class="text-[10px] bg-yellow-50 border border-yellow-200 p-1 rounded max-h-20 overflow-y-auto whitespace-pre-wrap break-words"></pre>
       </div>
-      <pre id="log" class="mt-1 text-[10px] bg-gray-50 p-1.5 rounded max-h-24 overflow-y-auto"></pre>
+      <pre id="log" class="mt-1 text-[10px] bg-gray-50 p-1 rounded max-h-16 overflow-y-auto"></pre>
     </div>
 
     <!-- 结果 -->
-    <div id="result-box" class="bg-white rounded-lg shadow-sm p-3 hidden">
+    <div id="result-box" class="bg-white rounded-lg shadow-sm p-2 hidden">
       <div class="flex items-center justify-between mb-1">
-        <h2 class="text-sm font-semibold">🖼️ 结果</h2>
+        <span class="text-xs font-semibold">🖼️ 结果</span>
         <label class="flex items-center gap-1 text-[10px] cursor-pointer">
           <input type="checkbox" class="img-reveal-toggle" />
-          <span>显示图片</span>
+          <span>显示</span>
         </label>
       </div>
-      <div class="text-[10px] text-gray-500 mb-1">Prompt：</div>
-      <div id="final-prompt" class="text-[10px] bg-gray-50 p-1.5 rounded font-mono mb-2 whitespace-pre-wrap max-h-20 overflow-y-auto"></div>
-      <div id="images" class="grid grid-cols-2 gap-2 img-hide-zone"></div>
+      <div id="final-prompt" class="text-[9px] bg-gray-50 p-1 rounded font-mono mb-1 whitespace-pre-wrap max-h-12 overflow-y-auto"></div>
+      <div id="images" class="grid grid-cols-2 gap-1.5 img-hide-zone"></div>
     </div>
   </div>
 </div>
@@ -550,17 +529,17 @@ function _highlight(text, q) {
 function _wfCard(w, q) {
   const stem = w.path.replace(/\.json$/i, '');
   const thumb = w.thumbnail
-    ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-10 h-10 object-cover rounded bg-gray-50" loading="lazy" />`
-    : `<div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[9px]">无图</div>`;
+    ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-8 h-8 object-cover rounded bg-gray-50" loading="lazy" />`
+    : `<div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[8px]">无图</div>`;
   const isSelected = w.path === getCurrentPath();
   const cardCls = isSelected
-    ? 'wf-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1 cursor-pointer flex flex-col items-center gap-0.5 w-14 overflow-hidden'
-    : 'wf-item border-2 border-transparent rounded p-1 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-14 overflow-hidden';
+    ? 'wf-item border-2 border-blue-500 ring-1 ring-blue-300 bg-blue-50 rounded p-0.5 cursor-pointer flex flex-col items-center gap-0 w-11 overflow-hidden'
+    : 'wf-item border-2 border-transparent rounded p-0.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0 w-11 overflow-hidden';
   const cat = (w.category || '').trim();
-  const catTag = q && cat ? `<span class="text-[8px] text-gray-400 leading-tight text-center w-full truncate">${_highlight(cat, q)}</span>` : '';
-  return `<div class="${cardCls}" data-path="${w.path}" title="${w.path}${cat ? ' [' + cat + ']' : ''}">
+  const catTag = q && cat ? `<span class="text-[7px] text-gray-400 leading-tight text-center w-full truncate">${_highlight(cat, q)}</span>` : '';
+  return `<div class="${cardCls}" data-path="${w.path}" title="${stem}${cat ? ' [' + cat + ']' : ''}">
      ${thumb}
-     <span class="text-[10px] font-medium leading-tight break-all text-center w-full">${_highlight(stem, q)}</span>
+     <span class="text-[8px] font-medium leading-tight break-all text-center w-full">${_highlight(stem, q)}</span>
      ${catTag}
    </div>`;
 }
@@ -652,15 +631,15 @@ function renderStyles() {
   $('style-list').innerHTML = visible.map(s => {
     const active = s.tags === selected;
     const cls = active
-      ? 'style-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1 cursor-pointer flex flex-col items-center gap-0.5 w-14 overflow-hidden'
-      : 'style-item border-2 border-transparent rounded p-1 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-14 overflow-hidden';
+      ? 'style-item border-2 border-blue-500 ring-1 ring-blue-300 bg-blue-50 rounded p-0.5 cursor-pointer flex flex-col items-center gap-0 w-11 overflow-hidden'
+      : 'style-item border-2 border-transparent rounded p-0.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0 w-11 overflow-hidden';
     const thumb = s.image
-      ? `<img src="/api/style_thumbnail?name=${encodeURIComponent(s.image)}" class="w-10 h-10 object-cover rounded bg-gray-50" loading="lazy" />`
-      : `<div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[9px]">无图</div>`;
+      ? `<img src="/api/style_thumbnail?name=${encodeURIComponent(s.image)}" class="w-8 h-8 object-cover rounded bg-gray-50" loading="lazy" />`
+      : `<div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[8px]">无图</div>`;
     const label = s.name || s.tags;
     return `<div class="${cls}" data-style-tags="${s.tags.replace(/"/g, '&quot;')}" title="${s.tags}">
       ${thumb}
-      <span class="text-[10px] font-medium leading-tight break-all text-center w-full line-clamp-2">${label}</span>
+      <span class="text-[8px] font-medium leading-tight break-all text-center w-full line-clamp-2">${label}</span>
     </div>`;
   }).join('');
   const toggleBtn = $('style-toggle-btn');
