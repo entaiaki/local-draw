@@ -212,7 +212,7 @@
         </label>
       </div>
       <div id="final-prompt" class="text-[9px] bg-gray-50 p-1 rounded font-mono mb-1 whitespace-pre-wrap max-h-12 overflow-y-auto"></div>
-      <div id="images" class="grid grid-cols-2 gap-1.5 img-hide-zone"></div>
+      <div id="images" class="grid grid-cols-3 gap-1 img-hide-zone max-h-32 overflow-y-auto"></div>
     </div>
   </div>
 </div>
@@ -741,10 +741,9 @@ function handleMsg(m) {
   }
   else if (m.type === 'image') {
     const div = document.createElement('div');
-    div.innerHTML = `<a href="${_esc(m.url)}" data-gallery="main" data-title="${_esc(m.filename)}" class="glightbox">
-        <img src="${_esc(m.url)}" class="w-full rounded border hover:ring-2 hover:ring-blue-400" loading="lazy" />
-      </a>
-      <div class="text-[10px] text-gray-500 break-all">${_esc(m.filename)}</div>`;
+    div.innerHTML = `<a href="${_esc(m.url)}" data-gallery="main" data-title="${_esc(m.filename)}" class="glightbox block">
+        <img src="${_esc(m.url)}" class="w-full aspect-square object-cover rounded border hover:ring-2 hover:ring-blue-400" loading="lazy" />
+      </a>`;
     $('images').appendChild(div);
     refreshLightbox();
     pushHistory({ url: m.url, filename: m.filename, prompt: currentPrompt, time: Date.now() });
