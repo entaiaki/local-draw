@@ -172,15 +172,14 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-3 mb-1.5">
+      <div class="flex items-center flex-wrap gap-2 mb-1.5">
         <label class="flex items-center gap-1 text-[10px]">
           <input type="checkbox" id="rewrite" checked /> 改写
           <span class="text-gray-400 cursor-help" title="勾选：LLM 基于「直接 Tag」结合「自然语言描述」整体重写 prompt&#10;不勾选：LLM 翻译后追加到原 prompt 后面">?</span>
         </label>
-        <span id="default-res" class="text-[9px] text-gray-400"></span>
+        <div class="flex flex-wrap gap-1" id="res-presets"></div>
       </div>
       <input id="width" type="hidden" /><input id="height" type="hidden" />
-      <div class="flex flex-wrap gap-1 mb-1.5" id="res-presets"></div>
 
       <button id="btn-run" class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 font-medium text-sm">
         ▶ 开始生成
@@ -490,15 +489,8 @@ async function loadCurrent() {
   }
   defaultRes.w = d.default_width;
   defaultRes.h = d.default_height;
-  if (defaultRes.w && defaultRes.h) {
-    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}`;
-    $('width').placeholder = defaultRes.w;
-    $('height').placeholder = defaultRes.h;
-  } else {
-    $('default-res').textContent = '';
-    $('width').placeholder = '宽';
-    $('height').placeholder = '高';
-  }
+  $('width').value = defaultRes.w || '';
+  $('height').value = defaultRes.h || '';
   const bp = (d.builtin_prompt || '').trim();
   $('direct').value = bp;
   saveFormState();
@@ -599,8 +591,8 @@ async function loadResolutions() {
     const r = await fetch('/api/resolutions');
     const d = await r.json();
     $('res-presets').innerHTML = (d.presets || []).map(p =>
-      `<button type="button" data-w="${p.w}" data-h="${p.h}" class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 text-[10px]">
-        ${p.w}×${p.h}${p.label ? ` <span class="text-gray-500">${_esc(p.label)}</span>` : ''}
+      `<button type="button" data-w="${p.w}" data-h="${p.h}" class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 text-[10px]" title="${p.w}×${p.h}">
+        ${p.label ? _esc(p.label) : p.w + '×' + p.h}
       </button>`
     ).join('');
   } catch {}
