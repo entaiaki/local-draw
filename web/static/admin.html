@@ -928,6 +928,8 @@ function renderWfMetaEntries() {
         </div>
         <input type="text" value="${(m.lora_link || '').replace(/"/g, '&quot;')}" placeholder="Lora 链接 URL（可选）"
           class="wfmeta-link border rounded px-2 py-1 font-mono text-xs" data-idx="${i}" />
+        <input type="text" value="${(m.category || '').replace(/"/g, '&quot;')}" placeholder="分类（可选，如「蔚蓝档案」）"
+          class="wfmeta-category border rounded px-2 py-1 text-xs" data-idx="${i}" />
       </div>
       <div class="flex flex-col gap-1">
         <button class="wfmeta-up text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300" data-idx="${i}" ${i === 0 ? 'disabled' : ''}>▲</button>
@@ -957,6 +959,9 @@ function renderWfMetaEntries() {
   });
   container.querySelectorAll('.wfmeta-link').forEach(el => {
     el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].lora_link = el.value; autoSaveWfMeta(); });
+  });
+  container.querySelectorAll('.wfmeta-category').forEach(el => {
+    el.addEventListener('input', () => { adminWfMeta[+el.dataset.idx].category = el.value; autoSaveWfMeta(); });
   });
   container.querySelectorAll('.wfmeta-upload').forEach(el => {
     el.addEventListener('change', async () => {
@@ -999,6 +1004,7 @@ async function saveWfMeta() {
       workflow: m.workflow || '',
       thumbnail: m.thumbnail || '',
       lora_link: m.lora_link || '',
+      category: m.category || '',
     }));
     $('wfmeta-status').textContent = '✓ 已保存';
     setTimeout(() => { $('wfmeta-status').textContent = ''; }, 2000);
@@ -1019,13 +1025,13 @@ async function loadWfMeta() {
     const files = filesRes.files || [];
     const metaMap = {};
     for (const m of (metaRes.workflow_meta || [])) {
-      metaMap[m.workflow] = { thumbnail: m.thumbnail || '', lora_link: m.lora_link || '' };
+      metaMap[m.workflow] = { thumbnail: m.thumbnail || '', lora_link: m.lora_link || '', category: m.category || '' };
     }
-    // 用目录扫描结果作为主列表，合并已有 meta
     adminWfMeta = files.map(f => ({
       workflow: f,
       thumbnail: (metaMap[f] || {}).thumbnail || '',
       lora_link: (metaMap[f] || {}).lora_link || '',
+      category: (metaMap[f] || {}).category || '',
     }));
     renderWfMetaEntries();
     $('wfmeta-status').textContent = '';

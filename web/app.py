@@ -256,6 +256,8 @@ def _load_workflow_meta() -> Dict[str, Dict[str, str]]:
                 entry["thumbnail"] = str(item["thumbnail"])
             if item.get("lora_link"):
                 entry["lora_link"] = str(item["lora_link"])
+            if item.get("category"):
+                entry["category"] = str(item["category"])
             if entry:
                 result[wf] = entry
         return result
@@ -1246,6 +1248,8 @@ async def api_list():
         wfs = await list_workflows()
         for w in wfs:
             w["thumbnail"] = bool(find_thumbnail(w.get("path", "")))
+            meta = _workflow_meta.get(w.get("path", ""), {})
+            w["category"] = meta.get("category", "")
         return {"workflows": wfs}
     except Exception as e:
         raise HTTPException(500, str(e))
@@ -2822,12 +2826,15 @@ async def api_admin_workflow_meta_set(payload: Dict[str, Any]):
         entry = {}
         thumb = str(item.get("thumbnail", "")).strip()
         link = str(item.get("lora_link", "")).strip()
+        cat = str(item.get("category", "")).strip()
         if thumb:
             entry["thumbnail"] = thumb
         if link:
             if not link.startswith(("http://", "https://")):
                 raise HTTPException(400, "lora_link 必须以 http:// 或 https:// 开头")
             entry["lora_link"] = link
+        if cat:
+            entry["category"] = cat
         if entry:
             cleaned[wf] = entry
     if not _save_workflow_meta_file(cleaned):
