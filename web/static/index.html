@@ -590,11 +590,15 @@ async function loadResolutions() {
   try {
     const r = await fetch('/api/resolutions');
     const d = await r.json();
-    $('res-presets').innerHTML = (d.presets || []).map(p =>
-      `<button type="button" data-w="${p.w}" data-h="${p.h}" class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 text-[10px]" title="${p.w}×${p.h}">
+    $('res-presets').innerHTML = (d.presets || []).map(p => {
+      const sel = parseInt($('width').value) === p.w && parseInt($('height').value) === p.h;
+      const cls = sel
+        ? 'px-1.5 py-0.5 bg-blue-500 text-white border border-blue-500 rounded text-[10px]'
+        : 'px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 text-[10px]';
+      return `<button type="button" data-w="${p.w}" data-h="${p.h}" class="${cls}" title="${p.w}×${p.h}">
         ${p.label ? _esc(p.label) : p.w + '×' + p.h}
-      </button>`
-    ).join('');
+      </button>`;
+    }).join('');
   } catch {}
 }
 
@@ -771,6 +775,7 @@ $('res-presets').addEventListener('click', (e) => {
   $('width').value = btn.dataset.w;
   $('height').value = btn.dataset.h;
   saveFormState();
+  loadResolutions();
 });
 $('btn-reload-gallery').addEventListener('click', () => { _tabLoaded.gallery = false; loadGallery(true); });
 $('btn-load-more').addEventListener('click', () => loadGallery(false));
