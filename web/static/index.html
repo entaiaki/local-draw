@@ -369,7 +369,7 @@ async function loadFeatured() {
 }
 
 // ==================== 画廊 ====================
-const galleryState = { total: 0, loaded: 0, pageSize: 20 };
+const galleryState = { total: 0, loaded: 0, pageSize: 15 };
 
 function galleryItemHTML(relPath, mtime) {
   const url = '/api/output/file?path=' + encodeURIComponent(relPath);
