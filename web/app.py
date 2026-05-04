@@ -85,6 +85,7 @@ DEFAULT_LIMITS = {
     "gpu_cache_ttl_ms": 5000,
     "gc_interval_hours": 6,
     "featured_tip": "💡 温馨提示：可以尝试 Fork 优秀作品二改哦！只收录非 R18、作画好看、无明显坏手坏脚、风格独特的作品。",
+    "category_order": [],
 }
 
 
@@ -99,6 +100,9 @@ def _load_limits() -> Dict[str, Any]:
                         continue
                     if isinstance(DEFAULT_LIMITS[k], str):
                         merged[k] = str(v)
+                    elif isinstance(DEFAULT_LIMITS[k], list):
+                        if isinstance(v, list):
+                            merged[k] = v
                     elif isinstance(v, (int, float)) and v >= 0:
                         merged[k] = int(v)
                 return merged
@@ -1250,7 +1254,7 @@ async def api_list():
             w["thumbnail"] = bool(find_thumbnail(w.get("path", "")))
             meta = _workflow_meta.get(w.get("path", ""), {})
             w["category"] = meta.get("category", "")
-        return {"workflows": wfs}
+        return {"workflows": wfs, "category_order": _limits.get("category_order", [])}
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -2596,6 +2600,9 @@ async def api_admin_limits_set(payload: Dict[str, Any]):
         v = payload[k]
         if isinstance(DEFAULT_LIMITS[k], str):
             new_limits[k] = str(v)
+        elif isinstance(DEFAULT_LIMITS[k], list):
+            if isinstance(v, list):
+                new_limits[k] = v
         elif isinstance(v, (int, float)) and v >= 0:
             new_limits[k] = int(v)
         else:

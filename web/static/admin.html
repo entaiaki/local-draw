@@ -1033,10 +1033,12 @@ function autoSaveWfMeta() {
 
 async function loadWfMeta() {
   try {
-    const [filesRes, metaRes] = await Promise.all([
+    const [filesRes, metaRes, limitsRes] = await Promise.all([
       api('GET', '/api/admin/workflow_files'),
       api('GET', '/api/admin/workflow_meta'),
+      api('GET', '/api/admin/limits'),
     ]);
+    _catOrder = (limitsRes.limits || {}).category_order || [];
     const files = filesRes.files || [];
     const metaMap = {};
     for (const m of (metaRes.workflow_meta || [])) {
@@ -1056,18 +1058,47 @@ async function loadWfMeta() {
 
 let _selectedCat = '';
 let _pendingCats = new Set();
+let _catOrder = [];
+
+async function _saveCatOrder() {
+  try {
+    await api('POST', '/api/admin/limits', { category_order: _catOrder });
+  } catch {}
+}
 
 function renderCatUI() {
   const fromData = adminWfMeta.map(m => (m.category || '').trim()).filter(Boolean);
-  const cats = [...new Set([...fromData, ..._pendingCats])].sort();
+  const allCats = new Set([...fromData, ..._pendingCats]);
+  // 保持已有顺序，新分类追加到末尾
+  const ordered = _catOrder.filter(c => allCats.has(c));
+  const extra = [...allCats].filter(c => !_catOrder.includes(c)).sort();
+  _catOrder = [...ordered, ...extra];
+  const cats = _catOrder;
   const chips = $('wfmeta-cat-chips');
   chips.innerHTML = cats.map(c => {
     const sel = c === _selectedCat;
-    return `<span class="wfmeta-cat-chip cursor-pointer text-xs px-2 py-0.5 rounded ${sel ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}" data-cat="${c.replace(/"/g, '&quot;')}">${c}
+    return `<span class="wfmeta-cat-chip cursor-grab text-xs px-2 py-0.5 rounded ${sel ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}" draggable="true" data-cat="${c.replace(/"/g, '&quot;')}">${c}
       <button class="wfmeta-cat-del ml-1 text-[10px] opacity-60 hover:opacity-100" data-cat="${c.replace(/"/g, '&quot;')}">✕</button>
     </span>`;
   }).join('');
+  let dragChip = null;
   chips.querySelectorAll('.wfmeta-cat-chip').forEach(el => {
+    el.addEventListener('dragstart', e => { dragChip = el; el.classList.add('opacity-50'); e.dataTransfer.effectAllowed = 'move'; });
+    el.addEventListener('dragend', () => { el.classList.remove('opacity-50'); dragChip = null; });
+    el.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragChip || dragChip === el) return;
+      const from = dragChip.dataset.cat;
+      const to = el.dataset.cat;
+      const fi = _catOrder.indexOf(from);
+      const ti = _catOrder.indexOf(to);
+      if (fi < 0 || ti < 0) return;
+      _catOrder.splice(fi, 1);
+      _catOrder.splice(ti, 0, from);
+      renderCatUI();
+      _saveCatOrder();
+    });
     el.addEventListener('click', (e) => {
       if (e.target.classList.contains('wfmeta-cat-del')) return;
       _selectedCat = _selectedCat === el.dataset.cat ? '' : el.dataset.cat;
@@ -1079,10 +1110,12 @@ function renderCatUI() {
       const cat = el.dataset.cat;
       adminWfMeta.forEach(m => { if (m.category === cat) m.category = ''; });
       _pendingCats.delete(cat);
+      _catOrder = _catOrder.filter(c => c !== cat);
       if (_selectedCat === cat) _selectedCat = '';
       renderCatUI();
       renderWfMetaEntries();
       autoSaveWfMeta();
+      _saveCatOrder();
     });
   });
   const uncatDiv = $('wfmeta-uncat');
@@ -1119,6 +1152,8 @@ $('btn-add-cat').addEventListener('click', () => {
   $('wfmeta-cat-input').value = '';
   _selectedCat = name;
   _pendingCats.add(name);
+  if (!_catOrder.includes(name)) _catOrder.push(name);
+  _saveCatOrder();
   renderCatUI();
 });
 $('wfmeta-cat-input').addEventListener('keydown', (e) => {
