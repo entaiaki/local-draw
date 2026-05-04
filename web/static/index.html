@@ -122,17 +122,12 @@
       </div>
     </div>
 
-    <!-- Fork 信息 -->
-    <div id="fork-section" class="hidden">
-      <div id="current-info" class="text-gray-600 text-xs"></div>
-    </div>
-
     <!-- 工作流 + 画风 左右并排 -->
     <div class="flex gap-1">
       <!-- 工作流 -->
       <div class="flex-1 bg-white rounded-lg shadow-sm p-1.5 min-w-0">
         <div class="relative flex items-center justify-between mb-1">
-          <h2 class="text-xs font-semibold">📋 工作流 <span id="wf-current" class="font-normal text-gray-400 text-[9px]"></span></h2>
+          <h2 class="text-xs font-semibold min-w-0 truncate">📋 工作流 <span id="wf-current" class="font-normal text-gray-400 text-[9px]"></span><span id="fork-badge" class="hidden font-normal text-[9px] text-emerald-600"></span></h2>
           <button id="btn-wf-search" class="text-gray-400 hover:text-gray-600 text-xs">🔍</button>
           <input id="search" type="text" placeholder="搜索工作流..."
             class="hidden absolute inset-0 border rounded px-1.5 py-0.5 text-[10px] bg-white z-10" />
@@ -424,35 +419,14 @@ let forkedMeta = null;
 
 function applyForkedToUI() {
   const m = forkedMeta;
-  const escapeHtml = _esc;
-  const loras = Array.isArray(m.loras) ? m.loras : [];
-  const lorasHtml = loras.length
-    ? `<div class="text-xs text-gray-700 mt-1">Lora: ${loras.map(n => `<span class="inline-block bg-purple-100 text-purple-700 rounded px-1.5 py-0.5 mr-1 mb-0.5 break-all">${escapeHtml(n)}</span>`).join('')}</div>`
-    : '';
-  const s = m.summary || {node_count:'?',link_count:'?',group_count:'?'};
-  $('current-info').innerHTML = `
-    <div class="border-2 border-emerald-500 bg-emerald-50 rounded-lg shadow-sm p-3 flex gap-3 items-start">
-      <div class="text-xl">🍴</div>
-      <div class="min-w-0 flex-1">
-        <div class="font-medium text-emerald-800 text-sm">临时 Fork</div>
-        <div class="text-[10px] text-gray-600">来源: ${escapeHtml(m.source_image || '')} · 节点 ${s.node_count}</div>
-        ${lorasHtml}
-        <button id="btn-clear-fork" class="mt-1 text-[10px] px-2 py-0.5 bg-gray-200 hover:bg-gray-300 rounded">✕ 清除 Fork</button>
-      </div>
-    </div>`;
-  $('fork-section').classList.remove('hidden');
+  const src = (m.source_image || '').replace(/\.[^.]+$/, '');
+  const badge = $('fork-badge');
+  badge.innerHTML = ` 🍴<span class="underline">Fork:${_esc(src)}</span> <button id="btn-clear-fork" class="text-red-500 hover:text-red-700 font-bold ml-0.5">✕</button>`;
+  badge.classList.remove('hidden');
   $('btn-clear-fork').addEventListener('click', clearFork);
+  $('wf-current').textContent = '';
   defaultRes.w = m.default_width;
   defaultRes.h = m.default_height;
-  if (defaultRes.w && defaultRes.h) {
-    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}`;
-    $('width').placeholder = defaultRes.w;
-    $('height').placeholder = defaultRes.h;
-  } else {
-    $('default-res').textContent = '';
-    $('width').placeholder = '宽';
-    $('height').placeholder = '高';
-  }
   const bp = (m.builtin_prompt || '').trim();
   $('direct').value = bp;
   saveFormState();
@@ -461,12 +435,15 @@ function applyForkedToUI() {
 function clearFork() {
   forkedWorkflow = null;
   forkedMeta = null;
+  $('fork-badge').classList.add('hidden');
+  $('fork-badge').innerHTML = '';
   loadCurrent();
 }
 
 async function loadCurrent(setResolution = false) {
   if (forkedWorkflow) { applyForkedToUI(); return; }
-  $('fork-section').classList.add('hidden');
+  $('fork-badge').classList.add('hidden');
+  $('fork-badge').innerHTML = '';
   const path = getCurrentPath();
   if (!path) return;
   const r = await fetch('/api/workflows/current?path=' + encodeURIComponent(path));
