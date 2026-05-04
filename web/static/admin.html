@@ -1055,9 +1055,11 @@ async function loadWfMeta() {
 }
 
 let _selectedCat = '';
+let _pendingCats = new Set();
 
 function renderCatUI() {
-  const cats = [...new Set(adminWfMeta.map(m => (m.category || '').trim()).filter(Boolean))].sort();
+  const fromData = adminWfMeta.map(m => (m.category || '').trim()).filter(Boolean);
+  const cats = [...new Set([...fromData, ..._pendingCats])].sort();
   const chips = $('wfmeta-cat-chips');
   chips.innerHTML = cats.map(c => {
     const sel = c === _selectedCat;
@@ -1076,6 +1078,7 @@ function renderCatUI() {
     el.addEventListener('click', () => {
       const cat = el.dataset.cat;
       adminWfMeta.forEach(m => { if (m.category === cat) m.category = ''; });
+      _pendingCats.delete(cat);
       if (_selectedCat === cat) _selectedCat = '';
       renderCatUI();
       renderWfMetaEntries();
@@ -1115,6 +1118,7 @@ $('btn-add-cat').addEventListener('click', () => {
   if (!name) return;
   $('wfmeta-cat-input').value = '';
   _selectedCat = name;
+  _pendingCats.add(name);
   renderCatUI();
 });
 $('wfmeta-cat-input').addEventListener('keydown', (e) => {
