@@ -133,9 +133,9 @@
     </div>
 
     <!-- 工作流 + 画风 左右并排 -->
-    <div class="flex gap-2">
+    <div class="flex gap-1">
       <!-- 工作流 -->
-      <div class="flex-1 bg-white rounded-lg shadow-sm p-2 min-w-0">
+      <div class="flex-1 bg-white rounded-lg shadow-sm p-1.5 min-w-0">
         <div class="flex items-center justify-between mb-1">
           <h2 class="text-xs font-semibold">📋 工作流</h2>
           <button id="btn-wf-search" class="text-gray-400 hover:text-gray-600 text-xs">🔍</button>
@@ -145,7 +145,7 @@
         <div id="wf-list" class="max-h-28 overflow-y-auto"></div>
       </div>
       <!-- 画风 -->
-      <div id="style-section" class="flex-1 bg-white rounded-lg shadow-sm p-2 hidden min-w-0">
+      <div id="style-section" class="flex-1 bg-white rounded-lg shadow-sm p-1.5 hidden min-w-0">
         <div class="flex items-center justify-between mb-1">
           <h2 class="text-xs font-semibold">🖌️ 画风</h2>
           <button id="btn-style-search" class="text-gray-400 hover:text-gray-600 text-xs">🔍</button>
@@ -534,8 +534,8 @@ function _wfCard(w, q) {
     : `<div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[8px]">无图</div>`;
   const isSelected = w.path === getCurrentPath();
   const cardCls = isSelected
-    ? 'wf-item border-2 border-blue-500 ring-1 ring-blue-300 bg-blue-50 rounded p-0.5 cursor-pointer flex flex-col items-center gap-0 w-11 overflow-hidden'
-    : 'wf-item border-2 border-transparent rounded p-0.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0 w-11 overflow-hidden';
+    ? 'wf-item border-2 border-blue-500 ring-1 ring-blue-300 bg-blue-50 rounded p-0.5 cursor-pointer flex flex-col items-center w-10 overflow-hidden'
+    : 'wf-item border-2 border-transparent rounded p-0.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center w-10 overflow-hidden';
   const cat = (w.category || '').trim();
   const catTag = q && cat ? `<span class="text-[7px] text-gray-400 leading-tight text-center w-full truncate">${_highlight(cat, q)}</span>` : '';
   return `<div class="${cardCls}" data-path="${w.path}" title="${stem}${cat ? ' [' + cat + ']' : ''}">
@@ -638,8 +638,8 @@ function renderStyles() {
   $('style-list').innerHTML = pool.map(s => {
     const active = s.tags === selected;
     const cls = active
-      ? 'style-item border-2 border-blue-500 ring-1 ring-blue-300 bg-blue-50 rounded p-0.5 cursor-pointer flex flex-col items-center gap-0 w-11 overflow-hidden'
-      : 'style-item border-2 border-transparent rounded p-0.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0 w-11 overflow-hidden';
+      ? 'style-item border-2 border-blue-500 ring-1 ring-blue-300 bg-blue-50 rounded p-0.5 cursor-pointer flex flex-col items-center w-10 overflow-hidden'
+      : 'style-item border-2 border-transparent rounded p-0.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center w-10 overflow-hidden';
     const thumb = s.image
       ? `<img src="/api/style_thumbnail?name=${encodeURIComponent(s.image)}" class="w-8 h-8 object-cover rounded bg-gray-50" loading="lazy" />`
       : `<div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[8px]">无图</div>`;
