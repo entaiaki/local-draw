@@ -145,7 +145,7 @@
         <div id="wf-list" class="max-h-28 overflow-y-auto"></div>
       </div>
       <!-- 画风 -->
-      <div id="style-section" class="w-2/5 bg-white rounded-lg shadow-sm p-2 hidden flex-shrink-0">
+      <div id="style-section" class="flex-1 bg-white rounded-lg shadow-sm p-2 hidden min-w-0">
         <div class="flex items-center justify-between mb-1">
           <h2 class="text-xs font-semibold">🖌️ 画风</h2>
           <button id="btn-style-search" class="text-gray-400 hover:text-gray-600 text-xs">🔍</button>
@@ -650,9 +650,10 @@ function renderStyles() {
     </div>`;
   }).join('');
   const toggleBtn = $('style-toggle-btn');
-  if (noAlias.length) {
+  const noAliasCount = allStyles.filter(s => !s.name).length;
+  if (!sq && noAliasCount) {
     toggleBtn.classList.remove('hidden');
-    toggleBtn.textContent = showAllStyles ? '收起' : `更多 (${noAlias.length})`;
+    toggleBtn.textContent = showAllStyles ? '收起' : `更多 (${noAliasCount})`;
   } else { toggleBtn.classList.add('hidden'); }
   document.querySelectorAll('.style-item').forEach(el => {
     el.addEventListener('click', () => {
