@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
 <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
 <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet" />
@@ -11,46 +11,42 @@
 <link rel="icon" type="image/avif" href="/static/favicon.avif" />
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* 全局：任何内容都不准把布局撑出视口 */
-  html, body { max-width: 100vw; overflow-x: hidden; }
-  *, *::before, *::after {
-    min-width: 0;       /* 取消 flex/grid 子项的默认 min-width:auto，长内容才能换行 */
-    min-height: 0;
-  }
-  /* 长 URL/无空格文本兜底换行 */
+  html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; width: 100%; }
+  *, *::before, *::after { min-width: 0; min-height: 0; }
   a, code, pre, span, div, p, li, td { overflow-wrap: anywhere; word-break: break-word; }
   pre, code { white-space: pre-wrap; }
   img, video, canvas, iframe { max-width: 100%; height: auto; }
-  /* 自建灯箱样式 */
+  /* 灯箱 */
   #lb-root { position: fixed; inset: 0; z-index: 60; background: #000; display: none; flex-direction: column; }
   #lb-root.open { display: flex; }
   #lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 8px; min-height: 0; }
-  /* 等比例填满 wrap，超出按比例缩放，不滚动 */
   #lb-img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; user-select: auto; -webkit-user-select: auto; -webkit-touch-callout: default; }
   #lb-bar { color: #fff; padding: 8px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,.5); }
   .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.4); color: #fff; border: 0; width: 44px; height: 64px; font-size: 28px; cursor: pointer; }
   .lb-nav:hover { background: rgba(0,0,0,.7); }
   #lb-prev { left: 8px; }
   #lb-next { right: 8px; }
-  #lb-close { position: absolute; top: 8px; right: 12px; background: transparent; color: #fff; border: 0; font-size: 28px; cursor: pointer; }
+  #lb-close { position: absolute; top: 8px; right: 12px; background: transparent; color: #fff; border: 0; font-size: 28px; cursor: pointer; z-index: 1; }
   #lb-title { color: #ddd; font-size: 12px; margin-right: auto; word-break: break-all; }
-  /* 默认隐藏所有生成图缩略图，需勾选「显示图片」才展示 */
+  /* 图片隐藏 */
   .img-hide-zone:not(.revealed) img { visibility: hidden; }
-  .img-hide-zone:not(.revealed) a {
-    background: repeating-linear-gradient(45deg, #f3f4f6 0 8px, #e5e7eb 8px 16px);
-  }
-  .img-hide-zone:not(.revealed) a::after {
-    content: "🔒 已隐藏";
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    color: #6b7280; font-size: 11px;
-  }
+  .img-hide-zone:not(.revealed) a { background: repeating-linear-gradient(45deg, #f3f4f6 0 8px, #e5e7eb 8px 16px); }
+  .img-hide-zone:not(.revealed) a::after { content: "🔒 已隐藏"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 11px; }
   .img-hide-zone a { position: relative; }
+  /* Tab 布局 */
+  .tab-page { position: fixed; top: 0; left: 0; right: 0; bottom: 52px; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; }
+  .tab-page.active { display: block; }
+  #tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 52px; z-index: 40; background: #fff; border-top: 1px solid #e5e7eb; display: flex; padding-bottom: env(safe-area-inset-bottom); }
+  #tab-bar button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; background: none; color: #9ca3af; font-size: 10px; cursor: pointer; transition: color .15s; }
+  #tab-bar button .tab-icon { font-size: 20px; }
+  #tab-bar button.active { color: #3b82f6; }
+  /* 全局状态条固定在 tab 页顶部 */
+  #top-bar { position: sticky; top: 0; z-index: 30; background: #f3f4f6; }
 </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100">
 
-
-<!-- 自建灯箱 -->
+<!-- 灯箱 -->
 <div id="lb-root" role="dialog" aria-modal="true">
   <button id="lb-close" title="关闭 (Esc)">×</button>
   <button id="lb-prev" class="lb-nav" title="上一张 (←)">‹</button>
@@ -68,7 +64,6 @@
   </div>
 </div>
 
-
 <!-- 举报弹窗 -->
 <div id="report-modal" class="fixed inset-0 z-[70] bg-black/70 items-center justify-center p-4 hidden">
   <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-5">
@@ -84,9 +79,7 @@
   </div>
 </div>
 
-
-<!-- 显示图片前的确认（每会话仅首次弹一次） -->
-<!-- 生图前公告确认（会话内仅弹一次） -->
+<!-- 生图前公告确认 -->
 <div id="gen-notice-modal" class="fixed inset-0 z-50 bg-black/70 items-center justify-center p-4 hidden">
   <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto">
     <h3 class="text-lg font-bold mb-3 text-red-600">⚠️ 生图前必读公告</h3>
@@ -94,7 +87,7 @@
       <p>您了解并已知晓自己即将进行生图操作，<strong>您的 IP 将会被记录</strong>。</p>
       <p>若您恶意生图、滥用 API、生成鬼图、恶心图片，<strong>有可能会遭到不定处罚</strong>。</p>
       <p>本站<strong>有权随时将您永久禁止生图</strong>，并移除您的所有违规图片。</p>
-      <p>若您为生图小白，请严格按照「生成图片」区块的教程学习正确的生图姿势。<strong>不要随意生图</strong>，任何人生图对所有人都是可见的，大家都想看到美好的、令人身心愉悦的图片。</p>
+      <p>若您为生图小白，请严格按照教程学习正确的生图姿势。<strong>不要随意生图</strong>，任何人生图对所有人都是可见的。</p>
       <p class="text-xs text-gray-500">该弹窗仅在本次会话首次生图时提示。</p>
     </div>
     <div class="flex gap-2 justify-end">
@@ -104,22 +97,16 @@
   </div>
 </div>
 
-<!-- 生图成功后引流弹窗 -->
+<!-- 生图成功引流弹窗 -->
 <div id="star-modal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-5">
     <h3 class="text-lg font-bold mb-2">🎉 生图成功！</h3>
-    <p class="text-sm text-gray-700 leading-relaxed mb-4">
-      如果你觉得这个工具还行用，欢迎：
-    </p>
+    <p class="text-sm text-gray-700 leading-relaxed mb-4">如果你觉得这个工具还行用，欢迎：</p>
     <div class="flex flex-col gap-2 mb-4">
       <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
-         class="px-3 py-2 bg-gray-900 text-white rounded text-sm text-center hover:bg-gray-800">
-        ⭐ 去 GitHub 点个 Star
-      </a>
+         class="px-3 py-2 bg-gray-900 text-white rounded text-sm text-center hover:bg-gray-800">⭐ 去 GitHub 点个 Star</a>
       <a href="https://2x.nz/tg" target="_blank" rel="noopener"
-         class="px-3 py-2 bg-blue-500 text-white rounded text-sm text-center hover:bg-blue-600">
-        💬 加群交流（Telegram）
-      </a>
+         class="px-3 py-2 bg-blue-500 text-white rounded text-sm text-center hover:bg-blue-600">💬 加群交流（Telegram）</a>
     </div>
     <div class="flex justify-between text-xs">
       <button id="star-never" class="text-gray-500 hover:text-gray-700">不再提示</button>
@@ -128,332 +115,320 @@
   </div>
 </div>
 
-
-
-<div class="max-w-6xl mx-auto p-4">
-  <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-    <h1 class="text-2xl font-bold">🎨 自然语言生图</h1>
-    <div class="flex items-center gap-3 flex-wrap">
-      <a href="https://space.bilibili.com/325903362" target="_blank" rel="noopener"
-         class="text-sm flex items-center gap-1 px-2 py-1 rounded bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-300"
-         title="作者 B 站主页 · 求关注">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-          <path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.853L4.6 3.4c-.18-.18-.27-.405-.27-.674 0-.27.09-.495.27-.675s.405-.27.674-.27c.27 0 .495.09.675.27L8.728 4.653h6.55L18.6 1.353c.18-.18.405-.27.674-.27.27 0 .495.09.675.27s.27.405.27.674c0 .27-.09.495-.27.675zm.974 1.866H5.333c-.99 0-1.83.345-2.518 1.034-.69.69-1.05 1.53-1.084 2.52v7.36c.034 1.001.395 1.84 1.084 2.518.689.679 1.529 1.018 2.518 1.018h13.454c.99 0 1.83-.339 2.519-1.018.689-.679 1.05-1.517 1.084-2.518v-7.36c-.034-.99-.395-1.83-1.084-2.52-.689-.689-1.529-1.034-2.519-1.034zM8 11.16c.4 0 .742.142 1.025.426.282.282.424.624.424 1.025v1.58c0 .402-.142.745-.424 1.026-.283.282-.624.422-1.025.422-.4 0-.742-.14-1.025-.422-.282-.281-.424-.624-.424-1.026v-1.58c0-.401.142-.743.424-1.025.283-.284.624-.426 1.025-.426zm8 0c.4 0 .742.142 1.025.426.282.282.424.624.424 1.025v1.58c0 .402-.142.745-.424 1.026-.283.282-.624.422-1.025.422-.4 0-.742-.14-1.025-.422-.282-.281-.424-.624-.424-1.026v-1.58c0-.401.142-.743.424-1.025.283-.284.624-.426 1.025-.426z"/>
-        </svg>
-        <span>关注作者 @二叉树树</span>
-      </a>
-      <a href="https://2x.nz/q" target="_blank" rel="noopener"
-         class="text-sm flex items-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 border border-green-300"
-         title="加群交流">
-        <span>💬</span><span>加群</span>
-      </a>
-      <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
-         class="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1">
-        <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
-          <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-        </svg>
-        <span>GitHub</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- GPU 状态条（nvidia-smi） -->
-  <div id="gpu-bar" class="hidden mb-4 bg-white border border-gray-200 rounded shadow-sm p-2 text-xs text-gray-700">
-    <div class="flex items-center justify-between mb-1">
-      <span class="font-semibold">🎮 GPU 状态</span>
-      <span id="gpu-bar-meta" class="text-[10px] text-gray-400"></span>
-    </div>
-    <div id="gpu-bar-list" class="space-y-1"></div>
-  </div>
-
-  <!-- 公告横幅 -->
-  <div id="announcement-bar" class="hidden mb-4 rounded border p-3 text-sm bg-blue-50 border-blue-300 text-blue-900">
-    <div id="ann-bar-title" class="font-semibold"></div>
-    <div id="ann-bar-content" class="mt-1 text-xs whitespace-pre-wrap"></div>
-  </div>
-
-  <!-- 全局状态横幅 -->
-  <div id="global-status" class="hidden mb-4 rounded border p-3 text-sm bg-yellow-50 border-yellow-300 text-yellow-900">
-    <div class="flex items-center justify-between gap-2 mb-1">
-      <span class="font-semibold">⚙️ <span id="gs-stage">服务器忙</span></span>
-      <span id="gs-meta" class="text-xs text-yellow-700"></span>
-    </div>
-    <div id="gs-bar-wrap" class="hidden w-full bg-yellow-200 rounded h-2 overflow-hidden">
-      <div id="gs-bar" class="bg-yellow-500 h-2 transition-all" style="width:0%"></div>
-    </div>
-    <div id="gs-text" class="text-xs mt-1"></div>
-  </div>
-
-  <!-- Fork 信息（仅 Fork 时可见） -->
-  <div id="fork-section" class="hidden mb-4">
-    <div id="current-info" class="text-gray-600 text-sm"></div>
-  </div>
-
-  <!-- 工作流列表 -->
-  <div class="bg-white rounded shadow p-4 mb-4">
-    <h2 class="text-lg font-semibold mb-2">📋 工作流列表</h2>
-    <div class="mb-2 text-[11px] text-blue-700">
-      👤 想画不同角色？切换到「无 Lora」工作流，在「直接 Tag」中加角色词条，参考
-      <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-character/"
-         target="_blank" rel="noopener"
-         class="underline hover:text-blue-900">danbooru-character 角色库</a>。
-    </div>
-    <input id="search" type="text" placeholder="搜索关键词..."
-      class="w-full border rounded px-2 py-1 mb-2 text-sm" />
-    <div id="wf-list" class="max-h-[32rem] overflow-y-auto"></div>
-  </div>
-
-  <!-- 画风选择 -->
-  <div id="style-section" class="bg-white rounded shadow p-4 mb-4 hidden">
-    <h2 class="text-lg font-semibold mb-2">🖌️ 画风</h2>
-    <div class="mb-2 text-[11px] text-purple-700">
-      💡 点击卡片一键切换画风。更多画师风格可参考
-      <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-artist/"
-         target="_blank" rel="noopener"
-         class="underline hover:text-purple-900">danbooru-artist 画师库</a>
-      ，在「直接 Tag」中输入 <code class="bg-purple-50 px-1 rounded">by xxx</code> 即可。
-    </div>
-    <div id="style-list" class="flex flex-wrap gap-2"></div>
-    <button id="style-toggle-btn" class="hidden mt-1 text-xs text-purple-600 hover:text-purple-800 underline"></button>
-  </div>
-
-  <!-- 生图表单 -->
-  <div class="bg-white rounded shadow p-4 mb-4">
-    <h2 class="text-lg font-semibold mb-3">🎨 生成图片</h2>
-
-    <div class="mb-3 text-xs bg-pink-50 border border-pink-200 text-pink-900 rounded p-2">
-      💕 <strong>第一次用 AI 生图？</strong>
-      看这篇手把手教程：
-      <a href="https://2x.nz/posts/ai-wife"
-         target="_blank" rel="noopener"
-         class="font-medium underline hover:text-pink-700">从零开始造老婆 →</a>
-    </div>
-
-    <label class="block text-sm font-medium mb-1">直接 Tag (-d)</label>
-    <textarea id="direct" rows="2" placeholder="可选：直接英文 tags（逗号分隔）"
-      class="w-full border rounded px-2 py-1 mb-3 text-sm font-mono"></textarea>
-
-    <label class="block text-sm font-medium mb-1">自然语言描述 (-t)</label>
-    <textarea id="nl" rows="3" placeholder="可选：中文/英文自然语言，会经过 LLM 处理"
-      class="w-full border rounded px-2 py-1 mb-3 text-sm"></textarea>
-
-    <div class="flex gap-4 mb-1 text-sm">
-      <label class="flex items-center gap-1"><input type="checkbox" id="rewrite" checked /> 改写模式 (-r)</label>
-    </div>
-    <p class="text-xs text-gray-500 mb-3">
-      改写模式：让 LLM 基于「直接 Tag」作为底本，结合「自然语言描述」整体重写一段新的 prompt，会智能修改、删除、补充原有标签。<br>
-      未勾选时为普通翻译/追加：把自然语言翻译成 tag 后，直接拼接到底本之后，原内容保持不变。
-    </p>
-
-    <div class="flex gap-2 items-end mb-2 text-sm">
-      <div>
-        <label class="block text-xs text-gray-500 mb-0.5">宽 width</label>
-        <input id="width" type="number" min="64" step="8" placeholder="默认"
-          class="w-28 border rounded px-2 py-1" />
+<!-- ==================== Tab 1: 生图 ==================== -->
+<div id="page-generate" class="tab-page active">
+  <div id="top-bar">
+    <!-- 全局状态横幅 -->
+    <div id="global-status" class="hidden rounded-b border-b border-x p-2 text-sm bg-yellow-50 border-yellow-300 text-yellow-900 mx-2">
+      <div class="flex items-center justify-between gap-2 mb-1">
+        <span class="font-semibold text-xs">⚙️ <span id="gs-stage">服务器忙</span></span>
+        <span id="gs-meta" class="text-[10px] text-yellow-700"></span>
       </div>
-      <div>
-        <label class="block text-xs text-gray-500 mb-0.5">高 height</label>
-        <input id="height" type="number" min="64" step="8" placeholder="默认"
-          class="w-28 border rounded px-2 py-1" />
+      <div id="gs-bar-wrap" class="hidden w-full bg-yellow-200 rounded h-1.5 overflow-hidden">
+        <div id="gs-bar" class="bg-yellow-500 h-1.5 transition-all" style="width:0%"></div>
       </div>
-      <button id="btn-reset-res" type="button"
-        class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-xs">恢复默认</button>
-      <span id="default-res" class="text-xs text-gray-500"></span>
+      <div id="gs-text" class="text-[10px] mt-0.5"></div>
     </div>
-    <div class="flex flex-wrap gap-2 mb-3 text-xs" id="res-presets"></div>
+  </div>
 
-    <div class="flex gap-2">
-      <button id="btn-run" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400">
+  <div class="p-3 space-y-3 max-w-3xl mx-auto">
+    <!-- 标题 -->
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-lg font-bold">🎨 自然语言生图</h1>
+      <div class="flex items-center gap-2 text-xs">
+        <a href="https://space.bilibili.com/325903362" target="_blank" rel="noopener"
+           class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-700 hover:bg-pink-200">B站</a>
+        <a href="https://2x.nz/q" target="_blank" rel="noopener"
+           class="px-1.5 py-0.5 rounded bg-green-100 text-green-700 hover:bg-green-200">💬加群</a>
+        <a href="https://github.com/afoim/natureDrawImage" target="_blank" rel="noopener"
+           class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 hover:bg-gray-200">GitHub</a>
+      </div>
+    </div>
+
+    <!-- Fork 信息 -->
+    <div id="fork-section" class="hidden">
+      <div id="current-info" class="text-gray-600 text-sm"></div>
+    </div>
+
+    <!-- 工作流 -->
+    <div class="bg-white rounded-lg shadow-sm p-3">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-semibold">📋 工作流</h2>
+      </div>
+      <input id="search" type="text" placeholder="搜索工作流或分类..."
+        class="w-full border rounded px-2 py-1 mb-2 text-xs" />
+      <div id="wf-list" class="max-h-48 overflow-y-auto"></div>
+    </div>
+
+    <!-- 画风 -->
+    <div id="style-section" class="bg-white rounded-lg shadow-sm p-3 hidden">
+      <h2 class="text-sm font-semibold mb-1">🖌️ 画风</h2>
+      <div class="mb-1 text-[10px] text-purple-600">
+        💡 点击切换画风。更多参考
+        <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-artist/" target="_blank" rel="noopener"
+           class="underline">danbooru-artist</a>
+      </div>
+      <div id="style-list" class="flex flex-wrap gap-1.5"></div>
+      <button id="style-toggle-btn" class="hidden mt-1 text-[10px] text-purple-600 hover:text-purple-800 underline"></button>
+    </div>
+
+    <!-- 生图表单 -->
+    <div class="bg-white rounded-lg shadow-sm p-3">
+      <div class="mb-2 text-[10px] bg-pink-50 border border-pink-200 text-pink-900 rounded p-1.5">
+        💕 新手？看教程：
+        <a href="https://2x.nz/posts/ai-wife" target="_blank" rel="noopener"
+           class="underline hover:text-pink-700">从零开始造老婆 →</a>
+      </div>
+
+      <label class="block text-xs font-medium mb-0.5">直接 Tag</label>
+      <textarea id="direct" rows="2" placeholder="英文 tags（逗号分隔），选择工作流后自动填入"
+        class="w-full border rounded px-2 py-1 mb-2 text-xs font-mono"></textarea>
+
+      <label class="block text-xs font-medium mb-0.5">自然语言描述</label>
+      <textarea id="nl" rows="2" placeholder="中文/英文，LLM 翻译成 tags"
+        class="w-full border rounded px-2 py-1 mb-2 text-xs"></textarea>
+
+      <label class="flex items-center gap-1 text-xs mb-2">
+        <input type="checkbox" id="rewrite" checked /> 改写模式
+        <span class="text-gray-400">（LLM 重写整个 prompt）</span>
+      </label>
+
+      <div class="flex flex-wrap gap-1.5 mb-2" id="res-presets"></div>
+      <div class="flex gap-2 items-end mb-2">
+        <div class="flex gap-1 items-center text-xs">
+          <input id="width" type="number" min="64" step="8" placeholder="宽"
+            class="w-16 border rounded px-1.5 py-1 text-xs" />
+          <span class="text-gray-400">×</span>
+          <input id="height" type="number" min="64" step="8" placeholder="高"
+            class="w-16 border rounded px-1.5 py-1 text-xs" />
+          <button id="btn-reset-res" type="button" class="px-1.5 py-1 bg-gray-200 rounded hover:bg-gray-300 text-[10px]">重置</button>
+        </div>
+        <span id="default-res" class="text-[10px] text-gray-400"></span>
+      </div>
+
+      <button id="btn-run" class="w-full py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 font-medium text-sm">
         ▶ 开始生成
       </button>
     </div>
-  </div>
 
-  <!-- 进度 -->
-  <div id="progress-box" class="bg-white rounded shadow p-4 mb-4 hidden">
-    <h2 class="text-lg font-semibold mb-2">⏳ 进度</h2>
-    <div id="progress-bar-wrap" class="w-full bg-gray-200 rounded h-3 mb-2 overflow-hidden hidden">
-      <div id="progress-bar" class="bg-blue-500 h-3 transition-all" style="width:0%"></div>
+    <!-- 进度 -->
+    <div id="progress-box" class="bg-white rounded-lg shadow-sm p-3 hidden">
+      <h2 class="text-sm font-semibold mb-1">⏳ 进度</h2>
+      <div id="progress-bar-wrap" class="w-full bg-gray-200 rounded h-2 mb-1 overflow-hidden hidden">
+        <div id="progress-bar" class="bg-blue-500 h-2 transition-all" style="width:0%"></div>
+      </div>
+      <div id="progress-text" class="text-xs text-gray-700"></div>
+      <div id="llm-box" class="mt-1 hidden">
+        <div class="text-[10px] text-gray-500 mb-0.5">🤖 LLM：</div>
+        <pre id="llm-stream" class="text-[10px] bg-yellow-50 border border-yellow-200 p-1.5 rounded max-h-32 overflow-y-auto whitespace-pre-wrap break-words"></pre>
+      </div>
+      <pre id="log" class="mt-1 text-[10px] bg-gray-50 p-1.5 rounded max-h-24 overflow-y-auto"></pre>
     </div>
-    <div id="progress-text" class="text-sm text-gray-700"></div>
 
-    <div id="llm-box" class="mt-2 hidden">
-      <div class="text-xs text-gray-500 mb-1">🤖 LLM 流式输出：</div>
-      <pre id="llm-stream" class="text-xs bg-yellow-50 border border-yellow-200 p-2 rounded max-h-48 overflow-y-auto whitespace-pre-wrap break-words"></pre>
-    </div>
-
-    <pre id="log" class="mt-2 text-xs bg-gray-50 p-2 rounded max-h-40 overflow-y-auto"></pre>
-  </div>
-
-  <!-- 结果 -->
-  <div id="result-box" class="bg-white rounded shadow p-4 mb-4 hidden">
-    <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">🖼️ 结果</h2>
-      <label class="flex items-center gap-1 text-xs cursor-pointer">
-        <input type="checkbox" class="img-reveal-toggle" />
-        <span>显示图片</span>
-      </label>
-    </div>
-    <div class="text-xs text-gray-500 mb-1">发送给 ComfyUI 的 Prompt：</div>
-    <div id="final-prompt" class="text-xs bg-gray-50 p-2 rounded font-mono mb-2 whitespace-pre-wrap"></div>
-    <div id="images" class="grid grid-cols-1 md:grid-cols-2 gap-2 img-hide-zone"></div>
-  </div>
-
-  <!-- 精选展示（管理员手动维护） -->
-  <div id="featured-box" class="bg-white rounded shadow p-4 mb-4 hidden">
-    <h2 class="text-lg font-semibold cursor-pointer select-none" id="featured-toggle">
-      <span id="featured-arrow" class="inline-block w-4 text-gray-400">▾</span>
-      ⭐ 精选展示
-      <span class="text-xs text-gray-500 font-normal">(<span id="featured-count">0</span>)</span>
-    </h2>
-    <div id="featured-body">
-      <div id="featured-tip" class="hidden mt-2 mb-3 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded p-2"></div>
-      <div id="featured-gallery" class="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
-    </div>
-  </div>
-
-  <!-- 全部输出图片 -->
-  <div class="bg-white rounded shadow p-4 mb-4">
-    <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">🖼️ 所有生成图片
-        <span class="text-xs text-gray-500 font-normal">(<span id="gallery-shown">0</span>/<span id="gallery-total">0</span>)</span>
-      </h2>
-      <div class="flex items-center gap-3">
-        <label class="flex items-center gap-1 text-xs cursor-pointer">
+    <!-- 结果 -->
+    <div id="result-box" class="bg-white rounded-lg shadow-sm p-3 hidden">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-sm font-semibold">🖼️ 结果</h2>
+        <label class="flex items-center gap-1 text-[10px] cursor-pointer">
           <input type="checkbox" class="img-reveal-toggle" />
           <span>显示图片</span>
         </label>
-        <button id="btn-reload-gallery"
-          class="text-xs px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">重载</button>
       </div>
+      <div class="text-[10px] text-gray-500 mb-1">Prompt：</div>
+      <div id="final-prompt" class="text-[10px] bg-gray-50 p-1.5 rounded font-mono mb-2 whitespace-pre-wrap max-h-20 overflow-y-auto"></div>
+      <div id="images" class="grid grid-cols-2 gap-2 img-hide-zone"></div>
     </div>
-    <div id="gallery-dir" class="text-xs text-gray-400 mb-2"></div>
-    <div id="gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 img-hide-zone"></div>
-    <div class="mt-3 text-center">
-      <button id="btn-load-more"
-        class="hidden text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">加载更多</button>
-    </div>
-  </div>
-
-  <!-- 评论区 -->
-  <div class="bg-white rounded shadow p-4 mb-4">
-    <h2 class="text-lg font-semibold mb-3">💬 评论区</h2>
-    <script src="https://giscus.app/client.js"
-            data-repo="afoim/natureDrawImage"
-            data-repo-id="R_kgDOSMbMpw"
-            data-category="Announcements"
-            data-category-id="DIC_kwDOSMbMp84C7zcH"
-            data-mapping="pathname"
-            data-strict="1"
-            data-reactions-enabled="1"
-            data-emit-metadata="0"
-            data-input-position="top"
-            data-theme="light"
-            data-lang="zh-CN"
-            data-loading="lazy"
-            crossorigin="anonymous"
-            async>
-    </script>
   </div>
 </div>
+
+<!-- ==================== Tab 2: 画廊 ==================== -->
+<div id="page-gallery" class="tab-page">
+  <div class="p-3 space-y-3 max-w-3xl mx-auto">
+    <div class="flex items-center justify-between">
+      <h1 class="text-lg font-bold">🖼️ 画廊
+        <span class="text-xs text-gray-500 font-normal">(<span id="gallery-shown">0</span>/<span id="gallery-total">0</span>)</span>
+      </h1>
+      <div class="flex items-center gap-2">
+        <label class="flex items-center gap-1 text-[10px] cursor-pointer">
+          <input type="checkbox" class="img-reveal-toggle" />
+          <span>显示图片</span>
+        </label>
+        <button id="btn-reload-gallery" class="text-[10px] px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">重载</button>
+      </div>
+    </div>
+    <div id="gallery-dir" class="text-[10px] text-gray-400"></div>
+    <div id="gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5 img-hide-zone"></div>
+    <div class="text-center">
+      <button id="btn-load-more" class="hidden text-xs px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">加载更多</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 3: 精选 ==================== -->
+<div id="page-featured" class="tab-page">
+  <div class="p-3 space-y-3 max-w-3xl mx-auto">
+    <h1 class="text-lg font-bold">⭐ 精选展示
+      <span class="text-xs text-gray-500 font-normal">(<span id="featured-count">0</span>)</span>
+    </h1>
+    <div id="featured-tip" class="hidden text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded p-2"></div>
+    <div id="featured-gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+    <div id="featured-empty" class="text-center text-gray-400 text-sm py-8 hidden">暂无精选</div>
+  </div>
+</div>
+
+<!-- ==================== Tab 4: 更多 ==================== -->
+<div id="page-more" class="tab-page">
+  <div class="p-3 space-y-3 max-w-3xl mx-auto">
+    <h1 class="text-lg font-bold">⚙️ 更多</h1>
+
+    <!-- 公告 -->
+    <div id="announcement-bar" class="hidden rounded-lg border p-3 text-sm bg-blue-50 border-blue-300 text-blue-900">
+      <div id="ann-bar-title" class="font-semibold"></div>
+      <div id="ann-bar-content" class="mt-1 text-xs whitespace-pre-wrap"></div>
+    </div>
+
+    <!-- GPU -->
+    <div id="gpu-bar" class="hidden bg-white rounded-lg shadow-sm p-3 text-xs text-gray-700">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold">🎮 GPU 状态</span>
+        <span id="gpu-bar-meta" class="text-[10px] text-gray-400"></span>
+      </div>
+      <div id="gpu-bar-list" class="space-y-1"></div>
+    </div>
+
+    <!-- 链接 -->
+    <div class="bg-white rounded-lg shadow-sm p-3">
+      <h2 class="text-sm font-semibold mb-2">🔗 常用链接</h2>
+      <div class="flex flex-col gap-1.5 text-xs">
+        <a href="https://2x.nz/posts/ai-wife" target="_blank" rel="noopener" class="text-blue-600 hover:underline">📖 新手教程：从零开始造老婆</a>
+        <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-artist/" target="_blank" rel="noopener" class="text-blue-600 hover:underline">🎨 danbooru-artist 画师库</a>
+        <a href="https://www.downloadmost.com/NoobAI-XL/danbooru-character/" target="_blank" rel="noopener" class="text-blue-600 hover:underline">👤 danbooru-character 角色库</a>
+      </div>
+    </div>
+
+    <!-- 评论区 -->
+    <div class="bg-white rounded-lg shadow-sm p-3">
+      <h2 class="text-sm font-semibold mb-2">💬 评论区</h2>
+      <div id="giscus-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 底部 Tab 栏 ==================== -->
+<nav id="tab-bar">
+  <button data-tab="generate" class="active">
+    <span class="tab-icon">✨</span>
+    <span>生图</span>
+  </button>
+  <button data-tab="gallery">
+    <span class="tab-icon">🖼</span>
+    <span>画廊</span>
+  </button>
+  <button data-tab="featured">
+    <span class="tab-icon">⭐</span>
+    <span>精选</span>
+  </button>
+  <button data-tab="more">
+    <span class="tab-icon">⚙️</span>
+    <span>更多</span>
+  </button>
+</nav>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const _esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let _genNoticeAcked = document.cookie.includes('genNoticeAcked=1');
-console.log('[genNotice] init, cookie:', document.cookie, '_genNoticeAcked:', _genNoticeAcked);
 let allWorkflows = [];
 let defaultRes = {w: null, h: null};
-const genHistory = [];  // {url, filename, prompt, time}
+const genHistory = [];
 
-function renderHistory() {
-  // 已替换为 ComfyUI output 目录浏览，不再渲染会话内历史
-}
-
-function pushHistory(item) {
-  genHistory.unshift(item);
-  // 新生成的图：插入到 gallery 顶部并刷新计数
-  if (item && item.filename) {
-    prependGalleryItem(item.filename);
+// ==================== Tab 切换 ====================
+const _tabLoaded = { generate: true, gallery: false, featured: false, more: false };
+function switchTab(name) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#tab-bar button').forEach(b => b.classList.remove('active'));
+  $('page-' + name).classList.add('active');
+  document.querySelector(`#tab-bar button[data-tab="${name}"]`).classList.add('active');
+  if (name === 'gallery' && !_tabLoaded.gallery) { _tabLoaded.gallery = true; loadGallery(true); }
+  if (name === 'featured' && !_tabLoaded.featured) { _tabLoaded.featured = true; loadFeatured(); }
+  if (name === 'more' && !_tabLoaded.more) {
+    _tabLoaded.more = true;
+    loadAnnouncement();
+    pollGPU();
+    // 懒加载 giscus
+    const gc = $('giscus-container');
+    if (!gc.querySelector('script')) {
+      const s = document.createElement('script');
+      s.src = 'https://giscus.app/client.js';
+      s.setAttribute('data-repo', 'afoim/natureDrawImage');
+      s.setAttribute('data-repo-id', 'R_kgDOSMbMpw');
+      s.setAttribute('data-category', 'Announcements');
+      s.setAttribute('data-category-id', 'DIC_kwDOSMbMp84C7zcH');
+      s.setAttribute('data-mapping', 'pathname');
+      s.setAttribute('data-strict', '1');
+      s.setAttribute('data-reactions-enabled', '1');
+      s.setAttribute('data-emit-metadata', '0');
+      s.setAttribute('data-input-position', 'top');
+      s.setAttribute('data-theme', 'light');
+      s.setAttribute('data-lang', 'zh-CN');
+      s.setAttribute('data-loading', 'lazy');
+      s.crossOrigin = 'anonymous';
+      s.async = true;
+      gc.appendChild(s);
+    }
   }
 }
+document.querySelectorAll('#tab-bar button').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
 
-// ============== 输出目录浏览 ==============
-const galleryState = {
-  total: 0,
-  loaded: 0,
-  pageSize: 5,
-};
-
+// ==================== 精选 ====================
 async function loadFeatured() {
   try {
     const r = await fetch('/api/output/featured');
     const d = await r.json();
     const items = d.items || [];
-    const box = document.getElementById('featured-box');
-    const grid = document.getElementById('featured-gallery');
-    document.getElementById('featured-count').textContent = items.length;
+    $('featured-count').textContent = items.length;
     if (!items.length) {
-      box.classList.add('hidden');
-      grid.innerHTML = '';
+      $('featured-gallery').innerHTML = '';
+      $('featured-empty').classList.remove('hidden');
       return;
     }
-    box.classList.remove('hidden');
-    const tipEl = document.getElementById('featured-tip');
+    $('featured-empty').classList.add('hidden');
+    const tipEl = $('featured-tip');
     const tip = (d.tip || '').trim();
-    if (tip) {
-      tipEl.textContent = tip;
-      tipEl.classList.remove('hidden');
-    } else {
-      tipEl.classList.add('hidden');
-    }
-    grid.innerHTML = items.map(it => {
+    if (tip) { tipEl.textContent = tip; tipEl.classList.remove('hidden'); }
+    else { tipEl.classList.add('hidden'); }
+    $('featured-gallery').innerHTML = items.map(it => {
       const url = '/api/output/file?path=' + encodeURIComponent(it.path);
       const safe = it.path.replace(/"/g, '&quot;');
       const mt = it.mtime ? ` data-mtime="${it.mtime}"` : '';
-      return `<a href="${url}" data-gallery="featured"
-        data-title="${safe}" data-rel-path="${safe}"${mt}
-        title="${safe}" class="glightbox block">
-        <img src="${url}" loading="lazy" decoding="async"
-          class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-amber-400" />
+      return `<a href="${url}" data-gallery="featured" data-title="${safe}" data-rel-path="${safe}"${mt} title="${safe}" class="glightbox block">
+        <img src="${url}" loading="lazy" decoding="async" class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-amber-400" />
       </a>`;
     }).join('');
   } catch {}
 }
 
-$('featured-toggle').addEventListener('click', () => {
-  const body = $('featured-body');
-  const arrow = $('featured-arrow');
-  const hidden = body.classList.toggle('hidden');
-  arrow.textContent = hidden ? '▸' : '▾';
-});
+// ==================== 画廊 ====================
+const galleryState = { total: 0, loaded: 0, pageSize: 20 };
 
 function galleryItemHTML(relPath, mtime) {
   const url = '/api/output/file?path=' + encodeURIComponent(relPath);
   const safe = relPath.replace(/"/g, '&quot;');
   const mt = mtime ? ` data-mtime="${mtime}"` : '';
-  return `<a href="${url}" data-gallery="main"
-    data-title="${safe}"
-    data-description="loading-prompt"
-    data-rel-path="${safe}"${mt}
-    title="${safe}" class="glightbox block">
-    <img src="${url}" loading="lazy" decoding="async"
-      class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-blue-400" />
+  return `<a href="${url}" data-gallery="main" data-title="${safe}" data-description="loading-prompt" data-rel-path="${safe}"${mt} title="${safe}" class="glightbox block">
+    <img src="${url}" loading="lazy" decoding="async" class="w-full aspect-square object-cover rounded border bg-gray-50 hover:ring-2 hover:ring-blue-400" />
   </a>`;
 }
 
 async function loadGallery(reset = true) {
-  if (reset) {
-    galleryState.loaded = 0;
-    $('gallery').innerHTML = '';
-  }
+  if (reset) { galleryState.loaded = 0; $('gallery').innerHTML = ''; }
   const r = await fetch(`/api/output/list?limit=${galleryState.pageSize}&offset=${galleryState.loaded}`);
   const d = await r.json();
   galleryState.total = d.total || 0;
   $('gallery-total').textContent = galleryState.total;
-  $('gallery-dir').textContent = d.exists
-    ? `📁 ${d.output_dir}`
-    : `⚠️ 目录不存在：${d.output_dir}`;
+  $('gallery-dir').textContent = d.exists ? `📁 ${d.output_dir}` : `⚠️ 目录不存在：${d.output_dir}`;
   const frag = document.createDocumentFragment();
   for (const it of (d.items || [])) {
     const wrap = document.createElement('div');
@@ -463,20 +438,14 @@ async function loadGallery(reset = true) {
   $('gallery').appendChild(frag);
   galleryState.loaded += (d.items || []).length;
   $('gallery-shown').textContent = galleryState.loaded;
-  if (galleryState.loaded < galleryState.total) {
-    $('btn-load-more').classList.remove('hidden');
-  } else {
-    $('btn-load-more').classList.add('hidden');
-  }
+  $('btn-load-more').classList.toggle('hidden', galleryState.loaded >= galleryState.total);
   refreshLightbox();
 }
 
 function prependGalleryItem(filename) {
-  // 文件名仅是 basename，OUTPUT_DIR 直接放在根。预置到顶部即可看到。
   const wrap = document.createElement('div');
   wrap.innerHTML = galleryItemHTML(filename);
-  const node = wrap.firstElementChild;
-  $('gallery').prepend(node);
+  $('gallery').prepend(wrap.firstElementChild);
   galleryState.total += 1;
   galleryState.loaded += 1;
   $('gallery-shown').textContent = galleryState.loaded;
@@ -484,41 +453,45 @@ function prependGalleryItem(filename) {
   refreshLightbox();
 }
 
-// 临时 fork：只在当前浏览器内存里活着，不持久化到 ComfyUI
-let forkedWorkflow = null;       // 完整工作流 JSON（API 或编辑器格式）
-let forkedMeta = null;           // {source_image, format, summary, default_width, default_height, builtin_prompt, loras}
+function pushHistory(item) {
+  genHistory.unshift(item);
+  if (item && item.filename) prependGalleryItem(item.filename);
+}
+
+// ==================== Fork ====================
+let forkedWorkflow = null;
+let forkedMeta = null;
 
 function applyForkedToUI() {
   const m = forkedMeta;
-  const escapeHtml = (str) => String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const escapeHtml = _esc;
   const loras = Array.isArray(m.loras) ? m.loras : [];
   const lorasHtml = loras.length
     ? `<div class="text-xs text-gray-700 mt-1">Lora: ${loras.map(n => `<span class="inline-block bg-purple-100 text-purple-700 rounded px-1.5 py-0.5 mr-1 mb-0.5 break-all">${escapeHtml(n)}</span>`).join('')}</div>`
     : '';
   const s = m.summary || {node_count:'?',link_count:'?',group_count:'?'};
   $('current-info').innerHTML = `
-    <div class="border-2 border-emerald-500 bg-emerald-50 rounded shadow p-3 flex gap-3 items-start">
-      <div class="text-2xl">🍴</div>
+    <div class="border-2 border-emerald-500 bg-emerald-50 rounded-lg shadow-sm p-3 flex gap-3 items-start">
+      <div class="text-xl">🍴</div>
       <div class="min-w-0 flex-1">
-        <div class="font-medium text-emerald-800">临时 Fork（仅本浏览器，未保存）</div>
-        <div class="text-xs text-gray-600">来源: ${escapeHtml(m.source_image || '')} · 格式: ${m.format} · 节点 ${s.node_count}</div>
+        <div class="font-medium text-emerald-800 text-sm">临时 Fork</div>
+        <div class="text-[10px] text-gray-600">来源: ${escapeHtml(m.source_image || '')} · 节点 ${s.node_count}</div>
         ${lorasHtml}
-        <button id="btn-clear-fork" class="mt-1 text-xs px-2 py-0.5 bg-gray-200 hover:bg-gray-300 rounded">✕ 清除 Fork，恢复原工作流</button>
+        <button id="btn-clear-fork" class="mt-1 text-[10px] px-2 py-0.5 bg-gray-200 hover:bg-gray-300 rounded">✕ 清除 Fork</button>
       </div>
     </div>`;
   $('fork-section').classList.remove('hidden');
   $('btn-clear-fork').addEventListener('click', clearFork);
-
   defaultRes.w = m.default_width;
   defaultRes.h = m.default_height;
   if (defaultRes.w && defaultRes.h) {
-    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}（留空即使用默认）`;
+    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}`;
     $('width').placeholder = defaultRes.w;
     $('height').placeholder = defaultRes.h;
   } else {
-    $('default-res').textContent = '工作流未声明分辨率';
-    $('width').placeholder = '默认';
-    $('height').placeholder = '默认';
+    $('default-res').textContent = '';
+    $('width').placeholder = '宽';
+    $('height').placeholder = '高';
   }
   const bp = (m.builtin_prompt || '').trim();
   $('direct').value = bp;
@@ -532,34 +505,30 @@ function clearFork() {
 }
 
 async function loadCurrent() {
-  if (forkedWorkflow) {
-    applyForkedToUI();
-    return;
-  }
+  if (forkedWorkflow) { applyForkedToUI(); return; }
   $('fork-section').classList.add('hidden');
   const path = getCurrentPath();
   if (!path) return;
   const r = await fetch('/api/workflows/current?path=' + encodeURIComponent(path));
   const d = await r.json();
   if (!d.path || d.error) return;
-
   defaultRes.w = d.default_width;
   defaultRes.h = d.default_height;
   if (defaultRes.w && defaultRes.h) {
-    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}（留空即使用默认）`;
+    $('default-res').textContent = `默认 ${defaultRes.w}×${defaultRes.h}`;
     $('width').placeholder = defaultRes.w;
     $('height').placeholder = defaultRes.h;
   } else {
-    $('default-res').textContent = '工作流未声明分辨率';
-    $('width').placeholder = '默认';
-    $('height').placeholder = '默认';
+    $('default-res').textContent = '';
+    $('width').placeholder = '宽';
+    $('height').placeholder = '高';
   }
-
   const bp = (d.builtin_prompt || '').trim();
   $('direct').value = bp;
   saveFormState();
 }
 
+// ==================== 工作流列表 ====================
 let _categoryOrder = [];
 
 async function loadList() {
@@ -581,17 +550,17 @@ function _highlight(text, q) {
 function _wfCard(w, q) {
   const stem = w.path.replace(/\.json$/i, '');
   const thumb = w.thumbnail
-    ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
-    : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
+    ? `<img src="/api/thumbnail?path=${encodeURIComponent(w.path)}" class="w-10 h-10 object-cover rounded bg-gray-50" loading="lazy" />`
+    : `<div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[9px]">无图</div>`;
   const isSelected = w.path === getCurrentPath();
   const cardCls = isSelected
-    ? 'wf-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden'
-    : 'wf-item border-2 border-transparent rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+    ? 'wf-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1 cursor-pointer flex flex-col items-center gap-0.5 w-14 overflow-hidden'
+    : 'wf-item border-2 border-transparent rounded p-1 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-14 overflow-hidden';
   const cat = (w.category || '').trim();
-  const catTag = q && cat ? `<span class="text-[9px] text-gray-400 leading-tight text-center w-full truncate">${_highlight(cat, q)}</span>` : '';
+  const catTag = q && cat ? `<span class="text-[8px] text-gray-400 leading-tight text-center w-full truncate">${_highlight(cat, q)}</span>` : '';
   return `<div class="${cardCls}" data-path="${w.path}" title="${w.path}${cat ? ' [' + cat + ']' : ''}">
      ${thumb}
-     <span class="text-[11px] font-medium leading-tight break-all text-center w-full">${_highlight(stem, q)}</span>
+     <span class="text-[10px] font-medium leading-tight break-all text-center w-full">${_highlight(stem, q)}</span>
      ${catTag}
    </div>`;
 }
@@ -601,51 +570,39 @@ function renderList() {
   let filtered = q
     ? allWorkflows.filter(w => (w.path || '').toLowerCase().includes(q) || (w.category || '').toLowerCase().includes(q))
     : allWorkflows.slice();
-
   if (!filtered.length) {
-    $('wf-list').innerHTML = '<div class="p-2 text-gray-400">无</div>';
+    $('wf-list').innerHTML = '<div class="p-2 text-gray-400 text-xs">无匹配</div>';
     return;
   }
-
   if (q) {
-    $('wf-list').innerHTML = `<div class="flex flex-wrap gap-2">${filtered.map(w => _wfCard(w, q)).join('')}</div>`;
+    $('wf-list').innerHTML = `<div class="flex flex-wrap gap-1.5">${filtered.map(w => _wfCard(w, q)).join('')}</div>`;
   } else {
     const groups = {};
     const uncategorized = [];
     for (const w of filtered) {
       const cat = (w.category || '').trim();
-      if (cat) {
-        (groups[cat] = groups[cat] || []).push(w);
-      } else {
-        uncategorized.push(w);
-      }
+      if (cat) { (groups[cat] = groups[cat] || []).push(w); }
+      else { uncategorized.push(w); }
     }
     let html = '';
     const orderedCats = _categoryOrder.filter(c => groups[c]);
     const extraCats = Object.keys(groups).filter(c => !_categoryOrder.includes(c)).sort();
     for (const cat of [...orderedCats, ...extraCats]) {
-      html += `<div class="mb-3"><div class="text-xs font-semibold text-gray-600 mb-1">${_esc(cat)}</div><div class="flex flex-wrap gap-2">${groups[cat].map(w => _wfCard(w)).join('')}</div></div>`;
+      html += `<div class="mb-2"><div class="text-[10px] font-semibold text-gray-500 mb-1">${_esc(cat)}</div><div class="flex flex-wrap gap-1.5">${groups[cat].map(w => _wfCard(w)).join('')}</div></div>`;
     }
     if (uncategorized.length) {
       const label = Object.keys(groups).length ? '未分类' : '';
-      html += `<div class="mb-3">${label ? `<div class="text-xs font-semibold text-gray-400 mb-1">${label}</div>` : ''}<div class="flex flex-wrap gap-2">${uncategorized.map(w => _wfCard(w)).join('')}</div></div>`;
+      html += `<div class="mb-2">${label ? `<div class="text-[10px] font-semibold text-gray-400 mb-1">${label}</div>` : ''}<div class="flex flex-wrap gap-1.5">${uncategorized.map(w => _wfCard(w)).join('')}</div></div>`;
     }
     $('wf-list').innerHTML = html;
   }
-
   document.querySelectorAll('.wf-item').forEach(el => {
     el.addEventListener('click', () => selectWorkflow(el.dataset.path));
   });
 }
 
-function getCurrentPath() {
-  return localStorage.getItem('currentWorkflow') || '';
-}
-
-function setCurrentPath(path) {
-  if (path) localStorage.setItem('currentWorkflow', path);
-  else localStorage.removeItem('currentWorkflow');
-}
+function getCurrentPath() { return localStorage.getItem('currentWorkflow') || ''; }
+function setCurrentPath(path) { if (path) localStorage.setItem('currentWorkflow', path); else localStorage.removeItem('currentWorkflow'); }
 
 async function selectWorkflow(path) {
   forkedWorkflow = null;
@@ -655,84 +612,62 @@ async function selectWorkflow(path) {
   await loadCurrent();
 }
 
-// -------- 画风 --------
+// ==================== 画风 ====================
 let allStyles = [];
-
-function getSelectedStyle() {
-  return localStorage.getItem('currentStyle') || '';
-}
-function setSelectedStyle(tags) {
-  if (tags) localStorage.setItem('currentStyle', tags);
-  else localStorage.removeItem('currentStyle');
-}
-function getSelectedStyleTags() {
-  return getSelectedStyle();
-}
+function getSelectedStyle() { return localStorage.getItem('currentStyle') || ''; }
+function setSelectedStyle(tags) { if (tags) localStorage.setItem('currentStyle', tags); else localStorage.removeItem('currentStyle'); }
+function getSelectedStyleTags() { return getSelectedStyle(); }
 
 async function loadResolutions() {
   try {
     const r = await fetch('/api/resolutions');
     const d = await r.json();
-    const presets = d.presets || [];
-    $('res-presets').innerHTML = presets.map(p =>
-      `<button type="button" data-w="${p.w}" data-h="${p.h}"
-        class="px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
+    $('res-presets').innerHTML = (d.presets || []).map(p =>
+      `<button type="button" data-w="${p.w}" data-h="${p.h}" class="px-1.5 py-0.5 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 text-[10px]">
         ${p.w}×${p.h}${p.label ? ` <span class="text-gray-500">${_esc(p.label)}</span>` : ''}
       </button>`
     ).join('');
-  } catch (e) {}
+  } catch {}
 }
-
-loadResolutions();
 
 async function loadStyles() {
   try {
     const r = await fetch('/api/styles');
     const d = await r.json();
     allStyles = (d.styles || []).sort((a, b) => (b.name ? 1 : 0) - (a.name ? 1 : 0));
-  } catch (e) {
-    allStyles = [];
-  }
+  } catch { allStyles = []; }
   renderStyles();
 }
 
 let showAllStyles = false;
-
 function renderStyles() {
   const section = $('style-section');
-  if (!allStyles.length) {
-    section.classList.add('hidden');
-    return;
-  }
+  if (!allStyles.length) { section.classList.add('hidden'); return; }
   section.classList.remove('hidden');
   const selected = getSelectedStyle();
   const hasAlias = allStyles.filter(s => s.name);
   const noAlias = allStyles.filter(s => !s.name);
-  // 无别名的画风中，被选中的始终显示
   const selectedInNoAlias = noAlias.some(s => s.tags === selected);
   const visible = showAllStyles ? allStyles : (selectedInNoAlias ? [...hasAlias, noAlias.find(s => s.tags === selected)] : hasAlias);
   $('style-list').innerHTML = visible.map(s => {
     const active = s.tags === selected;
     const cls = active
-      ? 'style-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1.5 cursor-pointer flex flex-col items-center gap-0.5 w-16 overflow-hidden'
-      : 'style-item border-2 border-transparent rounded p-1.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-16 overflow-hidden';
+      ? 'style-item border-2 border-blue-500 ring-2 ring-blue-300 bg-blue-50 rounded p-1 cursor-pointer flex flex-col items-center gap-0.5 w-14 overflow-hidden'
+      : 'style-item border-2 border-transparent rounded p-1 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center gap-0.5 w-14 overflow-hidden';
     const thumb = s.image
-      ? `<img src="/api/style_thumbnail?name=${encodeURIComponent(s.image)}" class="w-12 h-12 object-cover rounded bg-gray-50" loading="lazy" />`
-      : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">无图</div>`;
+      ? `<img src="/api/style_thumbnail?name=${encodeURIComponent(s.image)}" class="w-10 h-10 object-cover rounded bg-gray-50" loading="lazy" />`
+      : `<div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-[9px]">无图</div>`;
     const label = s.name || s.tags;
     return `<div class="${cls}" data-style-tags="${s.tags.replace(/"/g, '&quot;')}" title="${s.tags}">
       ${thumb}
-      <span class="text-[11px] font-medium leading-tight break-all text-center w-full line-clamp-2">${label}</span>
+      <span class="text-[10px] font-medium leading-tight break-all text-center w-full line-clamp-2">${label}</span>
     </div>`;
   }).join('');
-  // 更多/收起按钮
   const toggleBtn = $('style-toggle-btn');
   if (noAlias.length) {
     toggleBtn.classList.remove('hidden');
     toggleBtn.textContent = showAllStyles ? '收起' : `更多 (${noAlias.length})`;
-  } else {
-    toggleBtn.classList.add('hidden');
-  }
+  } else { toggleBtn.classList.add('hidden'); }
   document.querySelectorAll('.style-item').forEach(el => {
     el.addEventListener('click', () => {
       const tags = el.dataset.styleTags;
@@ -743,59 +678,30 @@ function renderStyles() {
   });
 }
 
-$('style-toggle-btn').addEventListener('click', () => {
-  showAllStyles = !showAllStyles;
-  renderStyles();
-});
+$('style-toggle-btn').addEventListener('click', () => { showAllStyles = !showAllStyles; renderStyles(); });
 
-loadStyles();
-
+// ==================== 生图 ====================
 let activeWS = null;
 let currentPrompt = '';
 
-function appendLog(line) {
-  const el = $('log');
-  el.textContent += line + '\n';
-}
+function appendLog(line) { const el = $('log'); el.textContent += line + '\n'; }
 
 function startRun() {
-  console.log('[startRun] called, globalBusy:', globalBusy, '_genNoticeAcked:', _genNoticeAcked);
-  if (globalBusy) {
-    return;
-  }
+  if (globalBusy) return;
   const direct = $('direct').value.trim();
   const nl = $('nl').value.trim();
   let w = parseInt($('width').value) || null;
   let h = parseInt($('height').value) || null;
-  if (!_genNoticeAcked) {
-    showGenNotice(direct, nl, w, h);
-  } else {
-    actuallyStartRun(direct, nl, w, h);
-  }
+  if (!_genNoticeAcked) { showGenNotice(direct, nl, w, h); }
+  else { actuallyStartRun(direct, nl, w, h); }
 }
 
 function showGenNotice(direct, nl, w, h) {
   const m = $('gen-notice-modal');
-  console.log('[genNotice] showGenNotice called, modal:', m);
-  m.classList.remove('hidden');
-  m.classList.add('flex');
-  lockScroll();
-  m.dataset.locked = '1';
-  const close = () => {
-    m.classList.add('hidden');
-    m.classList.remove('flex');
-    if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
-  };
-  const btn = $('gen-notice-accept');
-  console.log('[genNotice] accept btn element:', btn);
-  btn.onclick = () => {
-    console.log('[genNotice] accept clicked');
-    close();
-    _genNoticeAcked = true;
-    document.cookie = 'genNoticeAcked=1; path=/; max-age=31536000';
-    console.log('[genNotice] cookie after set:', document.cookie);
-    actuallyStartRun(direct, nl, w, h);
-  };
+  m.classList.remove('hidden'); m.classList.add('flex');
+  lockScroll(); m.dataset.locked = '1';
+  const close = () => { m.classList.add('hidden'); m.classList.remove('flex'); if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; } };
+  $('gen-notice-accept').onclick = () => { close(); _genNoticeAcked = true; document.cookie = 'genNoticeAcked=1; path=/; max-age=31536000'; actuallyStartRun(direct, nl, w, h); };
   $('gen-notice-cancel').onclick = close;
 }
 
@@ -803,14 +709,11 @@ function actuallyStartRun(direct, nl, w, h) {
   const payload = {
     workflow_path: forkedWorkflow ? '' : getCurrentPath(),
     inline_workflow: forkedWorkflow || null,
-    direct_prompt: direct,
-    nl_prompt: nl,
+    direct_prompt: direct, nl_prompt: nl,
     rewrite: $('rewrite').checked,
-    width: w,
-    height: h,
+    width: w, height: h,
     style_tags: getSelectedStyleTags(),
   };
-
   $('progress-box').classList.remove('hidden');
   $('result-box').classList.add('hidden');
   $('log').textContent = '';
@@ -821,14 +724,8 @@ function actuallyStartRun(direct, nl, w, h) {
   $('btn-run').disabled = true;
   $('images').innerHTML = '';
   $('final-prompt').textContent = '';
-
-  // 自己生图：默认在结果区显示自己的图（不动画廊里的「他人」开关）
   const resultToggle = $('result-box').querySelector('.img-reveal-toggle');
-  if (resultToggle) {
-    resultToggle.checked = true;
-    $('images').classList.add('revealed');
-  }
-
+  if (resultToggle) { resultToggle.checked = true; $('images').classList.add('revealed'); }
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}/ws/run`);
   activeWS = ws;
@@ -839,67 +736,51 @@ function actuallyStartRun(direct, nl, w, h) {
 }
 
 function handleMsg(m) {
-  if (m.type === 'log') {
-    appendLog(m.message);
-  } else if (m.type === 'llm_start') {
-    $('llm-box').classList.remove('hidden');
-    $('llm-stream').textContent = '';
-  } else if (m.type === 'llm_chunk') {
-    const el = $('llm-stream');
-    el.textContent += m.delta;
-    el.scrollTop = el.scrollHeight;
-  } else if (m.type === 'llm_done') {
-    appendLog('LLM 完成');
-  } else if (m.type === 'progress') {
+  if (m.type === 'log') { appendLog(m.message); }
+  else if (m.type === 'llm_start') { $('llm-box').classList.remove('hidden'); $('llm-stream').textContent = ''; }
+  else if (m.type === 'llm_chunk') { const el = $('llm-stream'); el.textContent += m.delta; el.scrollTop = el.scrollHeight; }
+  else if (m.type === 'llm_done') { appendLog('LLM 完成'); }
+  else if (m.type === 'progress') {
     if (m.max && m.max > 1) {
       const pct = Math.floor((m.value || 0) * 100 / m.max);
       $('progress-bar-wrap').classList.remove('hidden');
       $('progress-bar').style.width = pct + '%';
       $('progress-text').textContent = `${m.node} ${m.value}/${m.max} (${pct}%)  节点 ${m.done||0}/${m.total||0}`;
-    } else {
-      $('progress-text').textContent = `执行: ${m.node}`;
-    }
-  } else if (m.type === 'prompt_id') {
+    } else { $('progress-text').textContent = `执行: ${m.node}`; }
+  }
+  else if (m.type === 'prompt_id') {
     currentPrompt = m.final_prompt || '';
     $('final-prompt').textContent = m.final_prompt;
     $('result-box').classList.remove('hidden');
-  } else if (m.type === 'image') {
+  }
+  else if (m.type === 'image') {
     const div = document.createElement('div');
     div.innerHTML = `<a href="${_esc(m.url)}" data-gallery="main" data-title="${_esc(m.filename)}" class="glightbox">
         <img src="${_esc(m.url)}" class="w-full rounded border hover:ring-2 hover:ring-blue-400" loading="lazy" />
       </a>
-      <div class="text-xs text-gray-500 break-all">${_esc(m.filename)}</div>`;
+      <div class="text-[10px] text-gray-500 break-all">${_esc(m.filename)}</div>`;
     $('images').appendChild(div);
     refreshLightbox();
-    pushHistory({
-      url: m.url,
-      filename: m.filename,
-      prompt: currentPrompt,
-      time: Date.now(),
-    });
-  } else if (m.type === 'done') {
+    pushHistory({ url: m.url, filename: m.filename, prompt: currentPrompt, time: Date.now() });
+  }
+  else if (m.type === 'done') {
     appendLog(`✅ 完成，共 ${m.count} 张`);
     $('progress-text').textContent = '完成';
     if (m.final_prompt) $('final-prompt').textContent = m.final_prompt;
     maybeShowStarPrompt();
-  } else if (m.type === 'error') {
+  }
+  else if (m.type === 'error') {
     appendLog('❌ ' + m.message);
     $('progress-text').textContent = '失败: ' + m.message;
   }
 }
 
-function finishRun() {
-  $('btn-run').disabled = !!globalBusy;
-  activeWS = null;
-}
+function finishRun() { $('btn-run').disabled = !!globalBusy; activeWS = null; }
 
+// ==================== 事件绑定 ====================
 $('search').addEventListener('input', renderList);
 $('btn-run').addEventListener('click', startRun);
-$('btn-reset-res').addEventListener('click', () => {
-  $('width').value = '';
-  $('height').value = '';
-  saveFormState();
-});
+$('btn-reset-res').addEventListener('click', () => { $('width').value = ''; $('height').value = ''; saveFormState(); });
 $('res-presets').addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-w]');
   if (!btn) return;
@@ -907,82 +788,56 @@ $('res-presets').addEventListener('click', (e) => {
   $('height').value = btn.dataset.h;
   saveFormState();
 });
-$('btn-reload-gallery').addEventListener('click', () => loadGallery(true));
+$('btn-reload-gallery').addEventListener('click', () => { _tabLoaded.gallery = false; loadGallery(true); });
+$('btn-load-more').addEventListener('click', () => loadGallery(false));
 
-// 显示/隐藏图片切换：默认全部隐藏；首次开启需公告确认（本会话内仅一次）
-// 结果区（自己刚生的图）和全局画廊各自独立控制
+// 图片显示开关
 let _revealAcked = false;
 function applyRevealZone(toggleEl) {
-  // 沿 DOM 找最近的 .img-hide-zone（同一区块内）；若 toggle 在父 box 标题里，则匹配该 box 内所有 zone
-  const box = toggleEl.closest('.bg-white');
-  const zones = box ? box.querySelectorAll('.img-hide-zone') : [];
+  const page = toggleEl.closest('.tab-page') || toggleEl.closest('.bg-white') || toggleEl.closest('[id]');
+  const zones = page ? page.querySelectorAll('.img-hide-zone') : [];
   zones.forEach(z => z.classList.toggle('revealed', toggleEl.checked));
 }
 document.querySelectorAll('.img-reveal-toggle').forEach(cb => {
   cb.checked = false;
-  cb.addEventListener('change', () => {
-    applyRevealZone(cb);
-  });
+  cb.addEventListener('change', () => applyRevealZone(cb));
 });
-$('btn-load-more').addEventListener('click', () => loadGallery(false));
 
-// ============== 全局状态：跨页面同步 ==============
+// ==================== 全局状态 ====================
 let globalBusy = false;
-
 function applyGlobalStatus(s) {
   globalBusy = !!s.busy;
   const box = $('global-status');
   if (!s.busy) {
     box.classList.add('hidden');
-    if (!activeWS) {
-      $('btn-run').disabled = false;
-    }
-    // 任务结束：清理"镜像中"标记
+    if (!activeWS) $('btn-run').disabled = false;
     mirroring = false;
     return;
   }
   box.classList.remove('hidden');
-
-  const stageMap = {
-    loading: '加载工作流',
-    llm: 'LLM 处理中',
-    generating: '生图中',
-  };
+  const stageMap = { loading: '加载工作流', llm: 'LLM 处理中', generating: '生图中' };
   $('gs-stage').textContent = stageMap[s.stage] || '处理中';
-
   const meta = [];
   if (s.workflow) meta.push(s.workflow.replace(/\.json$/i, ''));
-  if (s.started_at) {
-    const sec = Math.floor(Date.now()/1000 - s.started_at);
-    meta.push(sec + 's');
-  }
+  if (s.started_at) { const sec = Math.floor(Date.now()/1000 - s.started_at); meta.push(sec + 's'); }
   $('gs-meta').textContent = meta.join(' · ');
-
   if (s.max && s.max > 1) {
     const pct = Math.floor((s.value || 0) * 100 / s.max);
     $('gs-bar-wrap').classList.remove('hidden');
     $('gs-bar').style.width = pct + '%';
-    $('gs-text').textContent = `${s.node || ''} ${s.value}/${s.max} (${pct}%)  节点 ${s.done||0}/${s.total||0}`;
+    $('gs-text').textContent = `${s.node || ''} ${s.value}/${s.max} (${pct}%)`;
   } else {
     $('gs-bar-wrap').classList.add('hidden');
     $('gs-text').textContent = s.node ? `执行: ${s.node}` : '';
   }
-
-  // 别人在跑时禁用我的 run
-  if (!activeWS) {
-    $('btn-run').disabled = true;
-  }
-
-  // 标记：当前页面没在跑，但服务器在跑 —— 进入"镜像旁观者"模式
-  if (!activeWS && !mirroring) {
-    enterMirrorMode();
-  }
+  if (!activeWS) $('btn-run').disabled = true;
+  if (!activeWS && !mirroring) enterMirrorMode();
 }
 
 let mirroring = false;
 function enterMirrorMode() {
   mirroring = true;
-  // 显示进度区，便于复用现有 UI 收事件
+  switchTab('generate');
   $('progress-box').classList.remove('hidden');
   $('result-box').classList.add('hidden');
   $('log').textContent = '';
@@ -1003,62 +858,32 @@ function connectStatus() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   statusWS = new WebSocket(`${proto}://${location.host}/ws/status`);
   statusWS.onmessage = (e) => {
-    let m;
-    try { m = JSON.parse(e.data); } catch { return; }
-    if (m.type === 'status') {
-      applyGlobalStatus(m);
-    } else if (m.type === 'mirror') {
-      // 旁观者：用同一个 handler 渲染事件
-      // 但发起者 (activeWS != null) 已经从自己的 ws 收到过同事件，跳过避免重复
-      if (activeWS) return;
-      handleMsg(m.event);
-    }
+    let m; try { m = JSON.parse(e.data); } catch { return; }
+    if (m.type === 'status') applyGlobalStatus(m);
+    else if (m.type === 'mirror') { if (activeWS) return; handleMsg(m.event); }
   };
-  statusWS.onclose = () => {
-    statusWS = null;
-    setTimeout(connectStatus, 2000);
-  };
+  statusWS.onclose = () => { statusWS = null; setTimeout(connectStatus, 2000); };
   statusWS.onerror = () => { try { statusWS.close(); } catch {} };
 }
 connectStatus();
-// 计时刷新
-setInterval(() => {
-  if (globalBusy) {
-    // 触发一次 meta 刷新（基于上次状态）
-    const meta = $('gs-meta').textContent;
-    if (/(\d+)s$/.test(meta)) {
-      // 由后端 status 推送驱动；这里仅心跳
-    }
-  }
-}, 1000);
+setInterval(() => { if (globalBusy) { /* heartbeat */ } }, 1000);
 
-// ========== 自建灯箱（替代 GLightbox，避免它操纵 DOM 把图区搞消失）==========
+// ==================== 灯箱 ====================
 const lbState = { items: [], index: 0 };
-
 function collectLightboxItems() {
   return Array.from(document.querySelectorAll('a.glightbox')).map(a => ({
-    url: a.getAttribute('href'),
-    title: a.dataset.title || '',
-    relPath: a.dataset.relPath || '',
-    mtime: parseFloat(a.dataset.mtime) || null,
+    url: a.getAttribute('href'), title: a.dataset.title || '',
+    relPath: a.dataset.relPath || '', mtime: parseFloat(a.dataset.mtime) || null,
   }));
 }
 
-// ========== 全局滚动锁（弹窗用，引用计数避免叠加冲突）==========
-let _scrollLockCount = 0;
-let _scrollLockY = 0;
+let _scrollLockCount = 0, _scrollLockY = 0;
 function lockScroll() {
   _scrollLockCount += 1;
   if (_scrollLockCount === 1) {
-    _scrollLockY = window.scrollY || window.pageYOffset || 0;
-    // 锁 html + body 双保险（不同浏览器滚动容器不同），并用 position:fixed 兜底
+    _scrollLockY = window.scrollY || 0;
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${_scrollLockY}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.width = '100%';
   }
 }
 function unlockScroll() {
@@ -1066,19 +891,7 @@ function unlockScroll() {
   if (_scrollLockCount === 0) {
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    document.body.style.right = '';
-    document.body.style.width = '';
-    window.scrollTo(0, _scrollLockY);
   }
-}
-
-function openLightboxFromAnchor(a) {
-  lbState.items = collectLightboxItems();
-  lbState.index = Math.max(0, lbState.items.findIndex(it => it.url === a.getAttribute('href')));
-  showLightbox();
 }
 
 function showLightbox() {
@@ -1091,326 +904,166 @@ function showLightbox() {
   if (it.mtime) {
     const d = new Date(it.mtime * 1000);
     const pad = n => String(n).padStart(2, '0');
-    $('lb-time').textContent = `🕒 ${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  } else {
-    $('lb-time').textContent = '';
-  }
-  const fb = $('lb-fork');
-  fb.disabled = false;
-  fb.textContent = '🍴 Fork 工作流';
-  fb.dataset.rel = it.relPath || '';
+    $('lb-time').textContent = `🕒 ${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } else { $('lb-time').textContent = ''; }
+  const fb = $('lb-fork'); fb.disabled = false; fb.textContent = '🍴 Fork'; fb.dataset.rel = it.relPath || '';
   const rptBtn = $('lb-report');
-  if (it.relPath) {
-    rptBtn.classList.remove('hidden');
-    rptBtn.dataset.rel = it.relPath;
-  } else {
-    rptBtn.classList.add('hidden');
-    rptBtn.dataset.rel = '';
-  }
+  if (it.relPath) { rptBtn.classList.remove('hidden'); rptBtn.dataset.rel = it.relPath; }
+  else { rptBtn.classList.add('hidden'); rptBtn.dataset.rel = ''; }
   const dl = $('lb-download');
-  if (dl) {
-    let fullUrl = it.url;
-    if (fullUrl.startsWith('/api/output/file')) {
-      fullUrl += (fullUrl.includes('?') ? '&' : '?') + 'full=1';
-    }
-    dl.href = fullUrl;
-    dl.download = it.title || '';
-  }
+  if (dl) { let u = it.url; if (u.startsWith('/api/output/file')) u += (u.includes('?') ? '&' : '?') + 'full=1'; dl.href = u; dl.download = it.title || ''; }
   if (it.relPath) {
-    fetch('/api/output/creator?path=' + encodeURIComponent(it.relPath))
-      .then(r => r.json())
-      .then(d => {
-        if (d && d.creator_ip) $('lb-creator').textContent = '生图者: ' + d.creator_ip;
-      })
-      .catch(() => {});
+    fetch('/api/output/creator?path=' + encodeURIComponent(it.relPath)).then(r => r.json()).then(d => { if (d && d.creator_ip) $('lb-creator').textContent = 'IP: ' + d.creator_ip; }).catch(() => {});
   }
   $('lb-root').classList.add('open');
   if (!$('lb-root').dataset.locked) { lockScroll(); $('lb-root').dataset.locked = '1'; }
 }
 
-function closeLightbox() {
-  $('lb-root').classList.remove('open');
-  $('lb-img').src = '';
-  if ($('lb-root').dataset.locked) { unlockScroll(); delete $('lb-root').dataset.locked; }
-}
+function closeLightbox() { $('lb-root').classList.remove('open'); $('lb-img').src = ''; if ($('lb-root').dataset.locked) { unlockScroll(); delete $('lb-root').dataset.locked; } }
 function prevLightbox() { if (!lbState.items.length) return; lbState.index = (lbState.index - 1 + lbState.items.length) % lbState.items.length; showLightbox(); }
 function nextLightbox() { if (!lbState.items.length) return; lbState.index = (lbState.index + 1) % lbState.items.length; showLightbox(); }
 
-document.addEventListener('click', (e) => {
-  const a = e.target.closest && e.target.closest('a.glightbox');
-  if (!a) return;
-  e.preventDefault();
-  openLightboxFromAnchor(a);
-});
-
+document.addEventListener('click', (e) => { const a = e.target.closest && e.target.closest('a.glightbox'); if (!a) return; e.preventDefault(); lbState.items = collectLightboxItems(); lbState.index = Math.max(0, lbState.items.findIndex(it => it.url === a.getAttribute('href'))); showLightbox(); });
 $('lb-close').addEventListener('click', closeLightbox);
 $('lb-prev').addEventListener('click', prevLightbox);
 $('lb-next').addEventListener('click', nextLightbox);
-$('lb-root').addEventListener('click', (e) => {
-  // 点击空白处关闭（图片本身和工具栏不触发）
-  if (e.target === $('lb-root') || e.target === $('lb-img-wrap')) closeLightbox();
-});
-document.addEventListener('keydown', (e) => {
-  if (!$('lb-root').classList.contains('open')) return;
-  if (e.key === 'Escape') closeLightbox();
-  else if (e.key === 'ArrowLeft') prevLightbox();
-  else if (e.key === 'ArrowRight') nextLightbox();
-});
+$('lb-root').addEventListener('click', (e) => { if (e.target === $('lb-root') || e.target === $('lb-img-wrap')) closeLightbox(); });
+document.addEventListener('keydown', (e) => { if (!$('lb-root').classList.contains('open')) return; if (e.key === 'Escape') closeLightbox(); else if (e.key === 'ArrowLeft') prevLightbox(); else if (e.key === 'ArrowRight') nextLightbox(); });
 
 $('lb-fork').addEventListener('click', async () => {
   const rel = $('lb-fork').dataset.rel;
   if (!rel) { $('lb-status').textContent = '此图无路径信息'; return; }
-  const fb = $('lb-fork');
-  fb.disabled = true;
-  fb.textContent = 'Fork 中...';
-  $('lb-status').textContent = '';
+  const fb = $('lb-fork'); fb.disabled = true; fb.textContent = 'Fork 中...'; $('lb-status').textContent = '';
   try {
-    const r = await fetch('/api/output/fork', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({path: rel}),
-    });
+    const r = await fetch('/api/output/fork', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path: rel}) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
     forkedWorkflow = d.workflow;
-    forkedMeta = {
-      source_image: d.source_image || rel,
-      format: d.format,
-      summary: d.summary,
-      default_width: d.default_width,
-      default_height: d.default_height,
-      builtin_prompt: d.builtin_prompt,
-      loras: d.loras,
-    };
-    // 尝试从 prompt 开头匹配画风并自动选择
+    forkedMeta = { source_image: d.source_image || rel, format: d.format, summary: d.summary, default_width: d.default_width, default_height: d.default_height, builtin_prompt: d.builtin_prompt, loras: d.loras };
     let bp = (d.builtin_prompt || '').trim();
     let matched = false;
-    for (const s of allStyles) {
-      if (s.tags && bp.startsWith(s.tags)) {
-        setSelectedStyle(s.tags);
-        bp = bp.slice(s.tags.length).replace(/^,\s*/, '').trim();
-        matched = true;
-        break;
-      }
-    }
+    for (const s of allStyles) { if (s.tags && bp.startsWith(s.tags)) { setSelectedStyle(s.tags); bp = bp.slice(s.tags.length).replace(/^,\s*/, '').trim(); matched = true; break; } }
     if (!matched) setSelectedStyle('');
     forkedMeta.builtin_prompt = bp;
     renderStyles();
     applyForkedToUI();
-    $('lb-status').textContent = '✓ 已在本浏览器临时还原，可直接生图';
+    switchTab('generate');
+    $('lb-status').textContent = '✓ 已 Fork，切换到生图页';
     setTimeout(closeLightbox, 600);
-  } catch (err) {
-    $('lb-status').textContent = '失败: ' + (err.message || err);
-    fb.disabled = false;
-    fb.textContent = '🍴 Fork 工作流';
-  }
+  } catch (err) { $('lb-status').textContent = '失败: ' + (err.message || err); fb.disabled = false; fb.textContent = '🍴 Fork'; }
 });
 
-// ── 举报 ──
-function openReportModal() {
-  $('report-reason').value = '';
-  $('report-status').textContent = '';
-  $('report-submit').disabled = false;
-  const m = $('report-modal');
-  m.classList.remove('hidden');
-  m.style.display = 'flex';
-  if (!m.dataset.locked) { lockScroll(); m.dataset.locked = '1'; }
-}
-function closeReportModal() {
-  const m = $('report-modal');
-  m.style.display = '';
-  m.classList.add('hidden');
-  if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
-}
-$('lb-report').addEventListener('click', () => {
-  if (!$('lb-report').dataset.rel) return;
-  openReportModal();
-});
+// ==================== 举报 ====================
+function openReportModal() { $('report-reason').value = ''; $('report-status').textContent = ''; $('report-submit').disabled = false; const m = $('report-modal'); m.classList.remove('hidden'); m.style.display = 'flex'; if (!m.dataset.locked) { lockScroll(); m.dataset.locked = '1'; } }
+function closeReportModal() { const m = $('report-modal'); m.style.display = ''; m.classList.add('hidden'); if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; } }
+$('lb-report').addEventListener('click', () => { if (!$('lb-report').dataset.rel) return; openReportModal(); });
 $('report-cancel').addEventListener('click', closeReportModal);
 $('report-modal').addEventListener('click', (e) => { if (e.target === $('report-modal')) closeReportModal(); });
 $('report-submit').addEventListener('click', async () => {
   const rel = $('lb-report').dataset.rel;
   const reason = $('report-reason').value.trim();
   if (!reason) { $('report-status').textContent = '请填写举报原因'; return; }
-  $('report-submit').disabled = true;
-  $('report-status').textContent = '提交中...';
+  $('report-submit').disabled = true; $('report-status').textContent = '提交中...';
   try {
-    const r = await fetch('/api/report', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({image_path: rel, reason}),
-    });
+    const r = await fetch('/api/report', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({image_path: rel, reason}) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
-    $('report-status').textContent = '✓ 举报已提交，感谢反馈';
-    $('report-status').className = 'text-xs text-green-600 mt-2 block';
+    $('report-status').textContent = '✓ 已提交'; $('report-status').className = 'text-xs text-green-600 mt-2 block';
     setTimeout(closeReportModal, 1200);
-  } catch (err) {
-    $('report-status').textContent = err.message || '提交失败';
-    $('report-status').className = 'text-xs text-red-500 mt-2 block';
-    $('report-submit').disabled = false;
-  }
+  } catch (err) { $('report-status').textContent = err.message || '提交失败'; $('report-status').className = 'text-xs text-red-500 mt-2 block'; $('report-submit').disabled = false; }
 });
 
-function refreshLightbox() { /* 兼容老调用：自建灯箱实时收集，无需 reload */ }
+function refreshLightbox() {}
 
-// 生图成功后弹窗：每次成功展示一次，但「不再提示」后永久关闭
+// Star prompt
 function maybeShowStarPrompt() {
   if (localStorage.getItem('starPromptDismissed') === '1') return;
-  const m = $('star-modal');
-  if (!m) return;
-  if (m.classList.contains('hidden')) {
-    m.classList.remove('hidden');
-    lockScroll();
-    m.dataset.locked = '1';
-  }
+  const m = $('star-modal'); if (!m) return;
+  if (m.classList.contains('hidden')) { m.classList.remove('hidden'); lockScroll(); m.dataset.locked = '1'; }
 }
-function closeStarModal() {
-  const m = $('star-modal');
-  if (!m.classList.contains('hidden')) {
-    m.classList.add('hidden');
-    if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; }
-  }
-}
-$('star-never').addEventListener('click', () => {
-  localStorage.setItem('starPromptDismissed', '1');
-  closeStarModal();
-});
+function closeStarModal() { const m = $('star-modal'); if (!m.classList.contains('hidden')) { m.classList.add('hidden'); if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; } } }
+$('star-never').addEventListener('click', () => { localStorage.setItem('starPromptDismissed', '1'); closeStarModal(); });
 $('star-later').addEventListener('click', closeStarModal);
-$('star-modal').addEventListener('click', (e) => {
-  if (e.target === $('star-modal')) closeStarModal();
-});
+$('star-modal').addEventListener('click', (e) => { if (e.target === $('star-modal')) closeStarModal(); });
 
-// 18+ 年龄确认（每次访问都强制确认，不写 localStorage）
-
-// ============== GPU 监控 ==============
+// ==================== GPU ====================
 function gpuBar(value, max, color) {
   const pct = (max && value != null) ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
-  return `<div class="relative bg-gray-200 rounded h-2 overflow-hidden">
-    <div class="absolute inset-y-0 left-0 ${color}" style="width:${pct.toFixed(1)}%"></div>
-  </div>`;
+  return `<div class="relative bg-gray-200 rounded h-2 overflow-hidden"><div class="absolute inset-y-0 left-0 ${color}" style="width:${pct.toFixed(1)}%"></div></div>`;
 }
 async function pollGPU() {
   try {
     const r = await fetch('/api/gpu');
     const d = await r.json();
-    if (d.poll_interval_ms && d.poll_interval_ms !== _gpuInterval) {
-      _gpuInterval = d.poll_interval_ms;
-      clearInterval(_gpuTimer);
-      _gpuTimer = setInterval(pollGPU, _gpuInterval);
-    }
-    const bar = document.getElementById('gpu-bar');
-    if (!d.available) {
-      bar.classList.remove('hidden');
-      document.getElementById('gpu-bar-meta').textContent = 'GPU 不可用';
-      document.getElementById('gpu-bar-list').innerHTML =
-        `<div class="text-[11px] text-red-600">⚠️ ${d.error || '未知错误'}</div>`;
-      return;
-    }
+    if (d.poll_interval_ms && d.poll_interval_ms !== _gpuInterval) { _gpuInterval = d.poll_interval_ms; clearInterval(_gpuTimer); _gpuTimer = setInterval(pollGPU, _gpuInterval); }
+    const bar = $('gpu-bar');
+    if (!d.available) { bar.classList.remove('hidden'); $('gpu-bar-meta').textContent = 'GPU 不可用'; $('gpu-bar-list').innerHTML = `<div class="text-[11px] text-red-600">⚠️ ${d.error || '未知错误'}</div>`; return; }
     bar.classList.remove('hidden');
     const gpus = d.gpus || [];
-    document.getElementById('gpu-bar-meta').textContent = gpus.length ? new Date().toLocaleTimeString() : '无 GPU';
-    document.getElementById('gpu-bar-list').innerHTML = gpus.map(g => {
-      const util = g['utilization.gpu'] ?? 0;
-      const memU = g['memory.used'] ?? 0;
-      const memT = g['memory.total'] ?? 1;
+    $('gpu-bar-meta').textContent = gpus.length ? new Date().toLocaleTimeString() : '无 GPU';
+    $('gpu-bar-list').innerHTML = gpus.map(g => {
+      const util = g['utilization.gpu'] ?? 0, memU = g['memory.used'] ?? 0, memT = g['memory.total'] ?? 1;
       const memPct = memT ? (memU / memT * 100) : 0;
-      const temp = g['temperature.gpu'] ?? '?';
-      const power = g['power.draw'];
-      const plim = g['power.limit'];
+      const temp = g['temperature.gpu'] ?? '?', power = g['power.draw'], plim = g['power.limit'];
       const pStr = (power != null && plim != null) ? `${power.toFixed(0)}/${plim.toFixed(0)}W` : (power != null ? `${power.toFixed(0)}W` : '?');
-      const fan = g['fan.speed'];
-      const clkG = g['clocks.current.graphics'];
-      const clkM = g['clocks.current.memory'];
       const tempColor = temp >= 80 ? 'text-red-600' : temp >= 70 ? 'text-orange-600' : 'text-emerald-600';
       const utilColor = util >= 90 ? 'bg-red-500' : util >= 60 ? 'bg-amber-400' : 'bg-emerald-500';
       const memColor = memPct >= 90 ? 'bg-red-500' : memPct >= 70 ? 'bg-amber-400' : 'bg-blue-500';
-      return `<div class="grid grid-cols-12 gap-2 items-center">
-        <span class="col-span-12 sm:col-span-3 truncate"><span class="text-gray-400">#${g.index}</span> ${g.name || ''}</span>
-        <div class="col-span-6 sm:col-span-3">
-          <div class="flex justify-between text-[10px] mb-0.5"><span>GPU</span><span>${util}%</span></div>
-          ${gpuBar(util, 100, utilColor)}
-        </div>
-        <div class="col-span-6 sm:col-span-3">
-          <div class="flex justify-between text-[10px] mb-0.5"><span>VRAM</span><span>${memU}/${memT} MiB</span></div>
-          ${gpuBar(memU, memT, memColor)}
-        </div>
-        <div class="col-span-12 sm:col-span-3 text-[10px] flex flex-wrap gap-x-2 gap-y-0.5">
-          <span class="${tempColor}">🌡 ${temp}°C</span>
-          <span>⚡ ${pStr}</span>
-          ${fan != null ? `<span>🌀 ${fan}%</span>` : ''}
-          ${clkG != null ? `<span>📈 ${clkG}MHz</span>` : ''}
-          ${clkM != null ? `<span>💾 ${clkM}MHz</span>` : ''}
-        </div>
+      return `<div class="flex flex-wrap gap-2 items-center text-[10px]">
+        <span class="font-medium">${g.name || ''}</span>
+        <span>GPU ${util}%</span> ${gpuBar(util, 100, utilColor)}
+        <span>VRAM ${memU}/${memT}M</span> ${gpuBar(memU, memT, memColor)}
+        <span class="${tempColor}">🌡${temp}°C</span> <span>⚡${pStr}</span>
       </div>`;
     }).join('');
   } catch {}
 }
 let _gpuInterval = 5000;
 let _gpuTimer = setInterval(pollGPU, _gpuInterval);
-pollGPU();
 
+// ==================== 公告 ====================
 async function loadAnnouncement() {
   try {
     const r = await fetch('/api/announcement');
     const d = await r.json();
     const a = d.announcement || {};
-    const bar = document.getElementById('announcement-bar');
+    const bar = $('announcement-bar');
     if (a.enabled && (a.title || a.content)) {
-      const titleEl = document.getElementById('ann-bar-title');
-      const contentEl = document.getElementById('ann-bar-content');
-      titleEl.textContent = a.title ? '📢 ' + a.title : '';
-      titleEl.classList.toggle('hidden', !a.title);
-      contentEl.textContent = a.content || '';
-      contentEl.classList.toggle('hidden', !a.content);
+      $('ann-bar-title').textContent = a.title ? '📢 ' + a.title : '';
+      $('ann-bar-title').classList.toggle('hidden', !a.title);
+      $('ann-bar-content').textContent = a.content || '';
+      $('ann-bar-content').classList.toggle('hidden', !a.content);
       bar.classList.remove('hidden');
-    } else {
-      bar.classList.add('hidden');
-    }
+    } else { bar.classList.add('hidden'); }
   } catch {}
 }
 
-// -------- 表单状态持久化 --------
+// ==================== 表单持久化 ====================
 const _FORM_KEY = 'formState';
 const _FORM_FIELDS = [
-  {id: 'direct', type: 'text'},
-  {id: 'nl', type: 'text'},
-  {id: 'rewrite', type: 'check'},
-  {id: 'width', type: 'text'},
-  {id: 'height', type: 'text'},
+  {id: 'direct', type: 'text'}, {id: 'nl', type: 'text'},
+  {id: 'rewrite', type: 'check'}, {id: 'width', type: 'text'}, {id: 'height', type: 'text'},
 ];
 function saveFormState() {
   const s = {};
-  _FORM_FIELDS.forEach(f => {
-    const el = $(f.id);
-    s[f.id] = f.type === 'check' ? el.checked : el.value;
-  });
+  _FORM_FIELDS.forEach(f => { const el = $(f.id); s[f.id] = f.type === 'check' ? el.checked : el.value; });
   localStorage.setItem(_FORM_KEY, JSON.stringify(s));
 }
 function restoreFormState() {
   try {
     const s = JSON.parse(localStorage.getItem(_FORM_KEY));
     if (!s) return;
-    _FORM_FIELDS.forEach(f => {
-      const el = $(f.id);
-      if (f.id in s) {
-        if (f.type === 'check') el.checked = !!s[f.id];
-        else el.value = s[f.id] || '';
-      }
-    });
+    _FORM_FIELDS.forEach(f => { const el = $(f.id); if (f.id in s) { if (f.type === 'check') el.checked = !!s[f.id]; else el.value = s[f.id] || ''; } });
   } catch {}
 }
-_FORM_FIELDS.forEach(f => {
-  const el = $(f.id);
-  el.addEventListener(f.type === 'check' ? 'change' : 'input', saveFormState);
-});
+_FORM_FIELDS.forEach(f => { const el = $(f.id); el.addEventListener(f.type === 'check' ? 'change' : 'input', saveFormState); });
 restoreFormState();
 
-loadAnnouncement();
+// ==================== 初始化 ====================
+loadResolutions();
+loadStyles();
 loadCurrent();
 loadList();
-loadGallery(true);
-loadFeatured();
 </script>
 </body>
 </html>
