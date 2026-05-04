@@ -187,8 +187,10 @@
         <div id="progress-bar" class="bg-blue-500 h-2 transition-all rounded-full" style="width:0%"></div>
       </div>
       <div id="progress-text" class="text-[10px] text-gray-500 text-center mt-0.5"></div>
-      <div id="llm-box" class="hidden"></div>
-      <pre id="llm-stream" class="hidden"></pre>
+      <div id="llm-box" class="hidden mt-1">
+        <div class="text-[9px] text-gray-400 mb-0.5">🤖 LLM 处理中...</div>
+        <pre id="llm-stream" class="text-[10px] bg-yellow-50 border border-yellow-200 p-1 rounded max-h-24 overflow-y-auto whitespace-pre-wrap break-words"></pre>
+      </div>
       <pre id="log" class="hidden"></pre>
     </div>
 
@@ -462,7 +464,7 @@ function clearFork() {
   loadCurrent();
 }
 
-async function loadCurrent() {
+async function loadCurrent(setResolution = false) {
   if (forkedWorkflow) { applyForkedToUI(); return; }
   $('fork-section').classList.add('hidden');
   const path = getCurrentPath();
@@ -476,8 +478,11 @@ async function loadCurrent() {
   }
   defaultRes.w = d.default_width;
   defaultRes.h = d.default_height;
-  $('width').value = defaultRes.w || '';
-  $('height').value = defaultRes.h || '';
+  if (setResolution) {
+    $('width').value = defaultRes.w || '';
+    $('height').value = defaultRes.h || '';
+    loadResolutions();
+  }
   const bp = (d.builtin_prompt || '').trim();
   $('direct').value = bp;
   saveFormState();
@@ -564,7 +569,7 @@ async function selectWorkflow(path) {
   forkedMeta = null;
   setCurrentPath(path);
   renderList();
-  await loadCurrent();
+  await loadCurrent(true);
 }
 
 // ==================== 画风 ====================
@@ -703,7 +708,7 @@ function handleMsg(m) {
   if (m.type === 'log') { appendLog(m.message); }
   else if (m.type === 'llm_start') { $('llm-box').classList.remove('hidden'); $('llm-stream').textContent = ''; }
   else if (m.type === 'llm_chunk') { const el = $('llm-stream'); el.textContent += m.delta; el.scrollTop = el.scrollHeight; }
-  else if (m.type === 'llm_done') { appendLog('LLM 完成'); }
+  else if (m.type === 'llm_done') { $('llm-box').classList.add('hidden'); }
   else if (m.type === 'progress') {
     if (m.max && m.max > 1) {
       const pct = Math.floor((m.value || 0) * 100 / m.max);
