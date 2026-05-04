@@ -1070,45 +1070,6 @@ async function _saveCatOrder() {
   } catch {}
 }
 
-function _bindWfRename(container) {
-  container.querySelectorAll('[data-wf]').forEach(el => {
-    el.addEventListener('dblclick', (e) => {
-      e.stopPropagation();
-      const oldFull = el.dataset.wf;
-      const oldStem = oldFull.replace(/\.json$/i, '');
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = oldStem;
-      input.className = 'text-xs border rounded px-1 py-0.5 font-mono w-32';
-      el.replaceWith(input);
-      input.focus();
-      input.select();
-      const finish = async () => {
-        const newStem = input.value.trim();
-        if (!newStem || newStem + '.json' === oldFull) {
-          renderCatUI();
-          return;
-        }
-        $('wfmeta-status').textContent = '重命名中…';
-        try {
-          await api('POST', '/api/admin/workflow_rename', { old: oldFull, new: newStem + '.json' });
-          const item = adminWfMeta.find(m => m.workflow === oldFull);
-          if (item) item.workflow = newStem + '.json';
-          renderCatUI();
-          renderWfMetaEntries();
-          $('wfmeta-status').textContent = '✓ 已重命名';
-          setTimeout(() => { $('wfmeta-status').textContent = ''; }, 2000);
-        } catch (err) {
-          renderCatUI();
-          $('wfmeta-status').textContent = '重命名失败: ' + err.message;
-        }
-      };
-      input.addEventListener('blur', finish);
-      input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') input.blur(); if (ev.key === 'Escape') { input.value = oldStem; input.blur(); } });
-    });
-  });
-}
-
 function renderCatUI() {
   const fromData = adminWfMeta.map(m => (m.category || '').trim()).filter(Boolean);
   const allCats = new Set([...fromData, ..._pendingCats]);
@@ -1147,6 +1108,23 @@ function renderCatUI() {
       _selectedCat = _selectedCat === el.dataset.cat ? '' : el.dataset.cat;
       renderCatUI();
     });
+    el.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      const oldCat = el.dataset.cat;
+      const newCat = prompt('重命名分类', oldCat);
+      if (!newCat || newCat.trim() === '' || newCat.trim() === oldCat) return;
+      const trimmed = newCat.trim();
+      adminWfMeta.forEach(m => { if (m.category === oldCat) m.category = trimmed; });
+      _pendingCats.delete(oldCat);
+      _pendingCats.add(trimmed);
+      const idx = _catOrder.indexOf(oldCat);
+      if (idx >= 0) _catOrder[idx] = trimmed;
+      if (_selectedCat === oldCat) _selectedCat = trimmed;
+      renderCatUI();
+      renderWfMetaEntries();
+      autoSaveWfMeta();
+      _saveCatOrder();
+    });
   });
   chips.querySelectorAll('.wfmeta-cat-del').forEach(el => {
     el.addEventListener('click', () => {
@@ -1172,7 +1150,7 @@ function renderCatUI() {
       incatDiv.classList.remove('hidden');
       incatList.innerHTML = incat.map(m => {
         const name = m.workflow.replace(/\.json$/i, '');
-        return `<span class="wfmeta-remove cursor-pointer text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800 hover:bg-red-100 hover:text-red-800" data-wf="${m.workflow.replace(/"/g, '&quot;')}" title="双击重命名">${name} ✕</span>`;
+        return `<span class="wfmeta-remove cursor-pointer text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800 hover:bg-red-100 hover:text-red-800" data-wf="${m.workflow.replace(/"/g, '&quot;')}">${name} ✕</span>`;
       }).join('');
       incatList.querySelectorAll('.wfmeta-remove').forEach(el => {
         el.addEventListener('click', () => {
@@ -1183,7 +1161,6 @@ function renderCatUI() {
           autoSaveWfMeta();
         });
       });
-      _bindWfRename(incatList);
     } else {
       incatDiv.classList.add('hidden');
     }
@@ -1193,7 +1170,7 @@ function renderCatUI() {
       uncatDiv.classList.remove('hidden');
       uncatList.innerHTML = uncat.map(m => {
         const name = m.workflow.replace(/\.json$/i, '');
-        return `<span class="wfmeta-assign cursor-pointer text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200" data-wf="${m.workflow.replace(/"/g, '&quot;')}" title="双击重命名">${name}</span>`;
+        return `<span class="wfmeta-assign cursor-pointer text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200" data-wf="${m.workflow.replace(/"/g, '&quot;')}">${name}</span>`;
       }).join('');
       uncatList.querySelectorAll('.wfmeta-assign').forEach(el => {
         el.addEventListener('click', () => {
@@ -1205,7 +1182,6 @@ function renderCatUI() {
           autoSaveWfMeta();
         });
       });
-      _bindWfRename(uncatList);
     } else {
       uncatDiv.classList.add('hidden');
     }
