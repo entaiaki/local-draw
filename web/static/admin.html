@@ -129,7 +129,22 @@
       <button id="btn-refresh-wfmeta" class="text-sm px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">刷新</button>
     </div>
     <div id="wfmeta-body" class="hidden">
-      <p class="text-xs text-gray-500 mb-2">自动从 ComfyUI 工作流目录扫描。为每个工作流配置缩略图和 Lora 链接，修改后自动保存。</p>
+      <p class="text-xs text-gray-500 mb-2">自动从 ComfyUI 工作流目录扫描。为每个工作流配置缩略图、Lora 链接和分类，修改后自动保存。</p>
+
+      <!-- 分类管理 -->
+      <div class="mb-3 border rounded p-3 bg-blue-50">
+        <div class="text-sm font-semibold mb-2">📁 分类管理</div>
+        <div class="flex flex-wrap gap-1 mb-2" id="wfmeta-cat-chips"></div>
+        <div class="flex gap-2">
+          <input id="wfmeta-cat-input" type="text" placeholder="输入分类名称" class="flex-1 border rounded px-2 py-1 text-xs" />
+          <button id="btn-add-cat" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs">添加分类</button>
+        </div>
+        <div id="wfmeta-uncat" class="mt-2 hidden">
+          <div class="text-xs text-gray-600 mb-1">未分类的工作流（点击分配到当前选中的分类）：</div>
+          <div id="wfmeta-uncat-list" class="flex flex-wrap gap-1"></div>
+        </div>
+      </div>
+
       <div id="wfmeta-entries" class="flex flex-col gap-2 mb-3"></div>
       <div class="flex items-center gap-2">
         <span id="wfmeta-status" class="text-xs text-gray-500"></span>
@@ -1034,9 +1049,77 @@ async function loadWfMeta() {
       category: (metaMap[f] || {}).category || '',
     }));
     renderWfMetaEntries();
+    renderCatUI();
     $('wfmeta-status').textContent = '';
   } catch (e) { $('wfmeta-status').textContent = '加载失败: ' + e.message; }
 }
+
+let _selectedCat = '';
+
+function renderCatUI() {
+  const cats = [...new Set(adminWfMeta.map(m => (m.category || '').trim()).filter(Boolean))].sort();
+  const chips = $('wfmeta-cat-chips');
+  chips.innerHTML = cats.map(c => {
+    const sel = c === _selectedCat;
+    return `<span class="wfmeta-cat-chip cursor-pointer text-xs px-2 py-0.5 rounded ${sel ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}" data-cat="${c.replace(/"/g, '&quot;')}">${c}
+      <button class="wfmeta-cat-del ml-1 text-[10px] opacity-60 hover:opacity-100" data-cat="${c.replace(/"/g, '&quot;')}">✕</button>
+    </span>`;
+  }).join('');
+  chips.querySelectorAll('.wfmeta-cat-chip').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('wfmeta-cat-del')) return;
+      _selectedCat = _selectedCat === el.dataset.cat ? '' : el.dataset.cat;
+      renderCatUI();
+    });
+  });
+  chips.querySelectorAll('.wfmeta-cat-del').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat = el.dataset.cat;
+      adminWfMeta.forEach(m => { if (m.category === cat) m.category = ''; });
+      if (_selectedCat === cat) _selectedCat = '';
+      renderCatUI();
+      renderWfMetaEntries();
+      autoSaveWfMeta();
+    });
+  });
+  const uncatDiv = $('wfmeta-uncat');
+  const uncatList = $('wfmeta-uncat-list');
+  if (_selectedCat) {
+    const uncat = adminWfMeta.filter(m => !(m.category || '').trim());
+    if (uncat.length) {
+      uncatDiv.classList.remove('hidden');
+      uncatList.innerHTML = uncat.map(m => {
+        const name = m.workflow.replace(/\.json$/i, '');
+        return `<span class="wfmeta-assign cursor-pointer text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200" data-wf="${m.workflow.replace(/"/g, '&quot;')}">${name}</span>`;
+      }).join('');
+      uncatList.querySelectorAll('.wfmeta-assign').forEach(el => {
+        el.addEventListener('click', () => {
+          const wf = el.dataset.wf;
+          const item = adminWfMeta.find(m => m.workflow === wf);
+          if (item) item.category = _selectedCat;
+          renderCatUI();
+          renderWfMetaEntries();
+          autoSaveWfMeta();
+        });
+      });
+    } else {
+      uncatDiv.classList.add('hidden');
+    }
+  } else {
+    uncatDiv.classList.add('hidden');
+  }
+}
+
+$('btn-add-cat').addEventListener('click', () => {
+  const name = $('wfmeta-cat-input').value.trim();
+  if (!name) return;
+  $('wfmeta-cat-input').value = '';
+  _selectedCat = name;
+  renderCatUI();
+});
+$('wfmeta-cat-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $('btn-add-cat').click();
+});
 
 $('btn-refresh-wfmeta').addEventListener('click', loadWfMeta);
 
