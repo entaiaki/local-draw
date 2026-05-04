@@ -582,7 +582,13 @@ async function loadResolutions() {
   try {
     const r = await fetch('/api/resolutions');
     const d = await r.json();
-    $('res-presets').innerHTML = (d.presets || []).map(p => {
+    const presets = d.presets || [];
+    // 无已选分辨率时默认选中第一个
+    if (presets.length && !$('width').value && !$('height').value) {
+      $('width').value = presets[0].w;
+      $('height').value = presets[0].h;
+    }
+    $('res-presets').innerHTML = presets.map(p => {
       const sel = parseInt($('width').value) === p.w && parseInt($('height').value) === p.h;
       const cls = sel
         ? 'px-1.5 py-0.5 bg-blue-500 text-white border border-blue-500 rounded text-[10px]'
