@@ -1014,11 +1014,19 @@ async def translate_prompt(
             "For each Chinese word or phrase in the input, output the matching English Danbooru tag.\n"
             "Output all tags on one line separated by commas. No other text.\n\n"
             "Tag vocabulary reference (use these exact tags when applicable):\n"
-            "- Body: breasts, large_breasts, huge_breasts, nipples, penis, vagina, ass, feet, soles, toes\n"
-            "- Positions: doggystyle, missionary, cowgirl, from_behind, reverse_cowgirl\n"
-            "- Actions: sex, vaginal, anal, oral, footjob, handjob, kissing, groping, masturbation, squirting, ejaculation\n"
-            "- States: nude, topless, bottomless, cum, wet, spread_legs, barefoot, penetration\n"
-            "- Subjects: 1girl, 1boy, 2girls, multiple_girls, hetero, yuri\n\n"
+            "- General: 1girl, 1boy, 2girls, multiple_girls, hetero, yuri, solo\n"
+            "- Face/Expression: smile, grin, wink, blush, open_mouth, closed_eyes, half-closed_eyes, ahegao, tears, crying, shy, embarrassed, happy, sad, angry, surprised, expressionless\n"
+            "- Hair: blonde_hair, brown_hair, black_hair, white_hair, pink_hair, blue_hair, red_hair, long_hair, short_hair, twintails, ponytail, braid, messy_hair, hair_over_one_eye, sidelocks, ahoge, multicolored_hair\n"
+            "- Eyes: blue_eyes, green_eyes, brown_eyes, red_eyes, yellow_eyes, purple_eyes, heterochromia, aqua_eyes, slit_pupils, glowing_eyes\n"
+            "- Body: breasts, large_breasts, huge_breasts, small_breasts, nipples, penis, vagina, ass, feet, soles, toes, navel, collarbone, armpits, wide_hips, thick_thighs, slim_body, muscular, tall, short\n"
+            "- Clothing: dress, white_dress, black_dress, short_dress, long_dress, skirt, miniskirt, shirt, bikini, school_uniform, serafuku, labcoat, apron, hoodie, jacket, cape, armor, gloves, thighhighs, knee_highs, socks, shoes, boots, heels, sneakers, hat, ribbon, bow, hair_ornament, choker, necklace, earrings, glasses, sunglasses, swimsuit, leotard, bodysuit, stockings, garter_belt, pantyhose, underwear, bra, panties, towel, robe, kimono, maid, headdress, crown, headphones\n"
+            "- Poses: standing, sitting, lying, kneeling, squatting, bent_over, spread_legs, arms_up, hand_on_hip, hand_on_own_chest, crossed_arms, arms_behind_back, peace_sign, v, pointing, covering_mouth, holding, looking_at_viewer, looking_away, looking_back, from_behind, from_below, from_side, upper_body, portrait, close-up, full_body, cowboy_shot\n"
+            "- Actions: sex, vaginal, anal, oral, footjob, handjob, kissing, groping, masturbation, squirting, ejaculation, cuddling, hugging, sleeping, eating, drinking, reading, running, jumping, dancing, fighting, crying, laughing, smoking, bathing, stretching\n"
+            "- States: nude, topless, bottomless, cum, wet, torn_clothes, covered, covered_in_cum, messy, sweat, pregnancy\n"
+            "- Background/Setting: outdoors, indoors, beach, ocean, forest, mountain, city, classroom, bedroom, bathroom, kitchen, rooftop, night, day, sunset, sunrise, sky, clouds, rain, snow, cherry_blossoms, flowers, water, lake, river\n"
+            "- Quality: masterpiece, best_quality, highres, absurdres, very_aweome, detailed, realistic, anime_style, sketch, monochrome, greyscale, chromatic_aberration, depth_of_field, lens_flare, motion_blare, speed_lines, sparkle, heart, star, speech_bubble\n"
+            "- Medium: photo, illustration, painting, watercolor_(medium), pixel_art, 3d, chibi, comic, sketch_(medium)\n\n"
+            "The list above is a reference only — use any standard Danbooru tag that fits, even if not listed.\n"
             "Output: tags only, one line, no other text."
         )
         user = prompt
@@ -1125,22 +1133,13 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
     if thought_chunks:
         import re as _re
         thought_text = "".join(thought_chunks)
-        candidates = []
-        for line in thought_text.splitlines():
-            cleaned = line.strip().strip("`").strip()
-            if "," in cleaned and len(cleaned) > 20:
-                tag_part = cleaned.split(":")[-1].strip() if cleaned.count(":") == 1 and cleaned.index(":") < 20 else cleaned
-                if tag_part.startswith("`"):
-                    tag_part = tag_part.strip("`").strip()
-                candidates.append(tag_part)
-        backtick_blocks = _re.findall(r"`([^`]{20,})`", thought_text)
-        for block in backtick_blocks:
-            if "," in block:
-                candidates.append(block.strip())
-        if candidates:
-            thought_candidate = max(candidates, key=lambda c: c.count(","))
-            if not full or thought_candidate.count(",") > full.count(","):
-                full = thought_candidate
+        # 从思维链中提取被反引号包裹的 tag 列表，取逗号最多的
+        backtick_blocks = _re.findall(r"`([^`]+)`", thought_text)
+        tag_blocks = [b.strip() for b in backtick_blocks if "," in b]
+        if tag_blocks:
+            best = max(tag_blocks, key=lambda c: c.count(","))
+            if not full or best.count(",") > full.count(","):
+                full = best
     if not full:
         raise RuntimeError("Google LLM 返回空内容")
     return full

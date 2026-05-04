@@ -132,7 +132,7 @@
       <!-- 工作流 -->
       <div class="flex-1 bg-white rounded-lg shadow-sm p-1.5 min-w-0">
         <div class="relative flex items-center justify-between mb-1">
-          <h2 id="wf-title" class="text-xs font-semibold">📋 工作流</h2>
+          <h2 class="text-xs font-semibold">📋 工作流 <span id="wf-current" class="font-normal text-gray-400 text-[9px]"></span></h2>
           <button id="btn-wf-search" class="text-gray-400 hover:text-gray-600 text-xs">🔍</button>
           <input id="search" type="text" placeholder="搜索工作流..."
             class="hidden absolute inset-0 border rounded px-1.5 py-0.5 text-[10px] bg-white z-10" />
@@ -142,7 +142,7 @@
       <!-- 画风 -->
       <div id="style-section" class="flex-1 bg-white rounded-lg shadow-sm p-1.5 hidden min-w-0">
         <div class="relative flex items-center justify-between mb-1">
-          <h2 id="style-title" class="text-xs font-semibold">🖌️ 画风</h2>
+          <h2 class="text-xs font-semibold">🖌️ 画风 <span id="style-current" class="font-normal text-gray-400 text-[9px]"></span></h2>
           <button id="btn-style-search" class="text-gray-400 hover:text-gray-600 text-xs">🔍</button>
           <input id="style-search" type="text" placeholder="搜索画风..."
             class="hidden absolute inset-0 border rounded px-1.5 py-0.5 text-[10px] bg-white z-10" />
@@ -189,7 +189,7 @@
       <div id="progress-text" class="text-[10px] text-gray-500 text-center mt-0.5"></div>
       <div id="llm-box" class="hidden mt-1">
         <div class="text-[9px] text-gray-400 mb-0.5">🤖 LLM 处理中...</div>
-        <pre id="llm-stream" class="text-[10px] bg-yellow-50 border border-yellow-200 p-1 rounded max-h-24 overflow-y-auto whitespace-pre-wrap break-words"></pre>
+        <pre id="llm-stream" class="text-[10px] bg-yellow-50 border border-yellow-200 p-1 rounded max-h-[50vh] overflow-y-auto whitespace-pre-wrap break-words"></pre>
       </div>
       <pre id="log" class="hidden"></pre>
     </div>
@@ -200,7 +200,7 @@
         <span class="text-xs font-semibold">🖼️ 结果</span>
       </div>
       <div id="final-prompt" class="text-[9px] bg-gray-50 p-1 rounded font-mono mb-1 whitespace-pre-wrap max-h-12 overflow-y-auto"></div>
-      <div id="images" class="grid grid-cols-3 gap-1 max-h-32 overflow-y-auto"></div>
+      <div id="images" class="grid grid-cols-3 md:grid-cols-4 gap-1 justify-items-center"></div>
     </div>
   </div>
 </div>
@@ -526,6 +526,9 @@ function _wfCard(w, q) {
 }
 
 function renderList() {
+  const cur = getCurrentPath();
+  const curWf = allWorkflows.find(w => w.path === cur);
+  $('wf-current').textContent = curWf ? (curWf.path.replace(/\.json$/i, '')) : '';
   const q = $('search').value.toLowerCase().trim();
   let filtered = q
     ? allWorkflows.filter(w => (w.path || '').toLowerCase().includes(q) || (w.category || '').toLowerCase().includes(q))
@@ -583,10 +586,13 @@ async function loadResolutions() {
     const r = await fetch('/api/resolutions');
     const d = await r.json();
     const presets = d.presets || [];
-    // 无已选分辨率时默认选中第一个
-    if (presets.length && !$('width').value && !$('height').value) {
+    // 无已选分辨率或已选不在许可范围内时，重置为第一个
+    const curW = parseInt($('width').value), curH = parseInt($('height').value);
+    const valid = presets.some(p => p.w === curW && p.h === curH);
+    if (presets.length && (!curW || !curH || !valid)) {
       $('width').value = presets[0].w;
       $('height').value = presets[0].h;
+      saveFormState();
     }
     $('res-presets').innerHTML = presets.map(p => {
       const sel = parseInt($('width').value) === p.w && parseInt($('height').value) === p.h;
@@ -614,19 +620,21 @@ function renderStyles() {
   const section = $('style-section');
   if (!allStyles.length) { section.classList.add('hidden'); return; }
   section.classList.remove('hidden');
+  const sel = getSelectedStyle();
+  const selStyle = sel ? allStyles.find(s => s.tags === sel) : null;
+  $('style-current').textContent = selStyle ? (selStyle.name || selStyle.tags) : '未选择';
   const sq = ($('style-search') ? $('style-search').value : '').toLowerCase().trim();
-  const selected = getSelectedStyle();
   let pool;
   if (sq) {
     pool = allStyles.filter(s => (s.name || '').toLowerCase().includes(sq) || (s.tags || '').toLowerCase().includes(sq));
   } else {
     const hasAlias = allStyles.filter(s => s.name);
     const noAlias = allStyles.filter(s => !s.name);
-    const selectedInNoAlias = noAlias.some(s => s.tags === selected);
-    pool = showAllStyles ? allStyles : (selectedInNoAlias ? [...hasAlias, noAlias.find(s => s.tags === selected)] : hasAlias);
+    const selectedInNoAlias = noAlias.some(s => s.tags === sel);
+    pool = showAllStyles ? allStyles : (selectedInNoAlias ? [...hasAlias, noAlias.find(s => s.tags === sel)] : hasAlias);
   }
   $('style-list').innerHTML = pool.map(s => {
-    const active = s.tags === selected;
+    const active = s.tags === sel;
     const cls = active
       ? 'style-item border-2 border-blue-500 ring-1 ring-blue-300 bg-blue-50 rounded p-0.5 cursor-pointer flex flex-col items-center w-10 overflow-hidden'
       : 'style-item border-2 border-transparent rounded p-0.5 cursor-pointer hover:bg-blue-50 hover:border-blue-300 flex flex-col items-center w-10 overflow-hidden';
@@ -712,7 +720,7 @@ function actuallyStartRun(direct, nl, w, h) {
 
 function handleMsg(m) {
   if (m.type === 'log') { appendLog(m.message); }
-  else if (m.type === 'llm_start') { $('llm-box').classList.remove('hidden'); $('llm-stream').textContent = ''; }
+  else if (m.type === 'llm_start') { $('llm-box').classList.remove('hidden'); $('llm-stream').textContent = ''; $('progress-text').textContent = ''; }
   else if (m.type === 'llm_chunk') { const el = $('llm-stream'); el.textContent += m.delta; el.scrollTop = el.scrollHeight; }
   else if (m.type === 'llm_done') { $('llm-box').classList.add('hidden'); }
   else if (m.type === 'progress') {
