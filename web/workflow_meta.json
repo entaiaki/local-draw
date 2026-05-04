@@ -1,140 +1,221 @@
 [
   {
-    "workflow": "Anima - 无Lora.json",
-    "thumbnail": "Anima - 无Lora.png"
-  },
-  {
-    "workflow": "Anima - 达妮娅.json",
-    "thumbnail": "Anima - 达妮娅.png",
-    "lora_link": "https://civitai.red/models/2474682/anima-preview-or-denia-or-or-or-wuthering-wavesor"
-  },
-  {
-    "workflow": "WAI - 37.json",
+    "workflow": "37.json",
     "thumbnail": "WAI - 37.png",
     "lora_link": "https://civitai.red/models/1014516/reverse1999-character-37-199937"
   },
   {
-    "workflow": "WAI - 丰川祥子.json",
+    "workflow": "丛雨.json",
+    "thumbnail": "image - 2026-05-03T051241.138.webp",
+    "lora_link": "https://civitai.red/models/1467194/murasame-or-senren-banka"
+  },
+  {
+    "workflow": "丛雨（休闲服）.json",
+    "thumbnail": "image - 2026-05-03T051708.281.webp",
+    "lora_link": "https://civitai.red/models/1467194/murasame-or-senren-banka"
+  },
+  {
+    "workflow": "丛雨（校服）.json",
+    "thumbnail": "image - 2026-05-03T052550.613.webp",
+    "lora_link": "https://civitai.red/models/1467194/murasame-or-senren-banka"
+  },
+  {
+    "workflow": "丛雨（私服）.json",
+    "thumbnail": "image - 2026-05-03T051513.880.webp",
+    "lora_link": "https://civitai.red/models/1467194/murasame-or-senren-banka"
+  },
+  {
+    "workflow": "丰川祥子.json",
     "thumbnail": "WAI - 丰川祥子.png",
     "lora_link": "https://civitai.red/models/1393238/ilxl-togawa-sakiko-bang-dream-ave-mujica-5-outfits"
   },
   {
-    "workflow": "WAI - 千咲.json",
+    "workflow": "二阶堂希罗.json",
+    "thumbnail": "image - 2026-05-03T042809.237.webp",
+    "lora_link": "https://civitai.red/models/2053992/nikaido-hiro-mahou-shoujo-no-majo-saiban-oror"
+  },
+  {
+    "workflow": "千咲.json",
     "thumbnail": "WAI - 千咲.png",
     "lora_link": "https://civitai.red/models/1650331/chisa-wuthering-waves-or-goofy-ai"
   },
   {
-    "workflow": "WAI - 千早爱音.json",
+    "workflow": "千早爱音.json",
     "thumbnail": "WAI - 千早爱音.png",
     "lora_link": "https://civitai.red/models/1495194/bangdream-oror-mygo-oror-chihaya-anon"
   },
   {
-    "workflow": "WAI - 卡提希娅.json",
+    "workflow": "卡提希娅.json",
     "thumbnail": "WAI - 卡提希娅.png",
     "lora_link": "https://civitai.red/models/1112399/cartethyiafleurdelys-or-wuthering-waves-naiilpony"
   },
   {
-    "workflow": "WAI - 和泉纱雾.json",
+    "workflow": "和泉纱雾.json",
     "thumbnail": "WAI - 和泉纱雾.png",
     "lora_link": "https://civitai.red/models/1365237/sagiri-eromanga-sensei-izumi-eromanga-sensei"
   },
   {
-    "workflow": "WAI - 新37 (带衣服).json",
+    "workflow": "夏目安安.json",
+    "thumbnail": "image - 2026-05-03T050820.903.webp",
+    "lora_link": "https://civitai.red/models/2535177/natsume-anan-or-mahou-shoujo-no-majo-saiban-or-noobai"
+  },
+  {
+    "workflow": "安魂曲.json",
+    "thumbnail": "image - 2026-05-02T025416.514.webp",
+    "lora_link": "https://civitai.com/models/2374994/lacrimosa-neverness-to-evernessnte"
+  },
+  {
+    "workflow": "常陆茉子.json",
+    "thumbnail": "image - 2026-05-03T054949.681.webp",
+    "lora_link": "https://civitai.red/models/1470773/mako-hitachi-or-senren-banka"
+  },
+  {
+    "workflow": "常陆茉子（常服）.json",
+    "thumbnail": "image - 2026-05-03T055329.365.webp",
+    "lora_link": "https://civitai.red/models/1470773/mako-hitachi-or-senren-banka"
+  },
+  {
+    "workflow": "常陆茉子（忍者）.json",
+    "thumbnail": "image - 2026-05-03T055102.979.webp",
+    "lora_link": "https://civitai.red/models/1470773/mako-hitachi-or-senren-banka"
+  },
+  {
+    "workflow": "常陆茉子（校服）.json",
+    "thumbnail": "image - 2026-05-03T055202.715.webp",
+    "lora_link": "https://civitai.red/models/1470773/mako-hitachi-or-senren-banka"
+  },
+  {
+    "workflow": "新37 (带衣服).json",
     "thumbnail": "WAI - 新37 (带衣服).png",
     "lora_link": "https://civitai.red/models/1450206/reverse199937-down-in-the-grotto199937"
   },
   {
-    "workflow": "WAI - 新37.json",
+    "workflow": "新37.json",
     "thumbnail": "WAI - 新37.png",
     "lora_link": "https://civitai.red/models/1450206/reverse199937-down-in-the-grotto199937"
   },
   {
-    "workflow": "WAI - 新菲比 (立绘）.json",
+    "workflow": "新菲比 (立绘）.json",
     "thumbnail": "WAI - 新菲比 (立绘）.png",
     "lora_link": "https://civitai.red/models/1270541/phoebe-or-wuthering-waves-or-wuwa"
   },
   {
-    "workflow": "WAI - 新菲比.json",
+    "workflow": "新菲比.json",
     "thumbnail": "WAI - 新菲比.png",
     "lora_link": "https://civitai.red/models/1270541/phoebe-or-wuthering-waves-or-wuwa"
   },
   {
-    "workflow": "WAI - 无Lora.json",
+    "workflow": "无Lora.json",
     "thumbnail": "WAI - 无Lora.png",
     "lora_link": "https://civitai.red/models/827184/wai-illustrious-sdxl"
   },
   {
-    "workflow": "WAI - 昔涟.json",
+    "workflow": "昔涟.json",
     "thumbnail": "WAI - 昔涟.png",
     "lora_link": "https://civitai.red/models/1601644/honkai-star-rail-cyrene"
   },
   {
-    "workflow": "WAI - 永雏塔菲.json",
+    "workflow": "月代雪.json",
+    "thumbnail": "ComfyUI_02178_.png",
+    "lora_link": "https://civitai.red/models/2497311/tsukishiro-yuki-or-mahou-shoujo-no-majo-saiban-or-noobai"
+  },
+  {
+    "workflow": "朝武芳乃.json",
+    "thumbnail": "image - 2026-05-03T053230.664.webp",
+    "lora_link": "https://civitai.red/models/1470732/yoshino-tomotake-or-senren-banka"
+  },
+  {
+    "workflow": "朝武芳乃（校服）.json",
+    "thumbnail": "image - 2026-05-03T054315.029.webp",
+    "lora_link": "https://civitai.red/models/1470732/yoshino-tomotake-or-senren-banka"
+  },
+  {
+    "workflow": "朝武芳乃（睡衣）.json",
+    "thumbnail": "image - 2026-05-03T054535.973.webp",
+    "lora_link": "https://civitai.red/models/1470732/yoshino-tomotake-or-senren-banka"
+  },
+  {
+    "workflow": "朝武芳乃（私服）.json",
+    "thumbnail": "image - 2026-05-03T053721.259.webp",
+    "lora_link": "https://civitai.red/models/1470732/yoshino-tomotake-or-senren-banka"
+  },
+  {
+    "workflow": "樱羽艾玛.json",
+    "thumbnail": "image - 2026-05-03T041407.396.webp",
+    "lora_link": "https://civitai.red/models/2049322/sakuraba-ema-mahou-shoujo-no-majo-saiban-oror"
+  },
+  {
+    "workflow": "橘雪莉.json",
+    "thumbnail": "image - 2026-05-03T042237.016.webp",
+    "lora_link": "https://civitai.red/models/2047078/tachibana-sherry-mahou-shoujo-no-majo-saiban-oror"
+  },
+  {
+    "workflow": "永雏塔菲.json",
     "thumbnail": "WAI - 永雏塔菲.png",
     "lora_link": "https://civitai.red/models/1793256/ace-taffy"
   },
   {
-    "workflow": "WAI - 若叶睦 (新).json",
+    "workflow": "若叶睦 (新).json",
     "thumbnail": "WAI - 若叶睦 (新).png",
     "lora_link": "https://civitai.red/models/862268/illustriousxl-wakaba-mutsumi-or-mygoave-mujica"
   },
   {
-    "workflow": "WAI - 若叶睦.json",
+    "workflow": "若叶睦.json",
     "thumbnail": "WAI - 若叶睦.png",
     "lora_link": "https://civitai.red/models/1494804/ilxl-mutsumi-wakaba-or-bang-dream-ave-mujica"
   },
   {
-    "workflow": "WAI - 莫宁.json",
+    "workflow": "莫宁.json",
     "thumbnail": "WAI - 莫宁.png",
     "lora_link": "https://civitai.red/models/2199574/mornye-wuthering-waves-oror-or-ansl-ai"
   },
   {
-    "workflow": "WAI - 菲比.json",
+    "workflow": "菲比.json",
     "thumbnail": "WAI - 菲比.png",
     "lora_link": "https://civitai.red/models/1171738/il-and-pony-and-sd15-wuthering-waves-phoebe-or"
   },
   {
-    "workflow": "WAI - 薇薇安.json",
+    "workflow": "薇薇安.json",
     "thumbnail": "WAI - 薇薇安.jpg",
     "lora_link": "https://civitai.red/models/1345648/ilxlvivianzenlesszonezerozzz"
   },
   {
-    "workflow": "WAI - 西格莉卡 (带符文).json",
+    "workflow": "西格莉卡 (带符文).json",
     "thumbnail": "WAI - 西格莉卡 (带符文).png",
     "lora_link": "https://civitai.red/models/2221084/il-v01-sigrika-wuthering-waves-or"
   },
   {
-    "workflow": "WAI - 西格莉卡.json",
+    "workflow": "西格莉卡.json",
     "thumbnail": "WAI - 西格莉卡.png",
     "lora_link": "https://civitai.red/models/2221084/il-v01-sigrika-wuthering-waves-or"
   },
   {
-    "workflow": "WAI - 达妮娅 (带原衣).json",
+    "workflow": "达妮娅 (带原衣).json",
     "thumbnail": "WAI - 达妮娅 (带原衣).png",
     "lora_link": "https://civitai.red/models/2488372/denia-or-wuthering-waves"
   },
   {
-    "workflow": "WAI - 达妮娅.json",
+    "workflow": "达妮娅.json",
     "thumbnail": "WAI - 达妮娅.png",
     "lora_link": "https://civitai.red/models/2488372/denia-or-wuthering-waves"
   },
   {
-    "workflow": "WAI - 迷迭香.json",
+    "workflow": "迷迭香.json",
     "thumbnail": "WAI - 迷迭香.png",
     "lora_link": "https://civitai.red/models/1200751/rosmontis-3-outfits-arknights"
   },
   {
-    "workflow": "WAI - 遐蝶.json",
+    "workflow": "遐蝶.json",
     "thumbnail": "WAI - 遐蝶.png",
     "lora_link": "https://civitai.red/models/1186971/castorice-honkai-star-railhikari?modelVersionId=1336072"
   },
   {
-    "workflow": "WAI - 长崎素世.json",
+    "workflow": "长崎素世.json",
     "thumbnail": "WAI - 长崎素世.png",
     "lora_link": "https://civitai.red/models/1552957/bangdream-oror-mygo-oror-nagasaki-soyo"
   },
   {
-    "workflow": "WAI - 露露卡.json",
+    "workflow": "露露卡.json",
     "thumbnail": "WAI - 露露卡.png",
     "lora_link": "https://civitai.red/models/2301609/moria-luluka-meitantei-precure"
   }

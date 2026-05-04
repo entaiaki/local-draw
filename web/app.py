@@ -2765,7 +2765,7 @@ async def api_admin_workflow_files():
 
 @app.post("/api/admin/workflow_rename")
 async def api_admin_workflow_rename(payload: Dict[str, Any]):
-    """通过 ComfyUI userdata API 重命名工作流，并同步迁移 workflow_meta 映射。"""
+    """重命名工作流文件，并同步迁移 workflow_meta 映射。"""
     old = str(payload.get("old", "")).strip()
     new = str(payload.get("new", "")).strip()
     if not old or not new:
@@ -2774,26 +2774,19 @@ async def api_admin_workflow_rename(payload: Dict[str, Any]):
         return {"ok": True}
     if ".." in old or ".." in new:
         raise HTTPException(400, "路径不合法")
-    from urllib.parse import quote
-    async with httpx.AsyncClient(timeout=15) as client:
-        r = await client.get(
-            f"{COMFYUI_API}/api/userdata/workflows%2F{quote(old, safe='')}",
-            headers={"Comfy-User": ""},
-        )
-        if r.status_code != 200:
-            raise HTTPException(400, f"读取旧工作流失败: {r.status_code}")
-        content = r.content
-        r2 = await client.post(
-            f"{COMFYUI_API}/api/userdata/workflows%2F{quote(new, safe='')}",
-            content=content,
-            headers={"Comfy-User": "", "Content-Type": "application/json"},
-        )
-        if r2.status_code not in (200, 201):
-            raise HTTPException(500, f"写入新工作流失败: {r2.status_code}")
-        await client.delete(
-            f"{COMFYUI_API}/api/userdata/workflows%2F{quote(old, safe='')}",
-            headers={"Comfy-User": ""},
-        )
+    root = Path(COMFYUI_WORKFLOWS_DIR)
+    old_path = (root / old).resolve()
+    new_path = (root / new).resolve()
+    if not old_path.is_relative_to(root.resolve()):
+        raise HTTPException(400, "路径不合法")
+    if not new_path.is_relative_to(root.resolve()):
+        raise HTTPException(400, "路径不合法")
+    if not old_path.is_file():
+        raise HTTPException(400, f"旧工作流不存在: {old}")
+    if new_path.exists():
+        raise HTTPException(400, f"目标文件已存在: {new}")
+    new_path.parent.mkdir(parents=True, exist_ok=True)
+    old_path.rename(new_path)
     if old in _workflow_meta:
         _workflow_meta[new] = _workflow_meta.pop(old)
         await _save_workflow_meta_file(_workflow_meta)
