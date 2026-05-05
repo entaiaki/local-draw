@@ -291,15 +291,6 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const _esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const _fetch = window.fetch.bind(window);
-window.fetch = async (...args) => {
-  const r = await _fetch(...args);
-  if (r.status === 401 || r.status === 403) {
-    alert('权限不足，请刷新页面后重试');
-    throw new Error('blocked by proxy');
-  }
-  return r;
-};
 let _genNoticeAcked = document.cookie.includes('genNoticeAcked=1');
 let allWorkflows = [];
 let defaultRes = {w: null, h: null};
@@ -312,7 +303,6 @@ function switchTab(name) {
   document.querySelectorAll('#tab-bar button').forEach(b => b.classList.remove('active'));
   $('page-' + name).classList.add('active');
   document.querySelector(`#tab-bar button[data-tab="${name}"]`).classList.add('active');
-  if (name === 'generate' && mirroring) $('progress-box').classList.remove('hidden');
   if (name === 'gallery' && !_tabLoaded.gallery) { _tabLoaded.gallery = true; loadGallery(true); }
   if (name === 'featured' && !_tabLoaded.featured) { _tabLoaded.featured = true; loadFeatured(); }
   if (name === 'more' && !_tabLoaded.more) {
@@ -776,7 +766,7 @@ function applyGlobalStatus(s) {
   globalBusy = !!s.busy;
   if (!s.busy) {
     if (!activeWS) $('btn-run').disabled = false;
-    if (mirroring) { mirroring = false; $('progress-box').classList.add('hidden'); }
+    mirroring = false;
     return;
   }
   if (!activeWS) $('btn-run').disabled = true;
@@ -786,9 +776,17 @@ function applyGlobalStatus(s) {
 let mirroring = false;
 function enterMirrorMode() {
   mirroring = true;
-  $('progress-box').classList.add('hidden');
+  $('progress-box').classList.remove('hidden');
   $('result-box').classList.add('hidden');
-  $('btn-run').disabled = true;
+  $('log').textContent = '';
+  $('llm-box').classList.add('hidden');
+  $('llm-stream').textContent = '';
+  $('progress-text').textContent = '👀 旁观其它页面的任务';
+  $('progress-bar-wrap').classList.add('hidden');
+  $('images').innerHTML = '';
+  $('final-prompt').textContent = '';
+  $('final-prompt').textContent = '';
+  currentPrompt = '';
 }
 
 let statusWS = null;

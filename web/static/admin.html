@@ -409,15 +409,6 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const escHtml = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const _fetch = window.fetch.bind(window);
-window.fetch = async (...args) => {
-  const r = await _fetch(...args);
-  if (r.status === 401 || r.status === 403) {
-    alert('权限不足，请刷新页面后重试');
-    throw new Error('blocked by proxy');
-  }
-  return r;
-};
 
 async function api(method, url, body) {
   const opt = { method, headers: {} };
@@ -426,6 +417,10 @@ async function api(method, url, body) {
     opt.body = JSON.stringify(body);
   }
   const r = await fetch(url, opt);
+  if (r.status === 401 || r.status === 403) {
+    alert('被反向代理拦截：检查 Cloudflare Access / nginx 鉴权配置');
+    throw new Error('blocked by proxy');
+  }
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
   return d;
