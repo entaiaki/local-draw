@@ -303,6 +303,7 @@ function switchTab(name) {
   document.querySelectorAll('#tab-bar button').forEach(b => b.classList.remove('active'));
   $('page-' + name).classList.add('active');
   document.querySelector(`#tab-bar button[data-tab="${name}"]`).classList.add('active');
+  if (name === 'generate' && mirroring) $('progress-box').classList.remove('hidden');
   if (name === 'gallery' && !_tabLoaded.gallery) { _tabLoaded.gallery = true; loadGallery(true); }
   if (name === 'featured' && !_tabLoaded.featured) { _tabLoaded.featured = true; loadFeatured(); }
   if (name === 'more' && !_tabLoaded.more) {
@@ -766,7 +767,7 @@ function applyGlobalStatus(s) {
   globalBusy = !!s.busy;
   if (!s.busy) {
     if (!activeWS) $('btn-run').disabled = false;
-    mirroring = false;
+    if (mirroring) { mirroring = false; $('progress-box').classList.add('hidden'); }
     return;
   }
   if (!activeWS) $('btn-run').disabled = true;
@@ -776,18 +777,9 @@ function applyGlobalStatus(s) {
 let mirroring = false;
 function enterMirrorMode() {
   mirroring = true;
-  switchTab('generate');
-  $('progress-box').classList.remove('hidden');
+  $('progress-box').classList.add('hidden');
   $('result-box').classList.add('hidden');
-  $('log').textContent = '';
-  $('llm-box').classList.add('hidden');
-  $('llm-stream').textContent = '';
-  $('progress-text').textContent = '👀 旁观其它页面的任务';
-  $('progress-bar-wrap').classList.add('hidden');
-  $('images').innerHTML = '';
-  $('final-prompt').textContent = '';
-  $('final-prompt').textContent = '';
-  currentPrompt = '';
+  $('btn-run').disabled = true;
 }
 
 let statusWS = null;
