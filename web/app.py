@@ -1927,7 +1927,7 @@ async def _push_status(patch: Optional[Dict[str, Any]] = None, *, reset: bool = 
         if _active_status is None:
             _active_status = {"busy": True}
         _active_status.update(patch)
-    snap = {"type": "status", **(_active_status or _idle_snapshot())}
+    snap = {"type": "status", "online": len(_status_subscribers), **(_active_status or _idle_snapshot())}
     await _broadcast(snap)
 
 
@@ -1936,9 +1936,11 @@ async def ws_status(ws: WebSocket):
     """只读订阅：当前任务状态 + 历史回放 + 后续广播。"""
     await ws.accept()
     _status_subscribers.add(ws)
+    # 广播在线人数给所有人
+    await _broadcast({"type": "online", "count": len(_status_subscribers)})
     try:
         # 立即推快照
-        await ws.send_json({"type": "status", **(_active_status or _idle_snapshot())})
+        await ws.send_json({"type": "status", "online": len(_status_subscribers), **(_active_status or _idle_snapshot())})
         # 回放本次任务已发生的所有事件，让新页面重建 UI
         for evt in list(_event_log):
             await ws.send_json({"type": "mirror", "event": evt})
@@ -1950,6 +1952,8 @@ async def ws_status(ws: WebSocket):
         pass
     finally:
         _status_subscribers.discard(ws)
+        # 广播在线人数给所有人
+        await _broadcast({"type": "online", "count": len(_status_subscribers)})
 
 
 @app.websocket("/ws/run")

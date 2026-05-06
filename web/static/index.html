@@ -8,7 +8,7 @@
 <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet" />
 <meta name="referrer" content="no-referrer" />
 <title>自然语言生图</title>
-<link rel="icon" type="image/avif" href="/static/favicon.avif" />
+<link rel="icon" type="image/webp" href="/static/chiz.webp" />
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; width: 100%; }
@@ -31,7 +31,7 @@
   /* Tab 布局 */
   .tab-page { position: fixed; top: 0; left: 0; right: 0; bottom: 52px; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; }
   .tab-page.active { display: block; }
-  #tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 52px; z-index: 40; background: #fff; border-top: 1px solid #e5e7eb; display: flex; padding-bottom: env(safe-area-inset-bottom); }
+  #tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 48rem; height: 52px; z-index: 40; background: #fff; border-top: 1px solid #e5e7eb; display: flex; padding-bottom: env(safe-area-inset-bottom); border-radius: 12px 12px 0 0; box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
   #tab-bar button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; background: none; color: #9ca3af; font-size: 10px; cursor: pointer; transition: color .15s; }
   #tab-bar button .tab-icon { font-size: 20px; }
   #tab-bar button.active { color: #3b82f6; }
@@ -114,7 +114,7 @@
   <div class="p-2 space-y-1 max-w-3xl mx-auto">
     <!-- 标题 -->
     <div class="flex items-center justify-between">
-      <h1 class="text-sm font-bold">🎨 自然语言生图</h1>
+      <h1 class="text-sm font-bold">🎨 自然语言生图 <span id="online-count" class="font-normal text-[10px] text-gray-400"></span></h1>
       <div class="flex items-center gap-1.5 text-[10px]">
         <a href="https://space.bilibili.com/325903362" target="_blank" rel="noopener" class="px-1 py-0.5 rounded bg-pink-100 text-pink-700">B站</a>
         <a href="https://2x.nz/q" target="_blank" rel="noopener" class="px-1 py-0.5 rounded bg-green-100 text-green-700">💬群</a>
@@ -763,6 +763,7 @@ $('btn-load-more').addEventListener('click', () => loadGallery(false));
 // ==================== 全局状态 ====================
 let globalBusy = false;
 function applyGlobalStatus(s) {
+  if (s.online != null) $('online-count').textContent = `· ${s.online} 在线`;
   globalBusy = !!s.busy;
   if (!s.busy) {
     if (!activeWS) $('btn-run').disabled = false;
@@ -796,6 +797,7 @@ function connectStatus() {
   statusWS.onmessage = (e) => {
     let m; try { m = JSON.parse(e.data); } catch { return; }
     if (m.type === 'status') applyGlobalStatus(m);
+    else if (m.type === 'online') $('online-count').textContent = `· ${m.count} 在线`;
     else if (m.type === 'mirror') { if (activeWS) return; handleMsg(m.event); }
   };
   statusWS.onclose = () => { statusWS = null; setTimeout(connectStatus, 2000); };
