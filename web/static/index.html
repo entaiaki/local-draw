@@ -431,9 +431,8 @@ function applyForkedToUI() {
   $('wf-current').textContent = '';
   defaultRes.w = m.default_width;
   defaultRes.h = m.default_height;
-  const bp = (m.builtin_prompt || '').trim();
-  $('direct').value = bp;
-  if (!$('negative_prompt').value.trim()) $('negative_prompt').value = (m.builtin_negative_prompt || '').trim();
+  $('direct').value = (m.builtin_prompt || '').trim();
+  $('negative_prompt').value = (m.builtin_negative_prompt || '').trim();
   saveFormState();
 }
 
@@ -465,9 +464,8 @@ async function loadCurrent(setResolution = false) {
     $('height').value = defaultRes.h || '';
     loadResolutions();
   }
-  const bp = (d.builtin_prompt || '').trim();
-  $('direct').value = bp;
-  if (!$('negative_prompt').value.trim()) $('negative_prompt').value = (d.builtin_negative_prompt || '').trim();
+  $('direct').value = (d.builtin_prompt || '').trim();
+  $('negative_prompt').value = (d.builtin_negative_prompt || '').trim();
   saveFormState();
 }
 
