@@ -150,15 +150,21 @@
     <div class="bg-white rounded-lg shadow-sm p-2">
       <div class="flex gap-2 mb-1.5">
         <div class="flex-1 min-w-0">
-          <label class="block text-[10px] font-medium mb-0.5">直接 Tag</label>
+          <label class="block text-[10px] font-medium mb-0.5">正面提示词</label>
           <textarea id="direct" rows="3" placeholder="英文 tags，选择工作流后自动填入"
             class="w-full border rounded px-1.5 py-1 text-[10px] font-mono"></textarea>
         </div>
         <div class="flex-1 min-w-0">
-          <label class="block text-[10px] font-medium mb-0.5">自然语言描述</label>
-          <textarea id="nl" rows="3" placeholder="中文/英文，LLM 翻译"
-            class="w-full border rounded px-1.5 py-1 text-[10px]"></textarea>
+          <label class="block text-[10px] font-medium mb-0.5">负面提示词</label>
+          <textarea id="negative_prompt" rows="3" placeholder="如: worst quality, low quality, blurry"
+            class="w-full border rounded px-1.5 py-1 text-[10px] font-mono"></textarea>
         </div>
+      </div>
+
+      <div class="mb-1.5">
+        <label class="block text-[10px] font-medium mb-0.5">自然语言描述 <span class="text-gray-400">(中文/英文，LLM 翻译生成正负提示词)</span></label>
+        <textarea id="nl" rows="2" placeholder="描述你想要的画面，LLM 会自动翻译为 tags"
+          class="w-full border rounded px-1.5 py-1 text-[10px]"></textarea>
       </div>
 
       <div class="flex items-center flex-wrap gap-2 mb-1.5">
@@ -193,7 +199,6 @@
       <div class="flex items-center justify-between mb-1">
         <span class="text-xs font-semibold">🖼️ 结果</span>
       </div>
-      <div id="final-prompt" class="text-[9px] bg-gray-50 p-1 rounded font-mono mb-1 whitespace-pre-wrap max-h-12 overflow-y-auto"></div>
       <div id="images" class="grid grid-cols-3 md:grid-cols-4 gap-1 justify-items-center"></div>
     </div>
   </div>
@@ -428,6 +433,7 @@ function applyForkedToUI() {
   defaultRes.h = m.default_height;
   const bp = (m.builtin_prompt || '').trim();
   $('direct').value = bp;
+  if (!$('negative_prompt').value.trim()) $('negative_prompt').value = (m.builtin_negative_prompt || '').trim();
   saveFormState();
 }
 
@@ -461,6 +467,7 @@ async function loadCurrent(setResolution = false) {
   }
   const bp = (d.builtin_prompt || '').trim();
   $('direct').value = bp;
+  if (!$('negative_prompt').value.trim()) $('negative_prompt').value = (d.builtin_negative_prompt || '').trim();
   saveFormState();
 }
 
@@ -651,22 +658,23 @@ function startRun() {
   if (globalBusy) return;
   const direct = $('direct').value.trim();
   const nl = $('nl').value.trim();
+  const neg = $('negative_prompt').value.trim();
   let w = parseInt($('width').value) || null;
   let h = parseInt($('height').value) || null;
-  if (!_genNoticeAcked) { showGenNotice(direct, nl, w, h); }
-  else { actuallyStartRun(direct, nl, w, h); }
+  if (!_genNoticeAcked) { showGenNotice(direct, nl, neg, w, h); }
+  else { actuallyStartRun(direct, nl, neg, w, h); }
 }
 
-function showGenNotice(direct, nl, w, h) {
+function showGenNotice(direct, nl, neg, w, h) {
   const m = $('gen-notice-modal');
   m.classList.remove('hidden'); m.classList.add('flex');
   lockScroll(); m.dataset.locked = '1';
   const close = () => { m.classList.add('hidden'); m.classList.remove('flex'); if (m.dataset.locked) { unlockScroll(); delete m.dataset.locked; } };
-  $('gen-notice-accept').onclick = () => { close(); _genNoticeAcked = true; document.cookie = 'genNoticeAcked=1; path=/; max-age=31536000'; actuallyStartRun(direct, nl, w, h); };
+  $('gen-notice-accept').onclick = () => { close(); _genNoticeAcked = true; document.cookie = 'genNoticeAcked=1; path=/; max-age=31536000'; actuallyStartRun(direct, nl, neg, w, h); };
   $('gen-notice-cancel').onclick = close;
 }
 
-function actuallyStartRun(direct, nl, w, h) {
+function actuallyStartRun(direct, nl, neg, w, h) {
   const payload = {
     workflow_path: forkedWorkflow ? '' : getCurrentPath(),
     inline_workflow: forkedWorkflow || null,
@@ -674,6 +682,7 @@ function actuallyStartRun(direct, nl, w, h) {
     rewrite: $('rewrite').checked,
     width: w, height: h,
     style_tags: getSelectedStyleTags(),
+    negative_prompt: neg,
   };
   $('progress-box').classList.remove('hidden');
   $('result-box').classList.add('hidden');
@@ -684,7 +693,6 @@ function actuallyStartRun(direct, nl, w, h) {
   $('progress-bar-wrap').classList.add('hidden');
   $('btn-run').disabled = true;
   $('images').innerHTML = '';
-  $('final-prompt').textContent = '';
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}/ws/run`);
   activeWS = ws;
@@ -698,7 +706,13 @@ function handleMsg(m) {
   if (m.type === 'log') { appendLog(m.message); }
   else if (m.type === 'llm_start') { $('llm-box').classList.remove('hidden'); $('llm-stream').textContent = ''; $('progress-text').textContent = ''; }
   else if (m.type === 'llm_chunk') { const el = $('llm-stream'); el.textContent += m.delta; el.scrollTop = el.scrollHeight; }
-  else if (m.type === 'llm_done') { $('llm-box').classList.add('hidden'); }
+  else if (m.type === 'llm_done') {
+    $('llm-box').classList.add('hidden');
+    if (m.negative && !$('negative_prompt').value.trim()) {
+      $('negative_prompt').value = m.negative;
+      saveFormState();
+    }
+  }
   else if (m.type === 'progress') {
     if (m.max && m.max > 1) {
       const pct = Math.floor((m.value || 0) * 100 / m.max);
@@ -709,7 +723,6 @@ function handleMsg(m) {
   }
   else if (m.type === 'prompt_id') {
     currentPrompt = m.final_prompt || '';
-    $('final-prompt').textContent = m.final_prompt;
     $('result-box').classList.remove('hidden');
   }
   else if (m.type === 'image') {
@@ -724,7 +737,6 @@ function handleMsg(m) {
   else if (m.type === 'done') {
     appendLog(`✅ 完成，共 ${m.count} 张`);
     $('progress-text').textContent = '完成';
-    if (m.final_prompt) $('final-prompt').textContent = m.final_prompt;
     maybeShowStarPrompt();
   }
   else if (m.type === 'error') {
@@ -785,8 +797,6 @@ function enterMirrorMode() {
   $('progress-text').textContent = '👀 旁观其它页面的任务';
   $('progress-bar-wrap').classList.add('hidden');
   $('images').innerHTML = '';
-  $('final-prompt').textContent = '';
-  $('final-prompt').textContent = '';
   currentPrompt = '';
 }
 
@@ -877,7 +887,7 @@ $('lb-fork').addEventListener('click', async () => {
     const d = await r.json();
     if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
     forkedWorkflow = d.workflow;
-    forkedMeta = { source_image: d.source_image || rel, format: d.format, summary: d.summary, default_width: d.default_width, default_height: d.default_height, builtin_prompt: d.builtin_prompt, loras: d.loras };
+    forkedMeta = { source_image: d.source_image || rel, format: d.format, summary: d.summary, default_width: d.default_width, default_height: d.default_height, builtin_prompt: d.builtin_prompt, builtin_negative_prompt: d.builtin_negative_prompt, loras: d.loras };
     let bp = (d.builtin_prompt || '').trim();
     let matched = false;
     for (const s of allStyles) { if (s.tags && bp.startsWith(s.tags)) { setSelectedStyle(s.tags); bp = bp.slice(s.tags.length).replace(/^,\s*/, '').trim(); matched = true; break; } }
@@ -979,7 +989,7 @@ async function loadAnnouncement() {
 // ==================== 表单持久化 ====================
 const _FORM_KEY = 'formState';
 const _FORM_FIELDS = [
-  {id: 'direct', type: 'text'}, {id: 'nl', type: 'text'},
+  {id: 'direct', type: 'text'}, {id: 'nl', type: 'text'}, {id: 'negative_prompt', type: 'text'},
   {id: 'rewrite', type: 'check'}, {id: 'width', type: 'text'}, {id: 'height', type: 'text'},
 ];
 function saveFormState() {

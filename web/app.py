@@ -807,27 +807,33 @@ def summarize_workflow(data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def workflow_to_prompt_api(workflow: Dict[str, Any]) -> Tuple[Dict[str, Any], Optional[Tuple[str, str]]]:
+def workflow_to_prompt_api(workflow: Dict[str, Any]) -> Tuple[Dict[str, Any], Optional[Tuple[str, str]], Optional[Tuple[str, str]]]:
     """与 dev/comfyui.py workflow_to_prompt_api 同步实现。"""
     prompt: Dict[str, Any] = {}
     positive_ref: Optional[Tuple[str, str]] = None
+    negative_ref: Optional[Tuple[str, str]] = None
 
     # 透传：如果传入的就是 API 格式（顶层每个值都带 class_type），直接当 prompt 用
     if workflow and "nodes" not in workflow and all(
         isinstance(v, dict) and "class_type" in v for v in workflow.values()
     ):
         prompt = {str(k): v for k, v in workflow.items()}
-        # 尝试找 positive 引用：KSampler.inputs.positive → CLIPTextEncode
+        # 尝试找 positive/negative 引用：KSampler.inputs → CLIPTextEncode
         for nid, ndata in prompt.items():
             if ndata.get("class_type") in ("KSampler", "KSamplerAdvanced", "SamplerCustom", "SamplerCustomAdvanced"):
-                pos = (ndata.get("inputs") or {}).get("positive")
-                if isinstance(pos, list) and pos:
-                    src_id = str(pos[0])
-                    src = prompt.get(src_id, {})
-                    if src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
-                        positive_ref = (src_id, "text")
-                        break
-        return prompt, positive_ref
+                for role, ref_attr in [("positive", "positive_ref"), ("negative", "negative_ref")]:
+                    slot = (ndata.get("inputs") or {}).get(role)
+                    if isinstance(slot, list) and slot:
+                        src_id = str(slot[0])
+                        src = prompt.get(src_id, {})
+                        if src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
+                            if role == "positive":
+                                positive_ref = (src_id, "text")
+                            else:
+                                negative_ref = (src_id, "text")
+                if positive_ref:
+                    break
+        return prompt, positive_ref, negative_ref
 
     top_nodes = workflow.get("nodes", [])
     top_links = workflow.get("links", [])
@@ -960,6 +966,8 @@ def workflow_to_prompt_api(workflow: Dict[str, Any]) -> Tuple[Dict[str, Any], Op
                     t_low = title.lower()
                     if "positive" in t_low or "[pos]" in t_low or "[prompt]" in t_low:
                         positive_ref = (sub_nid, "text")
+                    elif "negative" in t_low or "[neg]" in t_low:
+                        negative_ref = (sub_nid, "text")
             continue
         prompt[nid] = {
             "inputs": extract_inputs(node, link_map),
@@ -976,60 +984,98 @@ def workflow_to_prompt_api(workflow: Dict[str, Any]) -> Tuple[Dict[str, Any], Op
                     positive_ref = (str(node["id"]), "text")
                     break
 
-    if positive_ref is None:
+    if negative_ref is None:
+        for node in top_nodes:
+            if node.get("type") == "CLIPTextEncode":
+                title = node.get("title", "")
+                t_low = title.lower()
+                if "negative" in t_low or "[neg]" in t_low:
+                    negative_ref = (str(node["id"]), "text")
+                    break
+
+    if positive_ref is None or negative_ref is None:
         for nid, ndata in prompt.items():
             if ndata.get("class_type") in ("KSampler", "KSamplerAdvanced", "SamplerCustom", "SamplerCustomAdvanced"):
-                pos = ndata.get("inputs", {}).get("positive")
-                if isinstance(pos, list) and len(pos) >= 1:
-                    src_id = str(pos[0])
-                    src = prompt.get(src_id)
-                    if src and src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
-                        positive_ref = (src_id, "text")
-                        break
+                if positive_ref is None:
+                    pos = ndata.get("inputs", {}).get("positive")
+                    if isinstance(pos, list) and len(pos) >= 1:
+                        src_id = str(pos[0])
+                        src = prompt.get(src_id)
+                        if src and src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
+                            positive_ref = (src_id, "text")
+                if negative_ref is None:
+                    neg = ndata.get("inputs", {}).get("negative")
+                    if isinstance(neg, list) and len(neg) >= 1:
+                        src_id = str(neg[0])
+                        src = prompt.get(src_id)
+                        if src and src.get("class_type") in ("CLIPTextEncode", "CLIPTextEncodeSDXL"):
+                            negative_ref = (src_id, "text")
+                if positive_ref and negative_ref:
+                    break
 
-    return prompt, positive_ref
+    return prompt, positive_ref, negative_ref
 
 
 # ---------------- LLM ----------------
 
+_TAG_VOCAB = (
+    "Tag vocabulary (use these exact English Danbooru tags when applicable):\n"
+    "Count: 1girl, 1boy, 2girls, multiple_girls, solo\n"
+    "Face: smile, grin, wink, blush, open_mouth, closed_eyes, tears, crying, shy, happy, sad, angry, surprised, expressionless\n"
+    "Hair: blonde_hair, brown_hair, black_hair, white_hair, pink_hair, blue_hair, red_hair, long_hair, short_hair, twintails, ponytail, braid, ahoge, messy_hair, multicolored_hair\n"
+    "Eyes: blue_eyes, green_eyes, brown_eyes, red_eyes, yellow_eyes, purple_eyes, heterochromia, aqua_eyes\n"
+    "Clothing: dress, white_dress, black_dress, skirt, miniskirt, shirt, bikini, school_uniform, maid, kimono, swimsuit, hoodie, jacket, cape, armor, gloves, thighhighs, knee_highs, socks, shoes, boots, hat, ribbon, bow, glasses, stockings, choker, necklace, earrings, crown, headphones\n"
+    "Pose: standing, sitting, lying, kneeling, looking_at_viewer, looking_away, looking_back, full_body, upper_body, portrait, cowboy_shot, close-up, from_side, from_below\n"
+    "Action: kissing, hugging, sleeping, eating, drinking, reading, running, jumping, dancing, fighting, bathing, stretching, holding, peace_sign\n"
+    "Background: outdoors, indoors, beach, ocean, forest, mountain, city, classroom, bedroom, rooftop, night, day, sunset, sunrise, sky, clouds, rain, snow, cherry_blossoms, flowers, water, lake\n"
+    "Quality: masterpiece, best_quality, highres, absurdres, detailed, realistic, anime_style, depth_of_field, lens_flare, sparkle\n"
+    "Medium: photo, illustration, painting, watercolor, pixel_art, 3d, chibi, comic, sketch\n"
+    "Use any standard Danbooru tag that fits, even if not listed above."
+)
+
+_LLM_OUTPUT_RULE = (
+    "Output format — you MUST output exactly two lines, nothing else:\n"
+    "POSITIVE: tag1, tag2, tag3, ...\n"
+    "NEGATIVE: tag1, tag2, tag3, ...\n"
+    "No explanation. No Chinese. No markdown. Only the two lines above."
+)
+
+_LLM_NEGATIVE_HINT = (
+    "Negative tags to choose from (pick what fits): "
+    "worst quality, low quality, lowest quality, blurry, bad anatomy, bad hands, missing fingers, "
+    "extra digits, fewer digits, cropped, watermark, signature, text, error, jpeg artifacts, ugly, "
+    "deformed, disfigured, mutation, mutated, extra limbs, malformed limbs, fused fingers, "
+    "too many fingers, long neck, poorly drawn hands, poorly drawn face, out of frame"
+)
+
+
 async def translate_prompt(
     prompt: str,
     original_prompt: Optional[str] = None,
+    negative_prompt: Optional[str] = None,
     on_chunk: Optional[Any] = None,
-) -> str:
-    import re as _re
+) -> Tuple[str, str]:
+    """返回 (positive, negative) 元组。"""
+    neg_ctx = ""
+    if negative_prompt:
+        neg_ctx = f"\n\nCurrent negative tags (improve or replace as needed):\n{negative_prompt}"
     if original_prompt:
         system = (
-            "You are a Chinese-to-English dictionary for Danbooru image tags.\n"
-            "The user provides original tags and a new description.\n"
-            "Translate the new description into standard English Danbooru tags, "
-            "then merge them into the original tags.\n"
-            "Keep all original tags that are not asked to change.\n"
-            "Output ONLY the final comma-separated tags. No explanation. No Chinese in output."
+            "You are a Stable Diffusion prompt expert.\n"
+            "The user gives you existing tags and a modification request in Chinese.\n"
+            "Merge the modification into the existing tags. Keep unchanged tags.\n"
+            "Also generate appropriate negative tags.\n\n"
+            f"{_TAG_VOCAB}\n\n{_LLM_NEGATIVE_HINT}\n\n{_LLM_OUTPUT_RULE}"
         )
-        user = f"Original prompt:\n{original_prompt}\n\nNew description:\n{prompt}\n\nGenerate the final prompt:"
+        user = f"Current positive tags:\n{original_prompt}{neg_ctx}\n\nModification:\n{prompt}"
     else:
         system = (
-            "You are a Chinese-to-English dictionary for Danbooru image tags.\n"
-            "For each Chinese word or phrase in the input, output the matching English Danbooru tag.\n"
-            "Output all tags on one line separated by commas. No other text.\n\n"
-            "Tag vocabulary reference (use these exact tags when applicable):\n"
-            "- General: 1girl, 1boy, 2girls, multiple_girls, hetero, yuri, solo\n"
-            "- Face/Expression: smile, grin, wink, blush, open_mouth, closed_eyes, half-closed_eyes, ahegao, tears, crying, shy, embarrassed, happy, sad, angry, surprised, expressionless\n"
-            "- Hair: blonde_hair, brown_hair, black_hair, white_hair, pink_hair, blue_hair, red_hair, long_hair, short_hair, twintails, ponytail, braid, messy_hair, hair_over_one_eye, sidelocks, ahoge, multicolored_hair\n"
-            "- Eyes: blue_eyes, green_eyes, brown_eyes, red_eyes, yellow_eyes, purple_eyes, heterochromia, aqua_eyes, slit_pupils, glowing_eyes\n"
-            "- Body: breasts, large_breasts, huge_breasts, small_breasts, nipples, penis, vagina, ass, feet, soles, toes, navel, collarbone, armpits, wide_hips, thick_thighs, slim_body, muscular, tall, short\n"
-            "- Clothing: dress, white_dress, black_dress, short_dress, long_dress, skirt, miniskirt, shirt, bikini, school_uniform, serafuku, labcoat, apron, hoodie, jacket, cape, armor, gloves, thighhighs, knee_highs, socks, shoes, boots, heels, sneakers, hat, ribbon, bow, hair_ornament, choker, necklace, earrings, glasses, sunglasses, swimsuit, leotard, bodysuit, stockings, garter_belt, pantyhose, underwear, bra, panties, towel, robe, kimono, maid, headdress, crown, headphones\n"
-            "- Poses: standing, sitting, lying, kneeling, squatting, bent_over, spread_legs, arms_up, hand_on_hip, hand_on_own_chest, crossed_arms, arms_behind_back, peace_sign, v, pointing, covering_mouth, holding, looking_at_viewer, looking_away, looking_back, from_behind, from_below, from_side, upper_body, portrait, close-up, full_body, cowboy_shot\n"
-            "- Actions: sex, vaginal, anal, oral, footjob, handjob, kissing, groping, masturbation, squirting, ejaculation, cuddling, hugging, sleeping, eating, drinking, reading, running, jumping, dancing, fighting, crying, laughing, smoking, bathing, stretching\n"
-            "- States: nude, topless, bottomless, cum, wet, torn_clothes, covered, covered_in_cum, messy, sweat, pregnancy\n"
-            "- Background/Setting: outdoors, indoors, beach, ocean, forest, mountain, city, classroom, bedroom, bathroom, kitchen, rooftop, night, day, sunset, sunrise, sky, clouds, rain, snow, cherry_blossoms, flowers, water, lake, river\n"
-            "- Quality: masterpiece, best_quality, highres, absurdres, very_aweome, detailed, realistic, anime_style, sketch, monochrome, greyscale, chromatic_aberration, depth_of_field, lens_flare, motion_blare, speed_lines, sparkle, heart, star, speech_bubble\n"
-            "- Medium: photo, illustration, painting, watercolor_(medium), pixel_art, 3d, chibi, comic, sketch_(medium)\n\n"
-            "The list above is a reference only — use any standard Danbooru tag that fits, even if not listed.\n"
-            "Output: tags only, one line, no other text."
+            "You are a Stable Diffusion prompt expert.\n"
+            "Convert the user's Chinese description into English Danbooru tags.\n"
+            "Also generate appropriate negative tags.\n\n"
+            f"{_TAG_VOCAB}\n\n{_LLM_NEGATIVE_HINT}\n\n{_LLM_OUTPUT_RULE}"
         )
-        user = prompt
+        user = f"{prompt}{neg_ctx}"
 
     cfg = _llm_config
     provider = cfg.get("provider", "local")
@@ -1045,7 +1091,18 @@ async def translate_prompt(
         result = await _llm_openai_compat(system, user, cfg.get("local_endpoint") or LMS_API,
                                           "", "", on_chunk, use_stream)
 
-    return result
+    print(f"[LLM] provider={provider} raw={result[:500]}")
+    return _parse_pos_neg(result)
+
+
+def _parse_pos_neg(text: str) -> Tuple[str, str]:
+    """从 LLM 响应中解析 POSITIVE/NEGATIVE 两行。"""
+    import re as _re
+    pos_m = _re.search(r"POSITIVE:\s*(.+?)(?:\n|$)", text)
+    neg_m = _re.search(r"NEGATIVE:\s*(.+?)(?:\n|$)", text)
+    positive = pos_m.group(1).strip() if pos_m else text.strip()
+    negative = neg_m.group(1).strip() if neg_m else ""
+    return positive, negative
 
 
 async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Optional[Any],
@@ -1079,13 +1136,14 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
 
     chunks: List[str] = []
     thought_chunks: List[str] = []
+    _debug_info: List[str] = []
     async with httpx.AsyncClient(timeout=120) as client:
         if use_stream:
             url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
             async with client.stream("POST", url, json=body) as r:
                 if r.status_code >= 400:
                     text = await r.aread()
-                    raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
+                    raise RuntimeError(f"LLM HTTP {r.status_code}: {text.decode()[:500]}")
                 async for line in r.aiter_lines():
                     if not line or not line.startswith("data:"):
                         continue
@@ -1096,10 +1154,24 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                         obj = json.loads(data)
                     except Exception:
                         continue
+                    pf = obj.get("promptFeedback") or {}
+                    block_reason = pf.get("blockReason", "")
+                    if block_reason:
+                        raise RuntimeError(f"Google 内容过滤拦截: {block_reason}（提示词可能包含敏感词，请修改后重试）")
                     candidates = obj.get("candidates") or []
                     if not candidates:
+                        _debug_info.append(f"no candidates, raw={json.dumps(obj, ensure_ascii=False)[:300]}")
                         continue
-                    parts = (candidates[0].get("content") or {}).get("parts") or []
+                    cand = candidates[0]
+                    finish_reason = cand.get("finishReason", "")
+                    if finish_reason and finish_reason != "STOP":
+                        _debug_info.append(f"finishReason={finish_reason}")
+                    safety = cand.get("safetyRatings") or []
+                    if safety:
+                        blocked = [s for s in safety if s.get("blocked")]
+                        if blocked:
+                            _debug_info.append(f"safety_blocked={json.dumps(blocked, ensure_ascii=False)[:200]}")
+                    parts = (cand.get("content") or {}).get("parts") or []
                     for p in parts:
                         piece = p.get("text") or ""
                         if not piece:
@@ -1118,9 +1190,21 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
             url = f"{_GOOGLE_API_BASE}/models/{model}:generateContent?key={api_key}"
             r = await client.post(url, json=body)
             if r.status_code >= 400:
-                raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {r.text[:500]}")
+                raise RuntimeError(f"LLM HTTP {r.status_code}: {r.text[:500]}")
             resp = r.json()
+            pf = resp.get("promptFeedback") or {}
+            block_reason = pf.get("blockReason", "")
+            if block_reason:
+                raise RuntimeError(f"Google 内容过滤拦截: {block_reason}（提示词可能包含敏感词，请修改后重试）")
             for cand in resp.get("candidates") or []:
+                finish_reason = cand.get("finishReason", "")
+                if finish_reason and finish_reason != "STOP":
+                    _debug_info.append(f"finishReason={finish_reason}")
+                safety = cand.get("safetyRatings") or []
+                if safety:
+                    blocked = [s for s in safety if s.get("blocked")]
+                    if blocked:
+                        _debug_info.append(f"safety_blocked={json.dumps(blocked, ensure_ascii=False)[:200]}")
                 for p in (cand.get("content") or {}).get("parts") or []:
                     piece = p.get("text") or ""
                     if not piece:
@@ -1130,7 +1214,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                     else:
                         chunks.append(piece)
     full = "".join(chunks).strip()
-    if thought_chunks:
+    if thought_chunks and "POSITIVE:" not in full:
         import re as _re
         thought_text = "".join(thought_chunks)
         # 从思维链中提取被反引号包裹的 tag 列表，取逗号最多的
@@ -1141,7 +1225,9 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
             if not full or best.count(",") > full.count(","):
                 full = best
     if not full:
-        raise RuntimeError("Google LLM 返回空内容")
+        detail = "; ".join(_debug_info) if _debug_info else "无额外信息"
+        thought_preview = "".join(thought_chunks)[:200] if thought_chunks else "(无)"
+        raise RuntimeError(f"Google LLM 返回空内容 | 调试: {detail} | 思维链前200字: {thought_preview}")
     return full
 
 
@@ -1560,7 +1646,7 @@ async def api_output_fork(payload: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(400, f"workflow 元信息解析失败: {e}")
 
-    pd, positive_ref = workflow_to_prompt_api(wf_json)
+    pd, positive_ref, negative_ref = workflow_to_prompt_api(wf_json)
     res = detect_default_resolution(pd)
     builtin_prompt = ""
     if positive_ref:
@@ -1568,6 +1654,12 @@ async def api_output_fork(payload: Dict[str, Any]):
         v = pd.get(nid, {}).get("inputs", {}).get(inp, "")
         if isinstance(v, str):
             builtin_prompt = v.strip()
+    builtin_negative_prompt = ""
+    if negative_ref:
+        nid, inp = negative_ref
+        v = pd.get(nid, {}).get("inputs", {}).get(inp, "")
+        if isinstance(v, str):
+            builtin_negative_prompt = v.strip()
     summary = summarize_workflow(wf_json) if "nodes" in wf_json and isinstance(wf_json.get("nodes"), list) else {
         "node_count": len(pd), "link_count": 0, "group_count": 0, "types": {},
     }
@@ -1578,6 +1670,7 @@ async def api_output_fork(payload: Dict[str, Any]):
         "default_width": res[0] if res else None,
         "default_height": res[1] if res else None,
         "builtin_prompt": builtin_prompt,
+        "builtin_negative_prompt": builtin_negative_prompt,
         "loras": extract_loras(pd),
         "source_image": rel,
     }
@@ -1649,7 +1742,7 @@ async def api_current(path: Optional[str] = None):
         data = await get_workflow(path)
     except Exception as e:
         return {"path": path, "error": str(e), "thumbnail": has_thumb}
-    pd, positive_ref = workflow_to_prompt_api(data)
+    pd, positive_ref, negative_ref = workflow_to_prompt_api(data)
     res = detect_default_resolution(pd)
     builtin_prompt = ""
     if positive_ref:
@@ -1657,6 +1750,12 @@ async def api_current(path: Optional[str] = None):
         v = pd.get(nid, {}).get("inputs", {}).get(inp, "")
         if isinstance(v, str):
             builtin_prompt = v.strip()
+    builtin_negative_prompt = ""
+    if negative_ref:
+        nid, inp = negative_ref
+        v = pd.get(nid, {}).get("inputs", {}).get(inp, "")
+        if isinstance(v, str):
+            builtin_negative_prompt = v.strip()
     return {
         "path": path,
         "summary": summarize_workflow(data),
@@ -1664,6 +1763,7 @@ async def api_current(path: Optional[str] = None):
         "default_width": res[0] if res else None,
         "default_height": res[1] if res else None,
         "builtin_prompt": builtin_prompt,
+        "builtin_negative_prompt": builtin_negative_prompt,
         "loras": extract_loras(pd),
         "lora_link": find_lora_link(path),
     }
@@ -1838,11 +1938,12 @@ async def api_translate(payload: Dict[str, Any]):
     if not prompt:
         raise HTTPException(400, "prompt required")
     try:
-        out = await translate_prompt(
+        positive, negative = await translate_prompt(
             prompt,
             original_prompt=payload.get("original_prompt") or None,
+            negative_prompt=payload.get("negative_prompt") or None,
         )
-        return {"text": out}
+        return {"text": positive, "negative": negative}
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -1876,6 +1977,7 @@ class RunRequest(BaseModel):
     width: Optional[int] = None
     height: Optional[int] = None
     style_tags: str = ""
+    negative_prompt: str = ""
 
 
 # 单一并发锁
@@ -2052,7 +2154,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
     else:
         await emit(ws, {"type": "log", "message": f"[1/4] 加载工作流 {path}"})
         data = await get_workflow(path)
-    prompt_dict, positive_ref = workflow_to_prompt_api(data)
+    prompt_dict, positive_ref, negative_ref = workflow_to_prompt_api(data)
     if not positive_ref:
         await emit(ws, {"type": "error", "message": "未找到正向 CLIPTextEncode 节点"})
         return
@@ -2064,6 +2166,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
     if style_tags:
         await emit(ws, {"type": "log", "message": f"画风词条：{style_tags}"})
 
+    llm_negative = ""
     if req.nl_prompt:
         await emit(ws, {"type": "log", "message": f"[2/4] LLM {'改写' if req.rewrite else '翻译'}中..."})
         await emit(ws, {"type": "llm_start"})
@@ -2074,17 +2177,17 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
 
         base = req.direct_prompt
         if req.rewrite and base:
-            translated = await translate_prompt(
-                req.nl_prompt, original_prompt=base, on_chunk=_on_chunk,
+            llm_positive, llm_negative = await translate_prompt(
+                req.nl_prompt, original_prompt=base, negative_prompt=req.negative_prompt, on_chunk=_on_chunk,
             )
-            sd_prompt = translated
+            sd_prompt = llm_positive
         else:
-            translated = await translate_prompt(
-                req.nl_prompt, on_chunk=_on_chunk,
+            llm_positive, llm_negative = await translate_prompt(
+                req.nl_prompt, negative_prompt=req.negative_prompt, on_chunk=_on_chunk,
             )
-            parts = [p for p in (req.direct_prompt, translated) if p]
+            parts = [p for p in (req.direct_prompt, llm_positive) if p]
             sd_prompt = sep.join(parts)
-        await emit(ws, {"type": "llm_done", "text": translated})
+        await emit(ws, {"type": "llm_done", "text": llm_positive, "negative": llm_negative})
     else:
         sd_prompt = req.direct_prompt
         await emit(ws, {"type": "log", "message": "[2/4] 跳过 LLM"})
@@ -2097,6 +2200,12 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
         return
 
     prompt_dict[node_id]["inputs"][input_name] = sd_prompt
+
+    if negative_ref:
+        neg_text = req.negative_prompt.strip() or llm_negative if req.nl_prompt else req.negative_prompt.strip()
+        if neg_text:
+            neg_node_id, neg_input_name = negative_ref
+            prompt_dict[neg_node_id]["inputs"][neg_input_name] = neg_text
 
     if req.width and req.height and req.width > 0 and req.height > 0:
         presets = _resolutions.get("presets", [])
