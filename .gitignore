@@ -9,6 +9,7 @@ web/resolutions.json
 web/llm_config.json
 web/announcement.json
 web/reports.json
+web/prompt_config.json
 .claude/settings.local.json
 .vscode/settings.json
 
