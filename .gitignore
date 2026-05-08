@@ -1,16 +1,29 @@
+# ── 环境 & 编辑器 ──
+.env
+.venv
+.claude/settings.local.json
+.vscode/settings.json
+__pycache__
+
+# ── 开发 ──
 dev
+
+# ── 运行时数据 ──
 web/__pycache__
 web/creator_ips.txt
 web/banned_ips.txt
 web/featured.txt
+web/reports.json
 web/limits.json
 web/styles.json
 web/resolutions.json
 web/llm_config.json
 web/announcement.json
-web/reports.json
-web/prompt_config.json
-.claude/settings.local.json
-.vscode/settings.json
+web/maintenance.json
+web/custom_head.json
+web/workflow_meta.json
 
-.env
+# ── 运行时图片 & 资源 ──
+web/thumbnails
+web/style_thumbnails
+web/lora_links
