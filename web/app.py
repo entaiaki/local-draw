@@ -3184,7 +3184,7 @@ async def draw_admin_workflow_rename(payload: Dict[str, Any], user: dict = Depen
     old_path.rename(new_path)
     if old in _workflow_meta:
         _workflow_meta[new] = _workflow_meta.pop(old)
-        await _save_workflow_meta_file(_workflow_meta)
+        _save_workflow_meta_file(_workflow_meta)
     return {"ok": True}
 
 
@@ -3226,7 +3226,7 @@ async def draw_admin_workflow_meta_set(payload: Dict[str, Any], user: dict = Dep
             entry["category"] = cat
         if entry:
             cleaned[wf] = entry
-    if not await _save_workflow_meta_file(cleaned):
+    if not _save_workflow_meta_file(cleaned):
         raise HTTPException(500, "写入 workflow_meta.json 失败")
     _workflow_meta.clear()
     _workflow_meta.update(cleaned)
