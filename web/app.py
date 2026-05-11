@@ -71,15 +71,11 @@ LIMITS_FILE = Path(__file__).parent / "limits.json"
 ANNOUNCEMENT_FILE = Path(__file__).parent / "announcement.json"
 LLM_CONFIG_FILE = Path(__file__).parent / "llm_config.json"
 REPORTS_FILE = Path(__file__).parent / "reports.json"
-STYLES_FILE = Path(__file__).parent / "styles.json"
-STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
-RESOLUTIONS_FILE = Path(__file__).parent / "resolutions.json"
-MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
-RECOMMEND_FILE = Path(__file__).parent / "recommendations.json"
+RECOMMENDATIONS_FILE = Path(__file__).parent / "recommendations.json"
 _featured_lock = asyncio.Lock()
-_recommend_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
+_recommendations_lock = asyncio.Lock()
 _styles_lock = asyncio.Lock()
 _announcement_lock = asyncio.Lock()
 _llm_config_lock = asyncio.Lock()
@@ -451,9 +447,9 @@ async def _auto_dismiss_reports_for_image(image_path: str):
 
 
 def _load_recommendations() -> list:
-    if RECOMMEND_FILE.is_file():
+    if RECOMMENDATIONS_FILE.is_file():
         try:
-            data = json.loads(RECOMMEND_FILE.read_text(encoding="utf-8"))
+            data = json.loads(RECOMMENDATIONS_FILE.read_text(encoding="utf-8"))
             if isinstance(data, list):
                 return data
         except Exception:
@@ -461,13 +457,13 @@ def _load_recommendations() -> list:
     return []
 
 
-async def _save_recommendations(recs: list) -> bool:
-    async with _recommend_lock:
+async def _save_recommendations(recommendations: list) -> bool:
+    async with _recommendations_lock:
         try:
-            tmp = RECOMMEND_FILE.with_suffix(".json.tmp")
+            tmp = RECOMMENDATIONS_FILE.with_suffix(".json.tmp")
             with open(tmp, "w", encoding="utf-8") as f:
-                json.dump(recs, f, ensure_ascii=False, indent=2)
-            os.replace(tmp, RECOMMEND_FILE)
+                json.dump(recommendations, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, RECOMMENDATIONS_FILE)
             return True
         except Exception:
             return False
@@ -1674,6 +1670,55 @@ async def draw_my_images(user: dict = Depends(get_current_user)):
         results.append({"path": rel, "mtime": mt})
     results.sort(key=lambda x: x["mtime"], reverse=True)
     return {"items": results[:500], "total": len(results)}
+
+
+@app.delete("/api/draw/my-images")
+async def draw_my_images_delete(payload: Dict[str, Any], user: dict = Depends(get_current_user)):
+    """删除当前用户的一张图片。"""
+    rel = (payload or {}).get("path", "").strip()
+    if not rel:
+        raise HTTPException(400, "path required")
+    key = rel.replace("\\", "/")
+
+    # 验证所有权
+    uid_str = str(user["id"])
+    owner = _load_creator_map().get(key)
+    if owner != uid_str:
+        raise HTTPException(403, "无权删除此图片")
+
+    p = _resolve_output_path(rel)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    try:
+        p.unlink()
+    except Exception as e:
+        raise HTTPException(500, f"删除失败: {e}")
+
+    # 从 creator map 移除
+    async with _creator_map_lock:
+        try:
+            if CREATOR_MAP_FILE.is_file():
+                kept = []
+                for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                    if not ln or "\t" not in ln:
+                        continue
+                    if ln.split("\t", 1)[0] == key:
+                        continue
+                    kept.append(ln)
+                tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
+                with open(tmp, "w", encoding="utf-8") as f:
+                    f.write("\n".join(kept) + ("\n" if kept else ""))
+                os.replace(tmp, CREATOR_MAP_FILE)
+        except Exception:
+            pass
+    # 同步从精选清掉
+    feats = _read_featured()
+    if rel in feats:
+        feats = [x for x in feats if x != rel]
+        await _write_featured(feats)
+    # 自动忽略该图所有待处理举报
+    await _auto_dismiss_reports_for_image(rel)
+    return {"ok": True}
 
 
 @app.get("/api/output/featured")
@@ -3478,6 +3523,98 @@ async def draw_admin_llm_config_test(user: dict = Depends(require_admin)):
         return {"ok": True, "provider": provider, "reply": result.strip()[:500]}
     except Exception as e:
         return {"ok": False, "provider": provider, "error": str(e)[:500]}
+
+
+# ==================== 自荐管理接口 ====================
+
+@app.post("/api/draw/recommend")
+async def draw_recommend(payload: Dict[str, Any], user: dict = Depends(get_current_user)):
+    """用户自荐图片。"""
+    image_path = str((payload or {}).get("image_path", "")).strip()
+    if not image_path:
+        raise HTTPException(400, "image_path required")
+    reason = str((payload or {}).get("reason", "")).strip()
+    key = image_path.replace("\\", "/")
+
+    # 验证图片存在
+    try:
+        _resolve_output_path(key)
+    except HTTPException:
+        raise HTTPException(404, "image not found")
+
+    # 验证所有权
+    owner = _load_creator_map().get(key)
+    if owner != str(user["id"]):
+        raise HTTPException(403, "只能自荐自己的图片")
+
+    rec: dict = {
+        "id": str(uuid.uuid4()),
+        "image_path": key,
+        "user_id": user["id"],
+        "timestamp": _time.time(),
+        "status": "pending",
+        "user_reason": reason or None,
+        "admin_reason": None,
+    }
+
+    recommendations = _load_recommendations()
+    recommendations.insert(0, rec)
+    await _save_recommendations(recommendations)
+    return {"ok": True, "recommendation": rec}
+
+
+@app.get("/api/draw/my-recommendations")
+async def draw_my_recommendations(user: dict = Depends(get_current_user)):
+    """当前用户的自荐记录。"""
+    uid = user["id"]
+    items = [r for r in _load_recommendations() if r.get("user_id") == uid]
+    items.sort(key=lambda r: r.get("timestamp", 0), reverse=True)
+    return {"items": items, "total": len(items)}
+
+
+@app.get("/api/draw/admin/recommendations")
+async def draw_admin_recommendations(user: dict = Depends(require_admin)):
+    """管理员查看所有自荐，按时间倒序。"""
+    items = _load_recommendations()
+    items.sort(key=lambda r: r.get("timestamp", 0), reverse=True)
+    return {"items": items, "total": len(items)}
+
+
+@app.post("/api/draw/admin/recommendations/resolve")
+async def draw_admin_recommendations_resolve(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    """管理员审核自荐：通过或拒绝。"""
+    rec_id = str((payload or {}).get("rec_id", "")).strip()
+    action = str((payload or {}).get("action", "")).strip()
+    reason = str((payload or {}).get("reason", "")).strip()
+
+    if not rec_id:
+        raise HTTPException(400, "rec_id required")
+    if action not in ("approve", "reject"):
+        raise HTTPException(400, "action must be 'approve' or 'reject'")
+
+    recommendations = _load_recommendations()
+    target = None
+    for r in recommendations:
+        if r.get("id") == rec_id:
+            target = r
+            break
+
+    if not target:
+        raise HTTPException(404, "recommendation not found")
+
+    target["status"] = "approved" if action == "approve" else "rejected"
+    target["admin_reason"] = reason or None
+
+    # 如果通过，加入精选
+    if action == "approve":
+        feats = _read_featured()
+        key = target["image_path"]
+        if key not in feats:
+            feats.insert(0, key)
+            await _write_featured(feats)
+
+    await _save_recommendations(recommendations)
+    return {"ok": True, "recommendation": target}
 
 
 if __name__ == "__main__":
