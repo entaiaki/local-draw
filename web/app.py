@@ -1,5 +1,5 @@
 """
-ComfyUI 网页版控制台
+ComfyUI 网页版控制台 — 纯 API 后端（JWT 鉴权）
 
 启动: uvicorn web.app:app --host 0.0.0.0 --port 8080 --reload
 """
@@ -13,27 +13,41 @@ LMS_PORT = 1234
 WEB_HOST = "127.0.0.1"
 WEB_PORT = 8080
 
-# ComfyUI 输出目录（只读浏览）
+# ComfyUI 输出目录（只读浏览，仅存放精选图片）
 OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
+# 归档目录（非精选图片迁移至此，ComfyUI 不会索引）
+ARCHIVE_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\archived_output"
 # ComfyUI 工作流目录（自动扫描）
 COMFYUI_WORKFLOWS_DIR = r"C:\Users\acofo\Documents\ComfyUI\user\default\workflows"
 # ===================================
 
 import asyncio
+import base64
 import json
 import os
 import random
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 import httpx
 import websockets
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, UploadFile
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, UploadFile, Depends
 from fastapi.responses import FileResponse, Response
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from jose import jwt, JWTError
 from pydantic import BaseModel
+
+# JWT 鉴权（与论坛共享同一密钥）
+JWT_SECRET = os.environ.get("JWT_SECRET", "")
+JWT_ALGORITHM = "HS256"
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("draw")
+logger.info("[启动] JWT_SECRET 长度=%d, 前4字符=%s", len(JWT_SECRET), JWT_SECRET[:4] if JWT_SECRET else "(空)")
 
 COMFYUI_API = f"http://{COMFYUI_HOST}:{COMFYUI_PORT}"
 LMS_API = f"http://{LMS_HOST}:{LMS_PORT}"
@@ -43,19 +57,15 @@ CLIENT_ID = uuid.uuid4().hex
 
 STATE_FILE = Path(__file__).parent / "state.json"
 OUTPUT_DIR = Path(OUTPUT_DIR_STR)
-STATIC_DIR = Path(__file__).parent / "static"
+ARCHIVE_DIR = Path(ARCHIVE_DIR_STR)
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 LORA_LINKS_DIR = Path(__file__).parent / "lora_links"
 WORKFLOW_META_FILE = Path(__file__).parent / "workflow_meta.json"
-CREATOR_MAP_FILE = Path(__file__).parent / "creator_ips.txt"
+CREATOR_MAP_FILE = Path(__file__).parent / "creator_users.txt"
 _creator_map_lock = asyncio.Lock()
 
-# ---------------- 管理员 / 封禁列表 / 精选 ----------------
-# 注意：本服务自身不做任何鉴权，/admin 与 /api/admin/* 公开可达。
-# 部署时务必在反向代理（Cloudflare Access、nginx auth_basic、IP 白名单等）
-# 上做访问控制；详见 README「部署与鉴权」一节。
-BANNED_IPS_FILE = Path(__file__).parent / "banned_ips.txt"
+# ---------------- 精选 / 限流 / 报告 ----------------
 FEATURED_FILE = Path(__file__).parent / "featured.txt"
 LIMITS_FILE = Path(__file__).parent / "limits.json"
 ANNOUNCEMENT_FILE = Path(__file__).parent / "announcement.json"
@@ -65,8 +75,6 @@ STYLES_FILE = Path(__file__).parent / "styles.json"
 STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
 RESOLUTIONS_FILE = Path(__file__).parent / "resolutions.json"
 MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
-CUSTOM_HEAD_FILE = Path(__file__).parent / "custom_head.json"
-_banned_lock = asyncio.Lock()
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
@@ -74,9 +82,35 @@ _styles_lock = asyncio.Lock()
 _announcement_lock = asyncio.Lock()
 _llm_config_lock = asyncio.Lock()
 _maintenance_lock = asyncio.Lock()
-_custom_head_lock = asyncio.Lock()
 _REPORT_RATE: Dict[str, List[float]] = {}
-_RATE_LAST_TS: Dict[str, float] = {}  # client_ip -> 上次开始生图的时间戳（用于生图冷却）
+_RATE_LAST_TS: Dict[str, float] = {}  # user_id -> 上次开始生图的时间戳（用于生图冷却）
+
+# ---------------- 本地画图用户数据（封禁 / 统计） ----------------
+DRAW_USERS_FILE = Path(__file__).parent / "draw_users.json"
+_draw_users_lock = asyncio.Lock()
+
+DEFAULT_DRAW_USERS: Dict[str, Any] = {"banned": [], "stats": {}}
+
+
+def _load_draw_users() -> Dict[str, Any]:
+    if DRAW_USERS_FILE.is_file():
+        try:
+            return json.loads(DRAW_USERS_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return dict(DEFAULT_DRAW_USERS)
+
+
+async def _save_draw_users(data: Dict[str, Any]):
+    tmp = DRAW_USERS_FILE.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(tmp, DRAW_USERS_FILE)
+
+
+def is_user_draw_banned(user_id: int) -> bool:
+    data = _load_draw_users()
+    return user_id in data.get("banned", [])
+
 
 DEFAULT_LIMITS = {
     "gen_cooldown_sec": 30,
@@ -128,7 +162,6 @@ async def _save_limits(new_limits: Dict[str, int]) -> bool:
             return True
         except Exception:
             return False
-
 
 
 # ---------------- 公告 ----------------
@@ -195,40 +228,6 @@ async def _save_maintenance(state: Dict[str, Any]) -> bool:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(state, f, ensure_ascii=False, indent=2)
             os.replace(tmp, MAINTENANCE_FILE)
-            return True
-        except Exception:
-            return False
-
-
-# ---------------- 自定义 Head ----------------
-DEFAULT_CUSTOM_HEAD: Dict[str, Any] = {"enabled": False, "html": ""}
-
-
-def _load_custom_head() -> Dict[str, Any]:
-    if not CUSTOM_HEAD_FILE.is_file():
-        return dict(DEFAULT_CUSTOM_HEAD)
-    try:
-        d = json.loads(CUSTOM_HEAD_FILE.read_text(encoding="utf-8"))
-        if not isinstance(d, dict):
-            return dict(DEFAULT_CUSTOM_HEAD)
-        return {
-            "enabled": bool(d.get("enabled", False)),
-            "html": str(d.get("html") or ""),
-        }
-    except Exception:
-        return dict(DEFAULT_CUSTOM_HEAD)
-
-
-_custom_head: Dict[str, Any] = _load_custom_head()
-
-
-async def _save_custom_head(state: Dict[str, Any]) -> bool:
-    async with _custom_head_lock:
-        try:
-            tmp = CUSTOM_HEAD_FILE.with_suffix(".json.tmp")
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump(state, f, ensure_ascii=False, indent=2)
-            os.replace(tmp, CUSTOM_HEAD_FILE)
             return True
         except Exception:
             return False
@@ -459,43 +458,6 @@ def _client_ip_from_request(request: Request) -> str:
     )
 
 
-def _read_banned_ips() -> list:
-    """返回封禁 IP 列表，保持文件中的顺序（最后一个是最新封禁的）。"""
-    if not BANNED_IPS_FILE.is_file():
-        return []
-    try:
-        seen = []
-        for ln in BANNED_IPS_FILE.read_text(encoding="utf-8").splitlines():
-            ip = ln.strip()
-            if ip and not ip.startswith("#"):
-                seen.append(ip)
-        return seen
-    except Exception:
-        return []
-
-
-def _read_banned_ips_set() -> set:
-    return set(_read_banned_ips())
-
-
-async def _write_banned_ips(ips: list) -> bool:
-    async with _banned_lock:
-        try:
-            tmp = BANNED_IPS_FILE.with_suffix(".txt.tmp")
-            with open(tmp, "w", encoding="utf-8") as f:
-                f.write("\n".join(ips) + ("\n" if ips else ""))
-            os.replace(tmp, BANNED_IPS_FILE)
-            return True
-        except Exception:
-            return False
-
-
-def is_ip_banned(ip: str) -> bool:
-    if not ip:
-        return False
-    return ip in _read_banned_ips_set()
-
-
 def _read_featured() -> List[str]:
     """精选图片相对路径列表，按管理员设定顺序保留。"""
     if not FEATURED_FILE.is_file():
@@ -527,12 +489,14 @@ async def _write_featured(items: List[str]) -> bool:
 
 
 def _creator_key(p: Path) -> str:
-    """相对 OUTPUT_DIR 的正斜杠路径。"""
-    try:
-        rel = p.resolve().relative_to(OUTPUT_DIR.resolve())
-    except Exception:
-        rel = Path(p.name)
-    return str(rel).replace("\\", "/")
+    """相对 OUTPUT_DIR 或 ARCHIVE_DIR 的正斜杠路径。"""
+    for base_dir in (OUTPUT_DIR, ARCHIVE_DIR):
+        try:
+            rel = p.resolve().relative_to(base_dir.resolve())
+            return str(rel).replace("\\", "/")
+        except ValueError:
+            continue
+    return p.name
 
 
 def _creator_map_get(rel: str) -> str:
@@ -552,9 +516,9 @@ def _creator_map_get(rel: str) -> str:
     return ""
 
 
-async def _creator_map_set(rel: str, ip: str) -> bool:
-    """每行 `<rel>\\t<ip>`，同 key 去重保留最新；原子替换。"""
-    if not rel or not ip:
+async def _creator_map_set(rel: str, user_id: int) -> bool:
+    """每行 `<rel>\\t<user_id>`，同 key 去重保留最新；原子替换。"""
+    if not rel or not user_id:
         return False
     async with _creator_map_lock:
         try:
@@ -568,7 +532,7 @@ async def _creator_map_set(rel: str, ip: str) -> bool:
                         if line.split("\t", 1)[0] == rel:
                             continue
                         lines.append(line)
-            lines.append(f"{rel}\t{ip}")
+            lines.append(f"{rel}\t{user_id}")
             tmp = CREATOR_MAP_FILE.with_suffix(".txt.tmp")
             with open(tmp, "w", encoding="utf-8") as f:
                 f.write("\n".join(lines) + "\n")
@@ -580,65 +544,25 @@ async def _creator_map_set(rel: str, ip: str) -> bool:
 app = FastAPI(title="自然语言生图")
 # 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
 app.add_middleware(GZipMiddleware, minimum_size=512, compresslevel=4)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-# 维护模式拦截
-_MAINTENANCE_TEMPLATE: str = ""
-_MAINTENANCE_TEMPLATE_MTIME: float = 0
-
-
-def _get_maintenance_html(message: str) -> str:
-    global _MAINTENANCE_TEMPLATE, _MAINTENANCE_TEMPLATE_MTIME
-    tpl_path = STATIC_DIR / "maintenance.html"
-    try:
-        mt = tpl_path.stat().st_mtime
-        if mt != _MAINTENANCE_TEMPLATE_MTIME:
-            _MAINTENANCE_TEMPLATE = tpl_path.read_text(encoding="utf-8")
-            _MAINTENANCE_TEMPLATE_MTIME = mt
-    except Exception:
-        return f"<html><body><h1>站点维护中</h1><p>{message}</p></body></html>"
-    safe = message.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
-    html = _MAINTENANCE_TEMPLATE.replace("{{MESSAGE}}", safe)
-    ch = _custom_head
-    if ch.get("enabled") and ch.get("html", "").strip():
-        html = html.replace("<head>", "<head>\n" + ch["html"], 1)
-    return html
-
-
+# 维护模式拦截（纯 JSON）
 @app.middleware("http")
 async def _maintenance_middleware(request: Request, call_next):
     if not _maintenance.get("enabled"):
         return await call_next(request)
     path = request.url.path
-    if path.startswith("/admin") or path.startswith("/api/admin") or path.startswith("/static"):
+    if path.startswith("/api/draw/admin"):
         return await call_next(request)
-    if path.startswith("/api/") or path.startswith("/ws/"):
-        from fastapi.responses import JSONResponse as _JR
-        return _JR({"error": "站点维护中", "message": _maintenance.get("message", "")}, status_code=503)
-    html = _get_maintenance_html(_maintenance.get("message", ""))
-    return Response(html, status_code=503, media_type="text/html")
-
-
-# 自定义 Head 注入（在 HTML 端点中调用）
-_HTML_CACHE: Dict[str, tuple] = {}  # path -> (mtime, content)
-
-
-def _serve_html(file_path: Path) -> Response:
-    """读取 HTML 文件，注入自定义 head，返回 Response。带文件修改时间缓存。"""
-    try:
-        mt = file_path.stat().st_mtime
-        cached = _HTML_CACHE.get(str(file_path))
-        if cached and cached[0] == mt:
-            html = cached[1]
-        else:
-            html = file_path.read_text(encoding="utf-8")
-            _HTML_CACHE[str(file_path)] = (mt, html)
-    except Exception:
-        html = ""
-    ch = _custom_head
-    if ch.get("enabled") and ch.get("html", "").strip():
-        html = html.replace("<head>", "<head>\n" + ch["html"], 1)
-    return Response(content=html, media_type="text/html")
+    from fastapi.responses import JSONResponse as _JR
+    return _JR({"error": "站点维护中", "message": _maintenance.get("message", "")}, status_code=503)
 
 
 # 全局禁止搜索引擎索引
@@ -684,6 +608,86 @@ async def _image_rate_limit(request: Request, call_next):
     bucket.append(now)
     _image_rate_buckets[ip] = bucket
     return await call_next(request)
+
+
+# ==================== JWT 鉴权 ====================
+import logging
+import time as _time
+
+FORUM_API_BASE = os.environ.get("FORUM_API_BASE", "https://i.2x.nz")
+
+logger = logging.getLogger("draw.auth")
+
+def verify_jwt(token: str) -> Optional[dict]:
+    """验证论坛 JWT，返回解码后的 payload 或 None。"""
+    try:
+        # 先不做签名验证，只解码看内容
+        unverified = jwt.get_unverified_claims(token)
+        logger.info("[JWT] 未验签解码: %s", {k: unverified.get(k) for k in ("id", "role", "email", "jti", "exp", "iat") if k in unverified})
+
+        # 论坛 jose 库用 TextEncoder().encode(secret) → UTF-8 字节签名
+        secret_bytes = JWT_SECRET.encode("utf-8")
+        logger.info("[JWT] 密钥长度=%d 字节, SHA256前8字节=%s",
+                     len(secret_bytes),
+                     __import__('hashlib').sha256(secret_bytes).hexdigest()[:16])
+
+        payload = jwt.decode(token, secret_bytes, algorithms=[JWT_ALGORITHM])
+        logger.info("[JWT] 验签成功: %s", {k: payload.get(k) for k in ("id", "role", "email", "jti", "exp", "iat")})
+        uid = payload.get("id")
+        role = payload.get("role", "")
+        email = payload.get("email", "")
+        if not (isinstance(uid, int) and role and email):
+            logger.warning("[JWT] payload 字段校验失败: id=%s role=%s email=%s", uid, role, email)
+            return None
+        return {"id": uid, "role": role, "email": email}
+    except JWTError as e:
+        logger.warning("[JWT] 解码失败: %s", e)
+        return None
+
+
+async def _fetch_forum_user(user_id: int, token: str) -> Optional[dict]:
+    """请求论坛后端获取用户完整信息。"""
+    url = f"{FORUM_API_BASE}/api/users/{user_id}"
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+            logger.info("[Forum] GET %s → %d", url, resp.status_code)
+            if resp.status_code == 200:
+                data = resp.json()
+                logger.info("[Forum] 用户数据: %s", data)
+                return data
+            logger.warning("[Forum] 非200响应: %d %s", resp.status_code, resp.text[:200])
+    except Exception as e:
+        logger.warning("[Forum] 请求失败: %s", e)
+    return None
+
+
+async def get_current_user(request: Request) -> dict:
+    """从 Authorization header 提取并验证 JWT，再请求论坛获取完整用户信息。"""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        logger.warning("[Auth] 缺少 Authorization header")
+        raise HTTPException(401, "未登录")
+    token = auth[7:]
+    user = verify_jwt(token)
+    if not user:
+        raise HTTPException(401, "token 无效或已过期")
+    # 请求论坛获取完整用户信息（含 draw_banned 等）
+    forum_user = await _fetch_forum_user(user["id"], token)
+    if forum_user:
+        user["username"] = forum_user.get("username", "")
+        user["avatar_url"] = forum_user.get("avatar_url", "")
+        user["draw_banned"] = forum_user.get("draw_banned", 0)
+    return user
+
+
+async def require_admin(request: Request) -> dict:
+    """要求管理员权限。"""
+    user = await get_current_user(request)
+    if user["role"] != "admin":
+        logger.warning("[Auth] 权限不足: user_id=%s role=%s", user["id"], user["role"])
+        raise HTTPException(403, "需要管理员权限")
+    return user
 
 
 # ---------------- 定时 GC ----------------
@@ -735,6 +739,8 @@ async def _run_gc():
                         continue
                     rel = ln.split("\t", 1)[0]
                     p = OUTPUT_DIR / rel.replace("/", os.sep)
+                    if not p.is_file():
+                        p = ARCHIVE_DIR / rel.replace("/", os.sep)
                     if p.is_file():
                         kept.append(ln)
                     else:
@@ -769,15 +775,6 @@ async def _gc_loop():
 async def _start_gc():
     global _gc_task
     _gc_task = asyncio.create_task(_gc_loop())
-
-
-
-@app.get("/robots.txt")
-async def robots_txt():
-    return Response("User-agent: *\nDisallow: /\n", media_type="text/plain")
-
-
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 # ---------------- WebP 转码（轻量级图片压缩） ----------------
@@ -891,7 +888,11 @@ async def submit_prompt(prompt: Dict[str, Any]) -> str:
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.post(
             f"{COMFYUI_API}/api/prompt",
-            json={"client_id": CLIENT_ID, "prompt": prompt},
+            json={
+                "client_id": CLIENT_ID,
+                "prompt": prompt,
+                "extra_data": {"preview_method": "auto"},
+            },
             headers={"Comfy-User": ""},
         )
         r.raise_for_status()
@@ -1435,10 +1436,6 @@ async def _llm_openai_compat(system: str, user: str, endpoint: str,
 
 # ---------------- routes ----------------
 
-@app.get("/")
-async def index():
-    return _serve_html(STATIC_DIR / "index.html")
-
 
 def find_thumbnail(wf_path: str) -> Optional[Path]:
     """按工作流路径在 web/thumbnails/ 下查找同名图片。
@@ -1534,48 +1531,52 @@ OUTPUT_IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
 
 
 def _resolve_output_path(rel: str) -> Path:
-    """安全解析 OUTPUT_DIR 下的相对路径，防止路径穿越。"""
+    """安全解析相对路径，依次查找 OUTPUT_DIR 和 ARCHIVE_DIR，防止路径穿越。"""
     if not rel:
         raise HTTPException(400, "path required")
-    # 拒绝绝对路径与回溯
     rel_norm = rel.replace("\\", "/").lstrip("/")
     if ".." in rel_norm.split("/"):
         raise HTTPException(400, "invalid path")
-    base = OUTPUT_DIR.resolve()
-    candidate = (OUTPUT_DIR / rel_norm).resolve()
-    try:
-        candidate.relative_to(base)
-    except ValueError:
-        raise HTTPException(400, "path escapes output dir")
-    return candidate
+    for base_dir in (OUTPUT_DIR, ARCHIVE_DIR):
+        base = base_dir.resolve()
+        candidate = (base_dir / rel_norm).resolve()
+        try:
+            candidate.relative_to(base)
+            if candidate.is_file():
+                return candidate
+        except ValueError:
+            continue
+    raise HTTPException(404, "not found")
 
 
 @app.get("/api/output/list")
 async def api_output_list(limit: int = 500, offset: int = 0):
-    """递归列出 OUTPUT_DIR 下所有图片，按 mtime 倒序，分页。"""
-    if not OUTPUT_DIR.exists():
-        return {"items": [], "total": 0, "output_dir": str(OUTPUT_DIR), "exists": False}
-    base = OUTPUT_DIR.resolve()
+    """递归列出 OUTPUT_DIR + ARCHIVE_DIR 下所有图片，按 mtime 倒序，分页。"""
     items: List[Tuple[float, str, int]] = []
-    for p in OUTPUT_DIR.rglob("*"):
-        if not p.is_file():
+    for base_dir in (OUTPUT_DIR, ARCHIVE_DIR):
+        if not base_dir.exists():
             continue
-        if p.suffix.lower() not in OUTPUT_IMAGE_EXTS:
-            continue
-        try:
-            rel = p.resolve().relative_to(base).as_posix()
-        except Exception:
-            continue
-        try:
-            st = p.stat()
-        except Exception:
-            continue
-        items.append((st.st_mtime, rel, st.st_size))
+        base = base_dir.resolve()
+        for p in base_dir.rglob("*"):
+            if not p.is_file():
+                continue
+            if p.suffix.lower() not in OUTPUT_IMAGE_EXTS:
+                continue
+            try:
+                rel = p.resolve().relative_to(base).as_posix()
+            except Exception:
+                continue
+            try:
+                st = p.stat()
+            except Exception:
+                continue
+            items.append((st.st_mtime, rel, st.st_size))
     items.sort(key=lambda x: -x[0])
     total = len(items)
     sliced = items[offset:offset + max(0, min(limit, 2000))]
     return {
         "output_dir": str(OUTPUT_DIR),
+        "archive_dir": str(ARCHIVE_DIR),
         "exists": True,
         "total": total,
         "items": [
@@ -1650,11 +1651,11 @@ def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
 
 @app.get("/api/output/creator")
 async def api_output_creator(path: str):
-    """读取该图片的生图者 IP（来自 creator_ips.txt 映射）。"""
+    """读取该图片的生图者 ID（来自 creator_users.txt 映射）。"""
     p = _resolve_output_path(path)
     if not p.is_file():
         raise HTTPException(404, "not found")
-    return {"creator_ip": _creator_map_get(_creator_key(p))}
+    return {"creator_id": _creator_map_get(_creator_key(p))}
 
 
 @app.get("/api/output/meta")
@@ -1745,7 +1746,7 @@ def _read_png_text_chunk(path: Path, key: str) -> str:
 
 
 @app.post("/api/output/fork")
-async def api_output_fork(payload: Dict[str, Any]):
+async def api_output_fork(payload: Dict[str, Any], user: dict = Depends(get_current_user)):
     """从输出 PNG 提取 workflow / prompt 元信息，原样返回给前端用于"临时还原"。
     不持久化、不写盘。前端拿到后存在内存里，下次提交时通过 /ws/run 的 inline_workflow 字段送回。
 
@@ -2100,17 +2101,6 @@ async def api_interrupt():
         raise HTTPException(500, str(e))
 
 
-@app.post("/api/admin/force-restart")
-async def api_admin_force_restart():
-    """强制杀死后端进程，uvicorn --reload 会自动拉起。"""
-    import os as _os
-    try:
-        await interrupt_prompt()
-    except Exception:
-        pass
-    _os._exit(0)
-
-
 class RunRequest(BaseModel):
     workflow_path: str = ""
     inline_workflow: Optional[Dict[str, Any]] = None
@@ -2206,7 +2196,7 @@ async def ws_run(ws: WebSocket):
     """前端通过 WebSocket 提交并实时接收进度。
 
     协议:
-      客户端首条消息: {direct_prompt, nl_prompt, rewrite, sentence_mode}
+      客户端首条消息: {token, direct_prompt, nl_prompt, rewrite, sentence_mode, ...}
       服务端推送: {type: "log"|"progress"|"image"|"done"|"error", ...}
     """
     await ws.accept()
@@ -2225,15 +2215,20 @@ async def ws_run(ws: WebSocket):
             init = await ws.receive_json()
         except Exception:
             return
-        # 真实 IP：优先 Cloudflare 头 → X-Forwarded-For → socket
-        h = ws.headers
-        client_ip = (
-            h.get("cf-connecting-ip")
-            or (h.get("x-forwarded-for", "").split(",")[0].strip() if h.get("x-forwarded-for") else "")
-            or (ws.client.host if ws.client else "")
-            or "unknown"
-        )
-        if is_ip_banned(client_ip):
+        # JWT 鉴权：从首条消息中提取 token
+        user = verify_jwt(init.get("token", ""))
+        if not user:
+            try:
+                await ws.send_json({"type": "error", "message": "token 无效或已过期，请重新登录"})
+            except Exception:
+                pass
+            try:
+                await ws.close()
+            except Exception:
+                pass
+            return
+        user_id = user["id"]
+        if is_user_draw_banned(user_id):
             try:
                 await ws.send_json({"type": "error", "message": "你已被管理员禁止生图"})
             except Exception:
@@ -2243,10 +2238,10 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
             return
-        # 单 IP 生图冷却（来自 limits.json，可在管理面板改）
+        # 单用户生图冷却（来自 limits.json，可在管理面板改）
         import time as _time
         now = _time.time()
-        last = _RATE_LAST_TS.get(client_ip, 0.0)
+        last = _RATE_LAST_TS.get(user_id, 0.0)
         cooldown = float(_limits.get("gen_cooldown_sec", 30))
         wait = cooldown - (now - last)
         if wait > 0:
@@ -2263,7 +2258,7 @@ async def ws_run(ws: WebSocket):
                 pass
             return
         try:
-            await _run_task(ws, RunRequest(**init), client_ip=client_ip)
+            await _run_task(ws, RunRequest(**init), user_id=user_id)
         except (WebSocketDisconnect, asyncio.CancelledError):
             return
         except Exception as e:
@@ -2275,7 +2270,7 @@ async def ws_run(ws: WebSocket):
             await _push_status(reset=True)
 
 
-async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown"):
+async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
     import time as _time
     path = req.workflow_path
     inline = req.inline_workflow
@@ -2367,7 +2362,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
             if "seed" in inp:
                 inp["seed"] = random.randint(0, 2**63 - 1)
 
-    _RATE_LAST_TS[client_ip] = _time.time()
+    _RATE_LAST_TS[user_id] = _time.time()
 
     await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
     prompt_id = await submit_prompt(prompt_dict)
@@ -2395,7 +2390,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
         await emit(ws, {"type": "error", "message": "无图片输出"})
         return
 
-    # 写入 IP 映射：拿到文件名后立刻把 <相对路径> -> <client_ip> 写进 creator_ips.txt
+    # 写入用户映射：拿到文件名后立刻把 <相对路径> -> <user_id> 写进 creator_users.txt
     for img in images:
         if img.get("type") != "output":
             continue
@@ -2403,9 +2398,9 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, client_ip: str = "unknown
             sub = img.get("subfolder") or ""
             rel = (sub + "/" + img["filename"]) if sub else img["filename"]
             rel = rel.replace("\\", "/")
-            await _creator_map_set(rel, client_ip)
+            await _creator_map_set(rel, user_id)
         except Exception as e:
-            await emit(ws, {"type": "log", "message": f"[warn] 写 creator_ips.txt 失败: {e}"})
+            await emit(ws, {"type": "log", "message": f"[warn] 写 creator_users.txt 失败: {e}"})
 
     for img in images:
         url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"
@@ -2425,6 +2420,7 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
     ws_url = f"{COMFYUI_WS}/ws?clientId={CLIENT_ID}"
     start = asyncio.get_event_loop().time()
     completed = False
+    preview_count = 0
     try:
         async with websockets.connect(ws_url, max_size=None) as cws:
             while True:
@@ -2435,6 +2431,20 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
                 except asyncio.TimeoutError:
                     continue
                 if isinstance(raw, bytes):
+                    preview_count += 1
+                    if len(raw) > 8:
+                        evt_type = int.from_bytes(raw[0:4], 'big')
+                        if evt_type == 1:  # PREVIEW_IMAGE
+                            img_type = int.from_bytes(raw[4:8], 'big')
+                            mime = "image/png" if img_type == 2 else "image/jpeg"
+                            image_data = raw[8:]
+                            b64 = base64.b64encode(image_data).decode()
+                            await emit(ws, {"type": "preview", "image": f"data:{mime};base64,{b64}"})
+                        elif evt_type == 4:  # PREVIEW_IMAGE_WITH_METADATA
+                            meta_len = int.from_bytes(raw[4:8], 'big')
+                            image_data = raw[8 + meta_len:]
+                            b64 = base64.b64encode(image_data).decode()
+                            await emit(ws, {"type": "preview", "image": f"data:image/jpeg;base64,{b64}"})
                     continue
                 try:
                     msg = json.loads(raw)
@@ -2496,6 +2506,8 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
     except websockets.WebSocketException:
         pass
 
+    await emit(ws, {"type": "log", "message": f"[debug] 收到 {preview_count} 帧预览"})
+
     for _ in range(60):
         h = await get_history(prompt_id)
         if h:
@@ -2511,8 +2523,9 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
 @app.post("/api/report")
 async def api_report(payload: Dict[str, Any], request: Request):
     import time as _time
-    reporter_ip = _client_ip_from_request(request)
-    if is_ip_banned(reporter_ip):
+    user = await get_current_user(request)
+    reporter_id = user["id"]
+    if is_user_draw_banned(reporter_id):
         raise HTTPException(403, "你已被封禁")
     image_path = str((payload or {}).get("image_path", "")).strip()
     reason = str((payload or {}).get("reason", "")).strip()[:500]
@@ -2527,7 +2540,7 @@ async def api_report(payload: Dict[str, Any], request: Request):
     if not p.is_file():
         raise HTTPException(404, "图片不存在")
     now = _time.time()
-    ts_list = _REPORT_RATE.get(reporter_ip, [])
+    ts_list = _REPORT_RATE.get(reporter_id, [])
     window = float(_limits.get("report_window_sec", 300))
     ts_list = [t for t in ts_list if now - t < window]
     max_in_window = int(_limits.get("report_window_max", 3))
@@ -2537,7 +2550,7 @@ async def api_report(payload: Dict[str, Any], request: Request):
     pending_count = 0
     pending_max = int(_limits.get("report_pending_max", 10))
     for r in reports:
-        if r.get("reporter_ip") == reporter_ip and r.get("status") == "pending":
+        if r.get("reporter_id") == reporter_id and r.get("status") == "pending":
             pending_count += 1
             if r.get("image_path") == image_path:
                 raise HTTPException(409, "您已举报过此图片")
@@ -2546,7 +2559,7 @@ async def api_report(payload: Dict[str, Any], request: Request):
     new_report = {
         "id": uuid.uuid4().hex,
         "image_path": image_path,
-        "reporter_ip": reporter_ip,
+        "reporter_id": reporter_id,
         "reason": reason,
         "timestamp": now,
         "status": "pending",
@@ -2556,83 +2569,137 @@ async def api_report(payload: Dict[str, Any], request: Request):
     if not await _save_reports(reports):
         raise HTTPException(500, "保存举报失败")
     ts_list.append(now)
-    _REPORT_RATE[reporter_ip] = ts_list
+    _REPORT_RATE[reporter_id] = ts_list
     return {"ok": True}
 
 
-# ---------------- 管理员 API ----------------
+# ---------------- 公告端点 ----------------
 
-@app.get("/admin")
-async def admin_page():
-    return FileResponse(str(STATIC_DIR / "admin.html"))
-
-
-@app.get("/api/admin/whoami")
-async def api_admin_whoami():
-    return {"user": "admin"}
+@app.get("/api/announcement")
+async def api_announcement():
+    return {"announcement": dict(_announcement)}
 
 
-@app.get("/api/admin/bans")
-async def api_admin_bans():
-    return {"banned": list(reversed(_read_banned_ips()))}
+# ==================== 管理接口（JWT admin） ====================
+
+@app.get("/api/draw/admin/featured")
+async def draw_admin_featured(user: dict = Depends(require_admin)):
+    return {"items": _read_featured()}
 
 
-@app.post("/api/admin/ban")
-async def api_admin_ban(payload: Dict[str, Any]):
-    ip = (payload or {}).get("ip", "").strip()
-    if not ip:
-        raise HTTPException(400, "ip required")
-    ips = _read_banned_ips()
-    if ip not in ips:
-        ips.append(ip)
-    if not await _write_banned_ips(ips):
-        raise HTTPException(500, "写入 banned_ips.txt 失败")
-    return {"ok": True, "banned": list(reversed(ips))}
+@app.post("/api/draw/admin/featured/add")
+async def draw_admin_featured_add(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    rel = (payload or {}).get("path", "").strip()
+    if not rel:
+        raise HTTPException(400, "path required")
+    p = _resolve_output_path(rel)
+    if not p.is_file():
+        raise HTTPException(404, "not found")
+    rel = rel.replace("\\", "/")
+    feats = _read_featured()
+    if rel not in feats:
+        feats.insert(0, rel)
+        if not await _write_featured(feats):
+            raise HTTPException(500, "写入 featured.txt 失败")
+    return {"ok": True, "items": feats}
 
 
-@app.post("/api/admin/unban")
-async def api_admin_unban(payload: Dict[str, Any]):
-    ip = (payload or {}).get("ip", "").strip()
-    if not ip:
-        raise HTTPException(400, "ip required")
-    ips = [x for x in _read_banned_ips() if x != ip]
-    if not await _write_banned_ips(ips):
-        raise HTTPException(500, "写入 banned_ips.txt 失败")
-    return {"ok": True, "banned": list(reversed(ips))}
+@app.post("/api/draw/admin/featured/remove")
+async def draw_admin_featured_remove(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    rel = (payload or {}).get("path", "").strip()
+    if not rel:
+        raise HTTPException(400, "path required")
+    rel = rel.replace("\\", "/")
+    feats = [x for x in _read_featured() if x != rel]
+    if not await _write_featured(feats):
+        raise HTTPException(500, "写入 featured.txt 失败")
+    return {"ok": True, "items": feats}
 
 
-@app.get("/api/admin/recent")
-async def api_admin_recent(limit: int = 200, offset: int = 0):
-    """列出 OUTPUT_DIR 下所有图片，按 mtime 倒序分页；IP 来自 creator_ips.txt（无则空串）。"""
-    if not OUTPUT_DIR.exists():
-        return {"items": [], "total": 0, "limit": limit, "offset": offset}
-    # 一次性载入映射到字典，避免每张图都扫整文件
-    ip_map: Dict[str, str] = {}
+@app.post("/api/draw/admin/featured/reorder")
+async def draw_admin_featured_reorder(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    """整体覆写顺序。前端拖拽排序后调一次。"""
+    items = (payload or {}).get("items") or []
+    if not isinstance(items, list):
+        raise HTTPException(400, "items must be list")
+    cleaned: List[str] = []
+    seen: set = set()
+    for it in items:
+        if not isinstance(it, str):
+            continue
+        rel = it.strip().replace("\\", "/")
+        if not rel or rel in seen:
+            continue
+        seen.add(rel)
+        cleaned.append(rel)
+    if not await _write_featured(cleaned):
+        raise HTTPException(500, "写入 featured.txt 失败")
+    return {"ok": True, "items": cleaned}
+
+
+@app.get("/api/draw/admin/limits")
+async def draw_admin_limits(user: dict = Depends(require_admin)):
+    return {"limits": dict(_limits), "defaults": dict(DEFAULT_LIMITS)}
+
+
+@app.post("/api/draw/admin/limits")
+async def draw_admin_set_limits(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    """更新限流配置。仅接受白名单字段，非负整数。"""
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    new_limits = dict(_limits)
+    for k in DEFAULT_LIMITS:
+        if k not in payload:
+            continue
+        v = payload[k]
+        if isinstance(DEFAULT_LIMITS[k], str):
+            new_limits[k] = str(v)
+        elif isinstance(DEFAULT_LIMITS[k], list):
+            if isinstance(v, list):
+                new_limits[k] = v
+        elif isinstance(v, (int, float)) and v >= 0:
+            new_limits[k] = int(v)
+        else:
+            raise HTTPException(400, f"{k} 必须为非负数")
+    if not await _save_limits(new_limits):
+        raise HTTPException(500, "写入 limits.json 失败")
+    _limits.clear()
+    _limits.update(new_limits)
+    return {"ok": True, "limits": dict(_limits)}
+
+
+@app.get("/api/draw/admin/recent")
+async def draw_admin_recent(limit: int = 200, offset: int = 0, user: dict = Depends(require_admin)):
+    """列出 OUTPUT_DIR + ARCHIVE_DIR 下所有图片，按 mtime 倒序分页；用户 ID 来自 creator_users.txt。"""
+    id_map: Dict[str, str] = {}
     if CREATOR_MAP_FILE.is_file():
         try:
             for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
                 if not ln or "\t" not in ln:
                     continue
                 k, _, v = ln.partition("\t")
-                ip_map[k] = v
+                id_map[k] = v
         except Exception:
             pass
-    base = OUTPUT_DIR.resolve()
-    raw: List[Tuple[float, str, float]] = []  # (mtime, rel, mtime_for_sort)
-    try:
-        for p in OUTPUT_DIR.rglob("*"):
-            if not p.is_file():
-                continue
-            if p.suffix.lower() not in THUMB_EXTS:
-                continue
-            try:
-                rel = str(p.resolve().relative_to(base)).replace("\\", "/")
-                mt = p.stat().st_mtime
-            except Exception:
-                continue
-            raw.append((mt, rel, mt))
-    except Exception:
-        pass
+    raw: List[Tuple[float, str, float]] = []
+    for base_dir in (OUTPUT_DIR, ARCHIVE_DIR):
+        if not base_dir.exists():
+            continue
+        base = base_dir.resolve()
+        try:
+            for p in base_dir.rglob("*"):
+                if not p.is_file():
+                    continue
+                if p.suffix.lower() not in THUMB_EXTS:
+                    continue
+                try:
+                    rel = str(p.resolve().relative_to(base)).replace("\\", "/")
+                    mt = p.stat().st_mtime
+                except Exception:
+                    continue
+                raw.append((mt, rel, mt))
+        except Exception:
+            pass
     raw.sort(key=lambda x: x[0], reverse=True)
     total = len(raw)
     if offset < 0:
@@ -2641,15 +2708,15 @@ async def api_admin_recent(limit: int = 200, offset: int = 0):
         limit = 200
     page = raw[offset:offset + limit]
     items = [
-        {"path": rel, "ip": ip_map.get(rel, ""), "mtime": mt}
+        {"path": rel, "user_id": id_map.get(rel, ""), "mtime": mt}
         for mt, rel, _ in page
     ]
     return {"items": items, "total": total, "limit": limit, "offset": offset}
 
 
-@app.post("/api/admin/delete")
-async def api_admin_delete(payload: Dict[str, Any]):
-    """删除 OUTPUT_DIR 下的一张图，并从 creator_ips.txt 移除对应映射。"""
+@app.post("/api/draw/admin/delete")
+async def draw_admin_delete(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    """删除 OUTPUT_DIR 下的一张图，并从 creator_users.txt 移除对应映射。"""
     rel = (payload or {}).get("path", "").strip()
     if not rel:
         raise HTTPException(400, "path required")
@@ -2688,41 +2755,8 @@ async def api_admin_delete(payload: Dict[str, Any]):
     return {"ok": True}
 
 
-@app.get("/api/admin/images_by_ip")
-async def api_admin_images_by_ip(ip: str = ""):
-    """列出某个 IP 生成的所有图片。"""
-    ip = ip.strip()
-    if not ip:
-        raise HTTPException(400, "ip required")
-    ip_map: Dict[str, str] = {}
-    if CREATOR_MAP_FILE.is_file():
-        try:
-            for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
-                if not ln or "\t" not in ln:
-                    continue
-                k, _, v = ln.partition("\t")
-                ip_map[k] = v
-        except Exception:
-            pass
-    base = OUTPUT_DIR.resolve()
-    results: list = []
-    for rel, rel_ip in ip_map.items():
-        if rel_ip != ip:
-            continue
-        p = base / rel.replace("/", os.sep)
-        if not p.is_file():
-            continue
-        try:
-            mt = p.stat().st_mtime
-        except Exception:
-            mt = 0
-        results.append({"path": rel, "ip": ip, "mtime": mt})
-    results.sort(key=lambda x: x["mtime"], reverse=True)
-    return {"items": results, "total": len(results)}
-
-
-@app.post("/api/admin/delete_batch")
-async def api_admin_delete_batch(payload: Dict[str, Any]):
+@app.post("/api/draw/admin/delete_batch")
+async def draw_admin_delete_batch(payload: Dict[str, Any], user: dict = Depends(require_admin)):
     """批量删除多张图。"""
     paths = (payload or {}).get("paths", [])
     if not paths or not isinstance(paths, list):
@@ -2742,7 +2776,7 @@ async def api_admin_delete_batch(payload: Dict[str, Any]):
                 failed.append(rel)
         except Exception:
             failed.append(rel)
-    # 批量清理 creator_ips.txt 映射
+    # 批量清理 creator_users.txt 映射
     del_set = set(r.replace("\\", "/") for r in deleted)
     if del_set:
         async with _creator_map_lock:
@@ -2783,532 +2817,47 @@ async def api_admin_delete_batch(payload: Dict[str, Any]):
     return {"ok": True, "deleted": len(deleted), "failed": len(failed)}
 
 
-@app.get("/api/admin/featured")
-async def api_admin_featured():
-    return {"items": _read_featured()}
-
-
-@app.post("/api/admin/featured/add")
-async def api_admin_featured_add(payload: Dict[str, Any]):
-    rel = (payload or {}).get("path", "").strip()
-    if not rel:
-        raise HTTPException(400, "path required")
-    p = _resolve_output_path(rel)
-    if not p.is_file():
-        raise HTTPException(404, "not found")
-    rel = rel.replace("\\", "/")
-    feats = _read_featured()
-    if rel not in feats:
-        feats.insert(0, rel)  # 新加的放最前
-        if not await _write_featured(feats):
-            raise HTTPException(500, "写入 featured.txt 失败")
-    return {"ok": True, "items": feats}
-
-
-@app.post("/api/admin/featured/remove")
-async def api_admin_featured_remove(payload: Dict[str, Any]):
-    rel = (payload or {}).get("path", "").strip()
-    if not rel:
-        raise HTTPException(400, "path required")
-    rel = rel.replace("\\", "/")
-    feats = [x for x in _read_featured() if x != rel]
-    if not await _write_featured(feats):
-        raise HTTPException(500, "写入 featured.txt 失败")
-    return {"ok": True, "items": feats}
-
-
-@app.post("/api/admin/featured/reorder")
-async def api_admin_featured_reorder(payload: Dict[str, Any]):
-    """整体覆写顺序。前端拖拽排序后调一次。"""
-    items = (payload or {}).get("items") or []
-    if not isinstance(items, list):
-        raise HTTPException(400, "items must be list")
-    cleaned: List[str] = []
-    seen: set = set()
-    for it in items:
-        if not isinstance(it, str):
+@app.get("/api/draw/admin/images_by_user")
+async def draw_admin_images_by_user(user_id: int, user: dict = Depends(require_admin)):
+    """列出某个用户生成的所有图片。"""
+    if not user_id:
+        raise HTTPException(400, "user_id required")
+    id_map: Dict[str, str] = {}
+    if CREATOR_MAP_FILE.is_file():
+        try:
+            for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                if not ln or "\t" not in ln:
+                    continue
+                k, _, v = ln.partition("\t")
+                id_map[k] = v
+        except Exception:
+            pass
+    uid_str = str(user_id)
+    results: list = []
+    for rel, rel_uid in id_map.items():
+        if rel_uid != uid_str:
             continue
-        rel = it.strip().replace("\\", "/")
-        if not rel or rel in seen:
-            continue
-        seen.add(rel)
-        cleaned.append(rel)
-    if not await _write_featured(cleaned):
-        raise HTTPException(500, "写入 featured.txt 失败")
-    return {"ok": True, "items": cleaned}
-
-
-@app.get("/api/admin/limits")
-async def api_admin_limits_get():
-    return {"limits": dict(_limits), "defaults": dict(DEFAULT_LIMITS)}
-
-
-@app.post("/api/admin/limits")
-async def api_admin_limits_set(payload: Dict[str, Any]):
-    """更新限流配置。仅接受白名单字段，非负整数。"""
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    new_limits = dict(_limits)
-    for k in DEFAULT_LIMITS:
-        if k not in payload:
-            continue
-        v = payload[k]
-        if isinstance(DEFAULT_LIMITS[k], str):
-            new_limits[k] = str(v)
-        elif isinstance(DEFAULT_LIMITS[k], list):
-            if isinstance(v, list):
-                new_limits[k] = v
-        elif isinstance(v, (int, float)) and v >= 0:
-            new_limits[k] = int(v)
-        else:
-            raise HTTPException(400, f"{k} 必须为非负数")
-    if not await _save_limits(new_limits):
-        raise HTTPException(500, "写入 limits.json 失败")
-    _limits.clear()
-    _limits.update(new_limits)
-    return {"ok": True, "limits": dict(_limits)}
-
-
-@app.post("/api/admin/gc")
-async def api_admin_gc_run():
-    """手动触发一次 GC。"""
-    result = await _run_gc()
-    return {"ok": True, "cleaned": result}
-
-
-
-# ---------------- 公告端点 ----------------
-
-@app.get("/api/announcement")
-async def api_announcement():
-    return {"announcement": dict(_announcement)}
-
-
-
-
-@app.get("/api/admin/announcement")
-async def api_admin_announcement_get():
-    return {"announcement": dict(_announcement)}
-
-
-@app.post("/api/admin/announcement")
-async def api_admin_announcement_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    new_state = {
-        "enabled": bool(payload.get("enabled", _announcement.get("enabled", False))),
-        "title": str(payload.get("title", _announcement.get("title", ""))).strip(),
-        "content": str(payload.get("content", _announcement.get("content", ""))).strip(),
-    }
-    if not await _save_announcement(new_state):
-        raise HTTPException(500, "写入 announcement.json 失败")
-    _announcement.clear()
-    _announcement.update(new_state)
-    return {"ok": True, "announcement": dict(_announcement)}
-
-
-@app.get("/api/admin/maintenance")
-async def api_admin_maintenance_get():
-    return {"config": dict(_maintenance), "defaults": dict(DEFAULT_MAINTENANCE)}
-
-
-@app.post("/api/admin/maintenance")
-async def api_admin_maintenance_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    new_state = {
-        "enabled": bool(payload.get("enabled", _maintenance.get("enabled", False))),
-        "message": str(payload.get("message", _maintenance.get("message", ""))),
-    }
-    if not await _save_maintenance(new_state):
-        raise HTTPException(500, "写入 maintenance.json 失败")
-    _maintenance.clear()
-    _maintenance.update(new_state)
-    return {"ok": True, "config": dict(_maintenance)}
-
-
-@app.get("/api/admin/custom_head")
-async def api_admin_custom_head_get():
-    return {"config": dict(_custom_head), "defaults": dict(DEFAULT_CUSTOM_HEAD)}
-
-
-@app.post("/api/admin/custom_head")
-async def api_admin_custom_head_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    new_state = {
-        "enabled": bool(payload.get("enabled", _custom_head.get("enabled", False))),
-        "html": str(payload.get("html", _custom_head.get("html", ""))),
-    }
-    if not await _save_custom_head(new_state):
-        raise HTTPException(500, "写入 custom_head.json 失败")
-    _custom_head.clear()
-    _custom_head.update(new_state)
-    return {"ok": True, "config": dict(_custom_head)}
-
-
-# ---------------- 画风端点 ----------------
-
-@app.get("/api/admin/styles")
-async def api_admin_styles_get():
-    return {"styles": list(_styles)}
-
-
-@app.post("/api/admin/styles")
-async def api_admin_styles_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    raw = payload.get("styles")
-    if not isinstance(raw, list):
-        raise HTTPException(400, "styles must be array")
-    cleaned = []
-    for s in raw:
-        if not isinstance(s, dict):
-            continue
-        tags = str(s.get("tags", "")).strip()
-        if not tags:
-            continue
-        cleaned.append({
-            "name": str(s.get("name", "")).strip(),
-            "tags": tags,
-            "image": str(s.get("image", "")).strip(),
-        })
-    if not await _save_styles(cleaned):
-        raise HTTPException(500, "写入 styles.json 失败")
-    _styles.clear()
-    _styles.extend(cleaned)
-    return {"ok": True, "styles": list(_styles)}
-
-
-# ---------------- 分辨率端点 ----------------
-
-@app.get("/api/admin/resolutions")
-async def api_admin_resolutions_get():
-    return dict(_resolutions)
-
-
-@app.post("/api/admin/resolutions")
-async def api_admin_resolutions_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    raw = payload.get("presets")
-    if not isinstance(raw, list):
-        raise HTTPException(400, "presets must be array")
-    presets = []
-    for p in raw:
-        if not isinstance(p, dict):
+        p = OUTPUT_DIR / rel.replace("/", os.sep)
+        if not p.is_file():
+            p = ARCHIVE_DIR / rel.replace("/", os.sep)
+        if not p.is_file():
             continue
         try:
-            w, h = int(p["w"]), int(p["h"])
-        except (KeyError, ValueError, TypeError):
-            continue
-        if w < 64 or h < 64:
-            raise HTTPException(400, f"分辨率 {w}x{h} 不得小于 64")
-        presets.append({"w": w, "h": h, "label": str(p.get("label", "")).strip()})
-    data = {"presets": presets}
-    if not await _save_resolutions(data):
-        raise HTTPException(500, "写入 resolutions.json 失败")
-    _resolutions.clear()
-    _resolutions.update(data)
-    return {"ok": True, **data}
+            mt = p.stat().st_mtime
+        except Exception:
+            mt = 0
+        results.append({"path": rel, "user_id": user_id, "mtime": mt})
+    results.sort(key=lambda x: x["mtime"], reverse=True)
+    return {"items": results, "total": len(results)}
 
 
-async def _save_upload(file: UploadFile, dest_dir: Path) -> str:
-    """流式保存上传文件，边写边校验大小（上限 5 MB）。"""
-    if not file.filename:
-        raise HTTPException(400, "no filename")
-    ext = Path(file.filename).suffix.lower()
-    if ext not in THUMB_EXTS:
-        raise HTTPException(400, f"不支持的格式，仅限 {', '.join(THUMB_EXTS)}")
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    safe_name = Path(file.filename).name
-    if not safe_name or ".." in safe_name:
-        raise HTTPException(400, "invalid filename")
-    dest = dest_dir / safe_name
-    MAX_SIZE = 5 * 1024 * 1024
-    written = 0
-    CHUNK = 256 * 1024
-    with open(dest, "wb") as f:
-        while True:
-            chunk = await file.read(CHUNK)
-            if not chunk:
-                break
-            written += len(chunk)
-            if written > MAX_SIZE:
-                f.close()
-                dest.unlink(missing_ok=True)
-                raise HTTPException(400, "文件过大（上限 5 MB）")
-            f.write(chunk)
-    return safe_name
-
-
-@app.post("/api/admin/style_thumbnail")
-async def api_admin_style_thumbnail_upload(file: UploadFile):
-    filename = await _save_upload(file, STYLE_THUMB_DIR)
-    return {"ok": True, "filename": filename}
-
-
-# ---------------- 工作流元数据端点 ----------------
-
-def scan_workflow_files() -> List[str]:
-    """扫描 ComfyUI 工作流目录，返回所有 .json 文件的相对路径列表。"""
-    root = Path(COMFYUI_WORKFLOWS_DIR)
-    if not root.is_dir():
-        return []
-    results = []
-    for p in sorted(root.rglob("*.json")):
-        rel = str(p.relative_to(root)).replace("\\", "/")
-        results.append(rel)
-    return results
-
-
-@app.get("/api/admin/workflow_files")
-async def api_admin_workflow_files():
-    return {"files": scan_workflow_files()}
-
-
-@app.post("/api/admin/workflow_rename")
-async def api_admin_workflow_rename(payload: Dict[str, Any]):
-    """重命名工作流文件，并同步迁移 workflow_meta 映射。"""
-    old = str(payload.get("old", "")).strip()
-    new = str(payload.get("new", "")).strip()
-    if not old or not new:
-        raise HTTPException(400, "old 和 new 不能为空")
-    if old == new:
-        return {"ok": True}
-    if ".." in old or ".." in new:
-        raise HTTPException(400, "路径不合法")
-    root = Path(COMFYUI_WORKFLOWS_DIR)
-    old_path = (root / old).resolve()
-    new_path = (root / new).resolve()
-    if not old_path.is_relative_to(root.resolve()):
-        raise HTTPException(400, "路径不合法")
-    if not new_path.is_relative_to(root.resolve()):
-        raise HTTPException(400, "路径不合法")
-    if not old_path.is_file():
-        raise HTTPException(400, f"旧工作流不存在: {old}")
-    if new_path.exists():
-        raise HTTPException(400, f"目标文件已存在: {new}")
-    new_path.parent.mkdir(parents=True, exist_ok=True)
-    old_path.rename(new_path)
-    if old in _workflow_meta:
-        _workflow_meta[new] = _workflow_meta.pop(old)
-        await _save_workflow_meta_file(_workflow_meta)
-    return {"ok": True}
-
-@app.get("/api/admin/workflow_meta")
-async def api_admin_workflow_meta_get():
-    arr = []
-    for wf in sorted(_workflow_meta):
-        entry = {"workflow": wf}
-        entry.update(_workflow_meta[wf])
-        arr.append(entry)
-    return {"workflow_meta": arr}
-
-
-@app.post("/api/admin/workflow_meta")
-async def api_admin_workflow_meta_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    raw = payload.get("workflow_meta")
-    if not isinstance(raw, list):
-        raise HTTPException(400, "workflow_meta must be array")
-    cleaned = {}
-    for item in raw:
-        if not isinstance(item, dict):
-            continue
-        wf = str(item.get("workflow", "")).strip()
-        if not wf:
-            continue
-        entry = {}
-        thumb = str(item.get("thumbnail", "")).strip()
-        link = str(item.get("lora_link", "")).strip()
-        cat = str(item.get("category", "")).strip()
-        if thumb:
-            entry["thumbnail"] = thumb
-        if link:
-            if not link.startswith(("http://", "https://")):
-                raise HTTPException(400, "lora_link 必须以 http:// 或 https:// 开头")
-            entry["lora_link"] = link
-        if cat:
-            entry["category"] = cat
-        if entry:
-            cleaned[wf] = entry
-    if not _save_workflow_meta_file(cleaned):
-        raise HTTPException(500, "写入 workflow_meta.json 失败")
-    _workflow_meta.clear()
-    _workflow_meta.update(cleaned)
-    arr = []
-    for wf in sorted(_workflow_meta):
-        entry = {"workflow": wf}
-        entry.update(_workflow_meta[wf])
-        arr.append(entry)
-    return {"ok": True, "workflow_meta": arr}
-
-
-@app.post("/api/admin/wf_thumbnail")
-async def api_admin_wf_thumbnail_upload(file: UploadFile):
-    safe_name = await _save_upload(file, THUMB_DIR)
-    return {"ok": True, "filename": safe_name}
-
-
-# ---------------- LLM 配置端点 ----------------
-
-@app.get("/api/admin/llm")
-async def api_admin_llm_get():
-    safe = dict(_llm_config)
-    for key_field in ("google_api_key", "custom_api_key"):
-        k = safe.pop(key_field, "")
-        safe[f"{key_field}_masked"] = (k[:4] + "****" + k[-4:]) if len(k) > 8 else ("****" if k else "")
-    return {"llm": safe}
-
-
-@app.post("/api/admin/llm")
-async def api_admin_llm_set(payload: Dict[str, Any]):
-    if not isinstance(payload, dict):
-        raise HTTPException(400, "payload must be object")
-    provider = payload.get("provider", _llm_config.get("provider", "local"))
-    if provider not in ("local", "google", "custom"):
-        raise HTTPException(400, "provider must be 'local', 'google', or 'custom'")
-    new_state = {
-        "provider": provider,
-        "local_endpoint": str(payload.get("local_endpoint", _llm_config.get("local_endpoint", ""))).strip()
-            or DEFAULT_LLM_CONFIG["local_endpoint"],
-        "google_api_key": str(payload.get("google_api_key", _llm_config.get("google_api_key", ""))).strip(),
-        "google_model": str(payload.get("google_model", _llm_config.get("google_model", ""))).strip()
-            or DEFAULT_LLM_CONFIG["google_model"],
-        "google_thinking": str(payload.get("google_thinking", _llm_config.get("google_thinking", "off"))).strip()
-            or "off",
-        "custom_endpoint": str(payload.get("custom_endpoint", _llm_config.get("custom_endpoint", ""))).strip(),
-        "custom_api_key": str(payload.get("custom_api_key", _llm_config.get("custom_api_key", ""))).strip(),
-        "custom_model": str(payload.get("custom_model", _llm_config.get("custom_model", ""))).strip(),
-        "llm_stream": payload.get("llm_stream", _llm_config.get("llm_stream", True)) in (True, "true", 1),
-    }
-    if not await _save_llm_config(new_state):
-        raise HTTPException(500, "写入 llm_config.json 失败")
-    _llm_config.clear()
-    _llm_config.update(new_state)
-    return {"ok": True}
-
-
-@app.post("/api/admin/llm/test")
-async def api_admin_llm_test(payload: Dict[str, Any]):
-    """测试 LLM 连接是否可用。"""
-    cfg = dict(_llm_config)
-    if isinstance(payload, dict):
-        for k in cfg:
-            if k in payload and payload[k] is not None:
-                cfg[k] = str(payload[k]).strip()
-
-    provider = cfg.get("provider", "local")
-    try:
-        if provider == "google":
-            api_key = cfg.get("google_api_key") or ""
-            model = cfg.get("google_model") or "gemma-4-31b-it"
-            if not api_key:
-                return {"ok": False, "error": "API Key 未填写"}
-            body = {
-                "contents": [{"role": "user", "parts": [{"text": "Hi"}]}],
-                "generationConfig": {"maxOutputTokens": 10},
-            }
-            url = f"{_GOOGLE_API_BASE}/models/{model}:generateContent?key={api_key}"
-            async with httpx.AsyncClient(timeout=15) as client:
-                r = await client.post(url, json=body)
-                if r.status_code >= 400:
-                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}"}
-                data = r.json()
-                parts = ((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
-                reply = "".join(p.get("text", "") for p in parts)
-                return {"ok": True, "reply": reply[:100]}
-        else:
-            endpoint = (cfg.get("custom_endpoint") if provider == "custom"
-                        else cfg.get("local_endpoint") or LMS_API).rstrip("/") or ""
-            if not endpoint:
-                return {"ok": False, "error": "端点未填写"}
-            headers: Dict[str, str] = {}
-            api_key = cfg.get("custom_api_key", "") if provider == "custom" else ""
-            if api_key:
-                headers["Authorization"] = f"Bearer {api_key}"
-            body_oai: Dict[str, Any] = {"messages": [{"role": "user", "content": "Hi"}],
-                                        "max_tokens": 5, "stream": False}
-            model = cfg.get("custom_model", "") if provider == "custom" else ""
-            if model:
-                body_oai["model"] = model
-            async with httpx.AsyncClient(timeout=15, headers=headers) as client:
-                r = await client.post(f"{endpoint}/v1/chat/completions", json=body_oai)
-                if r.status_code >= 400:
-                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:300]}"}
-                data = r.json()
-                reply = (data.get("choices") or [{}])[0].get("message", {}).get("content", "")
-                return {"ok": True, "reply": reply[:100]}
-    except httpx.ConnectError:
-        return {"ok": False, "error": "连接失败，请检查端点地址"}
-    except httpx.TimeoutException:
-        return {"ok": False, "error": "请求超时（15s）"}
-    except Exception as e:
-        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
-
-
-@app.post("/api/admin/llm/models")
-async def api_admin_llm_models(payload: Dict[str, Any]):
-    """探测可用模型列表。"""
-    cfg = dict(_llm_config)
-    if isinstance(payload, dict):
-        for k in cfg:
-            if k in payload and payload[k] is not None:
-                cfg[k] = str(payload[k]).strip()
-
-    provider = cfg.get("provider", "local")
-    try:
-        if provider == "google":
-            api_key = cfg.get("google_api_key") or ""
-            if not api_key:
-                return {"ok": False, "error": "API Key 未填写"}
-            url = f"{_GOOGLE_API_BASE}/models?key={api_key}"
-            async with httpx.AsyncClient(timeout=15) as client:
-                r = await client.get(url)
-                if r.status_code >= 400:
-                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:200]}"}
-                data = r.json()
-                models = []
-                for m in data.get("models", []):
-                    name = m.get("name", "")
-                    display = m.get("displayName", name)
-                    model_id = name.replace("models/", "") if name.startswith("models/") else name
-                    if "generateContent" in str(m.get("supportedGenerationMethods", [])):
-                        models.append({"id": model_id, "name": display})
-                return {"ok": True, "models": models}
-        else:
-            endpoint = (cfg.get("custom_endpoint") if provider == "custom"
-                        else cfg.get("local_endpoint") or LMS_API).rstrip("/") or ""
-            if not endpoint:
-                return {"ok": False, "error": "端点未填写"}
-            headers: Dict[str, str] = {}
-            api_key = cfg.get("custom_api_key", "") if provider == "custom" else ""
-            if api_key:
-                headers["Authorization"] = f"Bearer {api_key}"
-            async with httpx.AsyncClient(timeout=15, headers=headers) as client:
-                r = await client.get(f"{endpoint}/v1/models")
-                if r.status_code >= 400:
-                    return {"ok": False, "error": f"HTTP {r.status_code}: {r.text[:200]}"}
-                data = r.json()
-                models = [{"id": m.get("id", ""), "name": m.get("id", "")} for m in data.get("data", [])]
-                return {"ok": True, "models": models}
-    except httpx.ConnectError:
-        return {"ok": False, "error": "连接失败，请检查端点地址"}
-    except httpx.TimeoutException:
-        return {"ok": False, "error": "请求超时（15s）"}
-    except Exception as e:
-        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
-
-
-@app.get("/api/admin/reports")
-async def api_admin_reports():
+@app.get("/api/draw/admin/reports")
+async def draw_admin_reports(user: dict = Depends(require_admin)):
     reports = _load_reports()
     pending = [r for r in reports if r.get("status") == "pending"]
     pending.sort(key=lambda r: r.get("timestamp", 0), reverse=True)
     for r in pending:
-        r["creator_ip"] = _creator_map_get(r.get("image_path", ""))
+        r["creator_id"] = _creator_map_get(r.get("image_path", ""))
         try:
             p = _resolve_output_path(r["image_path"])
             r["image_exists"] = p.is_file()
@@ -3317,8 +2866,8 @@ async def api_admin_reports():
     return {"reports": pending, "total": len(pending)}
 
 
-@app.post("/api/admin/report/resolve")
-async def api_admin_report_resolve(payload: Dict[str, Any]):
+@app.post("/api/draw/admin/report/resolve")
+async def draw_admin_report_resolve(payload: Dict[str, Any], user: dict = Depends(require_admin)):
     report_id = str((payload or {}).get("report_id", "")).strip()
     action = str((payload or {}).get("action", "")).strip()
     if not report_id:
@@ -3369,23 +2918,29 @@ async def api_admin_report_resolve(payload: Dict[str, Any]):
                 r["status"] = "resolved"
                 r["resolved_action"] = "dismiss"
     elif action == "ban_creator":
-        creator_ip = _creator_map_get(image_path)
-        if creator_ip:
-            ips = _read_banned_ips()
-            if creator_ip not in ips:
-                ips.append(creator_ip)
-            await _write_banned_ips(ips)
+        creator_id_str = _creator_map_get(image_path)
+        if creator_id_str:
+            try:
+                creator_id = int(creator_id_str)
+            except ValueError:
+                raise HTTPException(400, "无法解析该图片的绘图者 ID")
+            async with _draw_users_lock:
+                data = _load_draw_users()
+                if creator_id not in data["banned"]:
+                    data["banned"].append(creator_id)
+                    await _save_draw_users(data)
         else:
-            raise HTTPException(400, "未找到该图片的绘图者 IP")
+            raise HTTPException(400, "未找到该图片的绘图者 ID")
     elif action == "ban_reporter":
-        reporter_ip = target.get("reporter_ip", "")
-        if reporter_ip:
-            ips = _read_banned_ips()
-            if reporter_ip not in ips:
-                ips.append(reporter_ip)
-            await _write_banned_ips(ips)
+        reporter_id = target.get("reporter_id")
+        if reporter_id:
+            async with _draw_users_lock:
+                data = _load_draw_users()
+                if reporter_id not in data["banned"]:
+                    data["banned"].append(reporter_id)
+                    await _save_draw_users(data)
             for r in reports:
-                if r.get("status") == "pending" and r.get("reporter_ip") == reporter_ip and r.get("id") != report_id:
+                if r.get("status") == "pending" and r.get("reporter_id") == reporter_id and r.get("id") != report_id:
                     r["status"] = "resolved"
                     r["resolved_action"] = "dismiss"
     target["status"] = "resolved"
@@ -3393,6 +2948,85 @@ async def api_admin_report_resolve(payload: Dict[str, Any]):
     if not await _save_reports(reports):
         raise HTTPException(500, "保存举报记录失败")
     return {"ok": True, "action": action}
+
+
+@app.post("/api/draw/admin/gc")
+async def draw_admin_gc(user: dict = Depends(require_admin)):
+    """手动触发一次 GC。"""
+    result = await _run_gc()
+    return {"ok": True, "cleaned": result}
+
+
+@app.get("/api/draw/admin/announcement")
+async def draw_admin_announcement(user: dict = Depends(require_admin)):
+    return {"announcement": dict(_announcement)}
+
+
+@app.post("/api/draw/admin/announcement")
+async def draw_admin_set_announcement(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    new_state = {
+        "enabled": bool(payload.get("enabled", _announcement.get("enabled", False))),
+        "title": str(payload.get("title", _announcement.get("title", ""))).strip(),
+        "content": str(payload.get("content", _announcement.get("content", ""))).strip(),
+    }
+    if not await _save_announcement(new_state):
+        raise HTTPException(500, "写入 announcement.json 失败")
+    _announcement.clear()
+    _announcement.update(new_state)
+    return {"ok": True, "announcement": dict(_announcement)}
+
+
+@app.get("/api/draw/admin/maintenance")
+async def draw_admin_maintenance(user: dict = Depends(require_admin)):
+    return dict(_maintenance)
+
+
+@app.post("/api/draw/admin/maintenance")
+async def draw_admin_set_maintenance(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    new_state = {
+        "enabled": bool(payload.get("enabled", _maintenance.get("enabled", False))),
+        "message": str(payload.get("message", _maintenance.get("message", ""))).strip(),
+    }
+    if not await _save_maintenance(new_state):
+        raise HTTPException(500, "写入 maintenance.json 失败")
+    _maintenance.clear()
+    _maintenance.update(new_state)
+    return {"ok": True, "maintenance": dict(_maintenance)}
+
+
+@app.get("/api/draw/admin/draw-banned")
+async def draw_admin_draw_banned(user: dict = Depends(require_admin)):
+    data = _load_draw_users()
+    return {"banned": data.get("banned", [])}
+
+
+@app.post("/api/draw/admin/draw-ban")
+async def draw_admin_draw_ban(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    uid = (payload or {}).get("user_id")
+    if not isinstance(uid, int):
+        raise HTTPException(400, "user_id required (int)")
+    async with _draw_users_lock:
+        data = _load_draw_users()
+        if uid not in data["banned"]:
+            data["banned"].append(uid)
+            await _save_draw_users(data)
+    return {"ok": True, "banned": data["banned"]}
+
+
+@app.post("/api/draw/admin/draw-unban")
+async def draw_admin_draw_unban(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    uid = (payload or {}).get("user_id")
+    if not isinstance(uid, int):
+        raise HTTPException(400, "user_id required (int)")
+    async with _draw_users_lock:
+        data = _load_draw_users()
+        data["banned"] = [x for x in data["banned"] if x != uid]
+        await _save_draw_users(data)
+    return {"ok": True, "banned": data["banned"]}
 
 
 if __name__ == "__main__":
@@ -3405,36 +3039,7 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=WEB_PORT, help=f"端口，默认 {WEB_PORT}")
     parser.add_argument("--reload", action="store_true",
                         help="开启代码热重载（py 文件变更自动重启）")
-    parser.add_argument("--i-have-configured-auth", action="store_true",
-                        help="跳过启动前的鉴权配置确认提示")
     args = parser.parse_args()
-
-    if not args.i_have_configured_auth:
-        banner = (
-            "\n" + "=" * 70 + "\n"
-            "⚠️  安全提示：本服务自身不做任何鉴权！\n"
-            "    /admin 与 /api/admin/* 公开可达，可封禁 IP、删图、维护模式…\n"
-            "    任何能访问本服务端口的人都能调用这些接口。\n\n"
-            "    部署前请务必在反向代理上加访问控制，至少满足其一：\n"
-            "      • Cloudflare Access / Zero Trust 策略\n"
-            "      • Nginx auth_basic\n"
-            "      • IP 白名单（防火墙 / nginx allow/deny）\n"
-            "      • Tailscale / WireGuard 等私有网络\n\n"
-            "    若仅本机使用 (host=127.0.0.1)，可直接继续。\n"
-            "    用 --i-have-configured-auth 跳过本提示。\n"
-            + "=" * 70 + "\n"
-        )
-        print(banner)
-        # 只在 host 不是 loopback 时强制确认
-        loopback_hosts = {"127.0.0.1", "::1", "localhost"}
-        if args.host not in loopback_hosts:
-            try:
-                ans = input("已在反向代理上配置鉴权？输入 yes 继续，其它退出： ").strip().lower()
-            except EOFError:
-                ans = ""
-            if ans != "yes":
-                print("已取消启动。请先配置访问控制，或确认仅监听本机。")
-                raise SystemExit(1)
 
     if args.reload:
         # reload 模式必须传 import string

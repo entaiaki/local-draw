@@ -10,8 +10,7 @@ dev
 
 # ── 运行时数据 ──
 web/__pycache__
-web/creator_ips.txt
-web/banned_ips.txt
+web/creator_users.txt
 web/featured.txt
 web/reports.json
 web/limits.json
@@ -20,7 +19,7 @@ web/resolutions.json
 web/llm_config.json
 web/announcement.json
 web/maintenance.json
-web/custom_head.json
+web/draw_users.json
 web/workflow_meta.json
 
 # ── 运行时图片 & 资源 ──

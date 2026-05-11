@@ -4,3 +4,5 @@ httpx
 websockets
 pydantic
 pillow
+python-jose[cryptography]
+python-dotenv
