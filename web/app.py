@@ -1596,6 +1596,38 @@ async def api_output_list(limit: int = 500, offset: int = 0):
     }
 
 
+@app.get("/api/draw/my-images")
+async def draw_my_images(user: dict = Depends(get_current_user)):
+    """列出当前用户生成的图片，最多 500 张，按 mtime 倒序。"""
+    uid_str = str(user["id"])
+    id_map: Dict[str, str] = {}
+    if CREATOR_MAP_FILE.is_file():
+        try:
+            for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+                if not ln or "\t" not in ln:
+                    continue
+                k, _, v = ln.partition("\t")
+                id_map[k] = v
+        except Exception:
+            pass
+    results: list = []
+    for rel, rel_uid in id_map.items():
+        if rel_uid != uid_str:
+            continue
+        p = OUTPUT_DIR / rel.replace("/", os.sep)
+        if not p.is_file():
+            p = ARCHIVE_DIR / rel.replace("/", os.sep)
+        if not p.is_file():
+            continue
+        try:
+            mt = p.stat().st_mtime
+        except Exception:
+            mt = 0
+        results.append({"path": rel, "mtime": mt})
+    results.sort(key=lambda x: x["mtime"], reverse=True)
+    return {"items": results[:500], "total": len(results)}
+
+
 @app.get("/api/output/featured")
 async def api_output_featured():
     """游客可见的精选图片列表，按管理员保存的顺序返回。失效项（文件已删）会过滤掉。"""
@@ -3038,6 +3070,178 @@ async def draw_admin_draw_unban(payload: Dict[str, Any], user: dict = Depends(re
         data["banned"] = [x for x in data["banned"] if x != uid]
         await _save_draw_users(data)
     return {"ok": True, "banned": data["banned"]}
+
+
+# ---------------- 画风管理端点 ----------------
+
+@app.get("/api/draw/admin/styles")
+async def draw_admin_styles_get(user: dict = Depends(require_admin)):
+    return {"styles": list(_styles)}
+
+
+@app.post("/api/draw/admin/styles")
+async def draw_admin_styles_set(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    raw = payload.get("styles")
+    if not isinstance(raw, list):
+        raise HTTPException(400, "styles must be array")
+    cleaned = []
+    for s in raw:
+        if not isinstance(s, dict):
+            continue
+        tags = str(s.get("tags", "")).strip()
+        if not tags:
+            continue
+        cleaned.append({
+            "name": str(s.get("name", "")).strip(),
+            "tags": tags,
+            "image": str(s.get("image", "")).strip(),
+        })
+    if not await _save_styles(cleaned):
+        raise HTTPException(500, "写入 styles.json 失败")
+    _styles.clear()
+    _styles.extend(cleaned)
+    return {"ok": True, "styles": list(_styles)}
+
+
+async def _save_upload(file: UploadFile, dest_dir: Path) -> str:
+    """流式保存上传文件，边写边校验大小（上限 5 MB）。"""
+    if not file.filename:
+        raise HTTPException(400, "no filename")
+    ext = Path(file.filename).suffix.lower()
+    if ext not in THUMB_EXTS:
+        raise HTTPException(400, f"不支持的格式，仅限 {', '.join(THUMB_EXTS)}")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    safe_name = Path(file.filename).name
+    if not safe_name or ".." in safe_name:
+        raise HTTPException(400, "invalid filename")
+    dest = dest_dir / safe_name
+    MAX_SIZE = 5 * 1024 * 1024
+    written = 0
+    CHUNK = 256 * 1024
+    with open(dest, "wb") as f:
+        while True:
+            chunk = await file.read(CHUNK)
+            if not chunk:
+                break
+            written += len(chunk)
+            if written > MAX_SIZE:
+                f.close()
+                dest.unlink(missing_ok=True)
+                raise HTTPException(400, "文件过大（上限 5 MB）")
+            f.write(chunk)
+    return safe_name
+
+
+@app.post("/api/draw/admin/style_thumbnail")
+async def draw_admin_style_thumbnail(file: UploadFile, user: dict = Depends(require_admin)):
+    filename = await _save_upload(file, STYLE_THUMB_DIR)
+    return {"ok": True, "filename": filename}
+
+
+# ---------------- 工作流管理端点 ----------------
+
+def scan_workflow_files() -> List[str]:
+    """扫描 ComfyUI 工作流目录，返回所有 .json 文件的相对路径列表。"""
+    root = Path(COMFYUI_WORKFLOWS_DIR)
+    if not root.is_dir():
+        return []
+    results = []
+    for p in sorted(root.rglob("*.json")):
+        rel = str(p.relative_to(root)).replace("\\", "/")
+        results.append(rel)
+    return results
+
+
+@app.get("/api/draw/admin/workflow_files")
+async def draw_admin_workflow_files(user: dict = Depends(require_admin)):
+    return {"files": scan_workflow_files()}
+
+
+@app.post("/api/draw/admin/workflow_rename")
+async def draw_admin_workflow_rename(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    old = str(payload.get("old", "")).strip()
+    new = str(payload.get("new", "")).strip()
+    if not old or not new:
+        raise HTTPException(400, "old 和 new 不能为空")
+    if old == new:
+        return {"ok": True}
+    if ".." in old or ".." in new:
+        raise HTTPException(400, "路径不合法")
+    root = Path(COMFYUI_WORKFLOWS_DIR)
+    old_path = (root / old).resolve()
+    new_path = (root / new).resolve()
+    if not old_path.is_relative_to(root.resolve()):
+        raise HTTPException(400, "路径不合法")
+    if not new_path.is_relative_to(root.resolve()):
+        raise HTTPException(400, "路径不合法")
+    if not old_path.is_file():
+        raise HTTPException(400, f"旧工作流不存在: {old}")
+    if new_path.exists():
+        raise HTTPException(400, f"目标文件已存在: {new}")
+    new_path.parent.mkdir(parents=True, exist_ok=True)
+    old_path.rename(new_path)
+    if old in _workflow_meta:
+        _workflow_meta[new] = _workflow_meta.pop(old)
+        await _save_workflow_meta_file(_workflow_meta)
+    return {"ok": True}
+
+
+@app.get("/api/draw/admin/workflow_meta")
+async def draw_admin_workflow_meta_get(user: dict = Depends(require_admin)):
+    arr = []
+    for wf in sorted(_workflow_meta):
+        entry = {"workflow": wf}
+        entry.update(_workflow_meta[wf])
+        arr.append(entry)
+    return {"workflow_meta": arr}
+
+
+@app.post("/api/draw/admin/workflow_meta")
+async def draw_admin_workflow_meta_set(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    raw = payload.get("workflow_meta")
+    if not isinstance(raw, list):
+        raise HTTPException(400, "workflow_meta must be array")
+    cleaned = {}
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        wf = str(item.get("workflow", "")).strip()
+        if not wf:
+            continue
+        entry = {}
+        thumb = str(item.get("thumbnail", "")).strip()
+        link = str(item.get("lora_link", "")).strip()
+        cat = str(item.get("category", "")).strip()
+        if thumb:
+            entry["thumbnail"] = thumb
+        if link:
+            if not link.startswith(("http://", "https://")):
+                raise HTTPException(400, "lora_link 必须以 http:// 或 https:// 开头")
+            entry["lora_link"] = link
+        if cat:
+            entry["category"] = cat
+        if entry:
+            cleaned[wf] = entry
+    if not await _save_workflow_meta_file(cleaned):
+        raise HTTPException(500, "写入 workflow_meta.json 失败")
+    _workflow_meta.clear()
+    _workflow_meta.update(cleaned)
+    arr = []
+    for wf in sorted(_workflow_meta):
+        entry = {"workflow": wf}
+        entry.update(_workflow_meta[wf])
+        arr.append(entry)
+    return {"ok": True, "workflow_meta": arr}
+
+
+@app.post("/api/draw/admin/wf_thumbnail")
+async def draw_admin_wf_thumbnail(file: UploadFile, user: dict = Depends(require_admin)):
+    safe_name = await _save_upload(file, THUMB_DIR)
+    return {"ok": True, "filename": safe_name}
 
 
 if __name__ == "__main__":
