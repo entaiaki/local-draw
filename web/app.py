@@ -516,6 +516,22 @@ def _creator_map_get(rel: str) -> str:
     return ""
 
 
+def _load_creator_map() -> Dict[str, str]:
+    """读取整个 creator_users.txt，返回 {rel_path: user_id} 字典。"""
+    m: Dict[str, str] = {}
+    if not CREATOR_MAP_FILE.is_file():
+        return m
+    try:
+        for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+            if not ln or "\t" not in ln:
+                continue
+            k, _, v = ln.partition("\t")
+            m[k] = v
+    except Exception:
+        pass
+    return m
+
+
 async def _creator_map_set(rel: str, user_id: int) -> bool:
     """每行 `<rel>\\t<user_id>`，同 key 去重保留最新；原子替换。"""
     if not rel or not user_id:
@@ -1590,13 +1606,15 @@ async def api_output_list(limit: int = 500, offset: int = 0):
     items.sort(key=lambda x: -x[0])
     total = len(items)
     sliced = items[offset:offset + max(0, min(limit, 2000))]
+    cmap = _load_creator_map()
     return {
         "output_dir": str(OUTPUT_DIR),
         "archive_dir": str(ARCHIVE_DIR),
         "exists": True,
         "total": total,
         "items": [
-            {"path": rel, "mtime": mt, "size": sz} for (mt, rel, sz) in sliced
+            {"path": rel, "mtime": mt, "size": sz, "creator_id": cmap.get(rel, "")}
+            for (mt, rel, sz) in sliced
         ],
     }
 
@@ -1636,6 +1654,7 @@ async def draw_my_images(user: dict = Depends(get_current_user)):
 @app.get("/api/output/featured")
 async def api_output_featured():
     """游客可见的精选图片列表，按管理员保存的顺序返回。失效项（文件已删）会过滤掉。"""
+    cmap = _load_creator_map()
     items: List[Dict[str, Any]] = []
     for rel in _read_featured():
         try:
@@ -1648,7 +1667,7 @@ async def api_output_featured():
             mt = p.stat().st_mtime
         except Exception:
             mt = None
-        items.append({"path": rel, "mtime": mt})
+        items.append({"path": rel, "mtime": mt, "creator_id": cmap.get(rel, "")})
     return {"items": items, "total": len(items), "tip": _limits.get("featured_tip", "")}
 
 
