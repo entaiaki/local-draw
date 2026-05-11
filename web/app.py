@@ -2206,7 +2206,7 @@ class RunRequest(BaseModel):
 
 
 # 最大并发生图数
-_MAX_CONCURRENT = 2
+_MAX_CONCURRENT = 1
 # 并发控制信号量
 _run_sem = asyncio.Semaphore(_MAX_CONCURRENT)
 # 当前活跃生图数
