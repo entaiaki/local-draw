@@ -1498,7 +1498,15 @@ async def api_thumbnail(request: Request, path: str):
 
 @app.get("/api/styles")
 async def api_styles_public():
-    return {"styles": list(_styles)}
+    result = []
+    for s in _styles:
+        item = dict(s)
+        img = s.get("image", "")
+        if img:
+            from urllib.parse import quote
+            item["thumbnail_url"] = f"/api/style_thumbnail?name={quote(img)}"
+        result.append(item)
+    return {"styles": result}
 
 
 @app.get("/api/resolutions")
