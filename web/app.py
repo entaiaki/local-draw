@@ -544,13 +544,6 @@ async def _creator_map_set(rel: str, user_id: int) -> bool:
 app = FastAPI(title="自然语言生图")
 # 文本响应（JSON / HTML / JS / CSS）做轻量级 gzip 压缩；图片字节走另一条路（webp 转码）
 app.add_middleware(GZipMiddleware, minimum_size=512, compresslevel=4)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 # 维护模式拦截（纯 JSON）
@@ -563,6 +556,16 @@ async def _maintenance_middleware(request: Request, call_next):
         return await call_next(request)
     from fastapi.responses import JSONResponse as _JR
     return _JR({"error": "站点维护中", "message": _maintenance.get("message", "")}, status_code=503)
+
+
+# CORS 放在维护中间件之后添加（Starlette 后添加的先执行），确保 503 也有 CORS 头
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # 全局禁止搜索引擎索引
