@@ -584,10 +584,15 @@ _image_rate_buckets: Dict[str, List[float]] = {}
 async def _image_rate_limit(request: Request, call_next):
     if not request.url.path.startswith(_IMAGE_RATE_PATHS):
         return await call_next(request)
-    # 管理员面板跳过限流
+    # 管理员跳过限流：检查 referer 或 query token
     referer = request.headers.get("referer", "")
     if "/admin" in referer:
         return await call_next(request)
+    token = request.query_params.get("token", "")
+    if token:
+        u = verify_jwt(token)
+        if u and u.get("role") == "admin":
+            return await call_next(request)
     window = float(_limits.get("image_rate_window_sec", 60))
     cap = int(_limits.get("image_rate_max", 120))
     if window <= 0 or cap <= 0:
