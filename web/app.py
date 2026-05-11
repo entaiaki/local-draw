@@ -3076,7 +3076,15 @@ async def draw_admin_draw_unban(payload: Dict[str, Any], user: dict = Depends(re
 
 @app.get("/api/draw/admin/styles")
 async def draw_admin_styles_get(user: dict = Depends(require_admin)):
-    return {"styles": list(_styles)}
+    from urllib.parse import quote
+    result = []
+    for s in _styles:
+        item = dict(s)
+        img = s.get("image", "")
+        if img:
+            item["thumbnail_url"] = f"/api/style_thumbnail?name={quote(img)}"
+        result.append(item)
+    return {"styles": result}
 
 
 @app.post("/api/draw/admin/styles")
@@ -3102,7 +3110,15 @@ async def draw_admin_styles_set(payload: Dict[str, Any], user: dict = Depends(re
         raise HTTPException(500, "写入 styles.json 失败")
     _styles.clear()
     _styles.extend(cleaned)
-    return {"ok": True, "styles": list(_styles)}
+    from urllib.parse import quote
+    result = []
+    for s in _styles:
+        item = dict(s)
+        img = s.get("image", "")
+        if img:
+            item["thumbnail_url"] = f"/api/style_thumbnail?name={quote(img)}"
+        result.append(item)
+    return {"ok": True, "styles": result}
 
 
 async def _save_upload(file: UploadFile, dest_dir: Path) -> str:
