@@ -3317,6 +3317,32 @@ async def draw_admin_llm_config_set(payload: Dict[str, Any], user: dict = Depend
     return {"ok": True, "config": resp}
 
 
+@app.post("/api/draw/admin/llm_config/test")
+async def draw_admin_llm_config_test(user: dict = Depends(require_admin)):
+    """用当前 LLM 配置发送一条简单测试消息，返回模型原始回复。"""
+    cfg = _llm_config
+    provider = cfg.get("provider", "local")
+    test_system = "You are a helpful assistant. Reply in one short sentence."
+    test_user = "Say hello."
+
+    try:
+        if provider == "google":
+            result = await _llm_google(test_system, test_user, cfg, None, False)
+        elif provider == "custom":
+            result = await _llm_openai_compat(test_system, test_user,
+                                              cfg.get("custom_endpoint", ""),
+                                              cfg.get("custom_api_key", ""),
+                                              cfg.get("custom_model", ""),
+                                              None, False)
+        else:
+            result = await _llm_openai_compat(test_system, test_user,
+                                              cfg.get("local_endpoint") or LMS_API,
+                                              "", "", None, False)
+        return {"ok": True, "provider": provider, "reply": result.strip()[:500]}
+    except Exception as e:
+        return {"ok": False, "provider": provider, "error": str(e)[:500]}
+
+
 if __name__ == "__main__":
     import argparse
     import uvicorn
