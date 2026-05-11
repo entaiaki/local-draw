@@ -75,7 +75,9 @@ STYLES_FILE = Path(__file__).parent / "styles.json"
 STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
 RESOLUTIONS_FILE = Path(__file__).parent / "resolutions.json"
 MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
+RECOMMEND_FILE = Path(__file__).parent / "recommendations.json"
 _featured_lock = asyncio.Lock()
+_recommend_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
 _styles_lock = asyncio.Lock()
@@ -446,6 +448,29 @@ async def _auto_dismiss_reports_for_image(image_path: str):
             changed = True
     if changed:
         await _save_reports(reports)
+
+
+def _load_recommendations() -> list:
+    if RECOMMEND_FILE.is_file():
+        try:
+            data = json.loads(RECOMMEND_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                return data
+        except Exception:
+            pass
+    return []
+
+
+async def _save_recommendations(recs: list) -> bool:
+    async with _recommend_lock:
+        try:
+            tmp = RECOMMEND_FILE.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(recs, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, RECOMMEND_FILE)
+            return True
+        except Exception:
+            return False
 
 
 def _client_ip_from_request(request: Request) -> str:
@@ -2180,19 +2205,20 @@ class RunRequest(BaseModel):
     negative_prompt: str = ""
 
 
-# 单一并发锁
-_run_lock = asyncio.Lock()
+# 最大并发生图数
+_MAX_CONCURRENT = 2
+# 并发控制信号量
+_run_sem = asyncio.Semaphore(_MAX_CONCURRENT)
+# 当前活跃生图数
+_active_count = 0
 # 广播：所有打开 /ws/status 的客户端
 _status_subscribers: "set[WebSocket]" = set()
 # 当前活跃任务快照：None 表示空闲
 _active_status: Optional[Dict[str, Any]] = None
-# 当前任务的事件回放缓冲（新连入的客户端可重建 UI）
-# 元素: 原始 send 给前端的 dict
-_event_log: List[Dict[str, Any]] = []
 
 
 def _idle_snapshot() -> Dict[str, Any]:
-    return {"busy": False}
+    return {"busy": False, "active": 0}
 
 
 async def _broadcast(msg: Dict[str, Any]) -> None:
@@ -2207,45 +2233,37 @@ async def _broadcast(msg: Dict[str, Any]) -> None:
 
 
 async def emit(ws: Optional[WebSocket], msg: Dict[str, Any]) -> None:
-    """发送一条业务事件：发起者 ws + 所有订阅者 + 写入回放日志。"""
-    _event_log.append(msg)
-    # 发起者
+    """发送一条业务事件：仅发送给发起者，不再广播。"""
     if ws is not None:
         try:
             await ws.send_json(msg)
         except Exception:
             pass
-    # 订阅者（包装一层 mirror 包，前端可识别）
-    await _broadcast({"type": "mirror", "event": msg})
 
 
 async def _push_status(patch: Optional[Dict[str, Any]] = None, *, reset: bool = False) -> None:
     """更新 _active_status 并向所有订阅者广播。"""
-    global _active_status
+    global _active_status, _active_count
+    active = _active_count
     if reset:
         _active_status = None
-        _event_log.clear()
     elif patch:
         if _active_status is None:
-            _active_status = {"busy": True}
+            _active_status = {"busy": True, "active": active}
         _active_status.update(patch)
-    snap = {"type": "status", "online": len(_status_subscribers), **(_active_status or _idle_snapshot())}
+        _active_status["active"] = active
+    snap = {"type": "status", "online": len(_status_subscribers), "active": active, **(_active_status or _idle_snapshot())}
     await _broadcast(snap)
 
 
 @app.websocket("/ws/status")
 async def ws_status(ws: WebSocket):
-    """只读订阅：当前任务状态 + 历史回放 + 后续广播。"""
+    """只读订阅：当前任务状态。不再广播/回放镜像。"""
     await ws.accept()
     _status_subscribers.add(ws)
-    # 广播在线人数给所有人
     await _broadcast({"type": "online", "count": len(_status_subscribers)})
     try:
-        # 立即推快照
-        await ws.send_json({"type": "status", "online": len(_status_subscribers), **(_active_status or _idle_snapshot())})
-        # 回放本次任务已发生的所有事件，让新页面重建 UI
-        for evt in list(_event_log):
-            await ws.send_json({"type": "mirror", "event": evt})
+        await ws.send_json({"type": "status", "online": len(_status_subscribers), "active": _active_count, **(_active_status or _idle_snapshot())})
         while True:
             await ws.receive_text()
     except WebSocketDisconnect:
@@ -2254,7 +2272,6 @@ async def ws_status(ws: WebSocket):
         pass
     finally:
         _status_subscribers.discard(ws)
-        # 广播在线人数给所有人
         await _broadcast({"type": "online", "count": len(_status_subscribers)})
 
 
@@ -2263,77 +2280,78 @@ async def ws_run(ws: WebSocket):
     """前端通过 WebSocket 提交并实时接收进度。
 
     协议:
-      客户端首条消息: {token, direct_prompt, nl_prompt, rewrite, sentence_mode, ...}
+      客户端连接后首条消息: {token, direct_prompt, nl_prompt, rewrite, sentence_mode, ...}
       服务端推送: {type: "log"|"progress"|"image"|"done"|"error", ...}
     """
     await ws.accept()
 
-    if _run_lock.locked():
-        await ws.send_json({
-            "type": "error",
-            "message": "服务器繁忙：已有任务在执行（其它页面/会话正在生图）",
-            "busy": True,
-        })
-        await ws.close()
+    # 先接收首条消息（含 token 和参数），不占用信号量
+    try:
+        init = await ws.receive_json()
+    except Exception:
         return
 
-    async with _run_lock:
+    # JWT 鉴权
+    user = verify_jwt(init.get("token", ""))
+    if not user:
         try:
-            init = await ws.receive_json()
+            await ws.send_json({"type": "error", "message": "token 无效或已过期，请重新登录"})
         except Exception:
-            return
-        # JWT 鉴权：从首条消息中提取 token
-        user = verify_jwt(init.get("token", ""))
-        if not user:
-            try:
-                await ws.send_json({"type": "error", "message": "token 无效或已过期，请重新登录"})
-            except Exception:
-                pass
-            try:
-                await ws.close()
-            except Exception:
-                pass
-            return
-        user_id = user["id"]
-        if is_user_draw_banned(user_id):
-            try:
-                await ws.send_json({"type": "error", "message": "你已被管理员禁止生图"})
-            except Exception:
-                pass
-            try:
-                await ws.close()
-            except Exception:
-                pass
-            return
-        # 单用户生图冷却（管理员不受限制）
-        import time as _time
-        now = _time.time()
-        last = _RATE_LAST_TS.get(user_id, 0.0)
-        cooldown = float(_limits.get("gen_cooldown_sec", 30))
-        wait = cooldown - (now - last)
-        if wait > 0 and user.get("role") != "admin":
-            try:
-                await ws.send_json({
-                    "type": "error",
-                    "message": f"生图间隔限制：请 {int(wait) + 1}s 后再试",
-                })
-            except Exception:
-                pass
-            try:
-                await ws.close()
-            except Exception:
-                pass
-            return
+            pass
+        try:
+            await ws.close()
+        except Exception:
+            pass
+        return
+    user_id = user["id"]
+
+    if is_user_draw_banned(user_id):
+        try:
+            await ws.send_json({"type": "error", "message": "你已被管理员禁止生图"})
+        except Exception:
+            pass
+        try:
+            await ws.close()
+        except Exception:
+            pass
+        return
+
+    # 单用户生图冷却（管理员不受限制）
+    import time as _time
+    now = _time.time()
+    last = _RATE_LAST_TS.get(user_id, 0.0)
+    cooldown = float(_limits.get("gen_cooldown_sec", 30))
+    wait = cooldown - (now - last)
+    if wait > 0 and user.get("role") != "admin":
+        try:
+            await ws.send_json({
+                "type": "error",
+                "message": f"生图间隔限制：请 {int(wait) + 1}s 后再试",
+            })
+        except Exception:
+            pass
+        try:
+            await ws.close()
+        except Exception:
+            pass
+        return
+
+    # 等待信号量（队列），最多允许 _MAX_CONCURRENT 个任务同时执行
+    global _active_count
+    async with _run_sem:
+        _active_count += 1
+        await _push_status()
         try:
             await _run_task(ws, RunRequest(**init), user_id=user_id)
         except (WebSocketDisconnect, asyncio.CancelledError):
-            return
+            pass  # 用户断开，正常结束
         except Exception as e:
             try:
                 await emit(ws, {"type": "error", "message": str(e)})
             except Exception:
                 pass
         finally:
+            _active_count -= 1
             await _push_status(reset=True)
 
 
@@ -2702,6 +2720,101 @@ async def draw_admin_featured_reorder(payload: Dict[str, Any], user: dict = Depe
     if not await _write_featured(cleaned):
         raise HTTPException(500, "写入 featured.txt 失败")
     return {"ok": True, "items": cleaned}
+
+
+# ---------------- 图片自荐 ----------------
+
+@app.post("/api/draw/recommend")
+async def api_recommend(payload: Dict[str, Any], request: Request):
+    import time as _time
+    user = await get_current_user(request)
+    uid = user["id"]
+    if is_user_draw_banned(uid):
+        raise HTTPException(403, "你已被封禁")
+    image_path = str((payload or {}).get("image_path", "")).strip().replace("\\", "/")
+    if not image_path:
+        raise HTTPException(400, "缺少 image_path")
+    try:
+        p = _resolve_output_path(image_path)
+    except Exception:
+        raise HTTPException(400, "路径非法")
+    if not p.is_file():
+        raise HTTPException(404, "图片不存在")
+    # 必须是自己的图
+    creator = _creator_map_get(image_path)
+    if creator and str(uid) != creator:
+        raise HTTPException(403, "只能自荐自己生成的图片")
+    # 检查重复
+    recs = _load_recommendations()
+    for r in recs:
+        if r.get("image_path") == image_path and r.get("user_id") == uid and r.get("status") in ("pending", "approved"):
+            raise HTTPException(409, "该图片已自荐")
+    new_rec = {
+        "id": uuid.uuid4().hex,
+        "image_path": image_path,
+        "user_id": uid,
+        "timestamp": _time.time(),
+        "status": "pending",
+        "user_reason": str((payload or {}).get("reason", "")).strip()[:500],
+        "admin_reason": None,
+    }
+    recs.append(new_rec)
+    if not await _save_recommendations(recs):
+        raise HTTPException(500, "保存失败")
+    return {"ok": True, "recommendation": new_rec}
+
+
+@app.get("/api/draw/my-recommendations")
+async def api_my_recommendations(request: Request):
+    user = await get_current_user(request)
+    uid = user["id"]
+    recs = _load_recommendations()
+    mine = [r for r in recs if r.get("user_id") == uid]
+    mine.sort(key=lambda r: r.get("timestamp", 0), reverse=True)
+    return {"items": mine, "total": len(mine)}
+
+
+@app.get("/api/draw/admin/recommendations")
+async def draw_admin_recommendations(user: dict = Depends(require_admin)):
+    recs = _load_recommendations()
+    pending = [r for r in recs if r.get("status") == "pending"]
+    pending.sort(key=lambda r: r.get("timestamp", 0), reverse=True)
+    for r in pending:
+        r["creator_id"] = str(r.get("user_id", ""))
+        try:
+            p = _resolve_output_path(r.get("image_path", ""))
+            r["image_exists"] = p.is_file()
+        except Exception:
+            r["image_exists"] = False
+    return {"items": pending, "total": len(pending)}
+
+
+@app.post("/api/draw/admin/recommendations/resolve")
+async def draw_admin_recommendations_resolve(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    rec_id = str((payload or {}).get("rec_id", "")).strip()
+    action = str((payload or {}).get("action", "")).strip()
+    admin_reason = str((payload or {}).get("reason", "")).strip()[:500]
+    if not rec_id or action not in ("approve", "reject"):
+        raise HTTPException(400, "参数错误")
+    recs = _load_recommendations()
+    target = None
+    for r in recs:
+        if r.get("id") == rec_id and r.get("status") == "pending":
+            target = r
+            break
+    if not target:
+        raise HTTPException(404, "未找到待审核的自荐")
+    target["status"] = "approved" if action == "approve" else "rejected"
+    target["admin_reason"] = admin_reason or None
+    if action == "approve":
+        # 自动加入精选
+        featured = _read_featured()
+        if target["image_path"] not in featured:
+            featured.insert(0, target["image_path"])
+            await _write_featured(featured)
+    if not await _save_recommendations(recs):
+        raise HTTPException(500, "保存失败")
+    return {"ok": True, "recommendation": target}
 
 
 @app.get("/api/draw/admin/limits")
