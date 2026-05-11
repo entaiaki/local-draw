@@ -2281,13 +2281,13 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
             return
-        # 单用户生图冷却（来自 limits.json，可在管理面板改）
+        # 单用户生图冷却（管理员不受限制）
         import time as _time
         now = _time.time()
         last = _RATE_LAST_TS.get(user_id, 0.0)
         cooldown = float(_limits.get("gen_cooldown_sec", 30))
         wait = cooldown - (now - last)
-        if wait > 0:
+        if wait > 0 and user.get("role") != "admin":
             try:
                 await ws.send_json({
                     "type": "error",
