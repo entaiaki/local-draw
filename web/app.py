@@ -3260,6 +3260,63 @@ async def draw_admin_wf_thumbnail(file: UploadFile, user: dict = Depends(require
     return {"ok": True, "filename": safe_name}
 
 
+# ---------------- LLM 配置管理 ----------------
+
+_LLM_KEY_FIELDS = {"google_api_key", "custom_api_key"}
+_GOOGLE_THINKING_OPTIONS = ["off", "level_1", "level_2", "level_3", "budget_1", "budget_2", "budget_3"]
+
+
+@app.get("/api/draw/admin/llm_config")
+async def draw_admin_llm_config_get(user: dict = Depends(require_admin)):
+    cfg = dict(_llm_config)
+    # 脱敏：有值的 key 返回 "***"，空的返回 ""
+    for k in _LLM_KEY_FIELDS:
+        cfg[k] = "***" if cfg.get(k) else ""
+    return {
+        "config": cfg,
+        "defaults": dict(DEFAULT_LLM_CONFIG),
+        "providers": ["local", "google", "custom"],
+        "google_thinking_options": _GOOGLE_THINKING_OPTIONS,
+    }
+
+
+@app.post("/api/draw/admin/llm_config")
+async def draw_admin_llm_config_set(payload: Dict[str, Any], user: dict = Depends(require_admin)):
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "payload must be object")
+    new_cfg = dict(_llm_config)
+    allowed = set(DEFAULT_LLM_CONFIG.keys())
+    for k, v in payload.items():
+        if k not in allowed:
+            continue
+        if k in _LLM_KEY_FIELDS:
+            # "***" 表示未修改，跳过；空字符串表示清空；否则更新
+            if v == "***":
+                continue
+            new_cfg[k] = str(v)
+        elif k == "provider":
+            if v not in ("local", "google", "custom"):
+                raise HTTPException(400, f"provider 必须为 local/google/custom")
+            new_cfg[k] = v
+        elif k == "llm_stream":
+            new_cfg[k] = bool(v)
+        elif k == "google_thinking":
+            if v not in _GOOGLE_THINKING_OPTIONS:
+                raise HTTPException(400, f"google_thinking 不合法")
+            new_cfg[k] = str(v)
+        else:
+            new_cfg[k] = str(v) if v is not None else ""
+    if not await _save_llm_config(new_cfg):
+        raise HTTPException(500, "写入 llm_config.json 失败")
+    _llm_config.clear()
+    _llm_config.update(new_cfg)
+    # 脱敏返回
+    resp = dict(new_cfg)
+    for k in _LLM_KEY_FIELDS:
+        resp[k] = "***" if resp.get(k) else ""
+    return {"ok": True, "config": resp}
+
+
 if __name__ == "__main__":
     import argparse
     import uvicorn
