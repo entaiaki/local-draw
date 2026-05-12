@@ -1958,6 +1958,7 @@ async def api_output_fork(payload: Dict[str, Any], user: dict = Depends(get_curr
         "builtin_negative_prompt": builtin_negative_prompt,
         "loras": extract_loras(pd),
         "source_image": rel,
+        "seed": extract_seed(wf_json),
     }
 
 
@@ -2115,6 +2116,46 @@ def extract_loras(prompt_dict: Dict[str, Any]) -> List[str]:
     return list(seen.keys())
 
 
+def extract_seed(wf_json: Dict[str, Any]) -> Optional[int]:
+    """从工作流 JSON 中提取 seed/noise_seed 的整数值"""
+    for node in (wf_json.get("nodes") or []):
+        inputs = node.get("inputs") or []
+        widgets = node.get("widgets_values") or []
+        # 计算 widget 对齐：遍历 inputs，匹配 widget 输入到 widgets_values
+        wi = 0
+        for inp in inputs:
+            name = inp.get("name")
+            if not name:
+                continue
+            if inp.get("link") is not None:
+                if inp.get("widget") is not None:
+                    wi += 1  # 有 link 的 widget 也占位
+                    if name in ("seed", "noise_seed") and wi < len(widgets):
+                        # 跳过 control mode
+                        control = widgets[wi]
+                        if isinstance(control, str) and control in ("fixed", "increment", "decrement", "randomize"):
+                            wi += 1
+                continue
+            if inp.get("widget") is not None:
+                if wi < len(widgets):
+                    val = widgets[wi]
+                    wi += 1
+                    if name in ("seed", "noise_seed"):
+                        # 下一个可能为 control mode
+                        if wi < len(widgets) and isinstance(widgets[wi], str) and widgets[wi] in ("fixed", "increment", "decrement", "randomize"):
+                            wi += 1
+                        if isinstance(val, (int, float)):
+                            return int(val)
+                        if isinstance(val, str):
+                            try:
+                                return int(val)
+                            except ValueError:
+                                pass
+                else:
+                    wi += 1
+    return None
+
+
 @app.get("/api/image")
 async def api_image(request: Request, filename: str, subfolder: str = "", type: str = "output"):
     try:
@@ -2252,6 +2293,7 @@ class RunRequest(BaseModel):
     height: Optional[int] = None
     style_tags: str = ""
     negative_prompt: str = ""
+    seed: Optional[int] = None
 
 
 # 最大并发生图数
@@ -2494,7 +2536,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
         if ndata.get("class_type") == "KSampler":
             inp = ndata.get("inputs", {})
             if "seed" in inp:
-                inp["seed"] = random.randint(0, 2**63 - 1)
+                inp["seed"] = req.seed if req.seed is not None else random.randint(0, 2**63 - 1)
 
     _RATE_LAST_TS[user_id] = _time.time()
 
