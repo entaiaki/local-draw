@@ -2117,11 +2117,31 @@ def extract_loras(prompt_dict: Dict[str, Any]) -> List[str]:
 
 
 def extract_seed(wf_json: Dict[str, Any]) -> Optional[int]:
-    """从工作流 JSON 中提取 seed/noise_seed 的整数值"""
+    """从工作流 JSON 中提取 seed/noise_seed 的整数值（兼容 API 和 Editor 格式）"""
+    # API 格式：{node_id: {inputs: {seed: 123, ...}, class_type: "KSampler", ...}}
+    if "nodes" not in wf_json:
+        for nid, ndata in wf_json.items():
+            if not isinstance(ndata, dict):
+                continue
+            ct = ndata.get("class_type") or ""
+            if "sampler" not in ct.lower():
+                continue
+            inp = ndata.get("inputs") or {}
+            for k in ("seed", "noise_seed"):
+                v = inp.get(k)
+                if isinstance(v, (int, float)):
+                    return int(v)
+                if isinstance(v, str):
+                    try:
+                        return int(v)
+                    except ValueError:
+                        pass
+        return None
+
+    # Editor 格式：wf_json.nodes[].widgets_values
     for node in (wf_json.get("nodes") or []):
         inputs = node.get("inputs") or []
         widgets = node.get("widgets_values") or []
-        # 计算 widget 对齐：遍历 inputs，匹配 widget 输入到 widgets_values
         wi = 0
         for inp in inputs:
             name = inp.get("name")
@@ -2129,9 +2149,8 @@ def extract_seed(wf_json: Dict[str, Any]) -> Optional[int]:
                 continue
             if inp.get("link") is not None:
                 if inp.get("widget") is not None:
-                    wi += 1  # 有 link 的 widget 也占位
+                    wi += 1
                     if name in ("seed", "noise_seed") and wi < len(widgets):
-                        # 跳过 control mode
                         control = widgets[wi]
                         if isinstance(control, str) and control in ("fixed", "increment", "decrement", "randomize"):
                             wi += 1
@@ -2141,7 +2160,6 @@ def extract_seed(wf_json: Dict[str, Any]) -> Optional[int]:
                     val = widgets[wi]
                     wi += 1
                     if name in ("seed", "noise_seed"):
-                        # 下一个可能为 control mode
                         if wi < len(widgets) and isinstance(widgets[wi], str) and widgets[wi] in ("fixed", "increment", "decrement", "randomize"):
                             wi += 1
                         if isinstance(val, (int, float)):
