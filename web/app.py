@@ -2600,31 +2600,44 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
 
     _RATE_LAST_TS[user_id] = _time.time()
 
-    await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
-    prompt_id = await submit_prompt(prompt_dict)
-    await emit(ws, {"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
-    await emit(ws, {"type": "prompt_id", "prompt_id": prompt_id, "final_prompt": sd_prompt})
-    await _push_status({
-        "stage": "generating",
-        "prompt_id": prompt_id,
-        "final_prompt": sd_prompt[:200],
-    })
+    # 生图期间开始计费
+    global _gen_active_count, _gen_start_kwh
+    _gen_active_count += 1
+    if _gen_active_count == 1:
+        _gen_start_kwh = _gpu_kwh_total
 
-    await emit(ws, {"type": "log", "message": "[4/4] 等待生成..."})
-    history = await _wait_for(prompt_id, ws, prompt_dict)
+    try:
+        await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
+        prompt_id = await submit_prompt(prompt_dict)
+        await emit(ws, {"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
+        await emit(ws, {"type": "prompt_id", "prompt_id": prompt_id, "final_prompt": sd_prompt})
+        await _push_status({
+            "stage": "generating",
+            "prompt_id": prompt_id,
+            "final_prompt": sd_prompt[:200],
+        })
 
-    images = []
-    for _, node_output in (history.get("outputs") or {}).items():
-        for img in node_output.get("images", []) or []:
-            images.append({
-                "filename": img.get("filename", ""),
-                "subfolder": img.get("subfolder", ""),
-                "type": img.get("type", "output"),
-            })
+        await emit(ws, {"type": "log", "message": "[4/4] 等待生成..."})
+        history = await _wait_for(prompt_id, ws, prompt_dict)
 
-    if not images:
-        await emit(ws, {"type": "error", "message": "无图片输出"})
-        return
+        images = []
+        for _, node_output in (history.get("outputs") or {}).items():
+            for img in node_output.get("images", []) or []:
+                images.append({
+                    "filename": img.get("filename", ""),
+                    "subfolder": img.get("subfolder", ""),
+                    "type": img.get("type", "output"),
+                })
+
+        if not images:
+            await emit(ws, {"type": "error", "message": "无图片输出"})
+            return
+    finally:
+        _gen_active_count -= 1
+        gen_kwh = _gpu_kwh_total - _gen_start_kwh
+        if gen_kwh > 0:
+            gen_cost = gen_kwh * ELECTRICITY_RATE
+            await emit(ws, {"type": "cost", "kwh": round(gen_kwh, 6), "cost": round(gen_cost, 6)})
 
     # 写入用户映射：拿到文件名后立刻把 <相对路径> -> <user_id> 写进 creator_users.txt
     for img in images:
