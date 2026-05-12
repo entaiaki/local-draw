@@ -2197,6 +2197,8 @@ _gpu_cache: Dict[str, Any] = {"ts": 0.0, "data": None}
 # 累计电费（持久化到文件，服务重启后继续累加）
 _gpu_kwh_total: float = 0.0
 _gpu_kwh_last_ts: float = 0.0
+_gen_active_count: int = 0
+_gen_start_kwh: float = 0.0
 ELECTRICITY_RATE = 0.5653  # 合肥市居民用电均价 元/kWh
 
 
@@ -2301,9 +2303,9 @@ async def api_gpu():
 
     data = {"available": True, "gpus": gpus}
 
-    # 累加电费
+    # 累加电费（仅生图期间）
     global _gpu_kwh_total, _gpu_kwh_last_ts
-    if _gpu_kwh_last_ts > 0:
+    if _gen_active_count > 0 and _gpu_kwh_last_ts > 0:
         total_w = sum(g.get("power.draw") or 0 for g in gpus)
         if total_w > 0:
             hours = (now - _gpu_kwh_last_ts) / 3600.0
