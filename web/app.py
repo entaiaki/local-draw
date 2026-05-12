@@ -1887,6 +1887,22 @@ def _read_png_text_chunk(path: Path, key: str) -> str:
     return ""
 
 
+def _extract_style_tags(prompt: str) -> str:
+    """从 prompt 开头提取匹配的画风 tags。"""
+    if not prompt:
+        return ""
+    try:
+        if STYLES_FILE.exists():
+            styles = json.loads(STYLES_FILE.read_text("utf-8"))
+            for s in styles:
+                tags = (s.get("tags") or "").strip()
+                if tags and prompt.lower().startswith(tags.lower()):
+                    return tags
+    except Exception:
+        pass
+    return ""
+
+
 @app.post("/api/output/fork")
 async def api_output_fork(payload: Dict[str, Any], user: dict = Depends(get_current_user)):
     """从输出 PNG 提取 workflow / prompt 元信息，原样返回给前端用于"临时还原"。
@@ -1958,6 +1974,7 @@ async def api_output_fork(payload: Dict[str, Any], user: dict = Depends(get_curr
         "builtin_prompt": builtin_prompt,
         "builtin_negative_prompt": builtin_negative_prompt,
         "loras": extract_loras(pd),
+        "style_tags": _extract_style_tags(builtin_prompt),
         "source_image": rel,
         "seed": extract_seed(wf_json),
     }
@@ -2491,6 +2508,11 @@ async def ws_run(ws: WebSocket):
 
     # 等待信号量（队列），最多允许 _MAX_CONCURRENT 个任务同时执行
     global _active_count
+    if _active_count >= _MAX_CONCURRENT:
+        try:
+            await ws.send_json({"type": "status", "online": _active_count, "busy": True, "active": _active_count, "stage": "queued"})
+        except Exception:
+            pass
     async with _run_sem:
         _active_count += 1
         await _push_status()
@@ -2514,6 +2536,9 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
     inline = req.inline_workflow
     if not path and not inline:
         await emit(ws, {"type": "error", "message": "未指定工作流（前端未传 workflow_path 或 inline_workflow）"})
+        return
+    if path == 'fork' and not inline:
+        await emit(ws, {"type": "error", "message": "Fork 工作流缺失，请重新 Fork"})
         return
 
     display_path = path or "(临时 fork)"
@@ -2600,8 +2625,6 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
             if "seed" in inp:
                 inp["seed"] = req.seed if req.seed is not None else random.randint(0, 2**63 - 1)
 
-    _RATE_LAST_TS[user_id] = _time.time()
-
     # 生图期间开始计费
     global _gen_active_count, _gen_start_kwh
     _gen_active_count += 1
@@ -2609,6 +2632,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
         _gen_start_kwh = _gpu_kwh_total
 
     try:
+        _RATE_LAST_TS[user_id] = _time.time()
         await emit(ws, {"type": "log", "message": "[3/4] 提交到 ComfyUI..."})
         prompt_id = await submit_prompt(prompt_dict)
         await emit(ws, {"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
