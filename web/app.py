@@ -76,6 +76,7 @@ STYLES_FILE = Path(__file__).parent / "styles.json"
 STYLE_THUMB_DIR = Path(__file__).parent / "style_thumbnails"
 RESOLUTIONS_FILE = Path(__file__).parent / "resolutions.json"
 MAINTENANCE_FILE = Path(__file__).parent / "maintenance.json"
+GPU_KWH_FILE = Path(__file__).parent / "gpu_kwh.json"
 _featured_lock = asyncio.Lock()
 _limits_lock = asyncio.Lock()
 _reports_lock = asyncio.Lock()
@@ -2193,6 +2194,34 @@ async def api_image(request: Request, filename: str, subfolder: str = "", type: 
 # GPU 状态轻量缓存：500ms 内同一进程复用一次结果，避免被前端 1Hz 轮询打爆
 _gpu_cache: Dict[str, Any] = {"ts": 0.0, "data": None}
 
+# 累计电费（持久化到文件，服务重启后继续累加）
+_gpu_kwh_total: float = 0.0
+_gpu_kwh_last_ts: float = 0.0
+ELECTRICITY_RATE = 0.5653  # 合肥市居民用电均价 元/kWh
+
+
+def _load_gpu_kwh() -> None:
+	global _gpu_kwh_total, _gpu_kwh_last_ts
+	try:
+		if GPU_KWH_FILE.exists():
+			data = json.loads(GPU_KWH_FILE.read_text("utf-8"))
+			_gpu_kwh_total = float(data.get("total_kwh", 0))
+			_gpu_kwh_last_ts = float(data.get("last_ts", 0))
+	except Exception:
+		pass
+
+
+def _save_gpu_kwh() -> None:
+	try:
+		tmp = GPU_KWH_FILE.with_suffix(".json.tmp")
+		tmp.write_text(json.dumps({"total_kwh": _gpu_kwh_total, "last_ts": _gpu_kwh_last_ts}, ensure_ascii=False), "utf-8")
+		tmp.replace(GPU_KWH_FILE)
+	except Exception:
+		pass
+
+
+_load_gpu_kwh()
+
 
 @app.get("/api/gpu")
 async def api_gpu():
@@ -2271,6 +2300,19 @@ async def api_gpu():
         gpus.append(rec)
 
     data = {"available": True, "gpus": gpus}
+
+    # 累加电费
+    global _gpu_kwh_total, _gpu_kwh_last_ts
+    if _gpu_kwh_last_ts > 0:
+        total_w = sum(g.get("power.draw") or 0 for g in gpus)
+        if total_w > 0:
+            hours = (now - _gpu_kwh_last_ts) / 3600.0
+            _gpu_kwh_total += (total_w * hours) / 1000.0
+    _gpu_kwh_last_ts = now
+    _save_gpu_kwh()
+    data["total_kwh"] = _gpu_kwh_total
+    data["total_cost"] = _gpu_kwh_total * ELECTRICITY_RATE
+
     _gpu_cache["ts"] = now
     _gpu_cache["data"] = data
     return {**data, "poll_interval_ms": poll_ms}
