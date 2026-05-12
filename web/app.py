@@ -1887,6 +1887,67 @@ def _read_png_text_chunk(path: Path, key: str) -> str:
     return ""
 
 
+def _workflow_fingerprint(wf: dict) -> str:
+    """计算工作流结构指纹（忽略 seed/prompt/resolution 等可变参数）。"""
+    import hashlib
+    if 'nodes' in wf and isinstance(wf.get('nodes'), list):
+        # Editor format
+        nodes = wf['nodes']
+        node_types = sorted([n.get('type', '?') for n in nodes])
+        links = sorted([
+            (l[0], l[1], l[2], l[3]) if isinstance(l, list) and len(l) >= 4 else str(l)
+            for l in (wf.get('links') or [])
+        ])
+    else:
+        # API format (flat dict with class_type)
+        node_types = sorted([
+            n.get('class_type', '?') if isinstance(n, dict) else '?'
+            for n in wf.values() if isinstance(n, dict)
+        ])
+        # Build link pairs from inputs referencing other nodes
+        links = []
+        for nid, ndata in wf.items():
+            if not isinstance(ndata, dict):
+                continue
+            for inp_name, inp_val in (ndata.get('inputs') or {}).items():
+                if isinstance(inp_val, list) and len(inp_val) >= 2 and isinstance(inp_val[0], str):
+                    links.append((nid, inp_name, inp_val[0], inp_val[1]))
+        links.sort()
+    fp = hashlib.sha256(
+        json.dumps({'types': node_types, 'links': links}, sort_keys=True).encode()
+    ).hexdigest()[:16]
+    return fp
+
+
+def _load_workflow_fingerprints() -> Dict[str, str]:
+    """加载所有工作流并计算指纹，返回 {path: fingerprint} 映射。"""
+    result: Dict[str, str] = {}
+    if not COMFYUI_WORKFLOWS_DIR or not Path(COMFYUI_WORKFLOWS_DIR).is_dir():
+        return result
+    for f in Path(COMFYUI_WORKFLOWS_DIR).glob('*.json'):
+        try:
+            wf = json.loads(f.read_text('utf-8'))
+            result[f.stem] = _workflow_fingerprint(wf)
+        except Exception:
+            pass
+    return result
+
+
+_workflow_fp_cache: Optional[Dict[str, str]] = None
+
+
+def _match_workflow(wf: dict) -> Optional[str]:
+    """匹配工作流到已知工作流路径，返回 path 或 None。"""
+    global _workflow_fp_cache
+    if _workflow_fp_cache is None:
+        _workflow_fp_cache = _load_workflow_fingerprints()
+    fp = _workflow_fingerprint(wf)
+    for wf_path, wf_fp in _workflow_fp_cache.items():
+        if wf_fp == fp:
+            return wf_path
+    return None
+
+
 def _extract_style_tags(prompt: str) -> str:
     """从 prompt 开头提取匹配的画风 tags。"""
     if not prompt:
@@ -1975,6 +2036,7 @@ async def api_output_fork(payload: Dict[str, Any], user: dict = Depends(get_curr
         "builtin_negative_prompt": builtin_negative_prompt,
         "loras": extract_loras(pd),
         "style_tags": _extract_style_tags(builtin_prompt),
+        "matched_workflow": _match_workflow(wf_json),
         "source_image": rel,
         "seed": extract_seed(wf_json),
     }
