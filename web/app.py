@@ -1968,15 +1968,20 @@ _WORKFLOW_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
 async def match_workflow(pd: Dict[str, Any], dims: Optional[Tuple[int, int]]) -> Optional[str]:
-    """尝试匹配 fork 的工作流到现有工作流文件，返回相对路径或 None"""
-    fp_classes = sorted(set(
+    """尝试匹配 fork 的工作流到现有工作流文件，返回相对路径或 None。
+    使用子集匹配：fork 的 class_types 必须全部包含在候选工作流中，
+    同时 loras + 分辨率一致。因为 API 格式的 fork 不含预览等附加节点。
+    """
+    fp_classes = set(
         ndata.get("class_type", "")
         for ndata in pd.values()
         if isinstance(ndata, dict) and ndata.get("class_type")
-    ))
+    )
     fp_loras = extract_loras(pd)
     fp_dims = dims
 
+    # 按匹配度排序：class_types 子集 + loras 匹配最优
+    candidates: List[Tuple[int, str]] = []
     for wf_path in scan_workflow_files():
         if wf_path not in _WORKFLOW_CACHE:
             try:
@@ -1985,19 +1990,24 @@ async def match_workflow(pd: Dict[str, Any], dims: Optional[Tuple[int, int]]) ->
                 continue
         wf_data = _WORKFLOW_CACHE[wf_path]
         wf_pd, _, _ = workflow_to_prompt_api(wf_data)
-        wf_classes = sorted(set(
+        wf_classes = set(
             ndata.get("class_type", "")
             for ndata in wf_pd.values()
             if isinstance(ndata, dict) and ndata.get("class_type")
-        ))
-        if wf_classes != fp_classes:
+        )
+        if not fp_classes.issubset(wf_classes):
             continue
-        if extract_loras(wf_pd) != fp_loras:
-            continue
+        score = len(fp_classes & wf_classes)  # 重叠节点数
+        if extract_loras(wf_pd) == fp_loras:
+            score += 100
         wf_dims = detect_default_resolution(wf_pd)
-        if wf_dims != fp_dims:
-            continue
-        return wf_path
+        if wf_dims == fp_dims and fp_dims is not None:
+            score += 50
+        candidates.append((score, wf_path))
+
+    if candidates:
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
     return None
 
 
