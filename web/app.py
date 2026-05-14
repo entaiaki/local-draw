@@ -3652,7 +3652,13 @@ async def draw_admin_wf_thumbnail(file: UploadFile, user: dict = Depends(require
 # ---------------- LLM 配置管理 ----------------
 
 _LLM_KEY_FIELDS = {"google_api_key", "custom_api_key"}
-_GOOGLE_THINKING_OPTIONS = ["off", "level_1", "level_2", "level_3", "budget_1", "budget_2", "budget_3"]
+_GOOGLE_THINKING_OPTIONS = [
+    "off",
+    "level_minimal", "level_low", "level_medium", "level_high",
+    "budget_auto", "budget_0",
+    "budget_512", "budget_1024", "budget_2048", "budget_4096", "budget_8192",
+    "budget_16384", "budget_24576", "budget_32768",
+]
 
 
 @app.get("/api/draw/admin/llm_config")
