@@ -2546,7 +2546,8 @@ async def _push_status(patch: Optional[Dict[str, Any]] = None, *, reset: bool = 
     global _active_status, _active_count
     active = _active_count
     if reset:
-        _active_status = None
+        if active == 0:
+            _active_status = None
     elif patch:
         if _active_status is None:
             _active_status = {"busy": True, "active": active}
