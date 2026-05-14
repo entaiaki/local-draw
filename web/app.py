@@ -1550,6 +1550,10 @@ async def api_img2img_run(
     image2: Optional[UploadFile] = None,
 ):
     """图生图：上传1-2张图片 + 描述，返回生成结果。"""
+    # 优先从 Authorization header 取 token（避免 multipart 编码问题）
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer ") and not token:
+        token = auth[7:]
     user = verify_jwt(token)
     if not user:
         raise HTTPException(401, "token 无效或已过期，请重新登录")
