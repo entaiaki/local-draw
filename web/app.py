@@ -1664,6 +1664,9 @@ async def api_img2img_run(
             pass
 
     return {"ok": True, "images": images, "prompt_id": prompt_id}
+
+
+@app.get("/api/thumbnail")
 async def api_thumbnail(request: Request, path: str):
     p = find_thumbnail(path)
     if not p:
