@@ -2517,6 +2517,15 @@ _status_subscribers: "set[WebSocket]" = set()
 _active_status: Optional[Dict[str, Any]] = None
 
 
+@app.get("/api/_diag")
+async def api_diag():
+    return {
+        "active_count": _active_count,
+        "active_status": _active_status,
+        "subscribers": len(_status_subscribers),
+    }
+
+
 def _idle_snapshot() -> Dict[str, Any]:
     return {"busy": False, "active": 0}
 
