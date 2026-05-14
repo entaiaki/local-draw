@@ -1351,7 +1351,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                     pf = obj.get("promptFeedback") or {}
                     block_reason = pf.get("blockReason", "")
                     if block_reason:
-                        raise RuntimeError(f"Google 内容过滤拦截: {block_reason}（提示词可能包含敏感词，请修改后重试）")
+                        _debug_info.append(f"promptFeedback.blockReason={block_reason}")
                     candidates = obj.get("candidates") or []
                     if not candidates:
                         _debug_info.append(f"no candidates, raw={json.dumps(obj, ensure_ascii=False)[:300]}")
@@ -1389,7 +1389,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
             pf = resp.get("promptFeedback") or {}
             block_reason = pf.get("blockReason", "")
             if block_reason:
-                raise RuntimeError(f"Google 内容过滤拦截: {block_reason}（提示词可能包含敏感词，请修改后重试）")
+                _debug_info.append(f"promptFeedback.blockReason={block_reason}")
             for cand in resp.get("candidates") or []:
                 finish_reason = cand.get("finishReason", "")
                 if finish_reason and finish_reason != "STOP":
