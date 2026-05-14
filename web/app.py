@@ -3656,9 +3656,6 @@ _LLM_KEY_FIELDS = {"google_api_key", "custom_api_key"}
 _GOOGLE_THINKING_OPTIONS = [
     "off",
     "level_minimal", "level_low", "level_medium", "level_high",
-    "budget_auto", "budget_0",
-    "budget_512", "budget_1024", "budget_2048", "budget_4096", "budget_8192",
-    "budget_16384", "budget_24576", "budget_32768",
 ]
 
 
