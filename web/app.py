@@ -1411,16 +1411,23 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                     else:
                         chunks.append(piece)
     full = "".join(chunks).strip()
-    if thought_chunks and "POSITIVE:" not in full:
+    thought_text = "".join(thought_chunks)
+    if (not full or "POSITIVE:" not in full) and thought_text:
         import re as _re
-        thought_text = "".join(thought_chunks)
-        # 从思维链中提取被反引号包裹的 tag 列表，取逗号最多的
-        backtick_blocks = _re.findall(r"`([^`]+)`", thought_text)
-        tag_blocks = [b.strip() for b in backtick_blocks if "," in b]
-        if tag_blocks:
-            best = max(tag_blocks, key=lambda c: c.count(","))
-            if not full or best.count(",") > full.count(","):
-                full = best
+        # 思维链中直接找 POSITIVE:/NEGATIVE:
+        pos_m = _re.search(r"POSITIVE:\s*(.+?)(?:\n|$)", thought_text)
+        neg_m = _re.search(r"NEGATIVE:\s*(.+?)(?:\n|$)", thought_text)
+        if pos_m:
+            full = f"POSITIVE: {pos_m.group(1).strip()}"
+            if neg_m:
+                full += f"\nNEGATIVE: {neg_m.group(1).strip()}"
+        elif not full:
+            # 从思维链提取反引号 tag 块，取逗号最多的
+            backtick_blocks = _re.findall(r"`([^`]+)`", thought_text)
+            tag_blocks = [b.strip() for b in backtick_blocks if "," in b]
+            if tag_blocks:
+                best = max(tag_blocks, key=lambda c: c.count(","))
+                full = f"POSITIVE: {best}"
     if not full:
         detail = "; ".join(_debug_info) if _debug_info else "无额外信息"
         thought_preview = "".join(thought_chunks)[:200] if thought_chunks else "(无)"
