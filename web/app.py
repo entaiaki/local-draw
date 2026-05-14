@@ -2526,6 +2526,16 @@ async def api_diag():
     }
 
 
+@app.post("/api/_reset")
+async def api_reset():
+    """强制重置后端生图状态，用于任务卡死时恢复。"""
+    global _active_count, _active_status
+    _active_count = 0
+    _active_status = None
+    await _push_status(reset=True)
+    return {"ok": True}
+
+
 def _idle_snapshot() -> Dict[str, Any]:
     return {"busy": False, "active": 0}
 
@@ -2948,7 +2958,7 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
     completed = False
     preview_count = 0
     try:
-        async with websockets.connect(ws_url, max_size=None) as cws:
+        async with websockets.connect(ws_url, max_size=None, open_timeout=15) as cws:
             while True:
                 if asyncio.get_event_loop().time() - start > timeout:
                     raise TimeoutError("生成超时")
@@ -3049,7 +3059,7 @@ async def _wait_for_img2img(prompt_id: str, timeout: int = 300) -> Dict[str, Any
     ws_url = f"{COMFYUI_WS}/ws?clientId={CLIENT_ID}"
     start = asyncio.get_event_loop().time()
     try:
-        async with websockets.connect(ws_url, max_size=None) as cws:
+        async with websockets.connect(ws_url, max_size=None, open_timeout=15) as cws:
             while True:
                 if asyncio.get_event_loop().time() - start > timeout:
                     raise TimeoutError("生成超时")
