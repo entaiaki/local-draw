@@ -1334,6 +1334,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
     chunks: List[str] = []
     thought_chunks: List[str] = []
     _debug_info: List[str] = []
+    _done_early = False
     async with httpx.AsyncClient(timeout=120) as client:
         if use_stream:
             url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
@@ -1342,6 +1343,8 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                     text = await r.aread()
                     raise RuntimeError(f"LLM HTTP {r.status_code}: {text.decode()[:500]}")
                 async for line in r.aiter_lines():
+                    if _done_early:
+                        break
                     if not line or not line.startswith("data:"):
                         continue
                     data = line[5:].strip()
@@ -1383,6 +1386,17 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                             thought_chunks.append(piece)
                         else:
                             chunks.append(piece)
+                            # 首个完整 POSITIVE/NEGATIVE 块出现即可提前返回
+                            acc = "".join(chunks)
+                            if "POSITIVE:" in acc:
+                                import re as _re
+                                if _re.search(r"POSITIVE:\s*.+?(?:\n|$)", acc):
+                                    # 已经拿到完整 positive，检查有没有 negative
+                                    if _re.search(r"NEGATIVE:\s*.+?(?:\n|$)", acc):
+                                        _debug_info.append("early_return=完整块")
+                                        full = acc
+                                        _done_early = True
+                                        break
         else:
             url = f"{_GOOGLE_API_BASE}/models/{model}:generateContent?key={api_key}"
             r = await client.post(url, json=body)
