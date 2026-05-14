@@ -2641,6 +2641,7 @@ async def ws_run(ws: WebSocket):
 
 async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
     import time as _time
+    global _gen_active_count, _gen_start_kwh
 
     # ---- img2img 模式 ----
     if req.image1_name:
@@ -2694,7 +2695,6 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
         await emit(ws, {"type": "log", "message": "[2/3] 提交到 ComfyUI..."})
         await _push_status({"stage": "generating"})
 
-        global _gen_active_count, _gen_start_kwh
         _gen_active_count += 1
         if _gen_active_count == 1:
             _gen_start_kwh = _gpu_kwh_total
@@ -2847,7 +2847,6 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
                 inp["seed"] = req.seed if req.seed is not None else random.randint(0, 2**63 - 1)
 
     # 生图期间开始计费
-    global _gen_active_count, _gen_start_kwh
     _gen_active_count += 1
     if _gen_active_count == 1:
         _gen_start_kwh = _gpu_kwh_total
