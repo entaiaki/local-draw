@@ -6,7 +6,7 @@ ComfyUI 网页版控制台 — 纯 API 后端（JWT 鉴权）
 
 # ========== IP / 端口配置 ==========
 COMFYUI_HOST = "127.0.0.1"
-COMFYUI_PORT = 8000
+COMFYUI_PORT = 8188
 LMS_HOST = "127.0.0.1"
 LMS_PORT = 1234
 
@@ -14,11 +14,13 @@ WEB_HOST = "127.0.0.1"
 WEB_PORT = 8080
 
 # ComfyUI 输出目录（只读浏览，仅存放精选图片）
-OUTPUT_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\output"
+OUTPUT_DIR_STR = r"C:\Users\acofo\Desktop\ComfyUI-WorkFisher-V2\ComfyUI\output"
 # 归档目录（非精选图片迁移至此，ComfyUI 不会索引）
 ARCHIVE_DIR_STR = r"C:\Users\acofo\Documents\ComfyUI\archived_output"
 # ComfyUI 工作流目录（自动扫描）
-COMFYUI_WORKFLOWS_DIR = r"C:\Users\acofo\Documents\ComfyUI\user\default\workflows"
+COMFYUI_WORKFLOWS_DIR = r"C:\Users\acofo\Desktop\ComfyUI-WorkFisher-V2\ComfyUI\user\default\workflows"
+# 文生图工作流子目录（与图生图隔离，防止互相看到）
+T2I_WORKFLOW_SUBDIR = "WAI"
 # ===================================
 
 import asyncio
@@ -1523,9 +1525,13 @@ def find_thumbnail(wf_path: str) -> Optional[Path]:
 
 
 @app.get("/api/workflows")
-async def api_list():
+async def api_list(subdir: Optional[str] = None):
     try:
         wfs = await list_workflows()
+        filter_dir = subdir if subdir is not None else T2I_WORKFLOW_SUBDIR
+        if filter_dir:
+            prefix = filter_dir.rstrip("/") + "/"
+            wfs = [w for w in wfs if w.get("path", "").startswith(prefix)]
         for w in wfs:
             w["thumbnail"] = bool(find_thumbnail(w.get("path", "")))
             meta = _workflow_meta.get(w.get("path", ""), {})
