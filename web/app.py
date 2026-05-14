@@ -1541,7 +1541,129 @@ async def api_list(subdir: Optional[str] = None):
         raise HTTPException(500, str(e))
 
 
-@app.get("/api/thumbnail")
+@app.post("/api/img2img/run")
+async def api_img2img_run(
+    request: Request,
+    token: str = "",
+    prompt: str = "",
+    image1: Optional[UploadFile] = None,
+    image2: Optional[UploadFile] = None,
+):
+    """图生图：上传1-2张图片 + 描述，返回生成结果。"""
+    user = verify_jwt(token)
+    if not user:
+        raise HTTPException(401, "token 无效或已过期，请重新登录")
+    user_id = user["id"]
+
+    if is_user_draw_banned(user_id):
+        raise HTTPException(403, "你已被管理员禁止生图")
+
+    if image1 is None:
+        raise HTTPException(400, "至少需要一张图片")
+    if not prompt.strip():
+        raise HTTPException(400, "请输入描述")
+
+    # Rate limit
+    import time as _time
+    now = _time.time()
+    last = _RATE_LAST_TS.get(user_id, 0.0)
+    cooldown = float(_limits.get("gen_cooldown_sec", 30))
+    wait = cooldown - (now - last)
+    if wait > 0 and user.get("role") != "admin":
+        raise HTTPException(429, f"生图间隔限制：请 {int(wait) + 1}s 后再试")
+
+    async def _upload_img(file: UploadFile) -> str:
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(400, "图片文件为空")
+        async with httpx.AsyncClient(timeout=30) as client:
+            files = {
+                "image": (
+                    file.filename or "image.png",
+                    contents,
+                    file.content_type or "image/png",
+                )
+            }
+            r = await client.post(
+                f"{COMFYUI_API}/api/upload/image",
+                files=files,
+                data={"type": "input", "overwrite": "true"},
+                headers={"Comfy-User": ""},
+            )
+            r.raise_for_status()
+            return r.json()["name"]
+
+    img1_name = await _upload_img(image1)
+    img2_name = await _upload_img(image2) if image2 else None
+
+    # Load workflow
+    flux_dir = Path(COMFYUI_WORKFLOWS_DIR) / "Flux"
+    if image2:
+        wf_path = flux_dir / "Flux2-Klein-图片编辑 (多图).json"
+    else:
+        wf_path = flux_dir / "Flux2-Klein-图片编辑 (单图).json"
+
+    if not wf_path.is_file():
+        raise HTTPException(500, f"工作流文件不存在: {wf_path}")
+
+    with open(wf_path, "r", encoding="utf-8") as f:
+        workflow_data = json.load(f)
+
+    prompt_dict, positive_ref, negative_ref = workflow_to_prompt_api(workflow_data)
+
+    # Replace LoadImage nodes with uploaded filenames
+    load_image_nodes = [
+        nid
+        for nid, ndata in prompt_dict.items()
+        if ndata.get("class_type") == "LoadImage"
+    ]
+    if load_image_nodes:
+        prompt_dict[load_image_nodes[0]]["inputs"]["image"] = img1_name
+    if len(load_image_nodes) > 1 and img2_name:
+        prompt_dict[load_image_nodes[1]]["inputs"]["image"] = img2_name
+
+    # Replace CLIPTextEncode
+    if positive_ref:
+        prompt_dict[positive_ref[0]]["inputs"][positive_ref[1]] = prompt
+    if negative_ref:
+        prompt_dict[negative_ref[0]]["inputs"][negative_ref[1]] = ""
+
+    # Random seed
+    for ndata in prompt_dict.values():
+        if ndata.get("class_type") == "KSampler":
+            ndata["inputs"]["seed"] = random.randint(0, 2**63 - 1)
+
+    _RATE_LAST_TS[user_id] = _time.time()
+
+    # Submit to ComfyUI & wait
+    prompt_id = await submit_prompt(prompt_dict)
+    history = await _wait_for_img2img(prompt_id)
+
+    # Extract images
+    images = []
+    for _, node_output in (history.get("outputs") or {}).items():
+        for img in node_output.get("images", []) or []:
+            images.append({
+                "filename": img.get("filename", ""),
+                "subfolder": img.get("subfolder", ""),
+                "type": img.get("type", "output"),
+            })
+
+    if not images:
+        raise HTTPException(500, "无图片输出")
+
+    for img in images:
+        if img.get("type") != "output":
+            continue
+        try:
+            sub = img.get("subfolder") or ""
+            rel = (sub + "/" + img["filename"]) if sub else img["filename"]
+            rel = rel.replace("\\", "/")
+            await _creator_map_set(rel, user_id)
+        except Exception:
+            pass
+
+    return {"ok": True, "images": images, "prompt_id": prompt_id}
 async def api_thumbnail(request: Request, path: str):
     p = find_thumbnail(path)
     if not p:
@@ -2851,6 +2973,50 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
         pass
 
     await emit(ws, {"type": "log", "message": f"[debug] 收到 {preview_count} 帧预览"})
+
+    for _ in range(60):
+        h = await get_history(prompt_id)
+        if h:
+            return h
+        if asyncio.get_event_loop().time() - start > timeout:
+            raise TimeoutError("等待 history 超时")
+        await asyncio.sleep(1)
+    raise TimeoutError("无法获取 history")
+
+
+async def _wait_for_img2img(prompt_id: str, timeout: int = 300) -> Dict[str, Any]:
+    """等待 ComfyUI 执行完毕并返回 history（精简版，无前端 WS 转发）。"""
+    ws_url = f"{COMFYUI_WS}/ws?clientId={CLIENT_ID}"
+    start = asyncio.get_event_loop().time()
+    try:
+        async with websockets.connect(ws_url, max_size=None) as cws:
+            while True:
+                if asyncio.get_event_loop().time() - start > timeout:
+                    raise TimeoutError("生成超时")
+                try:
+                    raw = await asyncio.wait_for(cws.recv(), timeout=2)
+                except asyncio.TimeoutError:
+                    continue
+                if isinstance(raw, bytes):
+                    continue
+                try:
+                    msg = json.loads(raw)
+                except Exception:
+                    continue
+                msg_type = msg.get("type", "")
+                data = msg.get("data", {}) or {}
+                if data.get("prompt_id") and data["prompt_id"] != prompt_id:
+                    if msg_type != "status":
+                        continue
+                if msg_type == "executing" and data.get("prompt_id") == prompt_id and data.get("node") is None:
+                    break
+                elif msg_type == "execution_success":
+                    break
+                elif msg_type == "execution_error":
+                    err = data.get("exception_message", "执行错误")
+                    raise RuntimeError(f"ComfyUI: {err}")
+    except websockets.WebSocketException:
+        pass
 
     for _ in range(60):
         h = await get_history(prompt_id)
