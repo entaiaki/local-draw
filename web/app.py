@@ -1562,10 +1562,18 @@ async def api_img2img_run(
     if is_user_draw_banned(user_id):
         raise HTTPException(403, "你已被管理员禁止生图")
 
+    # 调试：记录接收到的 prompt
+    logger.info("[img2img] prompt=%r token=%s image1=%s", prompt, token[:20] if token else '', image1.filename if image1 else None)
+
     if image1 is None:
         raise HTTPException(400, "至少需要一张图片")
     if not prompt.strip():
-        raise HTTPException(400, "请输入描述")
+        # fallback: 尝试从 query 参数读取
+        qprompt = request.query_params.get("prompt", "")
+        if qprompt.strip():
+            prompt = qprompt
+        else:
+            raise HTTPException(400, "请输入描述")
 
     # Rate limit
     import time as _time
