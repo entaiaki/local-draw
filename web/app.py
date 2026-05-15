@@ -2511,6 +2511,7 @@ class RunRequest(BaseModel):
     image2_name: str = ""
     denoise: Optional[float] = None
     reverse_push: bool = False
+    qwen: bool = False
 
 
 # 最大并发生图数
@@ -2527,6 +2528,7 @@ _active_status: Optional[Dict[str, Any]] = None
 
 async def _queue_watchdog_loop():
     """每1秒轮询 ComfyUI 队列，后端认为忙但队列空则释放。"""
+    global _active_count, _active_status
     idle_sec = 0
     while True:
         await asyncio.sleep(1)
@@ -2546,7 +2548,6 @@ async def _queue_watchdog_loop():
         if len(running) == 0 and len(pending) == 0:
             idle_sec += 1
             if idle_sec >= 5:
-                global _active_count, _active_status
                 _active_count = 0
                 _active_status = None
                 await _push_status(reset=True)
@@ -2816,6 +2817,98 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
             })
 
         await emit(ws, {"type": "done", "final_prompt": req.direct_prompt or "(auto)", "count": len(images)})
+        return
+
+    # ---- Qwen 图生图模式 ----
+    if req.qwen:
+        await emit(ws, {"type": "log", "message": "[1/3] 加载 Qwen 工作流..."})
+        await _push_status({"busy": True, "stage": "loading", "started_at": _time.time()})
+
+        qwen_dir = Path(COMFYUI_WORKFLOWS_DIR) / "Qwen"
+        wf_path = qwen_dir / "QwenEdit1.json"
+        if not wf_path.is_file():
+            await emit(ws, {"type": "error", "message": f"工作流文件不存在: {wf_path}"})
+            return
+
+        with open(wf_path, "r", encoding="utf-8") as f:
+            workflow_data = json.load(f)
+
+        prompt_dict, positive_ref, negative_ref = workflow_to_prompt_api(workflow_data)
+
+        # 注入上传图片到所有 LoadImage 节点
+        if req.image1_name:
+            for nid, ndata in prompt_dict.items():
+                if ndata.get("class_type") == "LoadImage":
+                    ndata["inputs"]["image"] = req.image1_name
+
+        # 注入用户提示词到 TextEncodeQwenImageEditPlus 节点
+        if req.direct_prompt.strip():
+            for nid, ndata in prompt_dict.items():
+                if ndata.get("class_type") == "TextEncodeQwenImageEditPlus":
+                    ndata["inputs"]["prompt"] = req.direct_prompt
+
+        # 随机 seed
+        for nid, ndata in prompt_dict.items():
+            if ndata.get("class_type") == "KSampler":
+                inp = ndata.get("inputs", {})
+                if "seed" in inp:
+                    inp["seed"] = req.seed if req.seed is not None else random.randint(0, 2**63 - 1)
+
+        await emit(ws, {"type": "log", "message": "[2/3] 提交到 ComfyUI..."})
+        _gen_active_count += 1
+        if _gen_active_count == 1:
+            _gen_start_kwh = _gpu_kwh_total
+        try:
+            _RATE_LAST_TS[user_id] = _time.time()
+            prompt_id = await submit_prompt(prompt_dict)
+            await emit(ws, {"type": "log", "message": f"prompt_id={prompt_id[:8]}"})
+            await emit(ws, {"type": "prompt_id", "prompt_id": prompt_id, "final_prompt": req.direct_prompt or ""})
+            await _push_status({"stage": "generating", "prompt_id": prompt_id})
+
+            await emit(ws, {"type": "log", "message": "[3/3] 等待生成..."})
+            history = await _wait_for(prompt_id, ws, prompt_dict)
+
+            images = []
+            for _, node_output in (history.get("outputs") or {}).items():
+                for img in node_output.get("images", []) or []:
+                    images.append({
+                        "filename": img.get("filename", ""),
+                        "subfolder": img.get("subfolder", ""),
+                        "type": img.get("type", "output"),
+                    })
+
+            if not images:
+                await emit(ws, {"type": "error", "message": "无图片输出"})
+                return
+        finally:
+            _gen_active_count -= 1
+            gen_kwh = _gpu_kwh_total - _gen_start_kwh
+            if gen_kwh > 0:
+                gen_cost = gen_kwh * ELECTRICITY_RATE
+                await emit(ws, {"type": "cost", "kwh": round(gen_kwh, 6), "cost": round(gen_cost, 6)})
+
+        for img in images:
+            if img.get("type") != "output":
+                continue
+            try:
+                sub = img.get("subfolder") or ""
+                rel = (sub + "/" + img["filename"]) if sub else img["filename"]
+                rel = rel.replace("\\", "/")
+                await _creator_map_set(rel, user_id)
+            except Exception:
+                pass
+
+        for img in images:
+            url = f"/api/image?filename={img['filename']}&subfolder={img['subfolder']}&type={img['type']}"
+            await emit(ws, {
+                "type": "image",
+                "url": url,
+                "filename": img["filename"],
+                "subfolder": img["subfolder"],
+                "image_type": img["type"],
+            })
+
+        await emit(ws, {"type": "done", "final_prompt": req.direct_prompt or "", "count": len(images)})
         return
 
     # ---- img2img 模式 ----
