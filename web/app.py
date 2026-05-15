@@ -832,7 +832,12 @@ async def _gc_loop():
 
 @app.on_event("startup")
 async def _start_gc():
-    global _gc_task
+    global _gc_task, _queue_id_counter, _queue_items, _queued_user_ids, _draw_queue
+    # 重启时清空队列
+    _queue_id_counter = 0
+    _queue_items = []
+    _queued_user_ids = {}
+    _draw_queue = asyncio.Queue()
     _gc_task = asyncio.create_task(_gc_loop())
     asyncio.create_task(_queue_watchdog_loop())
     asyncio.create_task(_queue_worker())
