@@ -2715,11 +2715,11 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
                     ndata["inputs"]["image"] = req.image1_name
                     break
 
-        # 注入用户提示词到 CR Prompt Text 节点
+        # 注入用户提示词到 Llama-cpp Instruct (Advanced) 的 custom_prompt
         if req.direct_prompt.strip():
             for nid, ndata in prompt_dict.items():
-                if ndata.get("class_type") == "CR Prompt Text":
-                    ndata["inputs"]["prompt"] = req.direct_prompt
+                if ndata.get("class_type") == "llama_cpp_instruct_adv":
+                    ndata["inputs"]["custom_prompt"] = req.direct_prompt
                     break
 
         # 设置 denoise + 随机 seed
