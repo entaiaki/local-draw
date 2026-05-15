@@ -2708,28 +2708,6 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
 
         prompt_dict, positive_ref, negative_ref = workflow_to_prompt_api(workflow_data)
 
-        # 清理未安装的自定节点（Fast Groups Bypasser、ShowText、Note），
-        # 并将 CLIPTextEncode.text 从 ShowText 改接到 Text Concatenate
-        remove_nodes = set()
-        for nid, ndata in prompt_dict.items():
-            ct = ndata.get("class_type", "")
-            if ct in ("Fast Groups Bypasser (rgthree)", "Note", "ShowText|pysssss"):
-                remove_nodes.add(nid)
-
-        # 第二遍：改接 CLIPTextEncode 的 text 输入（ShowText 不一定在循环前面）
-        for nid, ndata in prompt_dict.items():
-            if ndata.get("class_type") == "CLIPTextEncode":
-                inp = ndata.get("inputs", {})
-                if isinstance(inp.get("text"), list) and str(inp["text"][0]) in remove_nodes:
-                    for src_id, src_data in prompt_dict.items():
-                        if src_data.get("class_type") == "Text Concatenate":
-                            inp["text"] = [src_id, 0]
-                            break
-
-        for nid in remove_nodes:
-            if nid in prompt_dict:
-                del prompt_dict[nid]
-
         # 注入上传图片到 LoadImage 节点
         if req.image1_name:
             for nid, ndata in prompt_dict.items():
