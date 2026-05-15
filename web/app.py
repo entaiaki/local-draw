@@ -2620,26 +2620,47 @@ async def api_debug(request: Request):
             "error": qi.get("error"),
         })
 
-    # 信号量状态
-    sem_locked = _run_sem.locked()
+    # 最近 done 任务的出图验证
+    # 读取 creator_users.txt 建立 filename→user_id 映射（仅取最后 200 条）
+    creator_map: dict[str, int] = {}
+    if CREATOR_MAP_FILE.is_file():
+        for ln in CREATOR_MAP_FILE.read_text(encoding="utf-8").splitlines():
+            parts = ln.split("\t")
+            if len(parts) == 2 and parts[1].strip().isdigit():
+                creator_map[parts[0].strip()] = int(parts[1].strip())
+                if len(creator_map) > 200:
+                    break
 
-    # 验证最近 done 任务的图片是否存在
-    output_ok = 0
-    output_missing = 0
-    for qi in list(reversed(_queue_items)):
-        if qi["status"] not in ("done", "running"):
+    # 给 done 项附上出图信息
+    for ri in recent_items:
+        if ri["status"] != "done":
             continue
-        fn = (qi.get("params") or {}).get("direct_prompt", "")
-        # 只需检查是否有足够信息确认出图
-        output_ok += 1
-        if len([x for x in recent_items if x["status"] == "done"]) > 10:
-            break
+        uid = ri["user_id"]
+        # 找该用户最后一张图片
+        found: str | None = None
+        for fn, uid2 in reversed(list(creator_map.items())):
+            if uid2 == uid:
+                found = fn
+                break
+        if found:
+            img_path = found
+            file_path = OUTPUT_DIR / img_path
+            file_exists = file_path.is_file()
+            ri["image"] = img_path
+            ri["image_exists"] = file_exists
+            ri["image_url"] = img_path if file_exists else None
+        else:
+            ri["image"] = None
+            ri["image_exists"] = False
+            ri["image_url"] = None
+
+    semaphore_locked = _run_sem.locked()
 
     return {
         "active": {
             "count": _active_count,
             "status": _active_status,
-            "semaphore_locked": sem_locked,
+            "semaphore_locked": semaphore_locked,
             "subscribers": len(_status_subscribers),
         },
         "queue_stats": stats,
