@@ -2562,6 +2562,15 @@ async def _queue_watchdog_loop():
                 _active_count = 0
                 _active_status = None
                 await _push_status(reset=True)
+                # 将所有卡在 pending 状态的队列项标记为失败
+                for qi in _queue_items:
+                    if qi["status"] == "pending":
+                        qi["status"] = "failed"
+                        qi["error"] = "ComfyUI 空闲但仍有 pending 任务，标记失败"
+                        qi["finished_at"] = _time.time()
+                        _queued_user_ids[qi["user_id"]] = max(0, _queued_user_ids.get(qi["user_id"], 0) - 1)
+                        if _queued_user_ids.get(qi["user_id"], 0) == 0:
+                            _queued_user_ids.pop(qi["user_id"], None)
                 idle_sec = 0
         else:
             idle_sec = 0
