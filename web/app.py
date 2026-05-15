@@ -2781,6 +2781,7 @@ async def api_my_queue(request: Request):
     return {"items": items, "total": len(items)}
 
 
+@app.delete("/api/draw/queue")
 async def api_clear_queue(request: Request):
     """清空队列（仅管理员）。"""
     import time as _time
