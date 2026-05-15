@@ -832,15 +832,13 @@ async def _gc_loop():
 
 @app.on_event("startup")
 async def _start_gc():
-    global _gc_task, _queue_id_counter, _queue_items, _queued_user_ids, _draw_queue
+    global _gc_task, _queue_id_counter, _queue_items, _queued_user_ids
     # 重启时清空队列
     _queue_id_counter = 0
     _queue_items = []
     _queued_user_ids = {}
-    _draw_queue = asyncio.Queue()
     _gc_task = asyncio.create_task(_gc_loop())
     asyncio.create_task(_queue_watchdog_loop())
-    asyncio.create_task(_queue_worker())
 
 
 # ---------------- WebP 转码（轻量级图片压缩） ----------------
@@ -2536,7 +2534,6 @@ _status_subscribers: "set[WebSocket]" = set()
 # 当前活跃任务快照：None 表示空闲
 _active_status: Optional[Dict[str, Any]] = None
 # 生图队列
-_draw_queue: "asyncio.Queue[dict]" = asyncio.Queue()
 _queued_user_ids: dict[int, int] = {}  # user_id -> current queued count
 _queue_items: list[dict] = []  # 所有队列项，用于前端查询
 _queue_id_counter = 0
@@ -2567,15 +2564,6 @@ async def _queue_watchdog_loop():
                 _active_count = 0
                 _active_status = None
                 await _push_status(reset=True)
-                # 将所有卡在 pending 状态的队列项标记为失败
-                for qi in _queue_items:
-                    if qi["status"] == "pending":
-                        qi["status"] = "failed"
-                        qi["error"] = "ComfyUI 空闲但仍有 pending 任务，标记失败"
-                        qi["finished_at"] = _time.time()
-                        _queued_user_ids[qi["user_id"]] = max(0, _queued_user_ids.get(qi["user_id"], 0) - 1)
-                        if _queued_user_ids.get(qi["user_id"], 0) == 0:
-                            _queued_user_ids.pop(qi["user_id"], None)
                 idle_sec = 0
         else:
             idle_sec = 0
@@ -2640,47 +2628,38 @@ async def _push_status(patch: Optional[Dict[str, Any]] = None, *, reset: bool = 
     await _broadcast(snap)
 
 
-async def _queue_worker():
-    """从本地队列取任务，提交到 ComfyUI 后等待完成。"""
+async def _run_queue_task(req: RunRequest, user_id: int, item_id: int):
+    """直接执行单个队列任务：等待信号量 → _run_task → 清理状态。"""
     global _active_count
-    while True:
-        item = await _draw_queue.get()
-        user_id = item["user_id"]
-        item_id = item["item_id"]
-
-        # 更新队列状态
+    try:
         for qi in _queue_items:
             if qi["id"] == item_id:
                 qi["status"] = "running"
                 qi["started_at"] = _time.time()
                 break
-
-        try:
-            async with _run_sem:
-                _active_count += 1
-                await _push_status({"busy": True, "stage": "loading", "started_at": _time.time()})
-                try:
-                    await _run_task(None, RunRequest(**item["params"]), user_id=user_id)
-                finally:
-                    if _active_count > 0:
-                        _active_count -= 1
-                    await _push_status(reset=True)
-        except Exception as e:
-            for qi in _queue_items:
-                if qi["id"] == item_id:
-                    qi["error"] = str(e)
-                    break
-        finally:
-            # 标记完成
-            for qi in _queue_items:
-                if qi["id"] == item_id:
-                    qi["status"] = "done" if not qi.get("error") else "failed"
-                    qi["finished_at"] = _time.time()
-                    break
-            _queued_user_ids[user_id] = max(0, _queued_user_ids.get(user_id, 0) - 1)
-            if _queued_user_ids.get(user_id, 0) == 0:
-                _queued_user_ids.pop(user_id, None)
-            _draw_queue.task_done()
+        async with _run_sem:
+            _active_count += 1
+            await _push_status({"busy": True, "stage": "loading", "started_at": _time.time()})
+            try:
+                await _run_task(None, req, user_id=user_id)
+            finally:
+                if _active_count > 0:
+                    _active_count -= 1
+                await _push_status(reset=True)
+    except Exception as e:
+        for qi in _queue_items:
+            if qi["id"] == item_id:
+                qi["error"] = str(e)
+                break
+    finally:
+        for qi in _queue_items:
+            if qi["id"] == item_id:
+                qi["status"] = "done" if not qi.get("error") else "failed"
+                qi["finished_at"] = _time.time()
+                break
+        _queued_user_ids[user_id] = max(0, _queued_user_ids.get(user_id, 0) - 1)
+        if _queued_user_ids.get(user_id, 0) == 0:
+            _queued_user_ids.pop(user_id, None)
 
 
 @app.websocket("/ws/status")
@@ -2739,7 +2718,7 @@ async def api_enqueue(request: Request):
     _queue_id_counter += 1
     item_id = _queue_id_counter
 
-    # 加入本地队列 + 状态跟踪
+    # 加入队列 + 状态跟踪
     queue_item = {
         "id": item_id,
         "user_id": user["id"],
@@ -2751,9 +2730,14 @@ async def api_enqueue(request: Request):
         "error": None,
     }
     _queue_items.append(queue_item)
-    await _draw_queue.put({"user_id": user["id"], "params": body, "item_id": item_id})
 
-    return {"queued": True, "position": _draw_queue.qsize(), "item_id": item_id}
+    # 直接 spawn 一个后台 task，靠 _run_sem 排队
+    asyncio.create_task(_run_queue_task(RunRequest(**body), user["id"], item_id))
+
+    # 计算位置：数所有 pending/running 的项
+    position = sum(1 for qi in _queue_items if qi["status"] in ("pending", "running"))
+
+    return {"queued": True, "position": position, "item_id": item_id}
 
 
 @app.get("/api/draw/my-queue")
@@ -2798,7 +2782,7 @@ async def api_clear_queue(request: Request):
     if user.get("role") != "admin":
         raise HTTPException(403, "需要管理员权限")
 
-    # 将所有 pending 状态的项标记为已取消
+    # 将所有 pending 状态的项标记为已取消（running 的不中断）
     cleared = 0
     for qi in _queue_items:
         if qi["status"] == "pending":
@@ -2809,23 +2793,18 @@ async def api_clear_queue(request: Request):
                 _queued_user_ids.pop(qi["user_id"], None)
             cleared += 1
 
-    # 清空队列中的任务（从 asyncio.Queue 中取出不执行）
-    from asyncio import Queue
-    while not _draw_queue.empty():
-        try:
-            item = _draw_queue.get_nowait()
-            _draw_queue.task_done()
-        except Exception:
-            break
-
     return {"ok": True, "cleared": cleared}
 
 
 def _queue_position(item_id: int) -> int:
     """返回指定 item 在队列中的位置（从 1 开始）。"""
-    for i, qi in enumerate(_queue_items):
-        if qi["id"] == item_id and qi["status"] == "pending":
-            return i + 1
+    pos = 1
+    for qi in _queue_items:
+        if qi["status"] not in ("pending", "running"):
+            continue
+        if qi["id"] == item_id:
+            return pos
+        pos += 1
     return 0
 
 
