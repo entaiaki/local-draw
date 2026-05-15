@@ -845,7 +845,7 @@ async def _start_gc():
 
 # 进程内缓存：(abs_path, mtime, size) -> webp bytes
 _WEBP_CACHE: "Dict[Tuple[str, float, str], bytes]" = {}
-_WEBP_CACHE_MAX = 64  # LRU 上限，防止内存爆掉
+_WEBP_CACHE_MAX = 256  # LRU 上限，防止内存爆掉
 
 
 def _accepts_webp(request: Request) -> bool:
@@ -1836,12 +1836,10 @@ async def api_output_file(request: Request, path: str, full: int = 0):
         raise HTTPException(404, "not found")
     if p.suffix.lower() not in OUTPUT_IMAGE_EXTS:
         raise HTTPException(400, "not an image")
-    # 默认走 webp 转码（限制最长边 1600 节省带宽）；?full=1 返回原图
-    if full:
-        ext = p.suffix.lower().lstrip(".")
-        media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, f"image/{ext}")
-        return FileResponse(str(p), media_type=media)
-    return _serve_image_maybe_webp(request, p, quality=82, max_side=1600)
+    # 默认走 webp 转码（限制最长边 1200 节省带宽）；?full=1 返回原图
+    ext = p.suffix.lower().lstrip(".")
+    media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, f"image/{ext}")
+    return FileResponse(str(p), media_type=media)
 
 
 def _extract_positive_from_prompt_json(prompt_json: Dict[str, Any]) -> str:
@@ -2344,12 +2342,6 @@ async def api_image(request: Request, filename: str, subfolder: str = "", type: 
     except Exception as e:
         raise HTTPException(500, str(e))
     # 浏览器接受 webp 时即时转码（节省 60-80% 带宽）
-    if _accepts_webp(request) and ct.startswith("image/") and ct not in ("image/webp", "image/gif"):
-        try:
-            webp = _encode_webp(content, quality=82, max_side=1600)
-            return Response(content=webp, media_type="image/webp", headers={"Vary": "Accept"})
-        except Exception:
-            pass
     return Response(content=content, media_type=ct)
 
 
