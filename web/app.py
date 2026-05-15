@@ -947,7 +947,12 @@ async def submit_prompt(prompt: Dict[str, Any]) -> str:
             },
             headers={"Comfy-User": ""},
         )
-        r.raise_for_status()
+        if not r.is_success:
+            try:
+                detail = r.json()
+            except Exception:
+                detail = r.text[:500]
+            raise RuntimeError(f"ComfyUI 拒绝请求: {detail}")
         return r.json()["prompt_id"]
 
 
