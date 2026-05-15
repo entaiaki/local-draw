@@ -2739,8 +2739,8 @@ async def api_enqueue(request: Request):
     # 直接 spawn 一个后台 task，靠 _run_sem 排队
     asyncio.create_task(_run_queue_task(RunRequest(**body), user["id"], item_id))
 
-    # 计算位置：数所有 pending/running 的项
-    position = sum(1 for qi in _queue_items if qi["status"] in ("pending", "running"))
+    # 计算位置：数所有 pending/waiting/running 的项
+    position = sum(1 for qi in _queue_items if qi["status"] in ("pending", "waiting", "running"))
 
     return {"queued": True, "position": position, "item_id": item_id}
 
@@ -2770,7 +2770,7 @@ async def api_my_queue(request: Request):
             "started_at": qi.get("started_at"),
             "finished_at": qi.get("finished_at"),
             "error": qi.get("error"),
-            "position": None if qi["status"] != "pending" else _queue_position(qi["id"]),
+            "position": None if qi["status"] not in ("pending", "waiting") else _queue_position(qi["id"]),
         })
     return {"items": items, "total": len(items)}
 
@@ -2805,7 +2805,7 @@ def _queue_position(item_id: int) -> int:
     """返回指定 item 在队列中的位置（从 1 开始）。"""
     pos = 1
     for qi in _queue_items:
-        if qi["status"] not in ("pending", "running"):
+        if qi["status"] not in ("pending", "waiting", "running"):
             continue
         if qi["id"] == item_id:
             return pos
