@@ -2707,13 +2707,13 @@ async def _run_queue_task(req: RunRequest, user_id: int, item_id: int):
         for qi in _queue_items:
             if qi["id"] == item_id:
                 qi["status"] = "waiting"
-                qi["started_at"] = _time.time()
                 break
         # 等待信号量（有人在生图时这里会阻塞）
         async with _run_sem:
             for qi in _queue_items:
                 if qi["id"] == item_id:
                     qi["status"] = "running"
+                    qi["started_at"] = _time.time()
                     break
             _active_count += 1
             await _push_status({"busy": True, "stage": "loading", "started_at": _time.time()})
