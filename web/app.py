@@ -369,7 +369,7 @@ _workflow_meta: Dict[str, Dict[str, str]] = _load_workflow_meta()
 
 # ---------------- LLM 配置 ----------------
 DEFAULT_LLM_CONFIG = {
-    "provider": "local",           # "local" | "google" | "custom"
+    "provider": "local",           # "local" | "google" | "custom" | "anthropic"
     "local_endpoint": f"http://{LMS_HOST}:{LMS_PORT}",
     "google_api_key": "",          # Google AI Studio API Key
     "google_model": "gemma-4-31b-it",
@@ -377,6 +377,9 @@ DEFAULT_LLM_CONFIG = {
     "custom_endpoint": "",         # 自定义 OpenAI 兼容 API 的 base URL
     "custom_api_key": "",
     "custom_model": "",
+    "anthropic_api_key": "",       # Anthropic API Key
+    "anthropic_model": "claude-sonnet-4-20250514",
+    "anthropic_base_url": "https://api.anthropic.com/v1",
     "llm_stream": True,            # True=SSE 流式，False=普通请求（所有 provider 通用）
 }
 
@@ -391,7 +394,7 @@ def _load_llm_config() -> Dict[str, Any]:
         if not isinstance(d, dict):
             return dict(DEFAULT_LLM_CONFIG)
         return {
-            "provider": d.get("provider") if d.get("provider") in ("local", "google", "custom") else "local",
+            "provider": d.get("provider") if d.get("provider") in ("local", "google", "custom", "anthropic") else "local",
             "local_endpoint": str(d.get("local_endpoint") or DEFAULT_LLM_CONFIG["local_endpoint"]),
             "google_api_key": str(d.get("google_api_key") or ""),
             "google_model": str(d.get("google_model") or DEFAULT_LLM_CONFIG["google_model"]),
@@ -399,6 +402,9 @@ def _load_llm_config() -> Dict[str, Any]:
             "custom_endpoint": str(d.get("custom_endpoint") or ""),
             "custom_api_key": str(d.get("custom_api_key") or ""),
             "custom_model": str(d.get("custom_model") or ""),
+            "anthropic_api_key": str(d.get("anthropic_api_key") or ""),
+            "anthropic_model": str(d.get("anthropic_model") or DEFAULT_LLM_CONFIG["anthropic_model"]),
+            "anthropic_base_url": str(d.get("anthropic_base_url") or DEFAULT_LLM_CONFIG["anthropic_base_url"]),
             "llm_stream": bool(d.get("llm_stream", True)),
         }
     except Exception:
@@ -1293,6 +1299,8 @@ async def translate_prompt(
 
     if provider == "google":
         result = await _llm_google(system, user, cfg, on_chunk, use_stream)
+    elif provider == "anthropic":
+        result = await _llm_anthropic(system, user, cfg, on_chunk, use_stream)
     elif provider == "custom":
         result = await _llm_openai_compat(system, user, cfg.get("custom_endpoint", ""),
                                           cfg.get("custom_api_key", ""), cfg.get("custom_model", ""),
@@ -1468,6 +1476,77 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
         detail = "; ".join(_debug_info) if _debug_info else "无额外信息"
         thought_preview = "".join(thought_chunks)[:200] if thought_chunks else "(无)"
         raise RuntimeError(f"Google LLM 返回空内容 | 调试: {detail} | 思维链前200字: {thought_preview}")
+    return full
+
+
+async def _llm_anthropic(system: str, user: str, cfg: Dict[str, Any], on_chunk: Optional[Any],
+                         use_stream: bool = True) -> str:
+    """Anthropic Claude API，支持流式与非流式。"""
+    api_key = cfg.get("anthropic_api_key") or ""
+    model = cfg.get("anthropic_model") or "claude-sonnet-4-20250514"
+    base_url = (cfg.get("anthropic_base_url") or "https://api.anthropic.com/v1").rstrip("/")
+    if not api_key:
+        raise RuntimeError("Anthropic API Key 未配置")
+
+    body: Dict[str, Any] = {
+        "model": model,
+        "max_tokens": 1024,
+        "system": system,
+        "messages": [{"role": "user", "content": user}],
+        "stream": use_stream,
+    }
+
+    chunks: List[str] = []
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+    }
+
+    async with httpx.AsyncClient(timeout=120, headers=headers) as client:
+        if use_stream:
+            url = f"{base_url}/messages"
+            async with client.stream("POST", url, json=body) as r:
+                if r.status_code >= 400:
+                    text = await r.aread()
+                    raise RuntimeError(f"Anthropic HTTP {r.status_code}: {text.decode()[:500]}")
+                async for line in r.aiter_lines():
+                    if not line or not line.startswith("data:"):
+                        continue
+                    data = line[5:].strip()
+                    if data == "[DONE]":
+                        break
+                    try:
+                        obj = json.loads(data)
+                    except Exception:
+                        continue
+                    if obj.get("type") == "content_block_delta":
+                        delta = obj.get("delta", {}) or {}
+                        piece = delta.get("text", "") or ""
+                        if piece:
+                            chunks.append(piece)
+                            if on_chunk is not None:
+                                try:
+                                    await on_chunk(piece)
+                                except Exception:
+                                    pass
+                    elif obj.get("type") == "message_stop":
+                        break
+        else:
+            url = f"{base_url}/messages"
+            body["stream"] = False
+            r = await client.post(url, json=body)
+            if r.status_code >= 400:
+                raise RuntimeError(f"Anthropic HTTP {r.status_code}: {r.text[:500]}")
+            resp = r.json()
+            for block in (resp.get("content") or []):
+                if block.get("type") == "text":
+                    chunks.append(block.get("text", ""))
+
+    full = "".join(chunks).strip()
+    print(f"[LLM] model={model} provider=anthropic output={full[:500]}")
+    if not full:
+        raise RuntimeError(f"Anthropic LLM 返回空内容")
     return full
 
 
@@ -4230,7 +4309,7 @@ async def draw_admin_wf_thumbnail(file: UploadFile, user: dict = Depends(require
 
 # ---------------- LLM 配置管理 ----------------
 
-_LLM_KEY_FIELDS = {"google_api_key", "custom_api_key"}
+_LLM_KEY_FIELDS = {"google_api_key", "custom_api_key", "anthropic_api_key"}
 _GOOGLE_THINKING_OPTIONS = [
     "off",
     "level_minimal", "level_low", "level_medium", "level_high",
@@ -4246,7 +4325,7 @@ async def draw_admin_llm_config_get(user: dict = Depends(require_admin)):
     return {
         "config": cfg,
         "defaults": dict(DEFAULT_LLM_CONFIG),
-        "providers": ["local", "google", "custom"],
+        "providers": ["local", "google", "custom", "anthropic"],
         "google_thinking_options": _GOOGLE_THINKING_OPTIONS,
     }
 
@@ -4266,8 +4345,8 @@ async def draw_admin_llm_config_set(payload: Dict[str, Any], user: dict = Depend
                 continue
             new_cfg[k] = str(v)
         elif k == "provider":
-            if v not in ("local", "google", "custom"):
-                raise HTTPException(400, f"provider 必须为 local/google/custom")
+            if v not in ("local", "google", "custom", "anthropic"):
+                raise HTTPException(400, f"provider 必须为 local/google/custom/anthropic")
             new_cfg[k] = v
         elif k == "llm_stream":
             new_cfg[k] = bool(v)
@@ -4299,6 +4378,8 @@ async def draw_admin_llm_config_test(user: dict = Depends(require_admin)):
     try:
         if provider == "google":
             result = await _llm_google(test_system, test_user, cfg, None, False)
+        elif provider == "anthropic":
+            result = await _llm_anthropic(test_system, test_user, cfg, None, False)
         elif provider == "custom":
             result = await _llm_openai_compat(test_system, test_user,
                                               cfg.get("custom_endpoint", ""),
