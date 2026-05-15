@@ -835,6 +835,7 @@ async def _start_gc():
     global _gc_task
     _gc_task = asyncio.create_task(_gc_loop())
     asyncio.create_task(_queue_watchdog_loop())
+    asyncio.create_task(_queue_worker())
 
 
 # ---------------- WebP 转码（轻量级图片压缩） ----------------
@@ -2529,8 +2530,11 @@ _active_count = 0
 _status_subscribers: "set[WebSocket]" = set()
 # 当前活跃任务快照：None 表示空闲
 _active_status: Optional[Dict[str, Any]] = None
-# 生图队列：跟踪已在队列中的用户次数，防止超过限额
+# 生图队列
+_draw_queue: "asyncio.Queue[dict]" = asyncio.Queue()
 _queued_user_ids: dict[int, int] = {}  # user_id -> current queued count
+_queue_items: list[dict] = []  # 所有队列项，用于前端查询
+_queue_id_counter = 0
 
 
 async def _queue_watchdog_loop():
@@ -2622,18 +2626,47 @@ async def _push_status(patch: Optional[Dict[str, Any]] = None, *, reset: bool = 
     await _broadcast(snap)
 
 
-async def _run_queue_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
-    """队列任务：加载工作流 → 提交 ComfyUI → 等待完成 → 提取图片 → 写 creator_map。"""
-    try:
-        await _run_task(ws, req, user_id=user_id)
-    except Exception:
-        pass
-    finally:
-        cur = _queued_user_ids.get(user_id, 0)
-        if cur > 1:
-            _queued_user_ids[user_id] = cur - 1
-        else:
-            _queued_user_ids.pop(user_id, None)
+async def _queue_worker():
+    """从本地队列取任务，提交到 ComfyUI 后等待完成。"""
+    global _active_count
+    while True:
+        item = await _draw_queue.get()
+        user_id = item["user_id"]
+        item_id = item["item_id"]
+
+        # 更新队列状态
+        for qi in _queue_items:
+            if qi["id"] == item_id:
+                qi["status"] = "running"
+                qi["started_at"] = _time.time()
+                break
+
+        try:
+            async with _run_sem:
+                _active_count += 1
+                await _push_status({"busy": True, "stage": "loading", "started_at": _time.time()})
+                try:
+                    await _run_task(None, RunRequest(**item["params"]), user_id=user_id)
+                finally:
+                    if _active_count > 0:
+                        _active_count -= 1
+                    await _push_status(reset=True)
+        except Exception as e:
+            for qi in _queue_items:
+                if qi["id"] == item_id:
+                    qi["error"] = str(e)
+                    break
+        finally:
+            # 标记完成
+            for qi in _queue_items:
+                if qi["id"] == item_id:
+                    qi["status"] = "done" if not qi.get("error") else "failed"
+                    qi["finished_at"] = _time.time()
+                    break
+            _queued_user_ids[user_id] = max(0, _queued_user_ids.get(user_id, 0) - 1)
+            if _queued_user_ids.get(user_id, 0) == 0:
+                _queued_user_ids.pop(user_id, None)
+            _draw_queue.task_done()
 
 
 @app.websocket("/ws/status")
@@ -2688,10 +2721,63 @@ async def api_enqueue(request: Request):
     body = await request.json()
     _queued_user_ids[user["id"]] = current_q + 1
 
-    # 后台执行：加载工作流 → 提交 ComfyUI → 等待 → 提取图片 → 写 creator_map
-    asyncio.create_task(_run_queue_task(None, RunRequest(**body), user_id=user["id"]))
+    global _queue_id_counter
+    _queue_id_counter += 1
+    item_id = _queue_id_counter
 
-    return {"queued": True}
+    # 加入本地队列 + 状态跟踪
+    queue_item = {
+        "id": item_id,
+        "user_id": user["id"],
+        "params": body,
+        "status": "pending",
+        "created_at": _time.time(),
+        "started_at": None,
+        "finished_at": None,
+        "error": None,
+    }
+    _queue_items.append(queue_item)
+    await _draw_queue.put({"user_id": user["id"], "params": body, "item_id": item_id})
+
+    return {"queued": True, "position": _draw_queue.qsize(), "item_id": item_id}
+
+
+@app.get("/api/draw/my-queue")
+async def api_my_queue(request: Request):
+    """查询当前用户在队列中的任务。"""
+    import time as _time
+    auth = request.headers.get("Authorization", "")
+    token = auth.removeprefix("Bearer ") if auth.startswith("Bearer ") else ""
+    user = verify_jwt(token)
+    if not user:
+        raise HTTPException(401, "token 无效或已过期，请重新登录")
+    user_id = user["id"]
+    # 返回该用户的队列（pending + running，保留最近30条已完成的）
+    items = []
+    for qi in _queue_items:
+        if qi["user_id"] != user_id:
+            continue
+        age = _time.time() - qi.get("created_at", 0)
+        if age > 7200:  # 2小时内自动清理
+            continue
+        items.append({
+            "id": qi["id"],
+            "status": qi["status"],
+            "created_at": qi["created_at"],
+            "started_at": qi.get("started_at"),
+            "finished_at": qi.get("finished_at"),
+            "error": qi.get("error"),
+            "position": None if qi["status"] != "pending" else _queue_position(qi["id"]),
+        })
+    return {"items": items, "total": len(items)}
+
+
+def _queue_position(item_id: int) -> int:
+    """返回指定 item 在队列中的位置（从 1 开始）。"""
+    for i, qi in enumerate(_queue_items):
+        if qi["id"] == item_id and qi["status"] == "pending":
+            return i + 1
+    return 0
 
 
 @app.websocket("/ws/run")
