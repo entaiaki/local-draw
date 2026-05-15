@@ -1443,6 +1443,8 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                         chunks.append(piece)
     full = "".join(chunks).strip()
     thought_text = "".join(thought_chunks)
+    _msg = thought_text[:500].replace("\n", " | ")
+    print(f"[LLM] model={model} provider=google thought={_msg}")
     if (not full or "POSITIVE:" not in full) and thought_text:
         import re as _re
         # 思维链中直接找 POSITIVE:/NEGATIVE:
