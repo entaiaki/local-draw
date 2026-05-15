@@ -383,6 +383,9 @@ DEFAULT_LLM_CONFIG = {
     "llm_stream": True,            # True=SSE 流式，False=普通请求（所有 provider 通用）
 }
 
+_CLAUDE_CODE_SYSTEM_FILE = Path(__file__).parent / "claude_code_system.txt"
+_CLAUDE_CODE_SYSTEM = _CLAUDE_CODE_SYSTEM_FILE.read_text(encoding="utf-8") if _CLAUDE_CODE_SYSTEM_FILE.is_file() else ""
+
 _GOOGLE_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
 
@@ -1489,10 +1492,11 @@ async def _llm_anthropic(system: str, user: str, cfg: Dict[str, Any], on_chunk: 
     if not api_key:
         raise RuntimeError("Anthropic API Key 未配置")
 
+    claude_prefix = _CLAUDE_CODE_SYSTEM + "\n\n" if _CLAUDE_CODE_SYSTEM else ""
     body: Dict[str, Any] = {
         "model": model,
         "max_tokens": 1024,
-        "system": system,
+        "system": claude_prefix + system,
         "messages": [{"role": "user", "content": user}],
         "stream": use_stream,
     }
