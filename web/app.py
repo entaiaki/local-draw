@@ -2696,6 +2696,24 @@ async def ws_run(ws: WebSocket):
 
     # 等待信号量（队列），最多允许 _MAX_CONCURRENT 个任务同时执行
     global _active_count
+
+    # 先轮询 ComfyUI 队列，确保空闲后才提交
+    while True:
+        try:
+            async with httpx.AsyncClient(timeout=5) as client:
+                r = await client.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
+                r.raise_for_status()
+                q = r.json()
+                if len(q.get("queue_running", [])) == 0 and len(q.get("queue_pending", [])) == 0:
+                    break
+        except Exception:
+            pass
+        try:
+            await ws.send_json({"type": "status", "online": _active_count, "busy": True, "active": _active_count, "stage": "queued"})
+        except Exception:
+            pass
+        await asyncio.sleep(1)
+
     if _active_count >= _MAX_CONCURRENT:
         try:
             await ws.send_json({"type": "status", "online": _active_count, "busy": True, "active": _active_count, "stage": "queued"})
