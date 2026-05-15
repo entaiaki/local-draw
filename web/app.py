@@ -827,6 +827,7 @@ async def _gc_loop():
 async def _start_gc():
     global _gc_task
     _gc_task = asyncio.create_task(_gc_loop())
+    asyncio.create_task(_queue_watchdog_loop())
 
 
 # ---------------- WebP 转码（轻量级图片压缩） ----------------
@@ -2524,6 +2525,36 @@ _status_subscribers: "set[WebSocket]" = set()
 _active_status: Optional[Dict[str, Any]] = None
 
 
+async def _queue_watchdog_loop():
+    """每1秒轮询 ComfyUI 队列，后端认为忙但队列空则释放。"""
+    idle_sec = 0
+    while True:
+        await asyncio.sleep(1)
+        if _active_count == 0:
+            idle_sec = 0
+            continue
+        try:
+            async with httpx.AsyncClient(timeout=5) as client:
+                r = await client.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
+                r.raise_for_status()
+                q = r.json()
+                running = q.get("queue_running", [])
+                pending = q.get("queue_pending", [])
+        except Exception:
+            idle_sec = 0
+            continue
+        if len(running) == 0 and len(pending) == 0:
+            idle_sec += 1
+            if idle_sec >= 5:
+                global _active_count, _active_status
+                _active_count = 0
+                _active_status = None
+                await _push_status(reset=True)
+                idle_sec = 0
+        else:
+            idle_sec = 0
+
+
 @app.get("/api/_diag")
 async def api_diag():
     return {
@@ -2683,7 +2714,8 @@ async def ws_run(ws: WebSocket):
             except Exception:
                 pass
         finally:
-            _active_count -= 1
+            if _active_count > 0:
+                _active_count -= 1
             await _push_status(reset=True)
 
 
