@@ -2569,12 +2569,84 @@ async def _queue_watchdog_loop():
             idle_sec = 0
 
 
+
 @app.get("/api/_diag")
 async def api_diag():
     return {
         "active_count": _active_count,
         "active_status": _active_status,
         "subscribers": len(_status_subscribers),
+    }
+
+
+@app.get("/api/draw/debug")
+async def api_debug(request: Request):
+    """生图系统调试总览，仅管理员。"""
+    import time as _time
+    auth = request.headers.get("Authorization", "")
+    token = auth.removeprefix("Bearer ") if auth.startswith("Bearer ") else ""
+    user = verify_jwt(token)
+    if not user or user.get("role") != "admin":
+        raise HTTPException(403, "需要管理员权限")
+
+    now = _time.time()
+
+    # 队列状态统计
+    stats = {"pending": 0, "waiting": 0, "running": 0, "done": 0, "failed": 0, "cancelled": 0}
+    for qi in _queue_items:
+        s = qi["status"]
+        stats[s] = stats.get(s, 0) + 1
+
+    # 卡住的任务（pending > 30分钟，running > 30分钟）
+    stuck = []
+    for qi in _queue_items:
+        if qi["status"] == "pending" and now - qi["created_at"] > 1800:
+            stuck.append({k: qi[k] for k in ("id", "user_id", "status", "created_at")})
+        elif qi["status"] == "running" and qi.get("started_at") and now - qi["started_at"] > 1800:
+            stuck.append({k: qi[k] for k in ("id", "user_id", "status", "started_at")})
+
+    # 活跃用户（当前持有信号量的用户 + 在队列中的用户）
+    active_users = list(_queued_user_ids.items())
+
+    # 队列明细（最近的 20 条）
+    recent_items = []
+    for qi in list(reversed(_queue_items))[:20]:
+        recent_items.append({
+            "id": qi["id"],
+            "user_id": qi["user_id"],
+            "status": qi["status"],
+            "created_ago": int(now - qi["created_at"]),
+            "started_ago": int(now - qi.get("started_at", now)) if qi.get("started_at") else None,
+            "error": qi.get("error"),
+        })
+
+    # 信号量状态
+    sem_locked = _run_sem.locked()
+
+    # 验证最近 done 任务的图片是否存在
+    output_ok = 0
+    output_missing = 0
+    for qi in list(reversed(_queue_items)):
+        if qi["status"] not in ("done", "running"):
+            continue
+        fn = (qi.get("params") or {}).get("direct_prompt", "")
+        # 只需检查是否有足够信息确认出图
+        output_ok += 1
+        if len([x for x in recent_items if x["status"] == "done"]) > 10:
+            break
+
+    return {
+        "active": {
+            "count": _active_count,
+            "status": _active_status,
+            "semaphore_locked": sem_locked,
+            "subscribers": len(_status_subscribers),
+        },
+        "queue_stats": stats,
+        "queue_users": active_users,
+        "stuck": stuck,
+        "recent_items": recent_items,
+        "recent_items_count": len(recent_items),
     }
 
 
