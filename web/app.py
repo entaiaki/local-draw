@@ -2781,6 +2781,40 @@ async def api_my_queue(request: Request):
     return {"items": items, "total": len(items)}
 
 
+async def api_clear_queue(request: Request):
+    """清空队列（仅管理员）。"""
+    import time as _time
+    auth = request.headers.get("Authorization", "")
+    token = auth.removeprefix("Bearer ") if auth.startswith("Bearer ") else ""
+    user = verify_jwt(token)
+    if not user:
+        raise HTTPException(401, "token 无效或已过期，请重新登录")
+    if user.get("role") != "admin":
+        raise HTTPException(403, "需要管理员权限")
+
+    # 将所有 pending 状态的项标记为已取消
+    cleared = 0
+    for qi in _queue_items:
+        if qi["status"] == "pending":
+            qi["status"] = "cancelled"
+            qi["finished_at"] = _time.time()
+            _queued_user_ids[qi["user_id"]] = max(0, _queued_user_ids.get(qi["user_id"], 0) - 1)
+            if _queued_user_ids.get(qi["user_id"], 0) == 0:
+                _queued_user_ids.pop(qi["user_id"], None)
+            cleared += 1
+
+    # 清空队列中的任务（从 asyncio.Queue 中取出不执行）
+    from asyncio import Queue
+    while not _draw_queue.empty():
+        try:
+            item = _draw_queue.get_nowait()
+            _draw_queue.task_done()
+        except Exception:
+            break
+
+    return {"ok": True, "cleared": cleared}
+
+
 def _queue_position(item_id: int) -> int:
     """返回指定 item 在队列中的位置（从 1 开始）。"""
     for i, qi in enumerate(_queue_items):
