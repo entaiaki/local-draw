@@ -2841,6 +2841,11 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
                 if ndata.get("class_type") == "LoadImage":
                     ndata["inputs"]["image"] = req.image1_name
 
+        # 禁用 LoRA（strength=0），避免缺失 LoRA 文件导致报错
+        for nid, ndata in prompt_dict.items():
+            if ndata.get("class_type") == "LoraLoaderModelOnly":
+                ndata["inputs"]["strength_model"] = 0
+
         # 注入用户提示词到 TextEncodeQwenImageEditPlus 节点
         if req.direct_prompt.strip():
             for nid, ndata in prompt_dict.items():
