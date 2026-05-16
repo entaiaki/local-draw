@@ -55,17 +55,13 @@ COMFYUI_API = f"http://{COMFYUI_HOST}:{COMFYUI_PORT}"
 LMS_API = f"http://{LMS_HOST}:{LMS_PORT}"
 COMFYUI_WS = f"ws://{COMFYUI_HOST}:{COMFYUI_PORT}"
 
-n# 全局共享 HTTP 客户端（连接池复用）
 _http = httpx.AsyncClient(
-    timeout=httpx.Timeout(30.0, connect=10.0),
-    limits=httpx.Limits(max_connections=50, max_keepalive_connections=20),
+    timeout=httpx.Timeout(60.0, connect=15.0),
+    limits=httpx.Limits(max_connections=100, max_keepalive_connections=10, keepalive_expiry=30),
     headers={"User-Agent": "natureDrawImage/1.0"},
 )
 
-CLIENT_ID = uuid.uuid4().hex
-
-STATE_FILE = Path(__file__).parent / "state.json"
-OUTPUT_DIR = Path(OUTPUT_DIR_STR)
+# 全局共享 HTTP 客户端（连接池复用）
 ARCHIVE_DIR = Path(ARCHIVE_DIR_STR)
 THUMB_DIR = Path(__file__).parent / "thumbnails"
 THUMB_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif")
