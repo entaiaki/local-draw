@@ -426,6 +426,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         nl_prompt: req.nl_prompt || '',
         negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         rewrite: !!req.rewrite,
+        image1: req.image1_name || '',
+        image2: req.image2_name || '',
       };
     }
     try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
