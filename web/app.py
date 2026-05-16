@@ -1363,7 +1363,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
     async with httpx.AsyncClient(timeout=120) as client:
         if use_stream:
             url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
-            async with _http.stream("POST", url, json=body) as r:
+            async with client.stream("POST", url, json=body) as r:
                 if r.status_code >= 400:
                     text = await r.aread()
                     raise RuntimeError(f"LLM HTTP {r.status_code}: {text.decode()[:500]}")
@@ -1502,7 +1502,7 @@ async def _llm_openai_compat(system: str, user: str, endpoint: str,
     chunks: List[str] = []
     async with httpx.AsyncClient(timeout=120, headers=headers) as client:
         if use_stream:
-            async with _http.stream("POST", f"{endpoint}/v1/chat/completions", json=body) as r:
+            async with client.stream("POST", f"{endpoint}/v1/chat/completions", json=body) as r:
                 if r.status_code >= 400:
                     text = await r.aread()
                     raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
