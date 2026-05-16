@@ -873,6 +873,13 @@ def _encode_webp(src_bytes: bytes, *, quality: int = 80, max_side: Optional[int]
     return buf.getvalue()
 
 
+def _webp_cache_path(path: Path, *, quality: int = 80, max_side: Optional[int] = None) -> Path:
+    """返回预计算 WebP 缓存的磁盘路径。"""
+    cache_dir = path.parent / ".webp_cache"
+    cache_dir.mkdir(exist_ok=True)
+    return cache_dir / f"{path.name}.q{quality}.s{max_side or 0}.webp"
+
+
 def _serve_image_maybe_webp(
     request: Request,
     path: Path,
@@ -880,36 +887,30 @@ def _serve_image_maybe_webp(
     quality: int = 80,
     max_side: Optional[int] = None,
 ) -> Response:
-    """根据 Accept 头决定原图直传还是 webp 转码。"""
+    """根据 Accept 头决定原图直传还是 webp 转码。结果缓存到磁盘。"""
     media = {"jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(
         path.suffix.lower().lstrip("."), f"image/{path.suffix.lower().lstrip('.')}"
     )
-    # 已是 webp / gif / 不接受 webp，直传
     ext = path.suffix.lower()
+    # 已是 webp / gif / 不接受 webp，直传
     if ext in (".webp", ".gif") or not _accepts_webp(request):
         return FileResponse(str(path), media_type=media)
     try:
-        st = path.stat()
-        key = (str(path), st.st_mtime, f"{quality}@{max_side or 0}")
-        cached = _WEBP_CACHE.get(key)
-        if cached is None:
-            with open(path, "rb") as f:
-                src = f.read()
-            cached = _encode_webp(src, quality=quality, max_side=max_side)
-            if len(_WEBP_CACHE) >= _WEBP_CACHE_MAX:
-                # 朴素 LRU：丢掉最早一个
-                try:
-                    _WEBP_CACHE.pop(next(iter(_WEBP_CACHE)))
-                except StopIteration:
-                    pass
-            _WEBP_CACHE[key] = cached
-        headers = {"Content-Length": str(len(cached)), "Vary": "Accept", "Cache-Control": "public, max-age=300"}
-        return Response(content=cached, media_type="image/webp", headers=headers)
+        webp_path = _webp_cache_path(path, quality=quality, max_side=max_side)
+        # 磁盘缓存命中 -> 直接返回
+        if webp_path.is_file() and webp_path.stat().st_mtime >= path.stat().st_mtime:
+            return FileResponse(str(webp_path), media_type="image/webp",
+                                headers={"Vary": "Accept", "Cache-Control": "public, max-age=3600"})
+        # 未命中 -> 压缩并写入磁盘
+        with open(path, "rb") as f:
+            src = f.read()
+        webp_data = _encode_webp(src, quality=quality, max_side=max_side)
+        webp_path.write_bytes(webp_data)
+        return Response(content=webp_data, media_type="image/webp",
+                        headers={"Content-Length": str(len(webp_data)), "Vary": "Accept", "Cache-Control": "public, max-age=3600"})
     except Exception:
         return FileResponse(str(path), media_type=media)
 
-
-# ---------------- state ----------------
 
 def load_state() -> Dict[str, Any]:
     if not STATE_FILE.exists():
