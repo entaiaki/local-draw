@@ -113,7 +113,7 @@ router.get('/debug', async (req: Request, res: Response) => {
       created_ago: Math.round(now - qi.created_at),
       started_ago: qi.started_at ? Math.round(now - qi.started_at) : null,
       error: qi.error,
-      prompt: String((qi.params as any)?.direct_prompt || ''),
+      prompt: String((qi.params as any)?._llm_output || (qi.params as any)?.direct_prompt || ''),
       nl_prompt: String((qi.params as any)?.nl_prompt || ''),
       negative_prompt: String((qi.params as any)?.negative_prompt || ''),
       rewrite: Boolean((qi.params as any)?.rewrite),
@@ -121,7 +121,7 @@ router.get('/debug', async (req: Request, res: Response) => {
       image2: String((qi.params as any)?.image2_name || ''),
       image2: (qi.params as any)?.image2_name || null,
     })),
-    recent_items: recent.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error, prompt: String((qi.params as any)?.direct_prompt || ''), image1: (qi.params as any)?.image1_name || null, image2: (qi.params as any)?.image2_name || null })),
+    recent_items: recent.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error, prompt: String((qi.params as any)?._llm_output || (qi.params as any)?.direct_prompt || ''), image1: (qi.params as any)?.image1_name || null, image2: (qi.params as any)?.image2_name || null })),
     recent_items_count: recent.length,
   });
 });

@@ -315,10 +315,12 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 
     // LLM translate if nl_prompt
     let finalPrompt = req.direct_prompt || '';
+    let llmOutput = '';  // LLM 实际输出的标签
     if (req.nl_prompt) {
       try {
         const llmResult = await translatePrompt(req.nl_prompt, req.rewrite ? finalPrompt : undefined, req.negative_prompt);
         finalPrompt = llmResult.positive;
+        llmOutput = llmResult.positive;
       } catch (e: any) {
         // If LLM fails, fallback to direct prompt
       }
@@ -331,6 +333,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 
     // Inject prompt
     prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
+    // 保存 LLM 输出到队列项，调试面板可见
+    if (llmOutput) { try { (item.params as any)._llm_output = llmOutput; } catch {} }
 
     // Inject images for img2img
     if (req.image1_name) {
