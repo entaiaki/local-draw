@@ -164,7 +164,7 @@ router.post('/queue', async (req: Request, res: Response) => {
     if (req.nl_prompt && !req.image1_name) {
       try {
         const { translatePrompt } = await import('../services/llm.js');
-        const result = await translatePrompt(req.nl_prompt, req.rewrite ? req.direct_prompt : undefined, req.negative_prompt);
+        const result = await translatePrompt(req.nl_prompt, req.rewrite ? req.direct_prompt : undefined, req.negative_prompt, config);
         item.params._llm_output = result.positive;
         item.params._llm_negative = result.negative;
         saveQueueState();
