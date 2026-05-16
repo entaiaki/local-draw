@@ -322,6 +322,9 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         const llmResult = await translatePrompt(req.nl_prompt, req.rewrite ? finalPrompt : undefined, req.negative_prompt, config);
         finalPrompt = llmResult.positive;
         llmOutput = llmResult.positive;
+        if (llmResult.negative) {
+          try { (item.params as any)._llm_negative = llmResult.negative; } catch {}
+        }
       } catch (e: any) {
         // If LLM fails, fallback to direct prompt
       }
@@ -383,7 +386,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       pm['_pending_' + promptId] = {
         prompt: finalPrompt || req.direct_prompt || '',
         nl_prompt: req.nl_prompt || '',
-        negative_prompt: req.negative_prompt || '',
+        negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         rewrite: !!req.rewrite,
         user_id: userId,
         image1: req.image1_name || '',
@@ -421,7 +424,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       promptMeta[relPath] = {
         prompt: finalPrompt || req.direct_prompt || '',
         nl_prompt: req.nl_prompt || '',
-        negative_prompt: req.negative_prompt || '',
+        negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         rewrite: !!req.rewrite,
       };
     }
