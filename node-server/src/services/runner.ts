@@ -313,10 +313,10 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     }
     else throw new Error('未指定工作流');
 
-    // LLM translate if nl_prompt
+    // LLM translate if nl_prompt (使用预处理结果或现场调用)
     let finalPrompt = req.direct_prompt || '';
-    let llmOutput = '';  // LLM 实际输出的标签
-    if (req.nl_prompt) {
+    let llmOutput = item.params._llm_output as string || '';
+    if (req.nl_prompt && !llmOutput) {
       try {
         const llmResult = await translatePrompt(req.nl_prompt, req.rewrite ? finalPrompt : undefined, req.negative_prompt);
         finalPrompt = llmResult.positive;
@@ -324,6 +324,9 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       } catch (e: any) {
         // If LLM fails, fallback to direct prompt
       }
+    } else if (llmOutput) {
+      finalPrompt = llmOutput;
+    }
     }
 
     // Convert workflow
