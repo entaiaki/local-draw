@@ -5,6 +5,7 @@ import axios from 'axios';
 import { verifyToken } from '../middleware/auth.js';
 import { QueueItem, RunRequest } from '../types/index.js';
 import { loadLimits, loadConfig, saveJson, loadJson } from '../services/config.js';
+import { resetRunner } from '../services/runner.js';
 
 const router = Router();
 router.use(express.json({ limit: "50mb" }));
@@ -216,6 +217,7 @@ router.delete('/queue', (req: Request, res: Response) => {
   queueItems.length = 0;
   queuedUserIds = {};
   queueIdCounter = 0;
+  resetRunner();
   try { if (fs.existsSync(QUEUE_STATE_FILE)) fs.unlinkSync(QUEUE_STATE_FILE); } catch {}
   res.json({ ok: true, cleared: 0 });
 });

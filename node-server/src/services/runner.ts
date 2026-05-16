@@ -9,6 +9,7 @@ import { QueueItem } from '../types/index.js';
 const config = loadConfig();
 const MAX_CONCURRENT = 1;
 let activeCount = 0;
+export function resetRunner() { activeCount = 0; semLocked = false; semQueue.length = 0; }
 const semQueue: (() => void)[] = [];
 let semLocked = false;
 
