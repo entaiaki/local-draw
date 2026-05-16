@@ -246,7 +246,7 @@ function findClipRefs(prompt: Record<string, any>): { prompt_dict: Record<string
   return { prompt_dict: prompt, positive_ref: positiveRef, negative_ref: negativeRef };
 }
 
-async function waitForCompletion(promptId: string, timeout = 60): Promise<any> {
+async function waitForCompletion(promptId: string, timeout = 120): Promise<any> {
   const wsUrl = `ws://${config.comfyui_host}:${config.comfyui_port}/ws?clientId=${getClientId()}`;
   const start = Date.now();
   const WebSocket = require('ws');
