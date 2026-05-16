@@ -1,0 +1,82 @@
+export interface UserPayload {
+  id: number;
+  role: string;
+  email: string;
+}
+
+export interface DrawApiErrorPayload {
+  code?: string;
+  message?: string;
+  error?: string;
+  detail?: string;
+}
+
+export interface QueueItem {
+  id: number;
+  user_id: number;
+  params: Record<string, unknown>;
+  status: 'pending' | 'waiting' | 'running' | 'done' | 'failed' | 'cancelled';
+  created_at: number;
+  started_at: number | null;
+  finished_at: number | null;
+  error: string | null;
+}
+
+export interface RunRequest {
+  workflow_path: string;
+  inline_workflow?: Record<string, unknown>;
+  direct_prompt: string;
+  nl_prompt?: string;
+  rewrite?: boolean;
+  width?: number;
+  height?: number;
+  style_tags?: string;
+  negative_prompt?: string;
+  seed?: number;
+  image1_name?: string;
+  image2_name?: string;
+  denoise?: number;
+}
+
+export interface Limits {
+  gen_cooldown_sec: number;
+  gen_cooldown_after_sec: number;
+  max_queue_per_user: number;
+  image_rate_window_sec: number;
+  image_rate_max: number;
+  report_window_sec: number;
+  report_window_max: number;
+  report_pending_max: number;
+  gpu_poll_interval_ms: number;
+  gpu_cache_ttl_ms: number;
+  gc_interval_hours: number;
+  category_order: string[];
+}
+
+export interface LlmConfig {
+  provider: string;
+  local_endpoint: string;
+  google_api_key: string;
+  google_model: string;
+  google_thinking: string;
+  custom_endpoint: string;
+  custom_api_key: string;
+  custom_model: string;
+  llm_stream: boolean;
+}
+
+export interface WsStatusMessage {
+  type: 'status' | 'online';
+  online?: number;
+  active?: number;
+  busy?: boolean;
+  stage?: string;
+  node?: string;
+  value?: number;
+  max?: number;
+  started_at?: number;
+  prompt_id?: string;
+  final_prompt?: string;
+  done?: number;
+  total?: number;
+}
