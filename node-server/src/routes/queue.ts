@@ -68,11 +68,13 @@ loadQueueState();
     }
   }
   saveQueueState();
-  // 重新启动所有 pending + waiting 任务
+  // 重新启动所有 pending + waiting + failed 任务
   for (const qi of queueItems) {
-    if (qi.status === 'pending' || qi.status === 'waiting') {
+    if (qi.status === 'pending' || qi.status === 'waiting' || qi.status === 'failed') {
       qi.status = 'pending';
       qi.started_at = null;
+      qi.finished_at = null;
+      qi.error = null;
       (async () => {
         try { const { runQueueTask } = await import('../services/runner.js'); await runQueueTask(qi); } catch {}
       })();
