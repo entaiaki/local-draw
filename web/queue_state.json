@@ -1,5 +1,5 @@
 {
-  "idCounter": 274,
+  "idCounter": 275,
   "userIds": {},
   "items": [
     {
@@ -1089,6 +1089,21 @@
       "created_at": 1778948568.062,
       "started_at": 1778948581.857,
       "finished_at": 1778948587.813,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 275,
+      "user_id": 447,
+      "params": {
+        "direct_prompt": "生成图一和图二人物舌吻的图片",
+        "image1_name": "img2img_d2aa3c3080d0_1778948623.png",
+        "image2_name": "img2img_aebb48fe393c_1778948623.jpg",
+        "_prompt_id": "8b44c547-649d-41a1-bd85-fcb4de9b047f"
+      },
+      "status": "failed",
+      "created_at": 1778948623.749,
+      "started_at": 1778948623.764,
+      "finished_at": 1778948645.419,
       "error": "服务重启，任务终止"
     }
   ]
