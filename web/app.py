@@ -56,9 +56,14 @@ LMS_API = f"http://{LMS_HOST}:{LMS_PORT}"
 COMFYUI_WS = f"ws://{COMFYUI_HOST}:{COMFYUI_PORT}"
 
 _http = httpx.AsyncClient(
-    timeout=httpx.Timeout(60.0, connect=15.0),
-    limits=httpx.Limits(max_connections=100, max_keepalive_connections=10, keepalive_expiry=30),
+    timeout=httpx.Timeout(30.0, connect=10.0),
+    limits=httpx.Limits(max_connections=50, max_keepalive_connections=10, keepalive_expiry=30),
     headers={"User-Agent": "natureDrawImage/1.0"},
+)
+# ComfyUI 独立客户端，与外部请求隔离
+_comfy = httpx.AsyncClient(
+    timeout=httpx.Timeout(600.0, connect=5.0),
+    limits=httpx.Limits(max_connections=10, max_keepalive_connections=5, keepalive_expiry=60),
 )
 
 # 全局共享 HTTP 客户端（连接池复用）
@@ -934,7 +939,7 @@ def save_state(state: Dict[str, Any]) -> None:
 
 async def list_workflows() -> List[Dict[str, Any]]:
     async with httpx.AsyncClient(timeout=10) as client:
-        r = await _http.get(
+        r = await _comfy.get(
             f"{COMFYUI_API}/api/userdata",
             params={"dir": "workflows", "recurse": "true", "split": "false", "full_info": "true"},
             headers={"Comfy-User": ""},
@@ -946,7 +951,7 @@ async def list_workflows() -> List[Dict[str, Any]]:
 async def get_workflow(path: str) -> Dict[str, Any]:
     from urllib.parse import quote
     async with httpx.AsyncClient(timeout=10) as client:
-        r = await _http.get(
+        r = await _comfy.get(
             f"{COMFYUI_API}/api/userdata/workflows%2F{quote(path, safe='')}",
             headers={"Comfy-User": ""},
         )
@@ -956,7 +961,7 @@ async def get_workflow(path: str) -> Dict[str, Any]:
 
 async def submit_prompt(prompt: Dict[str, Any]) -> str:
     async with httpx.AsyncClient(timeout=30) as client:
-        r = await _http.post(
+        r = await _comfy.post(
             f"{COMFYUI_API}/api/prompt",
             json={
                 "client_id": CLIENT_ID,
@@ -976,12 +981,12 @@ async def submit_prompt(prompt: Dict[str, Any]) -> str:
 
 async def interrupt_prompt() -> None:
     async with httpx.AsyncClient(timeout=10) as client:
-        await _http.post(f"{COMFYUI_API}/api/interrupt", headers={"Comfy-User": ""})
+        await _comfy.post(f"{COMFYUI_API}/api/interrupt", headers={"Comfy-User": ""})
 
 
 async def get_history(prompt_id: str) -> Optional[Dict[str, Any]]:
     async with httpx.AsyncClient(timeout=10) as client:
-        r = await _http.get(f"{COMFYUI_API}/api/history/{prompt_id}", headers={"Comfy-User": ""})
+        r = await _comfy.get(f"{COMFYUI_API}/api/history/{prompt_id}", headers={"Comfy-User": ""})
         r.raise_for_status()
         d = r.json()
         return d.get(prompt_id)
@@ -989,7 +994,7 @@ async def get_history(prompt_id: str) -> Optional[Dict[str, Any]]:
 
 async def download_image(filename: str, subfolder: str, img_type: str) -> Tuple[bytes, str]:
     async with httpx.AsyncClient(timeout=60) as client:
-        r = await _http.get(
+        r = await _comfy.get(
             f"{COMFYUI_API}/api/view",
             params={"filename": filename, "subfolder": subfolder, "type": img_type},
             headers={"Comfy-User": ""},
@@ -1617,7 +1622,7 @@ async def api_img2img_upload(
         ext = (file.filename or "image.png").rsplit(".", 1)[-1] if "." in (file.filename or "") else "png"
         safe_name = f"img2img_{_uuid.uuid4().hex[:12]}_{int(_time.time())}.{ext}"
         async with httpx.AsyncClient(timeout=30) as client:
-            r = await _http.post(
+            r = await _comfy.post(
                 f"{COMFYUI_API}/api/upload/image",
                 files={"image": (safe_name, contents, file.content_type or "image/png")},
                 data={"type": "input", "overwrite": "true"},
@@ -2557,7 +2562,7 @@ async def _queue_watchdog_loop():
             continue
         try:
             async with httpx.AsyncClient(timeout=5) as client:
-                r = await _http.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
+                r = await _comfy.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
                 r.raise_for_status()
                 q = r.json()
                 running = q.get("queue_running", [])
@@ -2989,7 +2994,7 @@ async def ws_run(ws: WebSocket):
     while True:
         try:
             async with httpx.AsyncClient(timeout=5) as client:
-                r = await _http.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
+                r = await _comfy.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
                 r.raise_for_status()
                 q = r.json()
                 if len(q.get("queue_running", [])) == 0 and len(q.get("queue_pending", [])) == 0:
