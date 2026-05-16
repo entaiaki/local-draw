@@ -374,8 +374,23 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       throw new Error(`ComfyUI 拒绝请求: ${detail}`);
     }
     const promptId = submitRes.data.prompt_id as string;
-    // 保存 prompt_id 到磁盘，重启后可恢复
+    // 保存 prompt_id + 元数据到磁盘，重启后可恢复
     item.params._prompt_id = promptId;
+    const metaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+    try {
+      let pm: Record<string, any> = {};
+      try { pm = JSON.parse(fs.readFileSync(metaFile, 'utf-8')); } catch {}
+      pm['_pending_' + promptId] = {
+        prompt: finalPrompt || req.direct_prompt || '',
+        nl_prompt: req.nl_prompt || '',
+        negative_prompt: req.negative_prompt || '',
+        rewrite: !!req.rewrite,
+        user_id: userId,
+        image1: req.image1_name || '',
+        image2: req.image2_name || '',
+      };
+      fs.writeFileSync(metaFile, JSON.stringify(pm, null, 2), 'utf-8');
+    } catch {}
     try { (await import('../routes/queue.js')).saveQueueState?.(); } catch {}
 
     // Wait for completion
@@ -398,6 +413,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
     let promptMeta: Record<string, any> = {};
     try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
+    // 清除 _pending_ 记录
+    delete promptMeta['_pending_' + promptId];
     for (const img of images) {
       const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
       setCreatorMap(relPath, userId);

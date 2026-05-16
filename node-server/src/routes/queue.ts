@@ -34,8 +34,38 @@ let queueIdCounter = 0;
 let queuedUserIds: Record<number, number> = {};  // user_id -> count
 const queueItems: QueueItem[] = [];
 loadQueueState();
-// 启动时：恢复可能已完成的 running 任务，清理卡死的，重启 pending
+// 启动时：恢复可能已完成的 running 任务，清理卡死的，重启 pending，恢复 _pending_ 元数据
 (async () => {
+  // 恢复 prompt_meta.json 中的 _pending_ 记录（提交了但没来得及取结果的）
+  const pmFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+  try {
+    const pm = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
+    const comfyApi2 = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
+    for (const [k, v] of Object.entries(pm)) {
+      if (k.startsWith('_pending_')) {
+        const pid = k.slice(9);
+        try {
+          const r = await comfyApi2.get(`/api/history/${pid}`);
+          if (r.data?.[pid]) {
+            const outputs = r.data[pid].outputs || {};
+            for (const [, out] of Object.entries(outputs)) {
+              const o = out as any;
+              if (o?.images) {
+                for (const img of o.images) {
+                  const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
+                  try { const { setCreatorMap } = await import('../services/runner.js'); setCreatorMap(relPath, (v as any).user_id); } catch {}
+                  pm[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite };
+                }
+              }
+            }
+            delete pm[k];
+          }
+        } catch {}
+      }
+    }
+    fs.writeFileSync(pmFile, JSON.stringify(pm, null, 2), 'utf-8');
+  } catch {}
+
   const comfyApi = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
   for (const qi of queueItems) {
     if ((qi.status === 'running' || qi.status === 'waiting') && (qi.params as any)?._prompt_id) {
