@@ -1615,10 +1615,13 @@ async def api_img2img_upload(
         contents = await file.read()
         if not contents:
             raise HTTPException(400, "图片文件为空")
+        import uuid as _uuid
+        ext = (file.filename or "image.png").rsplit(".", 1)[-1] if "." in (file.filename or "") else "png"
+        safe_name = f"img2img_{_uuid.uuid4().hex[:12]}_{int(_time.time())}.{ext}"
         async with httpx.AsyncClient(timeout=30) as client:
             r = await _http.post(
                 f"{COMFYUI_API}/api/upload/image",
-                files={"image": (file.filename or "image.png", contents, file.content_type or "image/png")},
+                files={"image": (safe_name, contents, file.content_type or "image/png")},
                 data={"type": "input", "overwrite": "true"},
                 headers={"Comfy-User": ""},
             )
