@@ -267,8 +267,8 @@ async function waitForCompletion(promptId: string, timeout = 60): Promise<any> {
     });
   } catch { /* timeout or ws error */ }
 
-  // Poll history (up to 30s)
-  for (let i = 0; i < 30; i++) {
+  // Poll history (up to 120s)
+  for (let i = 0; i < 120; i++) {
     try {
       const r = await comfy.get(`/api/history/${promptId}`);
       if (r.data?.[promptId]) return r.data[promptId];
@@ -378,7 +378,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
       setCreatorMap(relPath, userId);
       promptMeta[relPath] = {
-        prompt: req.direct_prompt || '',
+        prompt: finalPrompt || req.direct_prompt || '',
         nl_prompt: req.nl_prompt || '',
         negative_prompt: req.negative_prompt || '',
         rewrite: !!req.rewrite,
