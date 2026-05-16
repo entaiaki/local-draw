@@ -55,6 +55,13 @@ COMFYUI_API = f"http://{COMFYUI_HOST}:{COMFYUI_PORT}"
 LMS_API = f"http://{LMS_HOST}:{LMS_PORT}"
 COMFYUI_WS = f"ws://{COMFYUI_HOST}:{COMFYUI_PORT}"
 
+n# 全局共享 HTTP 客户端（连接池复用）
+_http = httpx.AsyncClient(
+    timeout=httpx.Timeout(30.0, connect=10.0),
+    limits=httpx.Limits(max_connections=50, max_keepalive_connections=20),
+    headers={"User-Agent": "natureDrawImage/1.0"},
+)
+
 CLIENT_ID = uuid.uuid4().hex
 
 STATE_FILE = Path(__file__).parent / "state.json"
@@ -484,7 +491,7 @@ def _client_ip_from_request(request: Request) -> str:
     return (
         h.get("cf-connecting-ip")
         or (h.get("x-forwarded-for", "").split(",")[0].strip() if h.get("x-forwarded-for") else "")
-        or (request.client.host if request.client else "")
+        or (request._http.host if request.client else "")
         or ""
     )
 
@@ -705,7 +712,7 @@ async def _fetch_forum_user(user_id: int, token: str) -> Optional[dict]:
     url = f"{FORUM_API_BASE}/api/users/{user_id}"
     try:
         async with httpx.AsyncClient(timeout=5) as client:
-            resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+            resp = await _http.get(url, headers={"Authorization": f"Bearer {token}"})
             logger.info("[Forum] GET %s → %d", url, resp.status_code)
             if resp.status_code == 200:
                 data = resp.json()
@@ -929,7 +936,7 @@ def save_state(state: Dict[str, Any]) -> None:
 
 async def list_workflows() -> List[Dict[str, Any]]:
     async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(
+        r = await _http.get(
             f"{COMFYUI_API}/api/userdata",
             params={"dir": "workflows", "recurse": "true", "split": "false", "full_info": "true"},
             headers={"Comfy-User": ""},
@@ -941,7 +948,7 @@ async def list_workflows() -> List[Dict[str, Any]]:
 async def get_workflow(path: str) -> Dict[str, Any]:
     from urllib.parse import quote
     async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(
+        r = await _http.get(
             f"{COMFYUI_API}/api/userdata/workflows%2F{quote(path, safe='')}",
             headers={"Comfy-User": ""},
         )
@@ -951,7 +958,7 @@ async def get_workflow(path: str) -> Dict[str, Any]:
 
 async def submit_prompt(prompt: Dict[str, Any]) -> str:
     async with httpx.AsyncClient(timeout=30) as client:
-        r = await client.post(
+        r = await _http.post(
             f"{COMFYUI_API}/api/prompt",
             json={
                 "client_id": CLIENT_ID,
@@ -971,12 +978,12 @@ async def submit_prompt(prompt: Dict[str, Any]) -> str:
 
 async def interrupt_prompt() -> None:
     async with httpx.AsyncClient(timeout=10) as client:
-        await client.post(f"{COMFYUI_API}/api/interrupt", headers={"Comfy-User": ""})
+        await _http.post(f"{COMFYUI_API}/api/interrupt", headers={"Comfy-User": ""})
 
 
 async def get_history(prompt_id: str) -> Optional[Dict[str, Any]]:
     async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(f"{COMFYUI_API}/api/history/{prompt_id}", headers={"Comfy-User": ""})
+        r = await _http.get(f"{COMFYUI_API}/api/history/{prompt_id}", headers={"Comfy-User": ""})
         r.raise_for_status()
         d = r.json()
         return d.get(prompt_id)
@@ -984,7 +991,7 @@ async def get_history(prompt_id: str) -> Optional[Dict[str, Any]]:
 
 async def download_image(filename: str, subfolder: str, img_type: str) -> Tuple[bytes, str]:
     async with httpx.AsyncClient(timeout=60) as client:
-        r = await client.get(
+        r = await _http.get(
             f"{COMFYUI_API}/api/view",
             params={"filename": filename, "subfolder": subfolder, "type": img_type},
             headers={"Comfy-User": ""},
@@ -1356,7 +1363,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
     async with httpx.AsyncClient(timeout=120) as client:
         if use_stream:
             url = f"{_GOOGLE_API_BASE}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
-            async with client.stream("POST", url, json=body) as r:
+            async with _http.stream("POST", url, json=body) as r:
                 if r.status_code >= 400:
                     text = await r.aread()
                     raise RuntimeError(f"LLM HTTP {r.status_code}: {text.decode()[:500]}")
@@ -1417,7 +1424,7 @@ async def _llm_google(system: str, user: str, cfg: Dict[str, Any], on_chunk: Opt
                                         break
         else:
             url = f"{_GOOGLE_API_BASE}/models/{model}:generateContent?key={api_key}"
-            r = await client.post(url, json=body)
+            r = await _http.post(url, json=body)
             if r.status_code >= 400:
                 raise RuntimeError(f"LLM HTTP {r.status_code}: {r.text[:500]}")
             resp = r.json()
@@ -1495,7 +1502,7 @@ async def _llm_openai_compat(system: str, user: str, endpoint: str,
     chunks: List[str] = []
     async with httpx.AsyncClient(timeout=120, headers=headers) as client:
         if use_stream:
-            async with client.stream("POST", f"{endpoint}/v1/chat/completions", json=body) as r:
+            async with _http.stream("POST", f"{endpoint}/v1/chat/completions", json=body) as r:
                 if r.status_code >= 400:
                     text = await r.aread()
                     raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {text.decode()[:500]}")
@@ -1519,7 +1526,7 @@ async def _llm_openai_compat(system: str, user: str, endpoint: str,
                             except Exception:
                                 pass
         else:
-            r = await client.post(f"{endpoint}/v1/chat/completions", json=body)
+            r = await _http.post(f"{endpoint}/v1/chat/completions", json=body)
             if r.status_code >= 400:
                 raise RuntimeError(f"LLM 返回 HTTP {r.status_code}: {r.text[:500]}")
             resp = r.json()
@@ -1609,7 +1616,7 @@ async def api_img2img_upload(
         if not contents:
             raise HTTPException(400, "图片文件为空")
         async with httpx.AsyncClient(timeout=30) as client:
-            r = await client.post(
+            r = await _http.post(
                 f"{COMFYUI_API}/api/upload/image",
                 files={"image": (file.filename or "image.png", contents, file.content_type or "image/png")},
                 data={"type": "input", "overwrite": "true"},
@@ -2549,7 +2556,7 @@ async def _queue_watchdog_loop():
             continue
         try:
             async with httpx.AsyncClient(timeout=5) as client:
-                r = await client.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
+                r = await _http.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
                 r.raise_for_status()
                 q = r.json()
                 running = q.get("queue_running", [])
@@ -2981,7 +2988,7 @@ async def ws_run(ws: WebSocket):
     while True:
         try:
             async with httpx.AsyncClient(timeout=5) as client:
-                r = await client.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
+                r = await _http.get(f"{COMFYUI_API}/api/queue", headers={"Comfy-User": ""})
                 r.raise_for_status()
                 q = r.json()
                 if len(q.get("queue_running", [])) == 0 and len(q.get("queue_pending", [])) == 0:
