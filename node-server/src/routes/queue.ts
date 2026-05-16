@@ -41,8 +41,51 @@ loadQueueState();
   try {
     const pm = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
     const comfyApi2 = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
+    const now = Date.now() / 1000;
     for (const [k, v] of Object.entries(pm)) {
-      if (k.startsWith('_pending_')) {
+      if (!k.startsWith('_pending_')) continue;
+      const pid = k.slice(9);
+      let recovered = false;
+      // 1) 先查 history 看是否已完成
+      try {
+        const r = await comfyApi2.get(`/api/history/${pid}`);
+        if (r.data?.[pid]) {
+          const outputs = r.data[pid].outputs || {};
+          for (const [, out] of Object.entries(outputs)) {
+            const o = out as any;
+            if (o?.images) {
+              for (const img of o.images) {
+                const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
+                try { const { setCreatorMap } = await import('../services/runner.js'); setCreatorMap(relPath, (v as any).user_id); } catch {}
+                pm[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite };
+              }
+            }
+          }
+          delete pm[k];
+          recovered = true;
+        }
+      } catch {}
+      // 2) 查 ComfyUI 队列，如果还在跑则不等
+      if (!recovered) {
+        try {
+          const q = await comfyApi2.get('/api/queue');
+          const all = [...(q.data?.queue_running || []), ...(q.data?.queue_pending || [])];
+          const stillAlive = all.some((item: any) => Array.isArray(item) && item[1] === pid);
+          if (!stillAlive) {
+            // 既不在 history 也不在队列 → 丢失，保留 _pending_ 但不报错
+            delete pm[k];
+          }
+          // 还在队列中 → 保留 _pending_，后台轮询等它完成
+        } catch {}
+      }
+    }
+    fs.writeFileSync(pmFile, JSON.stringify(pm, null, 2), 'utf-8');
+    // 后台轮询剩余的 _pending_（ComfyUI 还在跑的）
+    (async function pollPending() {
+      const pm2 = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
+      const pending = Object.entries(pm2).filter(([k]) => k.startsWith('_pending_'));
+      if (pending.length === 0) return;
+      for (const [k, v] of pending) {
         const pid = k.slice(9);
         try {
           const r = await comfyApi2.get(`/api/history/${pid}`);
@@ -54,16 +97,19 @@ loadQueueState();
                 for (const img of o.images) {
                   const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
                   try { const { setCreatorMap } = await import('../services/runner.js'); setCreatorMap(relPath, (v as any).user_id); } catch {}
-                  pm[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite };
+                  pm2[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite };
                 }
               }
             }
-            delete pm[k];
+            delete pm2[k];
           }
         } catch {}
       }
-    }
-    fs.writeFileSync(pmFile, JSON.stringify(pm, null, 2), 'utf-8');
+      fs.writeFileSync(pmFile, JSON.stringify(pm2, null, 2), 'utf-8');
+      if (Object.keys(pm2).some(k => k.startsWith('_pending_'))) {
+        setTimeout(pollPending, 5000);  // 5 秒后重试
+      }
+    })();
   } catch {}
 
   const comfyApi = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
