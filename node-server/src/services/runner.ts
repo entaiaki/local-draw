@@ -328,6 +328,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     } else if (llmOutput) {
       finalPrompt = llmOutput;
     }
+    // 确保 LLM 输出保存到队列项
+    if (llmOutput) { try { (item.params as any)._llm_output = llmOutput; } catch {} }
 
     // Convert workflow
     const { prompt_dict, positive_ref, negative_ref } = workflowToPromptApi(workflowData);

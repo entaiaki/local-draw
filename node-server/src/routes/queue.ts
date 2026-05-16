@@ -158,20 +158,6 @@ router.post('/queue', async (req: Request, res: Response) => {
 
   const position = queueItems.filter(qi => qi.status === 'pending' || qi.status === 'waiting' || qi.status === 'running').length;
 
-  // 后台 LLM 预处理（不影响响应速度）
-  (async () => {
-    const req = body as any;
-    if (req.nl_prompt && !req.image1_name && !req.image2_name) {
-      try {
-        const { translatePrompt } = await import('../services/llm.js');
-        const result = await translatePrompt(req.nl_prompt, req.rewrite ? req.direct_prompt : undefined, req.negative_prompt);
-        item.params._llm_output = result.positive;
-        item.params._llm_negative = result.negative;
-        saveQueueState();
-      } catch {}
-    }
-  })();
-
   // Start background runner
   (async () => {
     try {
