@@ -1,9 +1,10 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { loadConfig } from '../services/config.js';
 
 const router = Router();
+router.use(express.json({ limit: "50mb" }));
 const config = loadConfig();
 const OUTPUT_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 const THUMB_DIR = path.join(process.cwd(), 'thumbnails');
@@ -51,7 +52,7 @@ router.get('/list', (req: Request, res: Response) => {
   for (const baseDir of [config.output_dir, config.archive_dir]) {
     if (!fs.existsSync(baseDir)) continue;
     for (const f of fs.readdirSync(baseDir).filter(f => OUTPUT_IMAGE_EXTS.includes(path.extname(f).toLowerCase()))) {
-      try { const s = fs.statSync(path.join(baseDir, f)); items.push({ path: f, mtime: s.mtimeMs / 1000, creator_id: String(cmap[f] || '') }); } catch {}
+      try { const s = fs.statSync(path.join(baseDir, f)); items.push({ path: f, mtime: s.mtimeMs / 1000, creator_id: String(cmap[f] || ''), user_id: String(cmap[f] || '') }); } catch {}
     }
   }
   items.sort((a, b) => (b.mtime || 0) - (a.mtime || 0));

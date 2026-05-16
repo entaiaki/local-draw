@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
@@ -7,6 +7,7 @@ import { loadConfig } from '../services/config.js';
 import { queueItems, queuedUserIds } from './queue.js';
 
 const router = Router();
+router.use(express.json({ limit: "50mb" }));
 let wss: WebSocketServer;
 let activeCount = 0;
 let activeStatus: Record<string, unknown> | null = null;
@@ -19,7 +20,7 @@ export function setupWsStatus(server: WebSocketServer, config: AppConfig) {
   });
 }
 
-function broadcast(msg: Record<string, unknown>) {
+export function broadcast(msg: Record<string, unknown>) {
   if (!wss) return;
   const data = JSON.stringify(msg);
   wss.clients.forEach(c => { if (c.readyState === WebSocket.OPEN) c.send(data); });
@@ -106,7 +107,21 @@ router.get('/debug', async (req: Request, res: Response) => {
     queue_stats: stats,
     queue_users: Object.entries(queuedUserIds).map(([uid, c]) => [parseInt(uid), c]),
     stuck: stuck.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status })),
-    recent_items: recent.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error })),
+    // 包含 prompt 和图引用
+    recent_items_full: recent.map(qi => ({
+      id: qi.id, user_id: qi.user_id, status: qi.status,
+      created_ago: Math.round(now - qi.created_at),
+      started_ago: qi.started_at ? Math.round(now - qi.started_at) : null,
+      error: qi.error,
+      prompt: String((qi.params as any)?.direct_prompt || ''),
+      nl_prompt: String((qi.params as any)?.nl_prompt || ''),
+      negative_prompt: String((qi.params as any)?.negative_prompt || ''),
+      rewrite: Boolean((qi.params as any)?.rewrite),
+      image1: String((qi.params as any)?.image1_name || ''),
+      image2: String((qi.params as any)?.image2_name || ''),
+      image2: (qi.params as any)?.image2_name || null,
+    })),
+    recent_items: recent.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error, prompt: String((qi.params as any)?.direct_prompt || ''), image1: (qi.params as any)?.image1_name || null, image2: (qi.params as any)?.image2_name || null })),
     recent_items_count: recent.length,
   });
 });

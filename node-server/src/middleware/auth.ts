@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 import { AppConfig } from '../services/config.js';
 import { UserPayload } from '../types/index.js';
 
@@ -31,10 +33,22 @@ export function verifyToken(token: string, secret: string): UserPayload | null {
   return null;
 }
 
+function loadSecret(): string {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  try {
+    const envPath = path.join(process.cwd(), '..', '.env');
+    if (fs.existsSync(envPath)) {
+      const m = fs.readFileSync(envPath, 'utf-8').match(/^JWT_SECRET="(.+?)"\s*$/m);
+      if (m) return m[1].trim();
+    }
+  } catch {}
+  return '';
+}
+
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  const secret = process.env.JWT_SECRET || '';
+  const secret = loadSecret();
   const user = verifyToken(token, secret);
   if (!user || user.role !== 'admin') {
     return res.status(403).json({ detail: '需要管理员权限' });

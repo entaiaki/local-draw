@@ -32,7 +32,7 @@ app.use('/api/draw', queueRouter);
 app.use('/api/output', imageRouter);
 app.use('/api/draw/admin', adminRouter);
 app.use('/api/draw', statusRouter);
-app.use('/api/workflow', workflowRouter);
+app.use('/api', workflowRouter);
 
 // Health check
 app.get('/api/_diag', (req, res) => {
@@ -48,19 +48,57 @@ app.get('/api/resolutions', (req, res) => {
   ]});
 });
 
+app.get('/api/style_thumbnail', (req, res) => {
+  const name = req.query.name as string;
+  if (!name) return res.status(404).json({ error: 'no style' });
+  const dirs = [
+    config.thumb_dir || path.join(process.cwd(), '..', 'web', 'thumbnails'),
+    path.join(process.cwd(), '..', 'web', 'style_thumbnails'),
+  ];
+  for (const dir of dirs) {
+    const direct = path.resolve(dir, name);
+    if (direct.startsWith(path.resolve(dir)) && fs.existsSync(direct)) return res.sendFile(direct);
+    for (const ext of ['.png', '.jpg', '.jpeg', '.webp', '.gif']) {
+      const fp = path.resolve(dir, name + ext);
+      if (fp.startsWith(path.resolve(dir)) && fs.existsSync(fp)) return res.sendFile(fp);
+    }
+  }
+  res.status(404).json({ error: 'not found' });
+});
+
 app.get('/api/styles', (req, res) => {
   const sf = path.join(path.dirname(config.creator_map_file), 'styles.json');
-  try { res.json(JSON.parse(fs.readFileSync(sf, 'utf-8'))); } catch { res.json({ styles: [] }); }
+  try {
+    const styles = JSON.parse(fs.readFileSync(sf, 'utf-8'));
+    const result = styles.map((s: any) => ({
+      ...s,
+      thumbnail_url: s.image ? `/api/style_thumbnail?name=${encodeURIComponent(s.image)}` : undefined,
+    }));
+    res.json({ styles: result });
+  } catch { res.json({ styles: [] }); }
 });
 
 app.get('/api/thumbnail', (req, res) => {
   const p = req.query.path as string;
   if (!p) return res.status(404).json({ error: 'no thumbnail' });
-  // Check thumbnails dir first
   const thumbDir = config.thumb_dir || path.join(process.cwd(), '..', 'web', 'thumbnails');
+
+  // 从 workflow_meta.json 查缩略图映射
+  const metaFile = path.join(path.dirname(config.creator_map_file), 'workflow_meta.json');
+  try {
+    const metaList = JSON.parse(fs.readFileSync(metaFile, 'utf-8'));
+    const meta = metaList.find((m: any) => m.workflow === p);
+    if (meta?.thumbnail) {
+      const fp = path.resolve(thumbDir, meta.thumbnail);
+      if (fp.startsWith(path.resolve(thumbDir)) && fs.existsSync(fp)) return res.sendFile(fp);
+    }
+  } catch {}
+
+  // 直接按文件名找
   const thumbPath = path.join(thumbDir, path.basename(p));
   if (fs.existsSync(thumbPath)) return res.sendFile(thumbPath);
-  // Fallback: serve original from output dir
+
+  // 兜底：从输出目录返回原图
   const relNorm = p.replace(/\\/g, '/').replace(/^\//, '');
   if (!relNorm.includes('..')) {
     for (const baseDir of [config.output_dir, config.archive_dir]) {
@@ -133,6 +171,13 @@ app.get('/api/image', async (req, res) => {
   } catch { res.status(404).json({ error: 'image not found' }); }
 });
 
+// 原图访问
+app.get('/api/uploads/:filename', (req, res) => {
+  const fp = path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'), req.params.filename);
+  if (fp.startsWith(path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'))) && fs.existsSync(fp)) return res.sendFile(fp);
+  res.status(404).json({ error: 'not found' });
+});
+
 // POST /api/img2img/upload
 app.post('/api/img2img/upload', async (req, res) => {
   const multer = require('multer');
@@ -147,6 +192,10 @@ app.post('/api/img2img/upload', async (req, res) => {
     const uuid = require('uuid');
     const ext1 = image1.originalname?.split('.').pop() || 'png';
     const safeName1 = `img2img_${uuid.v4().replace(/-/g, '').slice(0, 12)}_${Math.floor(Date.now() / 1000)}.${ext1}`;
+    // 保存原图到永久目录
+    const upDir = path.join(process.cwd(), '..', 'web', 'uploads');
+    fs.mkdirSync(upDir, { recursive: true });
+    fs.writeFileSync(path.join(upDir, safeName1), image1.buffer);
 
     try {
       const FormData = require('form-data');
@@ -161,6 +210,7 @@ app.post('/api/img2img/upload', async (req, res) => {
       if (image2) {
         const ext2 = image2.originalname?.split('.').pop() || 'png';
         const safeName2 = `img2img_${uuid.v4().replace(/-/g, '').slice(0, 12)}_${Math.floor(Date.now() / 1000)}.${ext2}`;
+        fs.writeFileSync(path.join(upDir, safeName2), image2.buffer);
         const fd2 = new FormData();
         fd2.append('image', image2.buffer, { filename: safeName2, contentType: image2.mimetype });
         fd2.append('type', 'input');

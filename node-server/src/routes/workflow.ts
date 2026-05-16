@@ -10,23 +10,49 @@ const config = loadConfig();
 // GET /api/workflows
 router.get('/workflows', async (req: Request, res: Response) => {
   const subdir = req.query.subdir as string || '';
+  // Load workflow meta for thumbnail/category mapping
+  const metaFile = path.join(path.dirname(config.creator_map_file), 'workflow_meta.json');
+  let metaList: { workflow: string; thumbnail?: string; category?: string }[] = [];
+  try { metaList = JSON.parse(fs.readFileSync(metaFile, 'utf-8')); } catch {}
+  const metaMap = new Map(metaList.map(m => [m.workflow, m]));
+  const thumbDir = config.thumb_dir || path.join(process.cwd(), '..', 'web', 'thumbnails');
+
   try {
     const comfyApi = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
-    const resp = await comfyApi.get('/api/userdata', {
-      params: { dir: 'workflows', recurse: 'true', split: 'false', full_info: 'true' },
-      headers: { 'Comfy-User': '' },
+    const params: any = { dir: 'workflows', recurse: 'true' };
+    if (subdir) params.dir = `workflows/${subdir}`;
+    const resp = await comfyApi.get('/api/userdata', { params, headers: { 'Comfy-User': '' } });
+    const files: string[] = Array.isArray(resp.data) ? resp.data : [];
+    const workflows = files.map((f: string) => {
+      const wfPath = subdir ? `${subdir}/${f}` : f;
+      const meta = metaMap.get(wfPath);
+      return {
+        path: wfPath,
+        name: f.replace(/\.json$/, ''),
+        thumbnail: meta?.thumbnail ? fs.existsSync(path.join(thumbDir, meta.thumbnail)) : false,
+        category: meta?.category || '',
+      };
     });
-    res.json(resp.data);
+    res.json({ workflows, category_order: [] });
   } catch {
-    // Fallback: scan local workflows directory
-    const workflowsDir = subdir ? path.join(config.workflows_dir, subdir) : config.workflows_dir;
+    const dir = subdir ? path.join(config.workflows_dir, subdir) : config.workflows_dir;
     const files: string[] = [];
-    if (fs.existsSync(workflowsDir)) {
-      for (const f of fs.readdirSync(workflowsDir)) {
+    if (fs.existsSync(dir)) {
+      for (const f of fs.readdirSync(dir)) {
         if (f.endsWith('.json')) files.push(f);
       }
     }
-    res.json({ workflows: files.map((f: string) => ({ name: f, path: f })), category_order: [] });
+    const workflows = files.map((f: string) => {
+      const wfPath = subdir ? `${subdir}/${f}` : f;
+      const meta = metaMap.get(wfPath);
+      return {
+        path: wfPath,
+        name: f.replace(/\.json$/, ''),
+        thumbnail: meta?.thumbnail ? fs.existsSync(path.join(thumbDir, meta.thumbnail)) : false,
+        category: meta?.category || '',
+      };
+    });
+    res.json({ workflows, category_order: [] });
   }
 });
 
@@ -51,8 +77,12 @@ router.get('/workflows/current', async (req: Request, res: Response) => {
 router.get('/styles', (req: Request, res: Response) => {
   const stylesFile = path.join(path.dirname(config.creator_map_file), 'styles.json');
   try {
-    const data = JSON.parse(fs.readFileSync(stylesFile, 'utf-8'));
-    res.json(data);
+    const styles = JSON.parse(fs.readFileSync(stylesFile, 'utf-8'));
+    const result = styles.map((s: any) => ({
+      ...s,
+      thumbnail_url: s.image ? `/api/style_thumbnail?name=${encodeURIComponent(s.image)}` : undefined,
+    }));
+    res.json({ styles: result });
   } catch {
     res.json({ styles: [] });
   }

@@ -18,7 +18,13 @@ async function acquire(): Promise<void> {
 }
 
 function release(): void {
-  if (semQueue.length > 0) { const n = semQueue.shift()!; activeCount++; n(); }
+  if (semQueue.length > 0) { semQueue.shift()!(); }
+  else { semLocked = false; }
+}
+
+function releaseAcquired(): void {
+  activeCount--;
+  if (semQueue.length > 0) { semQueue.shift()!(); }
   else { semLocked = false; }
 }
 
@@ -239,7 +245,7 @@ function findClipRefs(prompt: Record<string, any>): { prompt_dict: Record<string
   return { prompt_dict: prompt, positive_ref: positiveRef, negative_ref: negativeRef };
 }
 
-async function waitForCompletion(promptId: string, timeout = 120): Promise<any> {
+async function waitForCompletion(promptId: string, timeout = 60): Promise<any> {
   const wsUrl = `ws://${config.comfyui_host}:${config.comfyui_port}/ws?clientId=${getClientId()}`;
   const start = Date.now();
   const WebSocket = require('ws');
@@ -261,8 +267,8 @@ async function waitForCompletion(promptId: string, timeout = 120): Promise<any> 
     });
   } catch { /* timeout or ws error */ }
 
-  // Poll history
-  for (let i = 0; i < 60; i++) {
+  // Poll history (up to 30s)
+  for (let i = 0; i < 30; i++) {
     try {
       const r = await comfy.get(`/api/history/${promptId}`);
       if (r.data?.[promptId]) return r.data[promptId];
@@ -273,7 +279,7 @@ async function waitForCompletion(promptId: string, timeout = 120): Promise<any> 
   throw new Error('无法获取 history');
 }
 
-function setCreatorMap(rel: string, userId: number): void {
+export function setCreatorMap(rel: string, userId: number): void {
   const file = config.creator_map_file;
   const lockFile = file + '.lock';
   try {
@@ -301,6 +307,10 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     let workflowData: any;
     if (req.inline_workflow) workflowData = req.inline_workflow;
     else if (req.workflow_path) workflowData = await loadWorkflow(req.workflow_path);
+    else if (req.image1_name) {
+      const wfName = req.image2_name ? 'Flux2-Klein-图片编辑 (多图).json' : 'Flux2-Klein-图片编辑 (单图).json';
+      workflowData = await loadWorkflow(`Flux/${wfName}`);
+    }
     else throw new Error('未指定工作流');
 
     // LLM translate if nl_prompt
@@ -322,15 +332,11 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     // Inject prompt
     prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
 
-    // Inject image for img2img
+    // Inject images for img2img
     if (req.image1_name) {
-      for (const [id, nd] of Object.entries(prompt_dict)) {
-        const n = nd as any;
-        if (n.class_type === 'LoadImage' || n.class_type === 'VHS_LoadImages') {
-          n.inputs.image = req.image1_name;
-          break;
-        }
-      }
+      const loadImages = Object.entries(prompt_dict).filter(([, nd]: any) => nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages');
+      if (loadImages.length > 0) (loadImages[0][1] as any).inputs.image = req.image1_name;
+      if (loadImages.length > 1 && req.image2_name) (loadImages[1][1] as any).inputs.image = req.image2_name;
     }
 
     // Submit to ComfyUI
@@ -339,7 +345,14 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       prompt: prompt_dict,
       extra_data: { preview_method: 'auto' },
     });
+    if (submitRes.status >= 400) {
+      const detail = typeof submitRes.data === 'object' ? JSON.stringify(submitRes.data).slice(0, 300) : String(submitRes.data).slice(0, 300);
+      throw new Error(`ComfyUI 拒绝请求: ${detail}`);
+    }
     const promptId = submitRes.data.prompt_id as string;
+    // 保存 prompt_id 到磁盘，重启后可恢复
+    item.params._prompt_id = promptId;
+    try { (await import('../routes/queue.js')).saveQueueState?.(); } catch {}
 
     // Wait for completion
     const history = await waitForCompletion(promptId);
@@ -357,11 +370,21 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       }
     }
 
-    // Write to creator_map
+    // Write to creator_map + prompt metadata
+    const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+    let promptMeta: Record<string, any> = {};
+    try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
     for (const img of images) {
       const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
       setCreatorMap(relPath, userId);
+      promptMeta[relPath] = {
+        prompt: req.direct_prompt || '',
+        nl_prompt: req.nl_prompt || '',
+        negative_prompt: req.negative_prompt || '',
+        rewrite: !!req.rewrite,
+      };
     }
+    try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
 
     item.status = 'done';
   } catch (e: any) {
@@ -376,6 +399,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       if (cur > 1) queuedUserIds[item.user_id] = cur - 1;
       else delete queuedUserIds[item.user_id];
     } catch {}
-    release();
+    try { (await import('../routes/queue.js')).saveQueueState?.(); } catch {}
+    try { (await import('../routes/status.js')).broadcast({ type: 'queue_update', ts: Date.now() }); } catch {}
+    releaseAcquired();
   }
 }
