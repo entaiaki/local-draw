@@ -57,7 +57,7 @@ loadQueueState();
               for (const img of o.images) {
                 const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
                 try { const { setCreatorMap } = await import('../services/runner.js'); setCreatorMap(relPath, (v as any).user_id); } catch {}
-                pm[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite };
+                pm[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite, image1: (v as any).image1 || "", image2: (v as any).image2 || "" };
               }
             }
           }
@@ -97,7 +97,7 @@ loadQueueState();
                 for (const img of o.images) {
                   const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
                   try { const { setCreatorMap } = await import('../services/runner.js'); setCreatorMap(relPath, (v as any).user_id); } catch {}
-                  pm2[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite };
+                  pm2[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite, image1: (v as any).image1 || "", image2: (v as any).image2 || "" };
                 }
               }
             }
