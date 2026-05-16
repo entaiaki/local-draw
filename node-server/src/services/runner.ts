@@ -319,7 +319,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     let llmOutput = item.params._llm_output as string || '';
     if (req.nl_prompt && !llmOutput) {
       try {
-        const llmResult = await translatePrompt(req.nl_prompt, req.rewrite ? finalPrompt : undefined, req.negative_prompt);
+        const llmResult = await translatePrompt(req.nl_prompt, req.rewrite ? finalPrompt : undefined, req.negative_prompt, config);
         finalPrompt = llmResult.positive;
         llmOutput = llmResult.positive;
       } catch (e: any) {
