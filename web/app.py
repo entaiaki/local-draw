@@ -2606,9 +2606,9 @@ async def api_debug(request: Request):
     # 活跃用户（当前持有信号量的用户 + 在队列中的用户）
     active_users = list(_queued_user_ids.items())
 
-    # 队列明细（全部）
+    # 队列明细（最近的 20 条）
     recent_items = []
-    for qi in list(reversed(_queue_items)):
+    for qi in list(reversed(_queue_items))[:20]:
         recent_items.append({
             "id": qi["id"],
             "user_id": qi["user_id"],
