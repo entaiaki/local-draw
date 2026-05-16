@@ -350,6 +350,19 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       if (loadImages.length > 1 && req.image2_name) (loadImages[1][1] as any).inputs.image = req.image2_name;
     }
 
+    // 等待 ComfyUI 空闲后再提交
+    while (true) {
+      try {
+        const q = await comfy.get('/api/queue');
+        if (q.data) {
+          const running = q.data.queue_running || [];
+          const pending = q.data.queue_pending || [];
+          if (running.length === 0 && pending.length === 0) break;
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
     // Submit to ComfyUI
     const submitRes = await comfy.post('/api/prompt', {
       client_id: getClientId(),
