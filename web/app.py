@@ -62,6 +62,7 @@ _http = httpx.AsyncClient(
 )
 
 # 全局共享 HTTP 客户端（连接池复用）
+CLIENT_ID = uuid.uuid4().hex
 OUTPUT_DIR = Path(OUTPUT_DIR_STR)
 ARCHIVE_DIR = Path(ARCHIVE_DIR_STR)
 THUMB_DIR = Path(__file__).parent / "thumbnails"
