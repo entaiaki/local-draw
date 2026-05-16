@@ -121,7 +121,7 @@ router.get('/debug', async (req: Request, res: Response) => {
       image2: String((qi.params as any)?.image2_name || ''),
       image2: (qi.params as any)?.image2_name || null,
     })),
-    recent_items: recent.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error, nl_prompt: String((qi.params as any)?.nl_prompt || (qi.params as any)?.direct_prompt || ''), llm_output: String((qi.params as any)?._llm_output || ''), image1: (qi.params as any)?.image1_name || null, image2: (qi.params as any)?.image2_name || null })),
+    recent_items: recent.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error, nl_prompt: String((qi.params as any)?.nl_prompt || (qi.params as any)?.direct_prompt || ''), llm_output: String((qi.params as any)?._llm_output || ''), image1: (qi.params as any)?.image1_name || null, image2: (qi.params as any)?.image2_name || null, type: (qi.params as any)?.image1_name ? 'img2img' : 'txt2img' })),
     recent_items_count: recent.length,
   });
 });

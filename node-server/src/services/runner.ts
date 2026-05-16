@@ -327,7 +327,6 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     } else if (llmOutput) {
       finalPrompt = llmOutput;
     }
-    }
 
     // Convert workflow
     const { prompt_dict, positive_ref, negative_ref } = workflowToPromptApi(workflowData);
