@@ -1,0 +1,128 @@
+[
+  {
+    "id": "9bcff3f0f52c4f3cb9376d7be7cbd413",
+    "image_path": "ComfyUI_09816_.png",
+    "user_id": 250,
+    "timestamp": 1778778385.5545247,
+    "status": "rejected",
+    "user_reason": "",
+    "admin_reason": "略崩"
+  },
+  {
+    "id": "dcbcb37c4f834f31b29dd3302dc140bc",
+    "image_path": "ComfyUI_08262_.png",
+    "user_id": 250,
+    "timestamp": 1778778584.8635883,
+    "status": "approved",
+    "user_reason": "",
+    "admin_reason": null
+  },
+  {
+    "id": "f9a3ebdf29db44918b08fa3aafbc3a8f",
+    "image_path": "Flux2-Klein-Edit_00032_.png",
+    "user_id": 324,
+    "timestamp": 1778778869.7126713,
+    "status": "rejected",
+    "user_reason": "",
+    "admin_reason": null
+  },
+  {
+    "id": "e6a5ff6c489f410991fe63bbf18973fe",
+    "image_path": "ComfyUI_10204_.png",
+    "user_id": 124,
+    "timestamp": 1778779371.884467,
+    "status": "approved",
+    "user_reason": "",
+    "admin_reason": null
+  },
+  {
+    "id": "44736f6112f04c5fa3f9447a5bb765a0",
+    "image_path": "ComfyUI_10203_.png",
+    "user_id": 124,
+    "timestamp": 1778779375.861999,
+    "status": "rejected",
+    "user_reason": "",
+    "admin_reason": "nsfw"
+  },
+  {
+    "id": "eb51f68c693a4933a0e399c24ac674fd",
+    "image_path": "ComfyUI_10392_.png",
+    "user_id": 532,
+    "timestamp": 1778821237.3023424,
+    "status": "rejected",
+    "user_reason": "",
+    "admin_reason": "不准欺负耙耙柑了😡"
+  },
+  {
+    "id": "1b6fa683cd4c473cb53754ade1680103",
+    "image_path": "ComfyUI_10468_.png",
+    "user_id": 546,
+    "timestamp": 1778825960.063466,
+    "status": "rejected",
+    "user_reason": "",
+    "admin_reason": "？"
+  },
+  {
+    "id": "ec2a5ca97f9f4622a1ff3246d8ff4399",
+    "image_path": "Flux2-Klein-Edit_00082_.png",
+    "user_id": 235,
+    "timestamp": 1778830249.0319145,
+    "status": "rejected",
+    "user_reason": "",
+    "admin_reason": "不吸睛"
+  },
+  {
+    "id": "a8867014726f4efa89910c1614ed5728",
+    "image_path": "ComfyUI_07977_.png",
+    "user_id": 320,
+    "timestamp": 1778856449.6867979,
+    "status": "rejected",
+    "user_reason": "",
+    "admin_reason": "表情有点诡异了"
+  },
+  {
+    "id": "756224153d8e4e6988fedfdab376ad71",
+    "image_path": "ComfyUI_10707_.png",
+    "user_id": 228,
+    "timestamp": 1778878874.580213,
+    "status": "pending",
+    "user_reason": "",
+    "admin_reason": null
+  },
+  {
+    "id": "c6f1dc1d783d4332ad4b33d2a7d4e521",
+    "image_path": "Flux2-Klein-Edit_00110_.png",
+    "user_id": 483,
+    "timestamp": 1778913730.9333255,
+    "status": "pending",
+    "user_reason": "",
+    "admin_reason": null
+  },
+  {
+    "id": "1135998cf81b45d6a845cff31376922c",
+    "image_path": "ComfyUI_10791_.png",
+    "user_id": 673,
+    "timestamp": 1778917635.0592241,
+    "status": "pending",
+    "user_reason": "",
+    "admin_reason": null
+  },
+  {
+    "id": "f951f5a9bd534274a1a59ca2f74a8ec7",
+    "image_path": "ComfyUI_10837_.png",
+    "user_id": 685,
+    "timestamp": 1778921621.4921513,
+    "status": "pending",
+    "user_reason": "",
+    "admin_reason": null
+  },
+  {
+    "id": "c45463828b7c4de09eecbc64b059824d",
+    "image_path": "ComfyUI_10846_.png",
+    "user_id": 231,
+    "timestamp": 1778927631.5340176,
+    "status": "pending",
+    "user_reason": "",
+    "admin_reason": null
+  }
+]

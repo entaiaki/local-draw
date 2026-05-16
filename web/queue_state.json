@@ -1,0 +1,1095 @@
+{
+  "idCounter": 274,
+  "userIds": {},
+  "items": [
+    {
+      "id": 213,
+      "user_id": 436,
+      "params": {
+        "direct_prompt": "她的白色三角裤往侧边拉，露出生殖器，在床上，视角对准她的外阴，",
+        "image1_name": "img2img_e57d19ba0e52_1778946741.jpeg",
+        "image2_name": "",
+        "_prompt_id": "308ccaa8-190d-4cdd-92c6-18e15ad1b11a"
+      },
+      "status": "done",
+      "created_at": 1778946741.864,
+      "started_at": 1778946741.873,
+      "finished_at": 1778946792.447,
+      "error": null
+    },
+    {
+      "id": 214,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "Castorice_\\(honkai_star_rail\\),gradient hair,lavender hair,pointy ears,long hair,purple eyes,grey hair,, rating:general",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "10521934-2f6a-4087-b1a2-5cce7d219bd8"
+      },
+      "status": "failed",
+      "created_at": 1778946770.787,
+      "started_at": 1778946792.448,
+      "finished_at": 1778946804.97,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 215,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (black-white-gray base:1.3), pure white background, only bright red as the sole accent color, no other colors,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(black hair with bright red inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(black halter bikini top:1.2), chest cross strap design,\n(open black long kimono coat:1.2), bright red inner lining, red floral embroidery on hem and sleeves, wide flowing sleeves,\n(black short dress with red ruffled hem:1.2), high side slit on left leg,\nblack thin waist belt with silver buckle,\n(black thigh strap on left thigh:1.2),\nblack high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "正在喝手中高脚杯里的红酒，酒沿着嘴角流下直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "e60ebbee-90b2-4ede-8722-50962d5bf8c3"
+      },
+      "status": "done",
+      "created_at": 1778946803.116,
+      "started_at": 1778946804.976,
+      "finished_at": 1778946844.65,
+      "error": null
+    },
+    {
+      "id": 216,
+      "user_id": 436,
+      "params": {
+        "direct_prompt": "她的白色三角裤往侧边拉，露出生殖器，在沙发，视角对准她的外阴，第一人称掏出自己的阴茎。",
+        "image1_name": "img2img_7a08840b5892_1778946827.jpeg",
+        "image2_name": "",
+        "_prompt_id": "8ee9a2e6-6272-4067-b596-c00d9ba29af1"
+      },
+      "status": "done",
+      "created_at": 1778946827.994,
+      "started_at": 1778946844.651,
+      "finished_at": 1778946889.814,
+      "error": null
+    },
+    {
+      "id": 217,
+      "user_id": 203,
+      "params": {
+        "direct_prompt": "by tsunako, lisa \\(genshin impact\\), genshin impact, 1girl, green eyes, hair between eyes, brown hair, long hair, hair flower, large breasts, cleavage, thighs, witch hat, purple headwear, black gloves, black thighhighs, witch, library, sitting, on table, crossed legs,  looking at viewer, smile, open mouth, grin, shoe dangle, stiletto heels, foot focus , rating:general, rating:explicit",
+        "nl_prompt": "单腿丝袜，海边，露出，战损，色情",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by mashiro yukiya",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778946852.988,
+      "started_at": 1778946889.815,
+      "finished_at": 1778946889.832,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 218,
+      "user_id": 203,
+      "params": {
+        "direct_prompt": "根据2图改变图1人物的衣服和动作，露出胸部，胸上流着精液。 其余保持不变。",
+        "image1_name": "img2img_e3b38d072d11_1778946892.jpeg",
+        "image2_name": "img2img_de00cc474490_1778946893.webp",
+        "_prompt_id": "ac77bc70-7480-41bc-b31b-c46d5eecb13f"
+      },
+      "status": "done",
+      "created_at": 1778946893.134,
+      "started_at": 1778946893.134,
+      "finished_at": 1778946949.029,
+      "error": null
+    },
+    {
+      "id": 219,
+      "user_id": 436,
+      "params": {
+        "direct_prompt": "她的白色三角裤往侧边拉，露出生殖器，在沙发，发型不变，视角对准她的外阴，第一人称掏出自己的阴茎。",
+        "image1_name": "img2img_55e692b543f4_1778946913.jpeg",
+        "image2_name": "",
+        "_prompt_id": "cb924457-57ef-425d-adec-ea6174a0dbff"
+      },
+      "status": "done",
+      "created_at": 1778946913.435,
+      "started_at": 1778946949.031,
+      "finished_at": 1778946992.794,
+      "error": null
+    },
+    {
+      "id": 220,
+      "user_id": 738,
+      "params": {
+        "direct_prompt": "rating:sensitive",
+        "nl_prompt": "穿着高开叉白色礼服 坐在椅子上跷二郎腿 没穿内裤",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "workflow_path": "WAI/千咲.json",
+        "_prompt_id": "dd408fdf-d289-4fe7-abee-a6b9ee07acbc"
+      },
+      "status": "done",
+      "created_at": 1778946959.791,
+      "started_at": 1778946992.795,
+      "finished_at": 1778947019.049,
+      "error": null
+    },
+    {
+      "id": 221,
+      "user_id": 203,
+      "params": {
+        "direct_prompt": "by tsunako, lisa \\(genshin impact\\), genshin impact, 1girl, green eyes, hair between eyes, brown hair, long hair, hair flower, large breasts, cleavage, thighs, witch hat, purple headwear, black gloves, black thighhighs, witch, library, sitting, on table, crossed legs,  looking at viewer, smile, open mouth, grin, shoe dangle, stiletto heels, foot focus , rating:general, rating:explicit",
+        "nl_prompt": "单腿丝袜，海边，露出，战损，色情",
+        "rewrite": true,
+        "width": 1216,
+        "height": 832,
+        "style_tags": "by mashiro yukiya",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947042.183,
+      "started_at": 1778947042.184,
+      "finished_at": 1778947042.188,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 222,
+      "user_id": 693,
+      "params": {
+        "direct_prompt": "将图中的人物的衣服全部脱掉，改为裸体，不要破坏图片的其他内容",
+        "image1_name": "img2img_2b19ce397e61_1778947063.png",
+        "image2_name": "",
+        "_prompt_id": "733b97cd-9bb1-40a9-b7f6-0b5afdc0c6a7"
+      },
+      "status": "done",
+      "created_at": 1778947063.366,
+      "started_at": 1778947063.367,
+      "finished_at": 1778947108.208,
+      "error": null
+    },
+    {
+      "id": 223,
+      "user_id": 436,
+      "params": {
+        "direct_prompt": "她的白色三角裤往侧边拉，露出生殖器，在沙发，发型不变，视角对准她的外阴，抚摸",
+        "image1_name": "img2img_453267e748dc_1778947066.jpeg",
+        "image2_name": "",
+        "_prompt_id": "5c15e2bd-7bf8-4505-b46c-39ac1a13c4af"
+      },
+      "status": "done",
+      "created_at": 1778947066.414,
+      "started_at": 1778947108.21,
+      "finished_at": 1778947152.158,
+      "error": null
+    },
+    {
+      "id": 224,
+      "user_id": 265,
+      "params": {
+        "direct_prompt": "ump45 \\(girls' frontline\\), girls' frontline, 1girl, hair between eyes, yellow eyes, brown eyes, scar across eye, long hair, brown hair, grey hair, scar on face, black jacket, white shirt, one side up, yellow armband, armband, rating:general",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by kani biimu",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "bf478e87-d700-4fe9-a2b6-0c11165dcf22"
+      },
+      "status": "done",
+      "created_at": 1778947087.332,
+      "started_at": 1778947152.159,
+      "finished_at": 1778947176.278,
+      "error": null
+    },
+    {
+      "id": 225,
+      "user_id": 203,
+      "params": {
+        "direct_prompt": "去衣，喷乳，其余不变",
+        "image1_name": "img2img_7ee79f7d307b_1778947090.jpg",
+        "image2_name": "",
+        "_prompt_id": "81038572-465e-4034-8560-932f70c29cde"
+      },
+      "status": "done",
+      "created_at": 1778947090.161,
+      "started_at": 1778947176.282,
+      "finished_at": 1778947220.572,
+      "error": null
+    },
+    {
+      "id": 226,
+      "user_id": 738,
+      "params": {
+        "direct_prompt": "rating:general",
+        "nl_prompt": "穿着高开叉白色礼服 坐在椅子上跷二郎腿 没穿内裤",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "全裸",
+        "workflow_path": "WAI/千咲.json",
+        "_prompt_id": "0399862f-f3ac-4ed3-b18e-070703c7698b"
+      },
+      "status": "failed",
+      "created_at": 1778947109.808,
+      "started_at": 1778947220.573,
+      "finished_at": 1778947243.859,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 227,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947178.649,
+      "started_at": 1778947243.864,
+      "finished_at": 1778947243.872,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 228,
+      "user_id": 745,
+      "params": {
+        "direct_prompt": "rating:explicit",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "workflow_path": "WAI/达妮娅.json",
+        "_prompt_id": "eb72510d-3107-4050-b4ae-383367b733b8"
+      },
+      "status": "failed",
+      "created_at": 1778947201.399,
+      "started_at": 1778947243.878,
+      "finished_at": 1778947253.895,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 229,
+      "user_id": 719,
+      "params": {
+        "direct_prompt": "帮我生成图片：手机拍摄风格，画面偏模糊，低饱和度，俊美少女对脸自拍，仰拍视角，少女有着分明的眉眼，眼神略带慵懒，头发有些凌乱感，背景能看到部分天花板和灯光，增加手部自然托腮动作。原比例",
+        "image1_name": "img2img_e16176b842b2_1778947214.jpeg",
+        "image2_name": "",
+        "_prompt_id": "1ec531ae-eada-4f44-b8d4-a6da0fdbecf0"
+      },
+      "status": "failed",
+      "created_at": 1778947214.355,
+      "started_at": 1778947253.899,
+      "finished_at": 1778947264.462,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 230,
+      "user_id": 203,
+      "params": {
+        "direct_prompt": "by tsunako, lisa \\(genshin impact\\), genshin impact, 1girl, green eyes, hair between eyes, brown hair, long hair, hair flower, large breasts, cleavage, thighs, witch hat, purple headwear, black gloves, black thighhighs, witch, library, sitting, on table, crossed legs,  looking at viewer, smile, open mouth, grin, shoe dangle, stiletto heels, foot focus , rating:general, rating:explicit",
+        "nl_prompt": "单腿丝袜，海边，露出，战损，色情",
+        "rewrite": true,
+        "width": 1216,
+        "height": 832,
+        "style_tags": "by mashiro yukiya",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947228.46,
+      "started_at": 1778947264.467,
+      "finished_at": 1778947264.476,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 231,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947255.688,
+      "started_at": 1778947264.478,
+      "finished_at": 1778947264.48,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 232,
+      "user_id": 436,
+      "params": {
+        "direct_prompt": "她的白色三角裤往侧边拉，露出生殖器，在沙发，发型不变，视角对准她的外阴，抚摸",
+        "image1_name": "img2img_f788913fbec8_1778947258.jpeg",
+        "image2_name": "",
+        "_prompt_id": "ca05dd68-1682-4494-888b-89926fc65434"
+      },
+      "status": "failed",
+      "created_at": 1778947258.639,
+      "started_at": 1778947264.48,
+      "finished_at": 1778947324.551,
+      "error": "无法获取 history"
+    },
+    {
+      "id": 233,
+      "user_id": 738,
+      "params": {
+        "direct_prompt": "rating:general",
+        "nl_prompt": "穿着高开叉白色礼服 坐在椅子上跷二郎腿 没穿内裤",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "全裸",
+        "workflow_path": "WAI/千咲.json",
+        "_prompt_id": "830f4553-b347-48dd-a7af-c7fee68d4a25"
+      },
+      "status": "failed",
+      "created_at": 1778947275.661,
+      "started_at": 1778947324.552,
+      "finished_at": 1778947344.346,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 234,
+      "user_id": 738,
+      "params": {
+        "direct_prompt": "rating:general",
+        "nl_prompt": "穿着高开叉白色礼服 坐在椅子上跷二郎腿 没穿内裤",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "全裸",
+        "workflow_path": "WAI/千咲.json",
+        "_prompt_id": "8ad8a4a0-e753-4ef2-b595-8734de480002"
+      },
+      "status": "failed",
+      "created_at": 1778947359.06,
+      "started_at": 1778947359.066,
+      "finished_at": 1778947363.836,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 235,
+      "user_id": 738,
+      "params": {
+        "direct_prompt": "rating:general",
+        "nl_prompt": "穿着高开叉白色礼服 坐在椅子上跷二郎腿 没穿内裤",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "全裸",
+        "workflow_path": "WAI/千咲.json",
+        "_prompt_id": "bbd172a3-39f7-4453-a7c4-a04819862eda"
+      },
+      "status": "done",
+      "created_at": 1778947370.695,
+      "started_at": 1778947370.713,
+      "finished_at": 1778947405.305,
+      "error": null
+    },
+    {
+      "id": 236,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947431.638,
+      "started_at": 1778947431.64,
+      "finished_at": 1778947431.644,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 237,
+      "user_id": 265,
+      "params": {
+        "direct_prompt": "suomi \\(girls' frontline\\), girls' frontline, 1girl, blue eyes, hair between eyes, long hair, blonde hair, light brown hair, snowflake hair ornament, blue hairband, sidelocks, medium breasts, cleavage, collarbone, bare shoulders, one side up, rating:sensitive",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by kani biimu",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "2398488d-2333-4f92-9ed4-a557a669f396"
+      },
+      "status": "done",
+      "created_at": 1778947437.649,
+      "started_at": 1778947437.65,
+      "finished_at": 1778947461.52,
+      "error": null
+    },
+    {
+      "id": 238,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947442.316,
+      "started_at": 1778947461.521,
+      "finished_at": 1778947461.523,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 239,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "Castorice_\\(honkai_star_rail\\),gradient hair,lavender hair,pointy ears,long hair,purple eyes,grey hair,, rating:general",
+        "nl_prompt": "在花园里面自慰",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "c44439d8-a1be-4813-960a-f5d9e9c70699"
+      },
+      "status": "done",
+      "created_at": 1778947443.265,
+      "started_at": 1778947461.523,
+      "finished_at": 1778947485.259,
+      "error": null
+    },
+    {
+      "id": 240,
+      "user_id": 603,
+      "params": {
+        "direct_prompt": "by misumi \\(macaroni\\), hiyuki \\(wuthering waves\\), 1girl, colored_eyelashes, diamond-shaped_pupils, white_hair, red_eyes, pink_maid_outfit, maid_headdress, see-through, bra, panties, garter_belt, stockings, hand_on_doorframe, leaning_forward, bent_over, legs, one_leg_bent, tears, crying, hand_over_mouth, blush, shy, rating:explicit, rating:sensitive, rating:nsfw",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by misumi \\(macaroni\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947503.845,
+      "started_at": 1778947503.846,
+      "finished_at": 1778947503.848,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 241,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947521.44,
+      "started_at": 1778947521.44,
+      "finished_at": 1778947521.443,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 242,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947529.798,
+      "started_at": 1778947529.803,
+      "finished_at": 1778947529.821,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 243,
+      "user_id": 265,
+      "params": {
+        "direct_prompt": "suomi \\(girls' frontline\\), girls' frontline, 1girl, blue eyes, hair between eyes, long hair, blonde hair, light brown hair, snowflake hair ornament, blue hairband, sidelocks, medium breasts, cleavage, collarbone, bare shoulders, one side up, rating:sensitive",
+        "nl_prompt": "用双手遮住自己的乳头，害羞的看向镜头",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by kani biimu",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "5b642fe1-3a9d-4f01-bbda-636333131eb0"
+      },
+      "status": "done",
+      "created_at": 1778947536.942,
+      "started_at": 1778947536.943,
+      "finished_at": 1778947560.088,
+      "error": null
+    },
+    {
+      "id": 244,
+      "user_id": 745,
+      "params": {
+        "direct_prompt": "rating:explicit",
+        "nl_prompt": "涩",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "workflow_path": "WAI/达妮娅.json",
+        "_prompt_id": "22eed5c9-d8c0-4cf4-9316-3c109a11023d"
+      },
+      "status": "failed",
+      "created_at": 1778947573.616,
+      "started_at": 1778947573.616,
+      "finished_at": 1778947580.376,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 245,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947579.235,
+      "started_at": 1778947580.434,
+      "finished_at": 1778947580.444,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 246,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:general",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947582.429,
+      "started_at": 1778947582.43,
+      "finished_at": 1778947582.432,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 247,
+      "user_id": 265,
+      "params": {
+        "direct_prompt": "suomi \\(girls' frontline\\), girls' frontline, 1girl, blue eyes, hair between eyes, long hair, blonde hair, light brown hair, snowflake hair ornament, blue hairband, sidelocks, medium breasts, cleavage, collarbone, bare shoulders, one side up, rating:nsfw",
+        "nl_prompt": "用双手遮住自己的乳头，害羞的看向镜头",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by kani biimu",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "dfeb4803-25e2-4909-aa61-d1f21ac4ea7d"
+      },
+      "status": "failed",
+      "created_at": 1778947582.664,
+      "started_at": 1778947582.665,
+      "finished_at": 1778947602.203,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 248,
+      "user_id": 740,
+      "params": {
+        "direct_prompt": "让图一中的人物cos图二中的游戏角色，保持图一真人的脸部结构和五官特征。保持真人感，不能像是一张ai生成的图片，具有真实感。",
+        "image1_name": "img2img_0c448f1461ef_1778947583.jpeg",
+        "image2_name": "img2img_ac23d3c33e62_1778947583.webp",
+        "_prompt_id": "71f29303-dafa-4672-8ddf-bf394beecf8a"
+      },
+      "status": "failed",
+      "created_at": 1778947583.516,
+      "started_at": 1778947602.208,
+      "finished_at": 1778947630.084,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 249,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:general",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947592.986,
+      "started_at": 1778947630.089,
+      "finished_at": 1778947630.098,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 250,
+      "user_id": 265,
+      "params": {
+        "direct_prompt": "suomi \\(girls' frontline\\), girls' frontline, 1girl, blue eyes, hair between eyes, long hair, blonde hair, light brown hair, snowflake hair ornament, blue hairband, sidelocks, medium breasts, cleavage, collarbone, bare shoulders, one side up, rating:nsfw",
+        "nl_prompt": "用双手遮住自己的乳头，害羞的看向镜头",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by kani biimu",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "fc78c730-cda4-467b-b2f3-ccaed3a8066a"
+      },
+      "status": "failed",
+      "created_at": 1778947616.019,
+      "started_at": 1778947630.101,
+      "finished_at": 1778947690.137,
+      "error": "无法获取 history"
+    },
+    {
+      "id": 251,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:general",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947641.957,
+      "started_at": 1778947690.138,
+      "finished_at": 1778947690.141,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 252,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "Castorice_\\(honkai_star_rail\\),gradient hair,lavender hair,pointy ears,long hair,purple eyes,grey hair,, rating:general",
+        "nl_prompt": "在花园里面自慰",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "64eb7688-dd17-4fd7-bc10-f6debce260be"
+      },
+      "status": "done",
+      "created_at": 1778947687.694,
+      "started_at": 1778947690.142,
+      "finished_at": 1778947724.595,
+      "error": null
+    },
+    {
+      "id": 253,
+      "user_id": 738,
+      "params": {
+        "direct_prompt": "没穿内裤, rating:general",
+        "nl_prompt": "穿着高开叉白色礼服 坐在椅子上跷二郎腿 没穿内裤 全身都要在图片中 ",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "全裸",
+        "workflow_path": "WAI/千咲.json",
+        "_prompt_id": "ae63f524-62fb-424d-bdbe-f06a8dfd6a2b"
+      },
+      "status": "done",
+      "created_at": 1778947687.99,
+      "started_at": 1778947724.596,
+      "finished_at": 1778947749.071,
+      "error": null
+    },
+    {
+      "id": 254,
+      "user_id": 203,
+      "params": {
+        "direct_prompt": "把图中人物换成泳装，做自慰的动作",
+        "image1_name": "img2img_d1cab9f17eab_1778947688.png",
+        "image2_name": "",
+        "_prompt_id": "870ea3ac-31aa-4356-98cc-5764d802b685"
+      },
+      "status": "done",
+      "created_at": 1778947688.671,
+      "started_at": 1778947749.073,
+      "finished_at": 1778947793.435,
+      "error": null
+    },
+    {
+      "id": 255,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:general",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background,\ntext, watermark, signature, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, cel shading, anime coloring\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, pink hair, gray hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\nwhite kimono, white dress, gold decoration, any other colors besides black, white, gray and red,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint\nlow quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1778947719.161,
+      "started_at": 1778947793.435,
+      "finished_at": 1778947793.439,
+      "error": "Request failed with status code 404"
+    },
+    {
+      "id": 256,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "2d21999b-e61b-4c39-8d72-caf5f090e108"
+      },
+      "status": "done",
+      "created_at": 1778947801.946,
+      "started_at": 1778947801.947,
+      "finished_at": 1778947826.196,
+      "error": null
+    },
+    {
+      "id": 257,
+      "user_id": 738,
+      "params": {
+        "direct_prompt": "没穿内裤 全身视角 全身镜头, rating:sensitive",
+        "nl_prompt": "穿着高开叉白色礼服 坐在椅子上跷二郎腿 没穿内裤 全身都要在图片中 ",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "全裸",
+        "workflow_path": "WAI/千咲.json",
+        "_prompt_id": "d0b2d497-5195-4794-8c23-d55742976cd3"
+      },
+      "status": "failed",
+      "created_at": 1778947853.549,
+      "started_at": 1778947853.551,
+      "finished_at": 1778947866.341,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 258,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "low quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "d0338ef6-8862-47c3-aa7e-effe78fed339"
+      },
+      "status": "failed",
+      "created_at": 1778947868.956,
+      "started_at": 1778947868.967,
+      "finished_at": 1778947877.376,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 259,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only light pink and deep red as accent colors, no other colors, no dark black,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with light pink inner hair and red tips:1.3), high twin tails, hair between eyes,\nred eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), bright red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with red crisscross straps,\nleaning forward slightly, head tilted, right arm raised above head holding a wine glass with red wine, left hand relaxed by side, looking at viewer,\nupper body to full body shot, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 1024,
+        "height": 1024,
+        "negative_prompt": "low quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, light pink and red,\npure black clothes, dark black hair, solid black areas,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "ee0dc9b6-9325-4ede-ada3-1ea2ab0c37a1"
+      },
+      "status": "done",
+      "created_at": 1778947900.552,
+      "started_at": 1778947900.561,
+      "finished_at": 1778947923.114,
+      "error": null
+    },
+    {
+      "id": 260,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "Castorice_\\(honkai_star_rail\\),gradient hair,lavender hair,pointy ears,long hair,purple eyes,grey hair,, rating:general",
+        "nl_prompt": "在花园里面自慰",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "acdc9256-6cf5-4d68-bcc7-169098466bd6"
+      },
+      "status": "done",
+      "created_at": 1778947904.795,
+      "started_at": 1778947923.116,
+      "finished_at": 1778947947.493,
+      "error": null
+    },
+    {
+      "id": 261,
+      "user_id": 747,
+      "params": {
+        "direct_prompt": "请让图中人物分开双腿 暴露出自己的小穴 保持衣服原样不变",
+        "image1_name": "img2img_0e5f7a91928e_1778948054.jpg",
+        "image2_name": "",
+        "_prompt_id": "da714a4b-12e0-4205-8c1f-9e7e3d907968"
+      },
+      "status": "done",
+      "created_at": 1778948055.557,
+      "started_at": 1778948055.558,
+      "finished_at": 1778948102.575,
+      "error": null
+    },
+    {
+      "id": 262,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "test, rating:sensitive",
+        "nl_prompt": "һ��Ů��վ�ڻ�԰��",
+        "rewrite": true,
+        "workflow_path": "WAI/37.json",
+        "_prompt_id": "92602f43-a3e6-44e3-9586-314ffc25011a"
+      },
+      "status": "done",
+      "created_at": 1778948095.619,
+      "started_at": 1778948102.577,
+      "finished_at": 1778948127.307,
+      "error": null
+    },
+    {
+      "id": 263,
+      "user_id": 684,
+      "params": {
+        "direct_prompt": "masterpiece, best quality,\n(lineart:1.5), (unfinished:1.4), (rough hand-drawn sketch:1.3), clean thin black outline, slightly messy casual draft lines, partial minimal flat coloring only, absolutely no shading, no gradient, no texture, no cel shading,\n(limited monochrome palette:1.4), (white-light gray-medium gray base:1.3), pure white background, only soft light pink and soft light red as accent colors, no other colors, no dark black, no bright red, no deep red,\n\nhatsuzuki (azur lane), 1girl, solo,\n(silver sharp horns:1.3), no horn stripes,\n(medium gray hair with soft light red inner hair and soft light red tips:1.3), high twin tails, hair between eyes,\nsoft light red eyes, half-lidded eyes, slightly drunk expression, faint smile, pale skin, soft light pink blush on cheeks,\nsmall breasts,\n(medium gray halter bikini top:1.2), chest cross strap design,\n(open medium gray long kimono coat:1.2), soft light red inner lining, white floral embroidery on hem and sleeves, wide flowing sleeves,\n(medium gray short dress with soft light red ruffled hem:1.2), high side slit on left leg,\nlight gray thin waist belt with white buckle,\n(light gray thigh strap on left thigh:1.2),\nlight gray high-heeled sandals with soft light red crisscross straps, rating:sensitive",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口\n",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "low quality, worst quality, blurry, pixelated, deformed, bad anatomy, extra limbs, missing fingers, bad hands,\nwhite hair, single ponytail, half-updo, hair buns,\nhorns with red stripes, white horns,\ngold decoration, any other colors besides white, light gray, medium gray, soft light pink and soft light red,\npure black clothes, dark black hair, solid black areas, bright red, deep red, crimson,\nfull coloring, colorful, shading, gradient, texture, detailed background, complex background, ocean, yacht, sofa, table, manjuu,\ntext, watermark, signature, logo, 3d, realistic, photorealistic, multiple girls, male,\nthick lines, perfect polished lines, finished art, anime coloring, thick paint, light gray background",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "340d6525-ea53-492c-9e53-10964192b249"
+      },
+      "status": "done",
+      "created_at": 1778948127.575,
+      "started_at": 1778948127.576,
+      "finished_at": 1778948152.301,
+      "error": null
+    },
+    {
+      "id": 264,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "Castorice_\\(honkai_star_rail\\),gradient hair,lavender hair,pointy ears,long hair,purple eyes,grey hair,, rating:general",
+        "nl_prompt": "在花园里面自慰",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "fb4a25da-cc03-468d-b87d-f62611b01750"
+      },
+      "status": "done",
+      "created_at": 1778948238.821,
+      "started_at": 1778948238.822,
+      "finished_at": 1778948264.365,
+      "error": null
+    },
+    {
+      "id": 265,
+      "user_id": 447,
+      "params": {
+        "direct_prompt": "把图二的衣服穿在图一身上，保持图二服装款式和颜色。保持图一面部一致性。保持图一足底细节不变",
+        "image1_name": "img2img_e098ca885afa_1778948257.png",
+        "image2_name": "img2img_5b585e5fa8e0_1778948257.jpeg",
+        "_prompt_id": "3eae1cfb-d993-4376-b3af-3773af046a8b"
+      },
+      "status": "failed",
+      "created_at": 1778948257.601,
+      "started_at": 1778948264.367,
+      "finished_at": 1778948324.448,
+      "error": "无法获取 history"
+    },
+    {
+      "id": 266,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "Castorice_\\(honkai_star_rail\\),gradient hair,lavender hair,pointy ears,long hair,purple eyes,grey hair,, rating:general",
+        "nl_prompt": "人物正在喝手中高脚杯里的红酒，酒沿着嘴角流下一直到胸口",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "164223c4-bd13-46fe-8b92-be3bfac402ec"
+      },
+      "status": "done",
+      "created_at": 1778948304.785,
+      "started_at": 1778948324.449,
+      "finished_at": 1778948351.942,
+      "error": null
+    },
+    {
+      "id": 267,
+      "user_id": 483,
+      "params": {
+        "direct_prompt": "帮我把图一角色修成图二角色，服饰要与图二保持一致，服饰破损低要与图一保持一致，内裤修改为淡蓝色加白色的蕾丝内裤，姿势动作表情与图一保持完全一致，画风与图二保持完全一致",
+        "image1_name": "img2img_dece3031d1c0_1778948357.jpeg",
+        "image2_name": "img2img_d5dfa2ec31b7_1778948357.jpeg",
+        "_prompt_id": "94ea29fa-8bf5-4298-890b-b9ad47c71e0c"
+      },
+      "status": "failed",
+      "created_at": 1778948357.5,
+      "started_at": 1778948357.502,
+      "finished_at": 1778948367.989,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 268,
+      "user_id": 747,
+      "params": {
+        "direct_prompt": "请让图中人物分开双腿 暴露出自己的小穴 并且衣服也没了 奶子和小穴附近挂着白色的浓稠精液",
+        "image1_name": "img2img_1369652a44b2_1778948370.jpeg",
+        "image2_name": "",
+        "_prompt_id": "9b633efd-29c2-43ec-b79f-5e4d6d8be2d8"
+      },
+      "status": "failed",
+      "created_at": 1778948371,
+      "started_at": 1778948371.16,
+      "finished_at": 1778948431.217,
+      "error": "无法获取 history"
+    },
+    {
+      "id": 269,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "Castorice_\\(honkai_star_rail\\),gradient hair,lavender hair,pointy ears,long hair,purple eyes,grey hair,, rating:general",
+        "nl_prompt": "在花园里面自慰",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by tandohark",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "1d2e7770-7309-43a1-b2f0-92dabf102d24"
+      },
+      "status": "failed",
+      "created_at": 1778948398.52,
+      "started_at": 1778948431.218,
+      "finished_at": 1778948449.868,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 270,
+      "user_id": 483,
+      "params": {
+        "direct_prompt": "帮我把图一角色修成图二角色，服饰要与图二保持一致，服饰破损低要与图一保持一致，内裤修改为淡蓝色加白色的蕾丝内裤，姿势动作表情与图一保持完全一致，画风与图二保持完全一致",
+        "image1_name": "img2img_491517b127a9_1778948400.jpeg",
+        "image2_name": "img2img_24ed2e665a88_1778948400.jpeg",
+        "_prompt_id": "7ebd4ad8-cb0d-469b-94d8-89b29f0e5974"
+      },
+      "status": "failed",
+      "created_at": 1778948400.296,
+      "started_at": 1778948449.926,
+      "finished_at": 1778948510.018,
+      "error": "无法获取 history"
+    },
+    {
+      "id": 271,
+      "user_id": 447,
+      "params": {
+        "direct_prompt": "把图二的衣服穿在图一身上，保持图二服装款式和颜色。保持图一面部一致性。",
+        "image1_name": "img2img_0a776fc2e0e6_1778948403.jpg",
+        "image2_name": "img2img_0b0d055cf6c8_1778948403.jpg",
+        "_prompt_id": "8b376744-5137-46a1-ae86-39632747978a"
+      },
+      "status": "failed",
+      "created_at": 1778948403.541,
+      "started_at": 1778948510.02,
+      "finished_at": 1778948570.097,
+      "error": "无法获取 history"
+    },
+    {
+      "id": 272,
+      "user_id": 265,
+      "params": {
+        "direct_prompt": "suomi \\(girls' frontline\\), girls' frontline, 1girl, blue eyes, hair between eyes, long hair, blonde hair, light brown hair, snowflake hair ornament, blue hairband, sidelocks, medium breasts, cleavage, collarbone, bare shoulders, one side up, rating:nsfw",
+        "nl_prompt": "用双手遮住自己的乳头，害羞的看向镜头",
+        "rewrite": true,
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by kani biimu",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "3757491b-ac39-4eee-8441-fe2c75db47dc"
+      },
+      "status": "failed",
+      "created_at": 1778948475.239,
+      "started_at": 1778948570.099,
+      "finished_at": 1778948576.109,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 273,
+      "user_id": 747,
+      "params": {
+        "direct_prompt": "请让图中人物分开双腿 暴露出自己的小穴 并且衣服也没了 奶子和小穴附近挂着白色的浓稠精液",
+        "image1_name": "img2img_f1de1a69629e_1778948511.jpeg",
+        "image2_name": "",
+        "_prompt_id": "fab71758-698b-45c0-9889-fec071726a51"
+      },
+      "status": "failed",
+      "created_at": 1778948512.729,
+      "started_at": 1778948576.171,
+      "finished_at": 1778948581.795,
+      "error": "服务重启，任务终止"
+    },
+    {
+      "id": 274,
+      "user_id": 483,
+      "params": {
+        "direct_prompt": "帮我把图一角色修成图二角色，服饰要与图二保持一致，服饰破损低要与图一保持一致，内裤修改为淡蓝色加白色的蕾丝内裤，姿势动作表情与图一保持完全一致，画风与图二保持完全一致",
+        "image1_name": "img2img_6087414b13a9_1778948567.jpeg",
+        "image2_name": "img2img_0954306a196f_1778948567.jpeg",
+        "_prompt_id": "5d9f869d-a0db-4241-8e18-7f4337d9da19"
+      },
+      "status": "failed",
+      "created_at": 1778948568.062,
+      "started_at": 1778948581.857,
+      "finished_at": 1778948587.813,
+      "error": "服务重启，任务终止"
+    }
+  ]
+}
