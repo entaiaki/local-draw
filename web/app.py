@@ -3303,7 +3303,7 @@ async def _run_task(ws: WebSocket, req: RunRequest, *, user_id: int = 0):
 
 
 async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
-                    timeout: int = 600) -> Dict[str, Any]:
+                    timeout: int = 120) -> Dict[str, Any]:
     ws_url = f"{COMFYUI_WS}/ws?clientId={CLIENT_ID}"
     start = asyncio.get_event_loop().time()
     completed = False
@@ -3405,7 +3405,7 @@ async def _wait_for(prompt_id: str, ws: WebSocket, prompt_dict: Dict[str, Any],
     raise TimeoutError("无法获取 history")
 
 
-async def _wait_for_img2img(prompt_id: str, timeout: int = 300) -> Dict[str, Any]:
+async def _wait_for_img2img(prompt_id: str, timeout: int = 120) -> Dict[str, Any]:
     """等待 ComfyUI 执行完毕并返回 history（精简版，无前端 WS 转发）。"""
     ws_url = f"{COMFYUI_WS}/ws?clientId={CLIENT_ID}"
     start = asyncio.get_event_loop().time()
@@ -4448,6 +4448,7 @@ if __name__ == "__main__":
             port=args.port,
             reload=True,
             reload_dirs=[str(here)],
+            reload_includes=["*.py"],
             app_dir=str(here.parent),
         )
     else:
