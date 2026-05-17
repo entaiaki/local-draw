@@ -110,7 +110,35 @@ router.get('/thumbnail', (req: Request, res: Response) => {
 });
 
 
-// GET /api/draw/my-recommendations
+// POST /api/output/fork — fork
+router.post('/fork', async (req, res) => {
+  const fp = resolveOutputPath(req.body?.path);
+  if (!fp) return res.status(404).json({ error: 'not found' });
+  const basename = path.basename(fp);
+  const pmFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+  try {
+    const pm = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
+    const meta = pm[basename];
+    if (meta?.image1) return res.status(400).json({ error: 'img2img 不支持 fork' });
+    let wfPath = meta?.workflow_path || '';
+    if (wfPath && wfPath !== 'fork') {
+      const { workflowToPromptApi } = await import('../services/runner.js');
+      const tail = wfPath.replace(/\\\\/g, '/').split('/').map((p: string) => encodeURIComponent(p)).join('%2F');
+      const url = `http://${config.comfyui_host}:${config.comfyui_port}/api/userdata/workflows%2F${tail}`;
+      const r = await (await import('axios')).default.get(url, { headers: { 'Comfy-User': '' }, timeout: 10000 });
+      const { prompt_dict, positive_ref, negative_ref } = workflowToPromptApi(r.data);
+      let bp = '', bn = '';
+      if (positive_ref) { const v = prompt_dict[positive_ref[0]]?.inputs?.[positive_ref[1]]; if (typeof v === 'string') bp = v; }
+      if (negative_ref) { const v = prompt_dict[negative_ref[0]]?.inputs?.[negative_ref[1]]; if (typeof v === 'string') bn = v; }
+      const wfName = wfPath.replace(/\.json$/i, '').split('/').pop() || '';
+	      return res.json({ workflow_api: prompt_dict, workflow_path: wfPath, workflow_name: wfName, builtin_prompt: bp || meta?.prompt || '', builtin_negative_prompt: bn || meta?.negative_prompt || '', seed: Math.floor(Math.random() * 2147483647) + 1 });
+    }
+    // 有 metadata 但无 workflow_path 时拒绝
+    if (!meta?.workflow_path) return res.status(400).json({ error: '该图片无工作流信息，无法 Fork' });
+  } catch {}
+  res.json({ workflow_api: null, builtin_prompt: '', builtin_negative_prompt: '', seed: Math.floor(Math.random() * 2147483647) + 1 });
+});
+
 router.get('/my-recommendations', (req: Request, res: Response) => {
   const recFile = config.creator_map_file.replace('creator_users.txt', 'recommendations.json');
   try {

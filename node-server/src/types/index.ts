@@ -25,6 +25,7 @@ export interface QueueItem {
 export interface RunRequest {
   workflow_path: string;
   inline_workflow?: Record<string, unknown>;
+	  inline_workflow_api?: Record<string, any>;
   direct_prompt: string;
   negative_prompt?: string;
   width?: number;

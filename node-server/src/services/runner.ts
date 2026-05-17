@@ -311,17 +311,31 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       const wfName = req.image2_name ? 'Flux2-Klein-图片编辑 (多图).json' : 'Flux2-Klein-图片编辑 (单图).json';
       workflowData = await loadWorkflow(`Flux/${wfName}`);
     }
-    else throw new Error('未指定工作流');
+    else if (!req.workflowData) throw new Error('未指定工作流');
+	    // If inline_workflow_api provided, use it directly
+	    let prompt_dict: any;
+	    let positive_ref: [string, string] | null = null;
+	    let negative_ref: [string, string] | null = null;
+	    if (req.inline_workflow_api && typeof req.inline_workflow_api === 'object') {
+	      prompt_dict = req.inline_workflow_api;
+	      for (const [nid, nd] of Object.entries(prompt_dict)) {
+	        const node = nd as any;
+	        if (node.class_type === 'CLIPTextEncode' || node.class_type === 'CLIPTextEncodeSDXL') {
+	          if (!positive_ref) positive_ref = [nid, 'text'];
+	          else if (!negative_ref) negative_ref = [nid, 'text'];
+	        }
+	      }
+	    } else {
+	      const result = workflowToPromptApi(workflowData);
+	      prompt_dict = result.prompt_dict;
+	      positive_ref = result.positive_ref;
+	      negative_ref = result.negative_ref;
+	    }
     const finalPrompt = req.direct_prompt || '';
 
-
-    // Convert workflow
-    const { prompt_dict, positive_ref, negative_ref } = workflowToPromptApi(workflowData);
     if (!positive_ref) throw new Error('未找到正向 CLIPTextEncode 节点');
-    if (!prompt_dict[positive_ref[0]]) throw new Error('正向节点不存在');
-
-    // Inject prompt
-    prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
+	    // Inject prompt
+	    prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
 	    if (negative_ref && req.negative_prompt) {
 	      prompt_dict[negative_ref[0]].inputs[negative_ref[1]] = req.negative_prompt;
 	    }
@@ -387,7 +401,9 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       }
     }
 
-    // Write to creator_map + prompt metadata
+    // 记录输出文件，用于调试元数据写入状态
+	    try { (item.params as any)._output_files = images.map(i => i.subfolder ? `${i.subfolder}/${i.filename}` : i.filename); } catch {}
+	    // Write to creator_map + prompt metadata
     const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
     let promptMeta: Record<string, any> = {};
     try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
@@ -406,7 +422,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       };
     }
     
-    item.status = 'done';
+    try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
+	    item.status = 'done';
   } catch (e: any) {
     item.status = 'failed';
     item.error = ((e.response?.data ? `${e.message}: ${JSON.stringify(e.response.data)}` : e.message) || String(e)).slice(0,2000);
