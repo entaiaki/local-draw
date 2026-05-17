@@ -1,0 +1,8 @@
+[
+  {
+    "user_id": 78,
+    "reason": "1",
+    "banned_at": 1779055630,
+    "banned_until": 1779142030
+  }
+]

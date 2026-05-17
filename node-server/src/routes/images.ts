@@ -66,13 +66,14 @@ router.get('/list', (req: Request, res: Response) => {
   const offset = parseInt(req.query.offset as string) || 0;
   const cmap = loadCreatorMap();
   const items: { path: string; mtime: number | null; creator_id: string }[] = [];
-  for (const baseDir of [config.output_dir, config.archive_dir]) {
-    if (!fs.existsSync(baseDir)) continue;
-    for (const f of fs.readdirSync(baseDir).filter(f => OUTPUT_IMAGE_EXTS.includes(path.extname(f).toLowerCase()))) {
-      try { const s = fs.statSync(path.join(baseDir, f)); items.push({ path: f, mtime: s.mtimeMs / 1000, creator_id: String(cmap[f] || ''), user_id: String(cmap[f] || '') }); } catch {}
+  const seen = new Set<string>();
+  if (fs.existsSync(config.output_dir)) {
+    for (const f of fs.readdirSync(config.output_dir).filter(f => OUTPUT_IMAGE_EXTS.includes(path.extname(f).toLowerCase()))) {
+      if (seen.has(f)) continue; seen.add(f);
+      try { const s = fs.statSync(path.join(config.output_dir, f)); items.push({ path: f, mtime: s.mtimeMs / 1000, creator_id: String(cmap[f] || ''), user_id: String(cmap[f] || '') }); } catch {}
     }
   }
-  items.sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
+  items.sort((a: any, b: any) => (b.mtime || 0) - (a.mtime || 0));
   const page = items.slice(offset, offset + limit);
   res.json({ items: page, total: items.length });
 });
@@ -108,23 +109,6 @@ router.get('/thumbnail', (req: Request, res: Response) => {
   res.status(404).json({ error: 'not found' });
 });
 
-// POST /api/output/fork
-router.post('/fork', (req: Request, res: Response) => {
-  const fp = resolveOutputPath(req.body?.path as string);
-  if (!fp) return res.status(404).json({ error: 'not found' });
-  // Return minimal fork data - the frontend uses this to reload workflow
-  res.json({
-    workflow: {},
-    summary: {},
-    default_width: null,
-    default_height: null,
-    builtin_prompt: '',
-    builtin_negative_prompt: '',
-    loras: [],
-    format: 'png',
-    seed: Math.floor(Math.random() * 2147483647),
-  });
-});
 
 // GET /api/draw/my-recommendations
 router.get('/my-recommendations', (req: Request, res: Response) => {

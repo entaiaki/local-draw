@@ -35,7 +35,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const config = loadConfig();
 
 // Auth middleware
-app.use('/api/draw', jwtAuth(config));
+app.use('/api', jwtAuth(config));
 
 // Routes
 app.use('/api/draw', queueRouter);

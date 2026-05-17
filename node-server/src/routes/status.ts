@@ -114,6 +114,7 @@ router.get('/debug', async (req: Request, res: Response) => {
       started_ago: qi.started_at ? Math.round(now - qi.started_at) : null,
       error: qi.error,
       type: (qi.params as any)?.image1_name ? 'img2img' : 'txt2img',
+	      workflow_path: (qi.params as any)?.workflow_path || '',
     })),
     recent_items_count: recent.length,
   });

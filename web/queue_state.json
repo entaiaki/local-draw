@@ -1,6 +1,10 @@
 {
-  "idCounter": 26,
-  "userIds": {},
+  "idCounter": 85,
+  "userIds": {
+    "236": 1,
+    "425": 1,
+    "619": 1
+  },
   "items": [
     {
       "id": 1,
@@ -435,6 +439,1010 @@
       "created_at": 1779052105.95,
       "started_at": 1779052105.951,
       "finished_at": 1779052135.037,
+      "error": null
+    },
+    {
+      "id": 27,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "Castorice_(honkai_star_rail), gradient hair, lavender hair, pointy ears, long hair, purple eyes, grey hair, full body, looking at viewer, looking left, nude, pinching nipple, two fingers, sticking out, tongue, ahegao, blushing, rolled eyes, squatting, legs apart, hard nipple,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "ba72fc16-f3ef-4c7b-b769-22721fdc87df"
+      },
+      "status": "done",
+      "created_at": 1779052462.91,
+      "started_at": 1779052462.915,
+      "finished_at": 1779052475.129,
+      "error": null
+    },
+    {
+      "id": 28,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "sunna \\(zenless zone zero\\), 1girl, necktie, hair ornament, red necktie, shirt, looking at viewer, white shirt, choker, hairclip, green hair, black choker, long hair, long sleeves, green eyes, musical note earrings, full body, nude, grabbing nipple, hard nipple, sticking out tongue, ahegao, blushing, rolled eyes, head tilt, squatting, legs, organism, mouth water ",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/千夏.json",
+        "_prompt_id": "9d64b353-7710-48ac-8e06-a6d5371302ac"
+      },
+      "status": "done",
+      "created_at": 1779052715.424,
+      "started_at": 1779052715.425,
+      "finished_at": 1779052730.341,
+      "error": null
+    },
+    {
+      "id": 29,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "sunna \\(zenless zone zero\\), 1girl, necktie, hair ornament, red necktie, shirt, looking at viewer, white shirt, choker, hairclip, green hair, black choker, long hair, long sleeves, green eyes, musical note earrings, full body, nude, grabbing nipple, hard nipple, sticking out tongue, ahegao, blushing, rolled eyes, head tilt, squatting, legs, organism, mouth water ",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/千夏.json",
+        "_prompt_id": "3e7e818a-f1f1-4af0-9362-30728f11249e"
+      },
+      "status": "done",
+      "created_at": 1779052758.737,
+      "started_at": 1779052758.737,
+      "finished_at": 1779052770.748,
+      "error": null
+    },
+    {
+      "id": 30,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "sunna \\(zenless zone zero\\), 1girl, necktie, hair ornament, red necktie, shirt, looking at viewer, white shirt, choker, hairclip, green hair, black choker, long hair, long sleeves, green eyes, musical note earrings, full body, nude, grabbing nipple, hard nipple, sticking out tongue, ahegao, blushing, rolled eyes, head tilt, squatting, legs, organism,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/千夏.json",
+        "_prompt_id": "fb9970c1-fc7d-478c-b04c-6e58553c72c5"
+      },
+      "status": "done",
+      "created_at": 1779052854.446,
+      "started_at": 1779052854.447,
+      "finished_at": 1779052866.078,
+      "error": null
+    },
+    {
+      "id": 31,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "Castorice_(honkai_star_rail), gradient hair, lavender hair, pointy ears, long hair, purple eyes, grey hair, riding on ikea shark, blush, closed eyes, bottomless, white pajama top, upper body,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text, watermark, worst quality, low quality, lowest",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "511fbe71-b1d5-4d5b-847e-305ba01944ef"
+      },
+      "status": "done",
+      "created_at": 1779053060.929,
+      "started_at": 1779053060.93,
+      "finished_at": 1779053075.871,
+      "error": null
+    },
+    {
+      "id": 32,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "Castorice_(honkai_star_rail), gradient hair, lavender hair, pointy ears, long hair, purple_eyes, grey hair, focus on face, top, upper body, hand_on_face, hand_near_face, winking, sticking_out_tongue, playful, hand_",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text, watermark, worst quality, low quality, lowest",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "1f1a51e4-ec7e-4d7e-b610-b233e3e37818"
+      },
+      "status": "done",
+      "created_at": 1779053364.536,
+      "started_at": 1779053364.538,
+      "finished_at": 1779053376.273,
+      "error": null
+    },
+    {
+      "id": 33,
+      "user_id": 400,
+      "params": {
+        "direct_prompt": "plana \\(blue archive\\), blue archive,1girl, black eyes, grey eyes,  red pupils, white hair, pink hair, colored inner hair, very long hair, long hair, grey hair, two-tone hair, black hairband, single braid, hair ribbon, small breasts,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "67dd537a-15af-4aa2-ae45-742979c268a6"
+      },
+      "status": "done",
+      "created_at": 1779053537.013,
+      "started_at": 1779053537.014,
+      "finished_at": 1779053551.291,
+      "error": null
+    },
+    {
+      "id": 34,
+      "user_id": 400,
+      "params": {
+        "direct_prompt": "1girl, black eyes, grey eyes,  red pupils, white hair, pink hair, colored inner hair, very long hair, long hair, grey hair, two-tone hair, black hairband, single braid, hair ribbon, small breasts,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by misumi \\(macaroni\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "df1307f8-cde8-40dd-a381-b151c18cfd64"
+      },
+      "status": "done",
+      "created_at": 1779053702.604,
+      "started_at": 1779053702.605,
+      "finished_at": 1779053714.312,
+      "error": null
+    },
+    {
+      "id": 35,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "Castorice_(honkai_star_rail), gradient hair, lavender hair, pointy ears, long hair, purple_eyes, grey hair, focus on face, happy face, relax face, pov, pulling castorice face",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text, watermark, worst quality, low quality, lowest",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "21f1ba85-6136-4c8e-95d0-dc9b7cabb5b7"
+      },
+      "status": "done",
+      "created_at": 1779053761.26,
+      "started_at": 1779053761.261,
+      "finished_at": 1779053775.876,
+      "error": null
+    },
+    {
+      "id": 36,
+      "user_id": 400,
+      "params": {
+        "direct_prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n{{{presenting}}},{curvy},{{{black theme}}},{{{shiny skin,shiny swimsuit,latex swimsuit}}} sweat,oiled skin,knee up,feet,plantar flexion,{{{{transparent swimsuit,translucent swimsuit}}}},headphones around neck,headphones,wire,hand up,full body,sitting,{computer,monitor,glowing monitor,speaker} gaming chair,indoors,from above,{{highleg swimsuit}} covered nipples,nipples,covered pussy,covered navel,sideboob,{{undersized swimsuit}},wedgie,1girl,solo,one-piece swimsuit,{{purple competition swimsuit}},highleg swimsuit,hair between eyes,ass visible through thighs,black one-piece swimsuit,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "0635838f-2726-426e-bc1f-eaade12d00a0"
+      },
+      "status": "done",
+      "created_at": 1779053763.681,
+      "started_at": 1779053775.878,
+      "finished_at": 1779053790.782,
+      "error": null
+    },
+    {
+      "id": 37,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "讓整體畫面更合理, 除去ai的地方",
+        "image1_name": "img2img_3b44cf9c97df_1779053875.webp",
+        "image2_name": "",
+        "_prompt_id": "330f0d43-5cfd-4dd0-a7ed-fd4509e8c0de"
+      },
+      "status": "done",
+      "created_at": 1779053876.335,
+      "started_at": 1779053876.336,
+      "finished_at": 1779053919.929,
+      "error": null
+    },
+    {
+      "id": 38,
+      "user_id": 400,
+      "params": {
+        "direct_prompt": ", plana \\(blue archive\\), blue archive,1girl, black eyes, grey eyes,  red pupils, white hair, pink hair, colored inner hair, very long hair, long hair, grey hair, two-tone hair, black hairband, single braid, hair ribbon, small breasts,\n\nthigh boots,detached collar,detached sleeves,puffy sleeves,cat ear headphones,bloomers,loose socks,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "bed43cdf-6e09-43e0-818f-9c79b7d33fb6"
+      },
+      "status": "done",
+      "created_at": 1779053910.234,
+      "started_at": 1779053919.93,
+      "finished_at": 1779053946.759,
+      "error": null
+    },
+    {
+      "id": 39,
+      "user_id": 825,
+      "params": {
+        "direct_prompt": "ganyu \\(genshin impact\\), genshin impact, 1girl, goat horns, horns, purple eyes, hair between eyes, blue hair, long hair, ahoge, sidelocks, medium breasts, large breasts, thighs, black gloves, bare shoulders, detached sleeves, neck bell, bodystocking",
+        "width": 512,
+        "height": 512,
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "86b0d438-05e1-4f33-ae19-49bc3c02d09e"
+      },
+      "status": "done",
+      "created_at": 1779054138.932,
+      "started_at": 1779054138.934,
+      "finished_at": 1779054150.695,
+      "error": null
+    },
+    {
+      "id": 40,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "Castorice_(honkai_star_rail), gradient hair, lavender hair, pointy ears, long hair, purple_eyes, grey hair, relax face, hugging ikea shark, blae_shark, closed eyes, blushing, white pajamas, full body",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by massakasama",
+        "negative_prompt": "text",
+        "workflow_path": "WAI/遐蝶.json",
+        "_prompt_id": "c1d73cbd-62d2-4815-ae02-0d7ac6ce83bd"
+      },
+      "status": "done",
+      "created_at": 1779054145.855,
+      "started_at": 1779054150.696,
+      "finished_at": 1779054164.437,
+      "error": null
+    },
+    {
+      "id": 41,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "Castorice_(honkai_star_rail), gradient hair, lavender hair, pointy ears, long hair, purple_eyes, grey hair",
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text",
+        "workflow_path": "fork",
+        "inline_workflow": {}
+      },
+      "status": "failed",
+      "created_at": 1779054248.555,
+      "started_at": 1779055773.972,
+      "finished_at": 1779055773.972,
+      "error": "未指定工作流"
+    },
+    {
+      "id": 42,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "Castorice_(honkai_star_rail), gradient hair, lavender hair, pointy ears, long hair, purple_eyes, grey hair",
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text",
+        "workflow_path": "fork",
+        "inline_workflow": {}
+      },
+      "status": "failed",
+      "created_at": 1779054263.704,
+      "started_at": 1779055773.975,
+      "finished_at": 1779055773.975,
+      "error": "未指定工作流"
+    },
+    {
+      "id": 43,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "優化",
+        "image1_name": "img2img_cd4501e625c3_1779054293.webp",
+        "image2_name": "",
+        "_prompt_id": "1389687c-ea33-4a18-a656-9a1b42f6a469"
+      },
+      "status": "done",
+      "created_at": 1779054294.22,
+      "started_at": 1779054294.22,
+      "finished_at": 1779054338.657,
+      "error": null
+    },
+    {
+      "id": 44,
+      "user_id": 825,
+      "params": {
+        "direct_prompt": "ganyu \\(genshin impact\\), genshin impact, 1girl, goat horns, horns, purple eyes, hair between eyes, blue hair, long hair, ahoge, sidelocks, medium breasts, large breasts, thighs, black gloves, bare shoulders, detached sleeves, neck bell, bodystocking",
+        "width": 512,
+        "height": 512,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "95d8c54a-2b87-4414-bf61-2e52148d291a"
+      },
+      "status": "done",
+      "created_at": 1779054350.141,
+      "started_at": 1779054350.142,
+      "finished_at": 1779054377.114,
+      "error": null
+    },
+    {
+      "id": 45,
+      "user_id": 825,
+      "params": {
+        "direct_prompt": "ganyu \\(genshin impact\\), genshin impact, 1girl, goat horns, horns, purple eyes, hair between eyes, blue hair, long hair, ahoge, sidelocks, medium breasts, large breasts, thighs, black gloves, bare shoulders, detached sleeves, neck bell, bodystocking",
+        "width": 512,
+        "height": 512,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "105f8667-fdf4-4bea-8f09-abceaea05336"
+      },
+      "status": "done",
+      "created_at": 1779054419.247,
+      "started_at": 1779054419.248,
+      "finished_at": 1779054430.773,
+      "error": null
+    },
+    {
+      "id": 46,
+      "user_id": 228,
+      "params": {
+        "direct_prompt": "lisa \\(genshin impact\\), genshin impact, 1girl, green eyes, hair between eyes, brown hair, long hair, hair flower, large breasts, cleavage, thighs, witch hat, purple headwear, black gloves, black thighhighs, witch, standing, magic, electricity, smile, grin, looking at viewer, library",
+        "width": 1216,
+        "height": 832,
+        "style_tags": "by tsunako",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "c86a7bd5-c767-4ca9-a1b4-9930703a30e0"
+      },
+      "status": "done",
+      "created_at": 1779054497.306,
+      "started_at": 1779054497.307,
+      "finished_at": 1779054509.21,
+      "error": null
+    },
+    {
+      "id": 47,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "把鯊魚換成小伊卡",
+        "image1_name": "img2img_7e1ec130bfde_1779054502.webp",
+        "image2_name": "",
+        "_prompt_id": "0673d0c4-9b08-493c-9336-47f807f29a52"
+      },
+      "status": "done",
+      "created_at": 1779054502.914,
+      "started_at": 1779054509.211,
+      "finished_at": 1779054554.264,
+      "error": null
+    },
+    {
+      "id": 48,
+      "user_id": 825,
+      "params": {
+        "direct_prompt": "ganyu \\(genshin impact\\), genshin impact, 1girl, goat horns, horns, purple eyes, hair between eyes, blue hair, long hair, ahoge, sidelocks, medium breasts, large breasts, thighs, black gloves, bare shoulders, detached sleeves, neck bell, bodyst",
+        "width": 512,
+        "height": 512,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "49d4140a-763f-4ae1-9bae-a2be41224f16"
+      },
+      "status": "done",
+      "created_at": 1779054542.736,
+      "started_at": 1779054554.266,
+      "finished_at": 1779054581.4,
+      "error": null
+    },
+    {
+      "id": 49,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "ye shunguang, brown hair, red eyes, long hair,hair ornament, hairband",
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "fork",
+        "inline_workflow": {}
+      },
+      "status": "failed",
+      "created_at": 1779054560.688,
+      "started_at": 1779055773.975,
+      "finished_at": 1779055773.975,
+      "error": "未指定工作流"
+    },
+    {
+      "id": 50,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "把鯊魚的尾巴p走",
+        "image1_name": "img2img_90a1eb75461e_1779054609.webp",
+        "image2_name": "",
+        "_prompt_id": "078d2a18-48de-4d12-a5a0-df78f3be8d70"
+      },
+      "status": "done",
+      "created_at": 1779054610.228,
+      "started_at": 1779054610.229,
+      "finished_at": 1779054653.644,
+      "error": null
+    },
+    {
+      "id": 51,
+      "user_id": 425,
+      "params": {
+        "direct_prompt": "fu xuan \\(honkai: star rail\\), honkai \\(series\\), 1girl, yellow eyes, pink eyes, pink hair, bow-shaped hair, very long hair, long hair, parted bangs, low twintails, hair stick, hair rings, bare shoulders, detached sleeves, tassel, forehead jewel, fellatio, head tilt, looking at viewer, male focus, kneeling, mouth,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by m-da s-tarou",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "dd39515e-e963-4491-a265-b8d1dd6366a6"
+      },
+      "status": "done",
+      "created_at": 1779054617.582,
+      "started_at": 1779054653.645,
+      "finished_at": 1779054680.802,
+      "error": null
+    },
+    {
+      "id": 52,
+      "user_id": 825,
+      "params": {
+        "direct_prompt": "tsunade \\(naruto\\), naruto \\(series\\), 1girl, mature female, brown eyes, blonde hair, long hair, huge breasts, large breasts, cleavage, collarbone, grey kimono, forehead mark",
+        "width": 512,
+        "height": 512,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "9cc6f277-a919-43b3-a8f5-f02f3b52c2d8"
+      },
+      "status": "done",
+      "created_at": 1779054627.134,
+      "started_at": 1779054680.806,
+      "finished_at": 1779054692.842,
+      "error": null
+    },
+    {
+      "id": 53,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "(best quality, masterpiece:1.2), ultra-detailed, 8k wallpaper,\nwell-proportioned, graceful posture, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \n(bare shoulders:1.1),open clothes, white feather ornament, halo, chain, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, \nblack nail polish, ring, \ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, \nblue flame, glowing particle effects, white background, rating:explicit，nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, \n({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "fff68969-628a-46e9-a0bf-00f70624fc31"
+      },
+      "status": "done",
+      "created_at": 1779054678.863,
+      "started_at": 1779054692.844,
+      "finished_at": 1779054704.831,
+      "error": null
+    },
+    {
+      "id": 54,
+      "user_id": 228,
+      "params": {
+        "direct_prompt": "lisa \\(genshin impact\\), genshin impact, 1girl, green eyes, hair between eyes, brown hair, long hair, hair flower, large breasts, cleavage, thighs, witch hat, purple headwear, black gloves, black thighhighs, witch, standing, magic, electricity, smile, grin, looking at viewer, library",
+        "width": 1216,
+        "height": 832,
+        "style_tags": "by tsunako",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "23d3449f-3cd5-4a75-934c-73385a4dddda"
+      },
+      "status": "done",
+      "created_at": 1779054762.263,
+      "started_at": 1779054762.264,
+      "finished_at": 1779054774.135,
+      "error": null
+    },
+    {
+      "id": 55,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "ye shunguang, brown hair, red eyes, long hair,hair ornament, hairband",
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "fork"
+      },
+      "status": "failed",
+      "created_at": 1779054768.945,
+      "started_at": 1779055773.976,
+      "finished_at": 1779055773.976,
+      "error": "未指定工作流"
+    },
+    {
+      "id": 56,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "(best quality, masterpiece:1.2), ultra-detailed, 8k wallpaper,\nwell-proportioned, graceful posture, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \n(bare shoulders:1.1),open clothes, white feather ornament, halo, chain, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, \nblack nail polish, ring, \ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, \nblue flame, glowing particle effects, white background, rating:explicit，nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, \n({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),",
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "fork",
+        "inline_workflow": {}
+      },
+      "status": "failed",
+      "created_at": 1779054779.538,
+      "started_at": 1779055773.976,
+      "finished_at": 1779055773.976,
+      "error": "未指定工作流"
+    },
+    {
+      "id": 57,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "深度優化所有地方, 要看起來不是ai弄的",
+        "image1_name": "img2img_916eaa7b639e_1779054790.webp",
+        "image2_name": "",
+        "_prompt_id": "3568178a-e6dc-4e93-8e65-e4f58c4ee41d"
+      },
+      "status": "done",
+      "created_at": 1779054791.977,
+      "started_at": 1779054791.978,
+      "finished_at": 1779054837.565,
+      "error": null
+    },
+    {
+      "id": 58,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "(best quality, masterpiece:1.2), ultra-detailed, 8k wallpaper,\nwell-proportioned, graceful posture, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \n(bare shoulders:1.1),open clothes, white feather ornament, halo, chain, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, \nblack nail polish, ring, \ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, \nblue flame, glowing particle effects, white background, rating:explicit，nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, \n({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "fork",
+        "inline_workflow": {}
+      },
+      "status": "failed",
+      "created_at": 1779054807.538,
+      "started_at": 1779055773.977,
+      "finished_at": 1779055773.977,
+      "error": "未指定工作流"
+    },
+    {
+      "id": 59,
+      "user_id": 1,
+      "params": {
+        "direct_prompt": "ye shunguang, brown hair, red eyes, long hair,hair ornament, hairband",
+        "width": 832,
+        "height": 1216,
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "fork",
+        "inline_workflow": {}
+      },
+      "status": "failed",
+      "created_at": 1779054873.047,
+      "started_at": 1779055773.978,
+      "finished_at": 1779055773.978,
+      "error": "未指定工作流"
+    },
+    {
+      "id": 60,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "優化所有細節",
+        "image1_name": "img2img_414b2d1f3394_1779054890.webp",
+        "image2_name": "",
+        "_prompt_id": "51667d9a-87cc-4220-a248-1e2f09cc1343"
+      },
+      "status": "done",
+      "created_at": 1779054893.261,
+      "started_at": 1779054893.262,
+      "finished_at": 1779054933.737,
+      "error": null
+    },
+    {
+      "id": 61,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "(best quality, masterpiece:1.2), ultra-detailed, 8k wallpaper,\nwell-proportioned, graceful posture, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \n(bare shoulders:1.1),open clothes, white feather ornament, halo, chain, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, \nblack nail polish, ring, \ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, \nblue flame, glowing particle effects, white background, rating:explicit，nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, （本体）\n({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "92bdad47-009e-4afc-affa-1b108b72fbf0"
+      },
+      "status": "done",
+      "created_at": 1779054913.455,
+      "started_at": 1779054933.739,
+      "finished_at": 1779054961.015,
+      "error": null
+    },
+    {
+      "id": 62,
+      "user_id": 228,
+      "params": {
+        "direct_prompt": "son goku \\(dragon ball\\), lisa \\(genshin impact\\), genshin impact, 1girl, 1boy, male focus, female focus, yaoi, heterosexual, missionary, sex, creampie, cum, cum overflow, semen, messy, flushed, heavy breathing, looking at viewer, library, magic, electricity, brown hair, long hair, hair flower, large breasts, cleavage, thighs, witch hat,",
+        "width": 1216,
+        "height": 832,
+        "style_tags": "by tsunako",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "a18c0c0d-82a9-4941-8e38-d5516697661c"
+      },
+      "status": "done",
+      "created_at": 1779054916.144,
+      "started_at": 1779054961.016,
+      "finished_at": 1779054972.918,
+      "error": null
+    },
+    {
+      "id": 63,
+      "user_id": 425,
+      "params": {
+        "direct_prompt": "fu xuan \\(honkai: star rail\\), honkai \\(series\\), 1girl, yellow eyes, pink eyes, pink hair, bow-shaped hair, very long hair, long",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by m-da s-tarou",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "f87328db-572b-4c58-801d-d65bbd3866b9"
+      },
+      "status": "done",
+      "created_at": 1779054945.678,
+      "started_at": 1779054972.92,
+      "finished_at": 1779054984.784,
+      "error": null
+    },
+    {
+      "id": 64,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "plana \\(blue archive\\), blue archive, 1girl, black eyes, white eyes, red pupils, white hair, Short hair，grey hair, two-tone hair, black hairband, single braid,  small breasts,\n\ntracen training uniform,red track suit,white shirt,wet clothes,see-through shirt,impossible clothes,bottomless,jacket partially removed,thighhighs,\n\n",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "10beed53-269d-4df4-8acb-e0b9ddc0bcba"
+      },
+      "status": "done",
+      "created_at": 1779054975.492,
+      "started_at": 1779054984.785,
+      "finished_at": 1779054996.474,
+      "error": null
+    },
+    {
+      "id": 65,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear\n",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "076165f1-be7f-4d34-a450-52c7aed55e8b"
+      },
+      "status": "done",
+      "created_at": 1779055036.793,
+      "started_at": 1779055036.794,
+      "finished_at": 1779055048.546,
+      "error": null
+    },
+    {
+      "id": 66,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear\n",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by izumi tsubasu",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "45fff90f-a7ac-4415-b870-52b152406e61"
+      },
+      "status": "done",
+      "created_at": 1779055076.193,
+      "started_at": 1779055076.194,
+      "finished_at": 1779055087.907,
+      "error": null
+    },
+    {
+      "id": 67,
+      "user_id": 619,
+      "params": {
+        "direct_prompt": "hiyuki \\(wuthering waves\\),  colored eyelashes, diamond-shaped pupils, white hair, red eyes,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by mashiro yukiya",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+        "workflow_path": "WAI/绯雪.json"
+      },
+      "status": "failed",
+      "created_at": 1779055083.215,
+      "started_at": 1779055773.978,
+      "finished_at": 1779055779.249,
+      "error": "Request failed with status code 400: {\"error\":{\"type\":\"prompt_outputs_failed_validation\",\"message\":\"Prompt outputs failed validation\",\"details\":\"\",\"extra_info\":{}},\"node_errors\":{\"10\":{\"errors\":[{\"type\":\"value_not_in_list\",\"message\":\"Value not in list\",\"details\":\"lora_name: 'hiyuki_wuthering_waves_ilxl_goofy.safetensors' not in (list of length 50)\",\"extra_info\":{\"input_name\":\"lora_name\",\"input_config\":null,\"received_value\":\"hiyuki_wuthering_waves_ilxl_goofy.safetensors\"}}],\"dependent_outputs\":[\"9\"],\"class_type\":\"LoraLoader\"}}}"
+    },
+    {
+      "id": 68,
+      "user_id": 619,
+      "params": {
+        "direct_prompt": "去除人物衣物",
+        "image1_name": "img2img_663015113fde_1779055107.jpg",
+        "image2_name": "",
+        "_prompt_id": "680f64cd-8bf5-4b6f-93ea-d28756b20f8e"
+      },
+      "status": "done",
+      "created_at": 1779055108.573,
+      "started_at": 1779055108.574,
+      "finished_at": 1779055152.555,
+      "error": null
+    },
+    {
+      "id": 69,
+      "user_id": 425,
+      "params": {
+        "direct_prompt": "sunna \\(zenless zone zero\\), 1girl, necktie, hair ornament, red necktie, shirt, looking at viewer, white shirt, choker, hairclip, green hair, black choker, long hair, long sleeves, green eyes, musical note earrings,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by m-da s-tarou",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/千夏.json",
+        "_prompt_id": "99010c8b-2eb9-4ed5-aed9-6d3e061b80fd"
+      },
+      "status": "done",
+      "created_at": 1779055128.162,
+      "started_at": 1779055152.556,
+      "finished_at": 1779055181.062,
+      "error": null
+    },
+    {
+      "id": 70,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "把人物換成花火",
+        "image1_name": "img2img_bcbbddb697cf_1779055140.jpg",
+        "image2_name": "",
+        "_prompt_id": "b125da41-bb92-4001-ade1-cf16775b9bed"
+      },
+      "status": "done",
+      "created_at": 1779055141.166,
+      "started_at": 1779055181.063,
+      "finished_at": 1779055224.11,
+      "error": null
+    },
+    {
+      "id": 71,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "Unknown\nparametersby chen bin, 1girl, white hair, fox girl, fox ears,fox tail,white fox tail, white fox ears, (light purpl\ne streaked hair:1.3), purple eyes, big tail, ahoge, skin fang, petite, aged down, toddler, long hair, very long\nhair, animal ear fluff, large tail, collarbone, floral print, white headdress, demon wings, medium breast, nu\nde, holding sock, barefoot, blush, feet, foot focus, foreshortening, looking at viewer, single sock, soles, to\nes, unworn shoes, sweat, steam, best eyes, 4 toes, artist:7010, [artist:reoen], [artist:yoru_nai], (artist:do_m\nkaeru), [artist:hizuki_yayoi], [artist:azuuru], (artist:maccha_(mochancc), (artist:nikaidou kou), masterpi\nece, very aware, highres, absurdres, newest, best quality, loli, (petite:1.3), high quality, chromatic_ aberratio\nn, cinematic_angle, 1girl, (loli), solo, (child), (underage), little_girl, girl, fair_skin, collarbone, floral print\n<lora:wp2-000030:0.4><lora:GuizhencaoChen_Bin_StyleArtist style-000009:0.5><lora:nbv-000046:0.4><lora:nbv-000036:0.5>\nSteps: 30, Sampler: Euler a Simple, CFG scale:5.0, Seed: 311106202146389, Size: 1088x1472, Model hash:\ne10aaOfde5, Model: zukiNewCutelLL newV20_3, Lora hashes:\"wp2-000030:4915e88762, GuizhencaoChe\nn_Bin_StyleArtist_style-000009:aa472c8985,nbv-000046:1ff708ef3e,n\nbv-000036:321ba9f3e5\"",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by izumi tsubasu",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "d5194e75-405d-4d02-91f1-d5fd4279d049"
+      },
+      "status": "done",
+      "created_at": 1779055159.275,
+      "started_at": 1779055224.112,
+      "finished_at": 1779055252.876,
+      "error": null
+    },
+    {
+      "id": 72,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "Unknown\nparametersby chen bin, 1girl, white hair, fox girl, fox ears,fox tail,white fox tail, white fox ears, (light purpl\ne streaked hair:1.3), purple eyes, big tail, ahoge, skin fang, petite, aged down, toddler, long hair, very long\nhair, animal ear fluff, large tail, collarbone, floral print, white headdress, demon wings, medium breast, nu\nde, holding sock, barefoot, blush, feet, foot focus, foreshortening, looking at viewer, single sock, soles, to\nes, unworn shoes, sweat, steam, best eyes, 4 toes, artist:7010, [artist:reoen], [artist:yoru_nai], (artist:do_m\nkaeru), [artist:hizuki_yayoi], [artist:azuuru], (artist:maccha_(mochancc), (artist:nikaidou kou), masterpi\nece, very aware, highres, absurdres, newest, best quality, loli, (petite:1.3), high quality, chromatic_ aberratio\nn, cinematic_angle, 1girl, (loli), solo, (child), (underage), little_girl, girl, fair_skin, collarbone, floral print\n<lora:wp2-000030:0.4><lora:GuizhencaoChen_Bin_StyleArtist style-000009:0.5><lora:nbv-000046:0.4><lora:nbv-000036:0.5>\nSteps: 30, Sampler: Euler a Simple, CFG scale:5.0, Seed: 311106202146389, Size: 1088x1472, Model hash:\ne10aaOfde5, Model: zukiNewCutelLL newV20_3, Lora hashes:\"wp2-000030:4915e88762, GuizhencaoChe\nn_Bin_StyleArtist_style-000009:aa472c8985,nbv-000046:1ff708ef3e,n\nbv-000036:321ba9f3e5\"",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by nanase nao",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "7f61f9d5-b54a-4df4-ab2d-0488a171d6ff"
+      },
+      "status": "done",
+      "created_at": 1779055196.888,
+      "started_at": 1779055252.877,
+      "finished_at": 1779055465.998,
+      "error": null
+    },
+    {
+      "id": 73,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "Unknown\nparametersby chen bin, 1girl, white hair, fox girl, fox ears,fox tail,white fox tail, white fox ears, (light purpl\ne streaked hair:1.3), purple eyes, big tail, ahoge, skin fang, petite, aged down, toddler, long hair, very long\nhair, animal ear fluff, large tail, collarbone, floral print, white headdress, demon wings, medium breast, nu\nde, holding sock, barefoot, blush, feet, foot focus, foreshortening, looking at viewer, single sock, soles, to\nes, unworn shoes, sweat, steam, best eyes, 4 toes, artist:7010, [artist:reoen], [artist:yoru_nai], (artist:do_m\nkaeru), [artist:hizuki_yayoi], [artist:azuuru], (artist:maccha_(mochancc), (artist:nikaidou kou), masterpi\nece, very aware, highres, absurdres, newest, best quality, loli, (petite:1.3), high quality, chromatic_ aberratio\nn, cinematic_angle, 1girl, (loli), solo, (child), (underage), little_girl, girl, fair_skin, collarbone, floral print\n<lora:wp2-000030:0.4><lora:GuizhencaoChen_Bin_StyleArtist style-000009:0.5><lora:nbv-000046:0.4><lora:nbv-000036:0.5>\nSteps: 30, Sampler: Euler a Simple, CFG scale:5.0, Seed: 311106202146389, Size: 1088x1472, Model hash:\ne10aaOfde5, Model: zukiNewCutelLL newV20_3, Lora hashes:\"wp2-000030:4915e88762, GuizhencaoChe\nn_Bin_StyleArtist_style-000009:aa472c8985,nbv-000046:1ff708ef3e,n\nbv-000036:321ba9f3e5\"",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by m-da s-tarou",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "48b55db0-56cf-462b-a5dd-00c82b6e4a58"
+      },
+      "status": "done",
+      "created_at": 1779055212.882,
+      "started_at": 1779055466.096,
+      "finished_at": 1779055478.418,
+      "error": null
+    },
+    {
+      "id": 74,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "Unknown\nparametersby chen bin, 1girl, white hair, fox girl, fox ears,fox tail,white fox tail, white fox ears, (light purpl\ne streaked hair:1.3), purple eyes, big tail, ahoge, skin fang, petite, aged down, toddler, long hair, very long\nhair, animal ear fluff, large tail, collarbone, floral print, white headdress, demon wings, medium breast, nu\nde, holding sock, barefoot, blush, feet, foot focus, foreshortening, looking at viewer, single sock, soles, to\nes, unworn shoes, sweat, steam, best eyes, 4 toes, artist:7010, [artist:reoen], [artist:yoru_nai], (artist:do_m\nkaeru), [artist:hizuki_yayoi], [artist:azuuru], (artist:maccha_(mochancc), (artist:nikaidou kou), masterpi\nece, very aware, highres, absurdres, newest, best quality, loli, (petite:1.3), high quality, chromatic_ aberratio\nn, cinematic_angle, 1girl, (loli), solo, (child), (underage), little_girl, girl, fair_skin, collarbone, floral print\n<lora:wp2-000030:0.4><lora:GuizhencaoChen_Bin_StyleArtist style-000009:0.5><lora:nbv-000046:0.4><lora:nbv-000036:0.5>\nSteps: 30, Sampler: Euler a Simple, CFG scale:5.0, Seed: 311106202146389, Size: 1088x1472, Model hash:\ne10aaOfde5, Model: zukiNewCutelLL newV20_3, Lora hashes:\"wp2-000030:4915e88762, GuizhencaoChe\nn_Bin_StyleArtist_style-000009:aa472c8985,nbv-000046:1ff708ef3e,n\nbv-000036:321ba9f3e5\"",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "fc91bd41-5a12-4c51-91b3-10e6f6af8909"
+      },
+      "status": "done",
+      "created_at": 1779055217.928,
+      "started_at": 1779055478.42,
+      "finished_at": 1779055490.453,
+      "error": null
+    },
+    {
+      "id": 75,
+      "user_id": 619,
+      "params": {
+        "direct_prompt": "去除人物衣物 裸体",
+        "image1_name": "img2img_9f02131cba9a_1779055226.jpg",
+        "image2_name": "",
+        "_prompt_id": "6e144d11-e765-4209-9435-2ec9db55552c"
+      },
+      "status": "done",
+      "created_at": 1779055227.187,
+      "started_at": 1779055490.454,
+      "finished_at": 1779055537.343,
+      "error": null
+    },
+    {
+      "id": 76,
+      "user_id": 619,
+      "params": {
+        "direct_prompt": "去除人物衣物 裸体",
+        "image1_name": "img2img_b7d72347762b_1779055468.jpg",
+        "image2_name": "",
+        "_prompt_id": "036c5eee-8016-4522-8c11-cd99e78ef60a"
+      },
+      "status": "done",
+      "created_at": 1779055469.883,
+      "started_at": 1779055537.344,
+      "finished_at": 1779055556.735,
+      "error": null
+    },
+    {
+      "id": 77,
+      "user_id": 425,
+      "params": {
+        "direct_prompt": "sunna \\(zenless zone zero\\), 1girl, necktie, hair ornament, red necktie, shirt, looking at viewer, white shirt, choker, hairclip, green hair, black choker, long hair, long sleeves, green eyes, musical note earrings, spreading legs, crotch, wet,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by m-da s-tarou",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/千夏.json",
+        "_prompt_id": "3e3ea1ba-1765-40fa-84a0-e728bf445991"
+      },
+      "status": "done",
+      "created_at": 1779055519.847,
+      "started_at": 1779055556.736,
+      "finished_at": 1779055585.177,
+      "error": null
+    },
+    {
+      "id": 78,
+      "user_id": 236,
+      "params": {
+        "direct_prompt": "nude, white pantyhose, torn pantyhose, crotch, sitting, purple dildo, solo, masturbation, semen, leaking, cum, liquid from pussy, table, cum on table, messy",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by mikozin",
+        "negative_prompt": "worst quality, low quality, lowest quality, blurry, bad anatomy",
+        "workflow_path": "WAI/丰川祥子.json",
+        "_prompt_id": "ba543d4c-c730-422b-bdad-813b2e9eec5b"
+      },
+      "status": "done",
+      "created_at": 1779055612.215,
+      "started_at": 1779055627.166,
+      "finished_at": 1779055639.09,
+      "error": null
+    },
+    {
+      "id": 79,
+      "user_id": 619,
+      "params": {
+        "direct_prompt": "去除人物衣物 裸体",
+        "image1_name": "img2img_8260a1913093_1779055616.jpg",
+        "image2_name": "",
+        "_prompt_id": "55be7d18-151b-464d-9780-b6a80b3a437f"
+      },
+      "status": "done",
+      "created_at": 1779055617.509,
+      "started_at": 1779055639.092,
+      "finished_at": 1779055686.793,
+      "error": null
+    },
+    {
+      "id": 80,
+      "user_id": 854,
+      "params": {
+        "direct_prompt": "把人物換成遐蝶",
+        "image1_name": "img2img_165f59f58de5_1779055696.jpg",
+        "image2_name": "",
+        "_prompt_id": "9b666ce9-c841-4f4d-a1f3-7f1df9e4555c"
+      },
+      "status": "done",
+      "created_at": 1779055697.509,
+      "started_at": 1779055697.511,
+      "finished_at": 1779055737.375,
+      "error": null
+    },
+    {
+      "id": 81,
+      "user_id": 619,
+      "params": {
+        "direct_prompt": "去除人物 下半身衣物 要求下半身没有任何衣物",
+        "image1_name": "img2img_27694ea20c94_1779055742.jpg",
+        "image2_name": "",
+        "_prompt_id": "19952c9f-1b85-4b23-bd9c-a34b4459a6f8"
+      },
+      "status": "done",
+      "created_at": 1779055744.108,
+      "started_at": 1779055779.25,
+      "finished_at": 1779055799.388,
+      "error": null
+    },
+    {
+      "id": 82,
+      "user_id": 308,
+      "params": {
+        "direct_prompt": "parametersby chen bin, 1girl, white hair, fox girl, fox ears,fox tail,white fox tail, white fox ears, (light purpl\ne streaked hair:1.3), purple eyes, big tail, ahoge, skin fang, petite, aged down, toddler, long hair, very long\nhair, animal ear fluff, large tail, collarbone, floral print, white headdress, demon wings, medium breast, nu\nde, holding sock, barefoot, blush, feet, foot focus, foreshortening, looking at viewer, single sock, soles, to\nes, unworn shoes, sweat, steam, best eyes, 4 toes, artist:7010, [artist:reoen], [artist:yoru_nai], (artist:do_m\nkaeru), [artist:hizuki_yayoi], [artist:azuuru], (artist:maccha_(mochancc), (artist:nikaidou kou), masterpi\nece, very aware, highres, absurdres, newest, best quality, loli, (petite:1.3), high quality, chromatic_ aberratio\nn, cinematic_angle, 1girl, (loli), solo, (child), (underage), little_girl, girl, fair_skin, collarbone, floral print\n<lora:wp2-000030:0.4><lora:GuizhencaoChen_Bin_StyleArtist style-000009:0.5><lora:nbv-000046:0.4><lora:nbv-000036:0.5>\nSteps: 30, Sampler: Euler a Simple, CFG scale:5.0, Seed: 311106202146389, Size: 1088x1472, Model hash:\ne10aaOfde5, Model: zukiNewCutelLL newV20_3, Lora hashes:\"wp2-000030:4915e88762, GuizhencaoChe\nn_Bin_StyleArtist_style-000009:aa472c8985,nbv-000046:1ff708ef3e,n\nbv-000036:321ba9f3e5\"",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by momoko \\(momopoco\\)",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/无Lora.json",
+        "_prompt_id": "8d56c50b-1300-4dfc-b487-f37ececf4a1d"
+      },
+      "status": "done",
+      "created_at": 1779055789.134,
+      "started_at": 1779055799.389,
+      "finished_at": 1779055827.396,
+      "error": null
+    },
+    {
+      "id": 83,
+      "user_id": 619,
+      "params": {
+        "direct_prompt": "去除人物下半身衣物",
+        "image1_name": "img2img_afabaee344f6_1779055835.jpg",
+        "image2_name": "",
+        "_prompt_id": "9b971617-ab40-4a61-a52c-cb0c94b96b87"
+      },
+      "status": "running",
+      "created_at": 1779055836.417,
+      "started_at": 1779055836.418,
+      "finished_at": null,
+      "error": null
+    },
+    {
+      "id": 84,
+      "user_id": 425,
+      "params": {
+        "direct_prompt": "sunna \\(zenless zone zero\\), 1girl, necktie, hair ornament, red necktie, shirt, looking at viewer, white shirt, choker, hairclip, green hair, black choker, long hair, long sleeves, green eyes, musical note earrings, front view, holding phone, holding phone in right hand, hand on phone, looking down, disgusted,",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by m-da s-tarou",
+        "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+        "workflow_path": "WAI/千夏.json"
+      },
+      "status": "waiting",
+      "created_at": 1779055845.559,
+      "started_at": null,
+      "finished_at": null,
+      "error": null
+    },
+    {
+      "id": 85,
+      "user_id": 236,
+      "params": {
+        "direct_prompt": "togawa sakiko, naked, white pantyhose, ripped pantyhose, crotch, sitting, purple dildo, masturbation, semen, fluids, semen on table, wet",
+        "width": 832,
+        "height": 1216,
+        "style_tags": "by mikozin",
+        "negative_prompt": "text, watermark, worst quality,",
+        "workflow_path": "WAI/丰川祥子.json"
+      },
+      "status": "pending",
+      "created_at": 1779055872.316,
+      "started_at": null,
+      "finished_at": null,
       "error": null
     }
   ]

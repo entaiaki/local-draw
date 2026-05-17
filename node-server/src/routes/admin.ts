@@ -4,6 +4,32 @@ import { loadConfig, loadLimits, saveJson, DEFAULT_LIMITS, loadJson } from '../s
 import { Limits } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
+
+interface BanEntry {
+  user_id: number;
+  reason: string;
+  banned_at: number;
+  banned_until: number;
+}
+function loadBans(): BanEntry[] {
+  try {
+    const f = path.join(path.dirname(config.creator_map_file), 'banned_users.txt');
+    if (fs.existsSync(f)) {
+      const raw = JSON.parse(fs.readFileSync(f, 'utf-8'));
+      if (Array.isArray(raw) && raw.length > 0 && typeof raw[0] === 'number') {
+        const migrated = raw.map((id: number) => ({ user_id: id, reason: '违规行为', banned_at: Math.floor(Date.now() / 1000) - 86400 * 365, banned_until: Math.floor(Date.now() / 1000) + 86400 * 30 }));
+        saveBans(migrated);
+        return migrated;
+      }
+      return raw;
+    }
+  } catch {}
+  return [];
+}
+function saveBans(bans: BanEntry[]): void {
+  const f = path.join(path.dirname(config.creator_map_file), 'banned_users.txt');
+  fs.writeFileSync(f, JSON.stringify(bans, null, 2), 'utf-8');
+}
 import axios from 'axios';
 
 const router = Router();
@@ -206,31 +232,35 @@ router.post('/llm_config/models', requireAdmin, async (req: Request, res: Respon
 
 // GET /api/draw/admin/draw-banned
 router.get('/draw-banned', requireAdmin, (req: Request, res: Response) => {
-  const bannedFile = config.creator_map_file.replace('creator_users.txt', 'banned_users.txt');
-  const banned = loadJson<number[]>(bannedFile, []);
-  res.json({ banned });
+  // loadBans defined above
+  const bans = loadBans();
+  const now = Math.floor(Date.now() / 1000);
+  res.json({ banned: bans.filter((b: any) => b.banned_until > now).map((b: any) => ({ user_id: b.user_id, reason: b.reason, banned_until: b.banned_until, remaining_days: Math.max(1, Math.ceil((b.banned_until - now) / 86400)) })) });
 });
 
 // POST /api/draw/admin/draw-ban
 router.post('/draw-ban', requireAdmin, (req: Request, res: Response) => {
-  const { user_id } = req.body as { user_id?: number };
+  const { user_id, days, reason } = req.body as { user_id?: number; days?: number; reason?: string };
   if (!user_id) return res.status(400).json({ error: 'need user_id' });
-  const bannedFile = config.creator_map_file.replace('creator_users.txt', 'banned_users.txt');
-  const banned = loadJson<number[]>(bannedFile, []);
-  if (!banned.includes(user_id)) banned.push(user_id);
-  saveJson(bannedFile, banned);
-  res.json({ ok: true, banned });
+  if (!days || days < 1) return res.status(400).json({ error: 'need days >= 1' });
+  // loadBans, saveBans defined above
+  let bans = loadBans();
+  // Remove existing ban for this user
+  bans = bans.filter((b: any) => b.user_id !== user_id);
+  bans.push({ user_id, reason: reason || '违规行为', banned_at: Math.floor(Date.now() / 1000), banned_until: Math.floor(Date.now() / 1000) + days * 86400 });
+  saveBans(bans);
+  res.json({ ok: true, banned: bans.filter((b: any) => b.user_id === user_id).map((b: any) => ({ user_id: b.user_id, reason: b.reason, banned_until: b.banned_until, remaining_days: days })) });
 });
 
 // POST /api/draw/admin/draw-unban
 router.post('/draw-unban', requireAdmin, (req: Request, res: Response) => {
   const { user_id } = req.body as { user_id?: number };
   if (!user_id) return res.status(400).json({ error: 'need user_id' });
-  const bannedFile = config.creator_map_file.replace('creator_users.txt', 'banned_users.txt');
-  const banned = loadJson<number[]>(bannedFile, []);
-  const updated = banned.filter((id: number) => id !== user_id);
-  saveJson(bannedFile, updated);
-  res.json({ ok: true, banned: updated });
+  // loadBans, saveBans defined above
+  let bans = loadBans();
+  bans = bans.filter((b: any) => b.user_id !== user_id);
+  saveBans(bans);
+  res.json({ ok: true, banned: bans });
 });
 
 // GET /api/draw/admin/featured
@@ -300,16 +330,12 @@ router.get('/recent', requireAdmin, (req, res) => {
   let promptMeta: Record<string, any> = {};
   try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
 
-  const seen = new Set<string>();
   const items: any[] = [];
   const exts = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
-  for (const baseDir of [config.output_dir, config.archive_dir]) {
-    if (!fs.existsSync(baseDir)) continue;
-    for (const f of fs.readdirSync(baseDir).filter((f: string) => exts.includes(path.extname(f).toLowerCase()))) {
-      if (seen.has(f)) continue;
-      seen.add(f);
+  if (fs.existsSync(config.output_dir)) {
+    for (const f of fs.readdirSync(config.output_dir).filter((f: string) => exts.includes(path.extname(f).toLowerCase()))) {
       try {
-        const s = fs.statSync(path.join(baseDir, f));
+        const s = fs.statSync(path.join(config.output_dir, f));
         const uid = cmap[f] || '';
         const m = promptMeta[f] || {};
         items.push({ path: f, mtime: s.mtimeMs / 1000, size: s.size, creator_id: uid, user_id: uid, prompt: String(m.prompt || ''), nl_prompt: String(m.nl_prompt || ''), negative_prompt: String(m.negative_prompt || ''), rewrite: Boolean(m.rewrite), image1: String(m.image1 || ''), image2: String(m.image2 || '') });

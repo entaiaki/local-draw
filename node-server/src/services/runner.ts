@@ -305,8 +305,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 
     // Load workflow
     let workflowData: any;
-    if (req.inline_workflow) workflowData = req.inline_workflow;
-    else if (req.workflow_path) workflowData = await loadWorkflow(req.workflow_path);
+    if (req.inline_workflow && typeof req.inline_workflow === 'object' && Object.keys(req.inline_workflow).length > 0) workflowData = req.inline_workflow;
+    else if (req.workflow_path && req.workflow_path !== 'fork') workflowData = await loadWorkflow(req.workflow_path);
     else if (req.image1_name) {
       const wfName = req.image2_name ? 'Flux2-Klein-图片编辑 (多图).json' : 'Flux2-Klein-图片编辑 (单图).json';
       workflowData = await loadWorkflow(`Flux/${wfName}`);
@@ -370,22 +370,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     item.params._prompt_id = promptId;
     const metaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
     try {
-      let pm: Record<string, any> = {};
-      try { pm = JSON.parse(fs.readFileSync(metaFile, 'utf-8')); } catch {}
-      pm['_pending_' + promptId] = {
-        prompt: finalPrompt || req.direct_prompt || '',
-        
-        negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
-        rewrite: !!req.rewrite,
-        user_id: userId,
-        image1: req.image1_name || '',
-        image2: req.image2_name || '',
-      };
-      fs.writeFileSync(metaFile, JSON.stringify(pm, null, 2), 'utf-8');
+                  
     } catch {}
-    try { (await import('../routes/queue.js')).saveQueueState?.(); } catch {}
-
-    // Wait for completion
     const history = await waitForCompletion(promptId);
     if (!history) throw new Error('生成无结果');
 
@@ -414,13 +400,12 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         prompt: finalPrompt || req.direct_prompt || '',
         
         negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
-        rewrite: !!req.rewrite,
-        image1: req.image1_name || '',
-        image2: req.image2_name || '',
+        workflow_path: req.workflow_path || '',
+	      image1: req.image1_name || '',
+	      image2: req.image2_name || '',
       };
     }
-    try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
-
+    
     item.status = 'done';
   } catch (e: any) {
     item.status = 'failed';
