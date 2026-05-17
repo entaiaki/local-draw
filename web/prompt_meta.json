@@ -6877,5 +6877,971 @@
     "workflow_path": "WAI/千夏.json",
     "image1": "",
     "image2": ""
+  },
+  "Flux2-Klein-Edit_01249_.png": {
+    "prompt": "去除她的衣服，改为裸体。不改变图片的其他内容",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_920a52acfb87_1779057445.png",
+    "image2": ""
+  },
+  "ComfyUI_11502_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.\n\nnude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11503_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.\n\nnude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11504_.png": {
+    "prompt": "nude,IllusP0s,masterpiece,best quality,anime coloring,anime screenshot,\n<lora:justthetip_V2:0.8>justthetip_V2,\n1girl, breasts, pussy, penis, nipples, \nimminent penetration, just the tip,blush, \nmating press, looking at another, pussy juice, surprised, \nonly the tip entering the vagina,\ngrabbing thighs, \nBREAK\nsono bisque doll wa koi wo suru, \nofficial style, \n Kitagawa marin,\n20YO,\ngojou wakana, 1girl,tsunade \\(naruto\\), naruto \\(series\\), mature female, brown eyes, blonde hair, long hair, huge breasts, large breasts, cleavage, collarbone, grey kimono, forehead mark",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11505_.png": {
+    "prompt": "nude,IllusP0s,masterpiece,best quality,anime coloring,anime screenshot,\n<lora:justthetip_V2:0.8>justthetip_V2,\n1girl, breasts, pussy, penis, nipples, \nimminent penetration, just the tip,blush, \nmating press, looking at another, pussy juice, surprised, \nonly the tip entering the vagina,\ngrabbing thighs, \nBREAK\nsono bisque doll wa koi wo suru, \nofficial style, \n Kitagawa marin,\n20YO,\ngojou wakana, 1girl,tsunade \\(naruto\\), naruto \\(series\\), mature female, brown eyes, blonde hair, long hair, huge breasts, large breasts, cleavage, collarbone, grey kimono, forehead mark",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11506_.png": {
+    "prompt": "nude,IllusP0s,masterpiece,best quality,anime coloring,anime screenshot,\n<lora:justthetip_V2:0.8>justthetip_V2,\n1girl, breasts, pussy, penis, nipples, \nimminent penetration, just the tip,blush, \nmating press, looking at another, pussy juice, surprised, \nonly the tip entering the vagina,\ngrabbing thighs, \nBREAK\nsono bisque doll wa koi wo suru, \nofficial style, \n Kitagawa marin,\n20YO,\ngojou wakana, 1girl,tsunade \\(naruto\\), naruto \\(series\\), mature female, brown eyes, blonde hair, long hair, huge breasts, large breasts, cleavage, collarbone, grey kimono, forehead mark",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11507_.png": {
+    "prompt": "nude,IllusP0s,masterpiece,best quality,anime coloring,anime screenshot,\n<lora:justthetip_V2:0.8>justthetip_V2,\n1girl, breasts, pussy, penis, nipples, \nimminent penetration, just the tip,blush, \nmating press, looking at another, pussy juice, surprised, \nonly the tip entering the vagina,\ngrabbing thighs, \nBREAK\nsono bisque doll wa koi wo suru, \nofficial style, \n Kitagawa marin,\n20YO,\ngojou wakana, 1girl,tsunade \\(naruto\\), naruto \\(series\\), mature female, brown eyes, blonde hair, long hair, huge breasts, large breasts, cleavage, collarbone, grey kimono, forehead mark",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11508_.png": {
+    "prompt": "nude,IllusP0s,masterpiece,best quality,anime coloring,anime screenshot,\n<lora:justthetip_V2:0.8>justthetip_V2,\n1girl, breasts, pussy, penis, nipples, \nimminent penetration, just the tip,blush, \nmating press, looking at another, pussy juice, surprised, \nonly the tip entering the vagina,\ngrabbing thighs, \nBREAK\nsono bisque doll wa koi wo suru, \nofficial style, \n Kitagawa marin,\n20YO,\ngojou wakana, 1girl,tsunade \\(naruto\\), naruto \\(series\\), mature female, brown eyes, blonde hair, long hair, huge breasts, large breasts, cleavage, collarbone, grey kimono, forehead mark",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11509_.png": {
+    "prompt": "castorice (honkai: star rail), trailblazer (honkai: star rail), stelle (honkai: star rail), 2girls, blush, closed mouth, female pov, hair between eyes, hands on another's cheeks, hands on another's face, heart, long hair, looking at viewer, multiple girls, pointy ears, pov, pov hands, purple eyes, purple hair, smile, solo focus, upper body, yuri",
+    "negative_prompt": "worst quality, low quality",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01250_.png": {
+    "prompt": "去除掉衣服",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_f79f90b3cef3_1779057661.png",
+    "image2": ""
+  },
+  "ComfyUI_11510_.png": {
+    "prompt": "castorice (honkai: star rail), trailblazer (honkai: star rail), stelle (honkai: star rail), 2girls, blush, closed mouth, female pov, hair between eyes, hands on another's cheeks, hands on another's face, heart, long hair, looking at viewer, multiple girls, pointy ears, pov, pov hands, purple eyes, purple hair, smile, solo focus, upper body, yuri",
+    "negative_prompt": "worst quality, low quality",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11511_.png": {
+    "prompt": "wuwasig, orange hair, very long hair, low-tied long hair, multi-tied hair, twin braids, aqua eyes, pointy ears,footjob",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/西格莉卡.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11512_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out, wide sleeves, blunt bangs,  off shoulder, symbol-shaped pupils, nose blush, heart-shaped pupils, \n\nnude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11513_.png": {
+    "prompt": "chisaWuwa, red eyes,black hair,long hair,hime cut,red ribbon",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/千咲.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11514_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils,  white kimono,no_underwear，\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11515_.png": {
+    "prompt": "togawa sakiko",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/丰川祥子.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11516_.png": {
+    "prompt": "phoebe, 1girl, long hair, blonde hair, ribbon, hair ornament, blue eyes, very long hair, hair ribbon, x hair ornament, gradient eyes, multicolored eyes, purple eyes",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/新菲比.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11517_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils,  white kimono,no_underwear，\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,\n\n{{dirty white pantyhose}},feet,foot focus,leaf,foot sweat,steaming foot,sweat stains,{{torn clothes}},wet clothes,{{stains pantyhose}},{{{dirty pantyhose}}},yellow dirty,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11518_.png": {
+    "prompt": "castorice (honkai: star rail), 1girl, solo, alternate costume, arm behind head, armpits, bikini, bikini bottom only, black tiara, blue butterfly, breasts, bridal gauntlets, bright pupils, bug, butterfly, cleavage, closed mouth, grey hair, heart pasties, invisible chair, large breasts, long hair, looking at viewer, multicolored hair, navel, pasties, pointy ears, presenting own armpit, purple butterfly, purple eyes, purple hair, purple nails, simple background, sitting, smile, stomach, sweat, sweaty armpits,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11519_.png": {
+    "prompt": "phoebe, 1girl, long hair, blonde hair, ribbon, hair ornament, blue eyes, very long hair, hair ribbon, x hair ornament, gradient eyes, multicolored eyes, purple eyes, full body",
+    "negative_prompt": "text, watermark,",
+    "workflow_path": "WAI/新菲比.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01251_.png": {
+    "prompt": "整体不变，将全身衣服都去除，露出乳头和阴部",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_5b363882e439_1779058039.jpg",
+    "image2": "img2img_b08d4ba357ac_1779058039.blob"
+  },
+  "ComfyUI_11520_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils,  white kimono,no_underwear，\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,\n\n{{dirty white pantyhose}},feet,foot focus,leaf,foot sweat,steaming foot,sweat stains,{{torn clothes}},wet clothes,{{stains pantyhose}},{{{dirty pantyhose}}},yellow dirty,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11521_.png": {
+    "prompt": "phoebe, 1girl, long hair, blonde hair, ribbon, hair ornament, blue eyes, very long hair, hair ribbon, x hair ornament, gradient eyes, multicolored eyes, purple eyes",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/新菲比.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11522_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，white kimono,no_underwear，\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,\n\n{{dirty white pantyhose}},feet,foot focus,leaf,foot sweat,steaming foot,sweat stains,{{torn clothes}},wet clothes,{{stains pantyhose}},{{{dirty pantyhose}}},yellow dirty,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11523_.png": {
+    "prompt": "ye shunguang, brown hair, red eyes, long hair,hair ornament, hairband",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/叶瞬光.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11524_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs , off shoulder,  symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，white kimono,no_underwear，\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,\n\n{{dirty white pantyhose}},feet,foot focus,leaf,foot sweat,steaming foot,sweat stains,{{torn clothes}},wet clothes,{{stains pantyhose}},{{{dirty pantyhose}}},yellow dirty,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01252_.png": {
+    "prompt": "把人物衣服换成比基尼",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_fee5644b03d2_1779058351.png",
+    "image2": ""
+  },
+  "ComfyUI_11525_.png": {
+    "prompt": "castorice \\(honkai: star rail\\), 1girl, ass, asymmetrical gloves, blush, completely nude, dogeza, ear blush, gloves, indoors, long hair, naked, naked dogeza, naked gloves, nude, pointy ears, purple gloves, purple hair, rug, shoes, solo, uneven gloves, unworn clothes, unworn dress, unworn shoes",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11526_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs , off shoulder,  symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,\n\n{{dirty white pantyhose}},feet,foot focus,leaf,foot sweat,steaming foot,sweat stains,{{torn clothes}},wet clothes,{{stains pantyhose}},{{{dirty pantyhose}}},yellow dirty,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11527_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs , off shoulder,  symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,\n\n{{dirty white pantyhose}},feet,foot focus,leaf,foot sweat,steaming foot,sweat stains,{{torn clothes}},wet clothes,{{stains pantyhose}},{{{dirty pantyhose}}},yellow dirty,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,white bridal gloves}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11528_.png": {
+    "prompt": "castorice \\(honkai: star rail\\), 1girl, ass, asymmetrical gloves, blush, completely nude, dogeza, ear blush, gloves, indoors, long hair, naked, naked dogeza, naked gloves, nude, pointy ears, purple gloves, purple hair, rug, shoes, solo, uneven gloves, unworn clothes, unworn dress, unworn shoes",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01253_.png": {
+    "prompt": "把人物衣服换成比基尼",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_50c2f6e21dfa_1779058492.jpg",
+    "image2": ""
+  },
+  "ComfyUI_11529_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs , off shoulder,  symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11530_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11531_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\n{apricot blossom},fluttering flowers,{sky,river,cliff},{{surrounded by flowers}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11532_.png": {
+    "prompt": "castorice (honkai: star rail), 1girl, solo, alternate costume, armpit crease, ass, back, bare shoulders, bed, bed sheet, bikini, blush, breasts, bug, butterfly, butterfly earrings, earrings, elbow gloves, eyes out of frame, facing back, facing viewer, from above, gloves, hands on own ass, head out of frame, jewelry, large breasts, long hair, lying, median furrow, miniskirt, nail polish, on bed, on stomach, parted lips, partially visible vulva, petals, pointy ears, purple butterfly, purple gloves, purple hair,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11533_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\nmismatched legwear,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11534_.png": {
+    "prompt": "Character\n?\ncastorice (honkai: star rail) 4.2k\nGeneral\n?\n1girl 7.9M\n?\nass 748k\n?\nbed sheet 117k\n?\nblack tiara 3.8k\n?\nblush 3.8M\n?\nbow 1.6M\n?\nbreasts 4.6M\n?\ncensored 613k\n?\ndakimakura (medium) 27k\n?\nfrom behind 308k\n?\nfull body 1.2M\n?\nhair between eyes 1.6M\n?\nhair bow 704k\n?\nheart 833k\n?\nheart censor 24k\n?\nlarge breasts 2.1M\n?\nlong hair 5.8M\n?\nlooking at viewer 4.6M\n?\nlooking back 347k\n?\nlying 585k\n?\nno shoes 119k\n?\non stomach 86k\n?\npanties 784k\n?\nparted lips 694k\n?\npointy ears 551k\n?\npurple eyes 1.1M\n?\npurple garter belt 165\n?\npurple hair 860k\n?\npurple panties 17k\n?\nsolo 6.6M\n?\nthighhighs 1.5M\n?\ntiara 82k\n?\nunderwear 970k\n?\nvery long hair 1.3M\n?\nwhite bow 139k\n?\nwhite thighhighs 323k",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11535_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\nsleeveless,glasses,necklace,mouth mask,handbag,long dress,taut clothes,grey dress,photo background,surgical mask,pencil dress,white mask,tight dress,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11536_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\n{dongtan dress,necklace,sagging breast,covered navel},{transparent pantyhose,flesh colored pantyhose,transparent light brown pantyhose,floral print pantyhose},platform sandals,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11537_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\nblack choker,high-waist skirt,black skirt,brown-framed eyewear,orange tinted eyewear,hoop earrings,fishnet pantyhose,fur coat,grey coat,holding bag,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11538_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, tongue, tongue out,  blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\nblack choker,high-waist skirt,black skirt,brown-framed eyewear,orange tinted eyewear,hoop earrings,fishnet pantyhose,fur coat,grey coat,holding bag,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11539_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,   blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\nbare legs,bare shoulders,brooch,red cabbie hat,detached sleeves,red high-waist skirt,holding camera,long sleeves,sleeveless shirt,white shirt,monocle,red boot,suspenders,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11540_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,   blunt bangs ,   symbol-shaped pupils, nose blush, heart-shaped pupils, black eyes, white eyes, red pupils，\n\nfake cat ears,fake cat tail,nude,micro bikini,paw gloves,white socks,white bikini,cameltoe,large areolae,areola slip,nipples,navel,off shoulder,sweat,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11541_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,   blunt bangs ,   symbol-shaped pupils,  black eyes, white eyes, red pupils，\n\nfake cat ears,fake cat tail,nude,micro bikini,paw gloves,white socks,white bikini,cameltoe,large areolae,areola slip,nipples,navel,off shoulder,sweat,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11542_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,   blunt bangs ,   symbol-shaped pupils,  black eyes, white eyes, red pupils，\n\nblack bikini,underboob,thigh strap,side-tie bikini bottom,o-ring,skindentation,cameltoe,o-ring bikini,micro bikini,highleg bikini,string bikini,thigh gap,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11543_.png": {
+    "prompt": "castorice (honkai: star rail) 4.2k\nGeneral\n?\n1girl 7.9M\n?\n?\naverting eyes 17k\n?\nbarefoot 474k\n?\nblush 3.8M\n?\nbreasts 4.6M\n?\nbreasts apart 58k\n?\n?\nchromatic aberration 35k\n?\n?\nfeet 256k\n?\n?\nflower 827k\n?\nfrom below 110k\n?\ngloves 1.8M\n?\nhair flower 372k\n?\nhair ornament 1.9M\n?\nhand on ground 2.6k\n?\nleaning back 24k\n?\nlong hair 5.8M\n?\nmedium breasts 1.1M\n?\nmosaic censoring 281k\n?\nnavel 1.5M\n?\n?\n?\nparted lips 694k\n?\npink flower 87k\n?\npointy ears 551k\n?\npresenting own body 20k\n?\n?\n?\npurple eyes 1.1M\n?\npurple flower 48k\n?\npurple gloves 26k\n?\npurple hair 860k\n?\n?\n?\nsolo 6.6M\n?\nspread legs 329k\n?\n?\nsquatting 118k\n?\nstomach 385k\n?\ntoes 222k\n?\nvery long hair 1.3M\nPresenting own panties ",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/遐蝶.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11544_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs ,   black eyes, white eyes, red pupils，\n\nbelt bra,black bow,black panties,bow,chest strap,detached collar,detached sleeves,embarrassed,frilled collar,frilled panties,frilled sleeves,frilled thigh strap,frills,heart hair ornament,lolita fashion,navel,panties,revealing clothes,stomach,thigh strap,floating headgear,cleavage,crossed arms,breasts out,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01254_.png": {
+    "prompt": "去除上衣，大乳头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_220268f5a311_1779059122.jpg",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01255_.png": {
+    "prompt": "Give her a bra",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_fce80a896b71_1779059149.webp",
+    "image2": ""
+  },
+  "ComfyUI_11545_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs ,   black eyes, white eyes, red pupils，\n\nbelt bra,black bow,black panties,bow,chest strap,detached collar,detached sleeves,embarrassed,frilled collar,frilled panties,frilled sleeves,frilled thigh strap,frills,heart hair ornament,lolita fashion,navel,panties,revealing clothes,stomach,thigh strap,floating headgear,cleavage,crossed arms,breasts out,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11546_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs ,   black eyes, white eyes, red pupils，\n\nneck ribbon,black cloak,ascot,cleavage,black cloak,ascot,cleavage,fangs,black nails,sharp fingernails,long fingernails,black panties,black shirt,long sleeves,navel,wide sleeves,black thigh boots,black clothes,red clothes,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01256_.png": {
+    "prompt": "去除上衣，大乳头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_39415cfa009d_1779059197.jpg",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01257_.png": {
+    "prompt": "用創口貼貼在乳頭上",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_5c00a840ca01_1779059286.webp",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01258_.png": {
+    "prompt": "保持原比例，去除衣服，大乳头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_af5429dbf8a2_1779059308.png",
+    "image2": ""
+  },
+  "ComfyUI_11547_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs ,   black eyes, white eyes, red pupils，\n\nthigh boots,detached collar,detached sleeves,puffy sleeves,cat ear headphones,bloomers,loose socks,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01259_.png": {
+    "prompt": "用創口貼貼在乳頭上, 蓋著乳頭",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_67142a344823_1779059360.webp",
+    "image2": ""
+  },
+  "ComfyUI_11548_.png": {
+    "prompt": "1girl, black eyes, white eyes, red pupils, white hair, Short hair，grey hair, two-tone hair, black hairband, single braid,  small breasts,\n\nthigh boots,detached collar,detached sleeves,puffy sleeves,cat ear headphones,bloomers,loose socks,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11549_.png": {
+    "prompt": "sakuraba ema, hat, flower, pink hair, 1girl, hair ornament, pink eyes, black headwear, multicolored hair, white hair, beret, hair flower, white shirt, long sleeves, shirt, black footwear, white flower, virtual youtuber, fang, gradient hair, socks",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/樱羽艾玛.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01260_.png": {
+    "prompt": "用創口貼貼在乳頭上, 蓋著乳頭, 不要看到乳頭",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_5ba8b61f36a0_1779059469.webp",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01261_.png": {
+    "prompt": "保持原比例不变，去除衣服，超巨乳，大乳头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_dc47fb87f6f9_1779059510.jpg",
+    "image2": "img2img_a5757abe330f_1779059510.blob"
+  },
+  "ComfyUI_11550_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs ,  Black sclera, white eyeball, gray eyeball, blood-red diamond-shaped pupil\nthigh boots,detached collar,detached sleeves,puffy sleeves,cat ear headphones,bloomers,loose socks,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11551_.png": {
+    "prompt": "tsukishiro yuki,very long hair,sidelocks,two-tone pupils,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+    "workflow_path": "WAI/月代雪.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11552_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs ,  Black sclera, white eyeball, gray eyeball, blood-red diamond-shaped pupil.\n\nthigh boots,detached collar,detached sleeves,puffy sleeves,cat ear headphones,bloomers,loose socks,\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11553_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs ,  Black sclera, white eyeball, gray eyeball, blood-red diamond-shaped pupil.\n\nthigh boots,detached collar,detached sleeves,puffy sleeves,cat ear headphones,bloomers,loose socks,\n\ndetailed sheer texture,high gloss texture,skin visible through stockings,shiny pantyhose,translucent pantyhose,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01262_.png": {
+    "prompt": "用創口貼貼在乳頭上, 蓋著乳頭, 不要看到乳頭, 完全蓋住乳頭",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_044fe279b4e5_1779059675.webp",
+    "image2": ""
+  },
+  "ComfyUI_11554_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs , black eyes, grey eyes, red pupils,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11555_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer,  bangs, simple background,white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts,  blunt bangs , black eyes, grey eyes, red pupils,\n\nseductive smile,wearing open white dress shirt,unbuttoned,shirt lift,black lace see-through bodysuit,high-leg teddy,deep v-neck,intricate floral lace pattern,cleavage cutout,underboob,sideboob,bare midriff,crotchless design implied,loose white high-waist wide-leg pants pulled low on hips,pants barely hanging,black high heels,golden dangling earrings,black choker with gold ring,standing,hands lifting shirt,teasing,confident expression,simple gray background,cowboy shot,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01263_.png": {
+    "prompt": "保持原比例不变，去除衣服，超巨乳，大乳头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_648b89fd7dff_1779059769.png",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01264_.png": {
+    "prompt": "Add heart effect on nipple",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_5b041e87c890_1779059774.webp",
+    "image2": ""
+  },
+  "ComfyUI_11556_.png": {
+    "prompt": "tsukishiro yuki,very long hair,sidelocks,two-tone pupils,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid",
+    "workflow_path": "WAI/月代雪.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11557_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11558_.png": {
+    "prompt": "1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.\n\nantenna hair, dress, black dress, key necklace, black capelet, grey pantyhose, high-heeled boots, Cure Arcana Shadow, antenna hair, frilled dress, tiara, frilled capelet, headpiece, black thighhighs, earrings, wrist cuffs, veil, black high heels, long_hair, blonde_hair, hair_ornament, purple_eyes, pink_eyes, bow, hair_between_eyes, jewelry, very_long_hair, ahoge, short_sleeves, hair_bow, earrings, frills, bowtie, black_dress, wrist_cuffs, black_bow, capelet, hair_intakes, antenna_hair, gold_trim, epaulettes, black_capelet,\n",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11559_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01265_.png": {
+    "prompt": "Add heart effect on nipple",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_0302f7599dfc_1779059906.webp",
+    "image2": "img2img_e63adaf6bb4e_1779059906.blob"
+  },
+  "ComfyUI_11560_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11561_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11562_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11563_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11564_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01266_.png": {
+    "prompt": "将图中人物衣服脱掉，并且移除中间的表情包，结果为一张纯净的裸体照片。但是不要破坏App的UI",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_f18974561eee_1779059969.jpg",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01267_.png": {
+    "prompt": "保持原比例，去除衣服，大乳头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_e7988cf9f9df_1779060023.png",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01268_.png": {
+    "prompt": "Cover the nipple with tape",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_125f724298df_1779060037.webp",
+    "image2": ""
+  },
+  "ComfyUI_11565_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11566_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11567_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11568_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11569_.png": {
+    "prompt": "（（1girl, solo, long hair, breasts, looking at viewer, blush, open mouth, bangs, simple background, long sleeves, white background, navel, bare shoulders, very long hair, collarbone, white hair, heart, small breasts, japanese clothes, open clothes, tongue, tongue out, wide sleeves, blunt bangs, kimono, off shoulder, sleeves past wrists, symbol-shaped pupils, nose blush, heart-shaped pupils, cropped legs, white kimono,no_underwear.））\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01269_.png": {
+    "prompt": "保持原比例，去除衣服，超巨乳，大乳头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_46420e2a411a_1779060168.png",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01270_.png": {
+    "prompt": "Remove the nipple replace with tape",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_7762be50022d_1779060181.webp",
+    "image2": ""
+  },
+  "ComfyUI_11570_.png": {
+    "prompt": "morialuluka, lulukanormal.\nwhite bed,above view,pov,dutch angle,upper body,1.8::realistic_skin::,0.8::glossy skin,::,-2::nipple,::,voluptuous,areolae,1.5::target#do sex,deep penetration,,::,1.4::lying,on back::,0.6::shy,blush::,0.7::looking at viewer::,1.4::wet hair,messy hair,sweat, sweatdrop,motion blur,hug legs,m legs,cum,cum silk,cum on body,cum on breasts,cum on face,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/露露卡.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01271_.png": {
+    "prompt": "保持原比例，去除衣服，超巨乳，大乳头，一手抬起露出腋下",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_0c249c534557_1779060348.jpg",
+    "image2": ""
+  },
+  "ComfyUI_11571_.png": {
+    "prompt": "(masterpiece, best quality, ultra-detailed, 8k, highres:1.2), anime style, illustration,\n1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,\n(bare shoulders:1.1),  open clothes, white feather ornament, halo, chain,\n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring,\ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background，(detailed beautiful face:1.1), red eyes, looking at viewer, blush, \n(golden ratio body:1.3), (perfect human anatomy:1.2), \n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), \nlong legs, slender waist, wide hips, hourglass figure,\nnude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),\n(extremely long white hair:1.2), (hair over shoulder:1.1), braided hair, floating hair,\n(blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1),\n(detailed beautiful face), (delicate eyes), purple eyes, small mouth,\n(white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1),\n(black ribbon), gold accessories, cross pendant, key pendant,\n(pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter,(detailed beautiful face:1.3), (delicate features:1.2), (beautiful detailed eyes:1.4),\n(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1),\n(blush:1.3), (heavy blush:1.1), (pink cheeks:1.2),\n(light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair,\n(blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1),\n(blue headband:1.1), (hairclip:1.1),\n(blue earrings:1.1), (heart-shaped earrings:1.1),\n(blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01272_.png": {
+    "prompt": "让图一的女孩cos图二的角色，并且要求是真人皮肤，裙子是真实的，要有布料，有物理效果，有褶皱",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_c693755312f6_1779060554.jpg",
+    "image2": "img2img_e2a510849f9a_1779060554.blob"
+  },
+  "ComfyUI_11572_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11573_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1),\n(blush:1.3), (heavy blush:1.1), (pink cheeks:1.2),\n(light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair,\n(blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1),\n(blue headband:1.1), (hairclip:1.1),\n(blue earrings:1.1), (heart-shaped earrings:1.1),\n(blue necklace:1.1), (heart-shaped gem:1.1), gold chain",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11574_.png": {
+    "prompt": "(best quality, masterpiece:1.2), ultra-detailed, 8k wallpaper,\nwell-proportioned, graceful posture, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \n(bare shoulders:1.1),open clothes, white feather ornament, halo, chain, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, \nblack nail polish, ring, \ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, \nblue flame, glowing particle effects, white background, rating:explicit，nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails,\n({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11575_.png": {
+    "prompt": "(best quality, masterpiece:1.2), ultra-detailed, 8k wallpaper,\nwell-proportioned, graceful posture, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \n(bare shoulders:1.1),open clothes, white feather ornament, halo, chain, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, \nblack nail polish, ring, \ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, \nblue flame, glowing particle effects, white background, rating:explicit，nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails,\n({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，(worst quality, low quality:1.4), normal quality, lowres, extra head, multiple heads, extra limbs, overlapping subjects, cloned face\nbad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, \njpeg artifacts, signature, watermark, username, blurry, \nartist name, bad proportions, malformed limbs, missing arms, missing legs, \nextra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, \npoorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, \nshort legs, stubby legs, disproportionate body, distorted limbs, \nbroken bones, twisted body, flat chest, unattractive, obese, skinny, \nextra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11576_.png": {
+    "prompt": "(best quality, masterpiece:1.2), ultra-detailed, 8k wallpaper,\nwell-proportioned, graceful posture, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \n(bare shoulders:1.1),open clothes, white feather ornament, halo, chain, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, choker, \nblack nail polish, ring, \ngothic, dark fantasy, ethereal, floating, soft lighting, rim light, \nblue flame, glowing particle effects, white background, rating:explicit，nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp\nfingernails,\n({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola\nslipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1),\n(long legs:1.2), (slender waist:1.1), (small head:1.1),\n(detailed beautiful face), (delicate eyes), (purple eyes),",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01273_.png": {
+    "prompt": "一手抬起，露出腋下，一字马，高潮喷水",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_aa2c6801769b_1779061144.webp",
+    "image2": ""
+  },
+  "ComfyUI_11577_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain.\n\nchar1：girl,sweat,sweatdrop,from above,lying on back,beach towel,hugging own legs,legs up,folded,legs,feet,toes,soles,highleg swimsuit,cameltoe,spread toe,barefoot,steam,sexually suggestive,wavy mouth,blush,open mouth,{surprised},spoken exclamation mark,beach towel,beach,wet,{swimsuit aside},pussy,clitoris,\n\nchar2：boy,sweat,pov,large penis,erection,pov hand,spread pussy,{imminent penetration},",
+    "negative_prompt": "(worst quality, low quality:1.4), normal quality, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, ugly, disfigured, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，extra head, multiple heads, extra limbs, overlapping subjects, cloned face short legs, stubby legs, disproportionate body, distorted limbs, broken bones, twisted body, flat chest, unattractive, obese, skinny, extra nipples, cross-eyed, polar lowres, bad face, out of frame, oversaturated, overexposure，unnatural pose,monochrome, grayscale,monochrome, grayscale,",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11578_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n\nchar1：girl,sweat,sweatdrop,from above,lying on back,beach towel,hugging own legs,legs up,folded,legs,feet,toes,soles,highleg swimsuit,cameltoe,spread toe,barefoot,steam,sexually suggestive,wavy mouth,blush,open mouth,{surprised},spoken exclamation mark,beach towel,beach,wet,{swimsuit aside},pussy,clitoris,\n\nchar2：boy,sweat,pov,large penis,erection,pov hand,spread pussy,{imminent penetration},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11579_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n\nchar1：girl,sweat,sweatdrop,from above,lying on back,beach towel,hugging own legs,legs up,folded,legs,feet,toes,soles,highleg swimsuit,cameltoe,spread toe,barefoot,steam,sexually suggestive,wavy mouth,blush,open mouth,{surprised},spoken exclamation mark,beach towel,beach,wet,{swimsuit aside},pussy,clitoris,\n\nchar2：boy,sweat,pov,large penis,erection,pov hand,spread pussy,{imminent penetration},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11580_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n\nchar1：girl,sweat,sweatdrop,from above,lying on back,beach towel,hugging own legs,legs up,folded,legs,feet,toes,soles,highleg swimsuit,cameltoe,spread toe,barefoot,steam,sexually suggestive,wavy mouth,blush,open mouth,{surprised},spoken exclamation mark,beach towel,beach,wet,{swimsuit aside},pussy,clitoris,\n\nchar2：boy,sweat,pov,large penis,erection,pov hand,spread pussy,{imminent penetration},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11581_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n\nchar1：girl,sweat,sweatdrop,from above,lying on back,beach towel,hugging own legs,legs up,folded,legs,feet,toes,soles,highleg swimsuit,cameltoe,spread toe,barefoot,steam,sexually suggestive,wavy mouth,blush,open mouth,{surprised},spoken exclamation mark,beach towel,beach,wet,{swimsuit aside},pussy,clitoris,\n\nchar2：boy,sweat,pov,large penis,erection,pov hand,spread pussy,{imminent penetration},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11582_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n\nchar1：girl,sweat,sweatdrop,from above,lying on back,beach towel,hugging own legs,legs up,folded,legs,feet,toes,soles,highleg swimsuit,cameltoe,spread toe,barefoot,steam,sexually suggestive,wavy mouth,blush,open mouth,{surprised},spoken exclamation mark,beach towel,beach,wet,{swimsuit aside},pussy,clitoris,\n\nchar2：boy,sweat,pov,large penis,erection,pov hand,spread pussy,{imminent penetration},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01274_.png": {
+    "prompt": "转过身，看到大屁股，一手抬起，露出腋下，高抬脚一字马，阴道高潮喷水",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_04bd436b76b9_1779061311.webp",
+    "image2": ""
+  },
+  "ComfyUI_11583_.png": {
+    "prompt": "cyrene \\(honkai: star rail\\) castorice\\(honkai: star rail\\) , xilie, xiadie, clothes swap, teasing, blushing, shy, embarrassed, grabbing, hugging, looking at each other,",
+    "negative_prompt": "text, watermark, worst quality, low quality, lowest quality, blurry, bad",
+    "workflow_path": "WAI/昔涟.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11584_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11585_.png": {
+    "prompt": "1girl, solo, (detailed beautiful face:1.1), red eyes, looking at viewer, blush, (long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, (bare shoulders:1.1), open clothes, white feather ornament, halo, chain, (intricate tattoos:1.2), tattooed arms, tattooed chest, choker, black nail polish, ring, gothic, dark fantasy, ethereal, floating, soft lighting, rim light, blue flame, glowing particle effects, white background， (golden ratio body:1.3), (perfect human anatomy:1.2), (8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), long legs, slender waist, wide hips, hourglass figure,nude, (jiangshi costume) ) ), ofuda on head, pale skin, sharp fingernails, ({{fofuda, ofuda on nipples, ofuda on pussy} ) ) L, ffareola slipl1, (zombie pose, sleeves past wrists). <(juxtaposed legs:1.3), (asymmetrical legwear:1.2), (right leg wears black pantyhose:1.1), (long legs:1.2), (slender waist:1.1), (small head:1.1),  (hair over shoulder:1.1), braided hair, floating hair, (blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1), (white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1), (black ribbon), gold accessories, cross pendant, key pendant, (pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter，(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1), (blush:1.3), (heavy blush:1.1), (pink cheeks:1.2), (light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair, (blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01275_.png": {
+    "prompt": "趴在床上，上身微微抬起，双手向前伸展，翘臀回头",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_39c4e27e4f94_1779061364.jpg",
+    "image2": ""
+  },
+  "ComfyUI_11586_.png": {
+    "prompt": "ccmako, green eyes, black hair, short hair with long locks, ahoge, yellow hairband, makoschool, school uniform, white sailor collar, green jacket, cropped jacket, red ribbon, long sleeves, white shirt, green skirt, layered skirt, grey skirt, print skirt, bike shorts under skirt,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/常陆茉子（校服）.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11587_.png": {
+    "prompt": "(masterpiece, best quality, ultra-detailed, 8k, highres:1.2), \nanime style, illustration, 1girl, solo, \n(detailed beautiful face:1.1), red eyes, looking at viewer, blush, \n(golden ratio body:1.3), (perfect human anatomy:1.2), \n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), \nlong legs, slender waist, wide hips, hourglass figure, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \nwhite feather ornament, halo, choker, black nail polish, ring, \n(bare shoulders:1.1), black cloak, open clothes, \nchain, metal pole, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, \nsoft lighting, rim light, blue flame, glowing particle effects, white background,\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11588_.png": {
+    "prompt": "cyrene \\(honkai: star rail\\), castorice\\(honkai: star rail\\) , xilie, xiadie, clothes swap, teasing, blushing, shy, embarrassed, grabbing, hugging, looking at each other, 2 girls",
+    "negative_prompt": "text, watermark, worst quality, low quality, lowest quality, blurry, bad",
+    "workflow_path": "WAI/昔涟.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01276_.png": {
+    "prompt": "转过身，看到大屁股，一手抬起，露出腋下，高抬腿一字马，阴道高潮喷水并插着一根粉色阴茎",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_4bb3b167312b_1779061475.webp",
+    "image2": ""
+  },
+  "ComfyUI_11589_.png": {
+    "prompt": "(masterpiece, best quality, ultra-detailed, 8k, highres:1.2), \nanime style, illustration, 1girl, solo, \n(detailed beautiful face:1.1), red eyes, looking at viewer, blush, \n(golden ratio body:1.3), (perfect human anatomy:1.2), \n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8), \nlong legs, slender waist, wide hips, hourglass figure, \n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail, \nwhite feather ornament, halo, choker, black nail polish, ring, \n(bare shoulders:1.1), black cloak, open clothes, \nchain, metal pole, \n(intricate tattoos:1.2), tattooed arms, tattooed chest, \nsoft lighting, rim light, blue flame, glowing particle effects, white background,\n\n{{{cowboy shot,full body,on back,looking at another,lying,legs apart,shiny skin,dorsiflexion,toes,feet,pussy,panty aside}}}.\n\nchar1：boy,{{interracial,tall male,hetero,missionary,deep penetration,male pubic hair,tone male,faceless male,licking foot,grabbing another's ankle,boy on top,kneeling,all fours}},",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11590_.png": {
+    "prompt": "cyrene \\(honkai: star rail\\), castorice\\(honkai: star rail\\) , clothes swap, teasing, blushing, shy, embarrassed, grabbing, hugging, looking at each other, 2 girls",
+    "negative_prompt": "text, watermark, worst quality, low quality, lowest quality, blurry, bad",
+    "workflow_path": "WAI/昔涟.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11591_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n{{{presenting}}},{curvy},{{{black theme}}},{{{shiny skin,shiny swimsuit,latex swimsuit}}} sweat,oiled skin,knee up,feet,plantar flexion,{{{{transparent swimsuit,translucent swimsuit}}}},headphones around neck,headphones,wire,hand up,full body,sitting,{computer,monitor,glowing monitor,speaker} gaming chair,indoors,from above,{{highleg swimsuit}} covered nipples,nipples,covered pussy,covered navel,sideboob,{{undersized swimsuit}},wedgie,1girl,solo,one-piece swimsuit,{{purple competition swimsuit}},highleg swimsuit,hair between eyes,ass visible through thighs,black one-piece swimsuit,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11592_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01277_.png": {
+    "prompt": "转过身，正面看到大屁股，一手抬起，露出腋下，阴道高潮喷水并插着一根粉色阴茎玩具并上下自慰",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_2678b082cbf3_1779061673.webp",
+    "image2": ""
+  },
+  "ComfyUI_11593_.png": {
+    "prompt": "2girls, clothes swap, teasing, blushing, embarrassed, looking at each other, seductive, skirt tug, hugging, intimacy, different clothes, colorful hair, detailed eyes, masterpiece, highres\nCyene \\(honkai: star rail\\)\nCastorice \\(honkai: star rail\\)",
+    "negative_prompt": "worst quality, low quality, lowest quality, blurry, bad anatomy, bad",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01278_.png": {
+    "prompt": "让人物腿张开，裸体",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_dd53cbc751e8_1779061702.png",
+    "image2": "img2img_737168a06a2f_1779061702.blob"
+  },
+  "ComfyUI_11594_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n (extremely long white hair:1.2), (hair over shoulder:1.1), braided hair, floating hair,\n(blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1),\n(detailed beautiful face), (delicate eyes), purple eyes, small mouth,\n(white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1),\n(black ribbon), gold accessories, cross pendant, key pendant,\n(pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter,(detailed beautiful face:1.3), (delicate features:1.2), (beautiful detailed eyes:1.4),\n(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1),\n(blush:1.3), (heavy blush:1.1), (pink cheeks:1.2),\n(light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair,\n(blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain,,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11595_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n (extremely long white hair:1.2), (hair over shoulder:1.1), braided hair, floating hair,\n(blue horns:1.2), (black rose hair ornament:1.1), (crescent moon headdress:1.1), (halo:1.1),\n(detailed beautiful face), (delicate eyes), purple eyes, small mouth,\n(white and blue dress:1.3), (elaborate dress:1.2), frills, lace, big sleeves, (long trailing sleeves:1.1), (white fur trim:1.1),\n(black ribbon), gold accessories, cross pendant, key pendant,\n(pink roses on waist:1.1), (gradient background:1.1), lens flare, sparkles, bokeh, magical atmosphere, ethereal, holy, winter,(detailed beautiful face:1.3), (delicate features:1.2), (beautiful detailed eyes:1.4),\n(blue eyes:1.2), (heart-shaped pupils:1.3), (colorful pupils:1.1),\n(blush:1.3), (heavy blush:1.1), (pink cheeks:1.2),\n(light smile:1.1), (slight open mouth:1.2), (cute expression:1.2),(long blonde hair:1.3), (wavy hair:1.1), floating hair,\n(blunt bangs:1.2), (see-through bangs:1.1), hair over shoulder,(white headdress:1.2), (lace headdress:1.1), (flower hair ornament:1.1), (white rose:1.1), (blue headband:1.1), (hairclip:1.1), (blue earrings:1.1), (heart-shaped earrings:1.1), (blue necklace:1.1), (heart-shaped gem:1.1), gold chain,,\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11596_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11597_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n\nantenna hair, dress, black dress, key necklace, black capelet, grey pantyhose, high-heeled boots, Cure Arcana Shadow, antenna hair, frilled dress, tiara, frilled capelet, headpiece, black thighhighs, earrings, wrist cuffs, veil, black high heels, long_hair, blonde_hair, hair_ornament, purple_eyes, pink_eyes, bow, hair_between_eyes, jewelry, very_long_hair, ahoge, short_sleeves, hair_bow, earrings, frills, bowtie, black_dress, wrist_cuffs, black_bow, capelet, hair_intakes, antenna_hair, gold_trim, epaulettes, black_capelet,\n",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11598_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n\nantenna hair, dress, black dress, key necklace, black capelet, grey pantyhose, high-heeled boots, Cure Arcana Shadow, antenna hair, frilled dress, tiara, frilled capelet, headpiece, black thighhighs, earrings, wrist cuffs, veil, black high heels, long_hair, blonde_hair, hair_ornament, purple_eyes, pink_eyes, bow, hair_between_eyes, jewelry, very_long_hair, ahoge, short_sleeves, hair_bow, earrings, frills, bowtie, black_dress, wrist_cuffs, black_bow, capelet, hair_intakes, antenna_hair, gold_trim, epaulettes, black_capelet,\n\n1boy,1girl,{{{head back}}},faceless male,leg grab,blush,nude,steaming body,lying,missionary,on back,on bed,sex,sheet grab,spread legs,sweat,motion lines,head back,arched back,cum,female ejaculation,overflow,female ejaculation,tongue out,twitching,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11599_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n(dual-tone thigh-high stockings:1.3), one leg wearing pure white sheer stockings, the other leg wearing pure black opaque stockings, asymmetrical fashion, high contrast, detailed fabric texture, soft lighting, ",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11600_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\ntracen training uniform,red track suit,white shirt,wet clothes,see-through shirt,impossible clothes,bottomless,jacket partially removed,thighhighs,\n\n(dual-tone thigh-high stockings:1.3), one leg wearing pure white sheer stockings, the other leg wearing pure black opaque stockings, asymmetrical fashion, high contrast, detailed fabric texture, soft lighting, ",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11601_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\ntracen training uniform,red track suit,white shirt,wet clothes,see-through shirt,impossible clothes,bottomless,jacket partially removed,thighhighs,\n\n(dual-tone thigh-high stockings:1.3), one leg wearing pure white sheer stockings, the other leg wearing pure black opaque stockings, asymmetrical fashion, high contrast, detailed fabric texture, soft lighting, \n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},\n",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11602_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n{{white side-tie bikini,side-tie panties,white cloth cape,big cape,white pleated skirt,miniskirt,hypotenuse skirt,id card,white bridal gloves}},\n",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11603_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\noiled skin,shiny skin,shiny clothes,1girl,4::solo::,covered eyes,purple armored leotard,cleavage,bare shoulders,armored boots,mecha musume,clothing cutout,mecha gauntlets,covered navel,boots,science fiction,corruption,1::black microskirt::,armor,white background,dark persona,purple neon trim,high heel boots,mecha mask,mecha finger claws,crossed legs,elbow gloves,purple theme,evil grin,standing,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11604_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\noiled skin,shiny skin,shiny clothes,1girl,4::solo::,covered eyes,purple armored leotard,cleavage,bare shoulders,armored boots,mecha musume,clothing cutout,mecha gauntlets,covered navel,boots,science fiction,corruption,1::black microskirt::,armor,white background,dark persona,purple neon trim,high heel boots,mecha mask,mecha finger claws,crossed legs,elbow gloves,purple theme,evil grin,standing,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11605_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n{{heart-shaped pupils}},{{glasses}},{{shiny glasses}},{{corrupted outfit}},{{modified teacher uniform}},{{black tight shirt}},{{buttons popping}},{{cleavage cutout}},{{breast window}},{{black tie}},{{pencil micro skirt}},{{side slit}},{{zipper details}},{{black pantyhose}},{{garter belt}},{{queen of spades tattoo on neck}},{{holding black pointer}},{{whip pointer}},{{standing at podium}},{{leaning forward}},{{pushing up glasses}},{{looking at viewer}},{{strict but lewd smile}},{{smirk}},{{condescending}},{{heavy blush}},{{sweat}},solo focus,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11606_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\nwhite dress,ballet dress,sleeveless,collarbone,bare shoulder,white elbow gloves,see-through gloves,frilled dress,white pantyhose,torn pantyhose,see-through pantyhose,butt crack,girl standing,girl hands on railing,outstretched arms,leaning forward,bent over,tiptoe,girl trembling,female orgasm,half closed eyes,rolling eyes,tears,raised eyebrows,open mouth,saliva trail,nose blush,nervous sweatdrop,steam,heavy breath,motion lines,pussy juice trail,1male,muscular male,nude male,deep penetration,sex from behind,male hands on another's waist,carrying girl,indoors,dance studio,wooden floors,nsfw,uncensored,from side,female focus,speed lines,speed blur,height difference,cum inside,cum drip,cum trail,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11607_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n1boy,sex,nsfw,penis,pussy,cum,faceless male,black suit,cum on breasts,cum on face,solo,sex,nipples,penis,pussy,cum in pussy,blood in pussy,deep penetration,eyelashes,cum,smile,1boy,1girl,before and after,2koma,instant loss,comic,defeat,bad end,ahegao,anus,ass,cum,cum in pussy,clothes sex,open mouth,penis,sex,spanking,vaginal,flying flowers,sky,winds,trembling,heavy breathing,steam,motion blur,half-closed eyes,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_11609_.png": {
+    "prompt": "masterpiece, best quality, ultra-detailed, 8k, highres:1.2),\nanime style, illustration, 1girl, solo,\n(detailed beautiful face:1.1), red eyes, looking at viewer, blush,\n(golden ratio body:1.3), (perfect human anatomy:1.2),\n(8 heads tall:1.2), (slender figure:1.1), (curvaceous:0.8),\nlong legs, slender waist, wide hips, hourglass figure,\n(long hair:1.2), white hair, black hair, two-tone hair, braided hair, side ponytail,black nail polish, \n(bare shoulders:1.1), \n(intricate tattoos:1.2), tattooed arms, tattooed chest,\nsoft lighting, particle effects, white background,\n\n(Halterneck dress:1.2), deep V-neck, open shoulders, asymmetrical sleeves, detached sleeves, wide sleeves,\nHigh slit​ on the side, short skirt, exposed midriff, bare shoulders,\nMaterial & Texture:\n(transparent ice silk fabric:1.3), holographic material, iridescent, silk texture, highly reflective, glossy,\nAccessories:\nintricate silver chains, crystal tassels, hanging ornaments, beaded chains, gemstone embellishments,\nColor & Lighting:\nblue to purple gradient, aurora color scheme, cyan highlights, rim light, shimmering effect, depth of field.\n",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01279_.png": {
+    "prompt": "人物坐在地上，腿呈m字型，視覺聚焦在下體，人物的兩隻手指打開小穴，白色汁液從小穴流出",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_f08ba98dbe11_1779062295.jpg",
+    "image2": ""
   }
 }
