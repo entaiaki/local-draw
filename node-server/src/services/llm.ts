@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { AppConfig, loadJson } from './config.js';
-import { LlmConfig } from '../types/index.js';
+
 
 const GOOGLE_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -29,7 +29,7 @@ export interface LlmResult {
   negative: string;
 }
 
-function parsePosNeg(text: string): LlmResult {
+export function parsePosNeg(text: string): LlmResult {
   const posMatch = text.match(/POSITIVE:\s*(.+?)(?:\n|$)/);
   const negMatch = text.match(/NEGATIVE:\s*(.+?)(?:\n|$)/);
   if (!posMatch) {
@@ -41,21 +41,14 @@ function parsePosNeg(text: string): LlmResult {
   };
 }
 
-function getLlmConfig(config: AppConfig): LlmConfig {
-  return loadJson<LlmConfig>(config.llm_config_file, {
-    provider: 'local',
-    local_endpoint: config.lms_api,
-    google_api_key: '',
-    google_model: 'gemma-4-31b-it',
-    google_thinking: 'off',
-    custom_endpoint: '',
-    custom_api_key: '',
-    custom_model: '',
-    llm_stream: true,
-  });
+function getActiveProfile(config: AppConfig): Record<string, any> {
+  const d = loadJson<any>(config.llm_config_file, {});
+  const profiles = d.profiles || [];
+  const active = d.active ?? 0;
+  return profiles[active] || {};
 }
 
-async function callGoogle(system: string, user: string, cfg: LlmConfig): Promise<string> {
+export async function callGoogle(system: string, user: string, cfg: Record<string, any>): Promise<string> {
   const apiKey = cfg.google_api_key;
   const model = cfg.google_model || 'gemma-4-31b-it';
   if (!apiKey) throw new Error('Google API Key 未配置');
@@ -108,26 +101,56 @@ async function callGoogle(system: string, user: string, cfg: LlmConfig): Promise
   return fullText;
 }
 
-async function callOpenAI(system: string, user: string, endpoint: string, apiKey: string, model: string): Promise<string> {
-  const body = {
+export async function callOpenAI(system: string, user: string, endpoint: string, apiKey: string, model: string, onChunk?: (text: string) => void): Promise<string> {
+  const body: any = {
     model: model || 'gpt-3.5-turbo',
     messages: [
       { role: 'system', content: system },
       { role: 'user', content: user },
     ],
     temperature: 0.7,
-    max_tokens: 1024,
+    max_tokens: 2048,
+    stream: !!onChunk,
   };
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
-  const resp = await axios.post(`${endpoint}/v1/chat/completions`, body, {
-    headers,
-    timeout: 120000,
-  });
-
-  return resp.data.choices?.[0]?.message?.content || '';
+  if (onChunk) {
+    const resp = await axios.post(`${endpoint}/chat/completions`, body, {
+      headers,
+      timeout: 120000,
+      responseType: 'stream',
+    });
+    const chunks: string[] = [];
+    const stream = resp.data;
+    let buffer = '';
+    for await (const chunk of stream) {
+      buffer += chunk.toString();
+      while (true) {
+        const i = buffer.indexOf('\n');
+        if (i === -1) break;
+        const line = buffer.slice(0, i).trim();
+        buffer = buffer.slice(i + 1);
+        if (line.startsWith('data:')) {
+          const json = line.slice(5).trim();
+          if (json === '[DONE]') break;
+          try {
+            const obj = JSON.parse(json);
+            const text = obj.choices?.[0]?.delta?.content || '';
+            if (text) { chunks.push(text); onChunk(text); }
+          } catch {}
+        }
+      }
+    }
+    return chunks.join('');
+  } else {
+    const resp = await axios.post(`${endpoint}/chat/completions`, body, {
+      headers,
+      timeout: 120000,
+    });
+    return resp.data.choices?.[0]?.message?.content || '';
+  }
 }
 
 export async function translatePrompt(
@@ -135,8 +158,9 @@ export async function translatePrompt(
   originalPrompt?: string,
   negativePrompt?: string,
   config?: AppConfig,
+  onChunk?: (text: string) => void,
 ): Promise<LlmResult> {
-  const cfg = getLlmConfig(config!);
+  const cfg = getActiveProfile(config!);
   let negCtx = '';
   if (negativePrompt) {
     negCtx = `\n\nCurrent negative tags (improve or replace as needed):\n${negativePrompt}`;
@@ -158,9 +182,9 @@ export async function translatePrompt(
   if (cfg.provider === 'google') {
     result = await callGoogle(system, user, cfg);
   } else if (cfg.provider === 'custom') {
-    result = await callOpenAI(system, user, cfg.custom_endpoint, cfg.custom_api_key, cfg.custom_model);
+    result = await callOpenAI(system, user, cfg.custom_endpoint, cfg.custom_api_key, cfg.custom_model, onChunk);
   } else {
-    result = await callOpenAI(system, user, cfg.local_endpoint || config?.lms_api || '', '', '');
+    result = await callOpenAI(system, user, cfg.local_endpoint || config?.lms_api || '', '', '', onChunk);
   }
 
   return parsePosNeg(result);

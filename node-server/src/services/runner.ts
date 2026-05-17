@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { WebSocket } from 'ws';
 import { loadConfig, AppConfig } from './config.js';
-import { translatePrompt } from './llm.js';
 import { QueueItem } from '../types/index.js';
 
 const config = loadConfig();
@@ -53,7 +52,7 @@ async function loadWorkflow(path: string): Promise<any> {
   }
 }
 
-function workflowToPromptApi(data: any): { prompt_dict: Record<string, any>; positive_ref: [string, string] | null; negative_ref: [string, string] | null } {
+export function workflowToPromptApi(data: any): { prompt_dict: Record<string, any>; positive_ref: [string, string] | null; negative_ref: [string, string] | null } {
   // API 格式透传
   if (data && !data.nodes && typeof data === 'object') {
     const vals = Object.values(data);
@@ -313,28 +312,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       workflowData = await loadWorkflow(`Flux/${wfName}`);
     }
     else throw new Error('未指定工作流');
+    const finalPrompt = req.direct_prompt || '';
 
-    // LLM translate if nl_prompt (使用预处理结果或现场调用)
-    let finalPrompt = req.direct_prompt || '';
-    let llmOutput = item.params._llm_output as string || '';
-    if (req.nl_prompt && !llmOutput) {
-      try {
-        const llmResult = await translatePrompt(req.nl_prompt, req.rewrite ? finalPrompt : undefined, req.negative_prompt, config);
-        finalPrompt = llmResult.positive;
-        llmOutput = llmResult.positive;
-        if (llmResult.negative) {
-          try { (item.params as any)._llm_negative = llmResult.negative; } catch {}
-        }
-      } catch (e: any) {
-        // If LLM fails, fallback to direct prompt
-      }
-    } else if (llmOutput) {
-      finalPrompt = llmOutput;
-    }
-    // 确保 LLM 输出保存到队列项
-    if (llmOutput) {
-      try { (item.params as any)._llm_output = llmOutput; console.log('[LLM] output saved:', llmOutput.slice(0, 80)); } catch (e) { console.log('[LLM] save error:', e); }
-    }
 
     // Convert workflow
     const { prompt_dict, positive_ref, negative_ref } = workflowToPromptApi(workflowData);
@@ -343,10 +322,20 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 
     // Inject prompt
     prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
-    // 保存 LLM 输出到队列项，调试面板可见
-    if (llmOutput) { try { (item.params as any)._llm_output = llmOutput; } catch {} }
+	    if (negative_ref && req.negative_prompt) {
+	      prompt_dict[negative_ref[0]].inputs[negative_ref[1]] = req.negative_prompt;
+	    }
 
-    // Inject images for img2img
+    // 每次生成随机种子
+	    const KSAMPLER_TYPES = new Set(['KSampler', 'KSamplerAdvanced', 'SamplerCustom', 'SamplerCustomAdvanced']);
+	    for (const [, nd] of Object.entries(prompt_dict)) {
+	      const node = nd as any;
+	      if (KSAMPLER_TYPES.has(node.class_type) && node.inputs) {
+	        node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
+	      }
+	    }
+
+	    // Inject images for img2img
     if (req.image1_name) {
       const loadImages = Object.entries(prompt_dict).filter(([, nd]: any) => nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages');
       if (loadImages.length > 0) (loadImages[0][1] as any).inputs.image = req.image1_name;
@@ -385,7 +374,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       try { pm = JSON.parse(fs.readFileSync(metaFile, 'utf-8')); } catch {}
       pm['_pending_' + promptId] = {
         prompt: finalPrompt || req.direct_prompt || '',
-        nl_prompt: req.nl_prompt || '',
+        
         negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         rewrite: !!req.rewrite,
         user_id: userId,
@@ -423,7 +412,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       setCreatorMap(relPath, userId);
       promptMeta[relPath] = {
         prompt: finalPrompt || req.direct_prompt || '',
-        nl_prompt: req.nl_prompt || '',
+        
         negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         rewrite: !!req.rewrite,
         image1: req.image1_name || '',
@@ -435,7 +424,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     item.status = 'done';
   } catch (e: any) {
     item.status = 'failed';
-    item.error = e.message || String(e);
+    item.error = ((e.response?.data ? `${e.message}: ${JSON.stringify(e.response.data)}` : e.message) || String(e)).slice(0,2000);
   } finally {
     item.finished_at = Date.now() / 1000;
     // 清理队列用户计数

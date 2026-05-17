@@ -57,7 +57,7 @@ loadQueueState();
               for (const img of o.images) {
                 const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
                 try { const { setCreatorMap } = await import('../services/runner.js'); setCreatorMap(relPath, (v as any).user_id); } catch {}
-                pm[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite, image1: (v as any).image1 || "", image2: (v as any).image2 || "" };
+                pm[relPath] = { prompt: (v as any).prompt, image1: (v as any).image1 || "", image2: (v as any).image2 || "" };
               }
             }
           }
@@ -97,7 +97,7 @@ loadQueueState();
                 for (const img of o.images) {
                   const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
                   try { const { setCreatorMap } = await import('../services/runner.js'); setCreatorMap(relPath, (v as any).user_id); } catch {}
-                  pm2[relPath] = { prompt: (v as any).prompt, nl_prompt: (v as any).nl_prompt, negative_prompt: (v as any).negative_prompt, rewrite: (v as any).rewrite, image1: (v as any).image1 || "", image2: (v as any).image2 || "" };
+                  pm2[relPath] = { prompt: (v as any).prompt, image1: (v as any).image1 || "", image2: (v as any).image2 || "" };
                 }
               }
             }
@@ -234,22 +234,6 @@ router.post('/queue', async (req: Request, res: Response) => {
 
   const position = queueItems.filter(qi => qi.status === 'pending' || qi.status === 'waiting' || qi.status === 'running').length;
 
-  // LLM 预处理（不等信号量，直接在后台跑）
-  (async () => {
-    const req = body as any;
-    if (req.nl_prompt && !req.image1_name) {
-      try {
-        const { translatePrompt } = await import('../services/llm.js');
-        const result = await translatePrompt(req.nl_prompt, req.rewrite ? req.direct_prompt : undefined, req.negative_prompt, config);
-        item.params._llm_output = result.positive;
-        item.params._llm_negative = result.negative;
-        saveQueueState();
-        console.log('[LLM] 预处理完成:', String(result.positive).slice(0, 80));
-      } catch (e: any) {
-        console.log('[LLM] 预处理失败:', e?.message?.slice(0, 100));
-      }
-    }
-  })();
 
   // Start background runner
   (async () => {

@@ -60,7 +60,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  const secret = process.env.JWT_SECRET || '';
+  const secret = loadSecret();
   const user = verifyToken(token, secret);
   if (!user) {
     return res.status(401).json({ detail: 'token 无效或已过期，请重新登录' });

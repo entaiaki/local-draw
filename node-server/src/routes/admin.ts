@@ -1,7 +1,7 @@
 import express, { Router, Request, Response } from 'express';
 import { requireAdmin } from '../middleware/auth.js';
 import { loadConfig, loadLimits, saveJson, DEFAULT_LIMITS, loadJson } from '../services/config.js';
-import { Limits, LlmConfig } from '../types/index.js';
+import { Limits } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
@@ -30,40 +30,177 @@ router.post('/limits', requireAdmin, (req: Request, res: Response) => {
   res.json({ limits: merged });
 });
 
+const DEFAULT_PROFILES = [
+  { name: 'Google Gemini', provider: 'google', google_api_key: '', google_model: 'gemma-4-31b-it', google_thinking: 'off', llm_stream: true },
+  { name: 'Custom', provider: 'custom', custom_endpoint: '', custom_api_key: '', custom_model: '', llm_stream: true },
+];
+const KEY_FIELDS = new Set(['google_api_key', 'custom_api_key']);
+
+function maskProfiles(profiles: any[]): any[] {
+  return profiles.map(p => {
+    const mp = { ...p };
+    for (const k of KEY_FIELDS) {
+      if (k in mp) mp[k] = mp[k] ? '***' : '';
+    }
+    return mp;
+  });
+}
+
+function migrateLlmConfig(d: any): any {
+  if (d.profiles && Array.isArray(d.profiles)) return d;
+  // 旧格式 -> 放入 profile[0]
+  const p0: any = { name: '配置1', provider: 'custom', custom_endpoint: '', custom_api_key: '', custom_model: '', llm_stream: true };
+  for (const k of ['local_endpoint', 'google_api_key', 'google_model', 'google_thinking',
+                    'custom_endpoint', 'custom_api_key', 'custom_model', 'llm_stream', 'provider']) {
+    if (d[k] !== undefined) p0[k] = d[k];
+  }
+  // local → custom（local_endpoint 转为 custom_endpoint）
+  if (d.provider === 'local') {
+    p0.provider = 'custom';
+    p0.custom_endpoint = d.local_endpoint || '';
+    delete p0.local_endpoint;
+    for (const k of ['google_api_key', 'google_model', 'google_thinking']) delete p0[k];
+  }
+  return { profiles: [p0], active: 0 };
+}
+
 // GET /api/draw/admin/llm_config
 router.get('/llm_config', requireAdmin, (req: Request, res: Response) => {
-  const llmConfig = loadJson<LlmConfig>(config.llm_config_file, {
-    provider: 'local',
-    local_endpoint: config.lms_api,
-    google_api_key: '',
-    google_model: 'gemma-4-31b-it',
-    google_thinking: 'off',
-    custom_endpoint: '',
-    custom_api_key: '',
-    custom_model: '',
-    llm_stream: true,
+  let d: any = { profiles: [...DEFAULT_PROFILES.map(p => ({...p}))], active: 0 };
+  try {
+    const raw = loadJson<any>(config.llm_config_file, {});
+    if (raw && typeof raw === 'object') d = migrateLlmConfig(raw);
+  } catch {}
+  res.json({
+    config: { profiles: maskProfiles(d.profiles || []), active: d.active ?? 0 },
+    providers: ['google', 'custom'],
   });
-  res.json({ config: llmConfig });
 });
 
 // POST /api/draw/admin/llm_config
 router.post('/llm_config', requireAdmin, (req: Request, res: Response) => {
-  const body = req.body as Record<string, unknown>;
-  saveJson(config.llm_config_file, body);
-  res.json({ ok: true });
+  const { profiles, active } = req.body as { profiles?: any[]; active?: number };
+  if (!Array.isArray(profiles)) return res.status(400).json({ error: 'profiles must be array' });
+
+  // 加载当前配置以获取已有的 key 值
+  let current: any = {};
+  try { current = loadJson<any>(config.llm_config_file, {}); } catch {}
+  const curProfiles: any[] = current.profiles || [];
+
+  const newProfiles = profiles.map((p: any, i: number) => {
+    const cur = curProfiles[i] || {};
+    const out: any = { ...cur };
+    for (const [k, v] of Object.entries(p)) {
+      if (KEY_FIELDS.has(k)) {
+        if (v === '***') continue;
+        out[k] = String(v ?? '');
+      } else if (k === 'provider') {
+        if (!['google', 'custom'].includes(v as string)) continue;
+        out[k] = v;
+      } else if (k === 'llm_stream') {
+        out[k] = Boolean(v);
+      } else {
+        out[k] = v;
+      }
+    }
+    // 清洗无关字段
+    const prov = out.provider || '';
+    for (const f of ['google_api_key', 'google_model', 'google_thinking']) if (prov !== 'google' && f in out) delete out[f];
+    for (const f of ['custom_endpoint', 'custom_api_key', 'custom_model']) if (prov !== 'custom' && f in out) delete out[f];
+    return out;
+  });
+
+  const newActive = typeof active === 'number' ? Math.max(0, Math.min(active, newProfiles.length - 1)) : 0;
+  saveJson(config.llm_config_file, { profiles: newProfiles, active: newActive });
+  res.json({ ok: true, config: { profiles: maskProfiles(newProfiles), active: newActive } });
 });
 
 // POST /api/draw/admin/llm_config/test
 router.post('/llm_config/test', requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { loadConfig } = await import('../services/config.js');
-    const cfg = loadConfig();
-    const llmCfg = loadJson<any>(cfg.llm_config_file, { provider: 'local' });
-    const { translatePrompt } = await import('../services/llm.js');
-    const result = await translatePrompt('一个女孩在花园里站着', undefined, undefined, config);
-    res.json({ ok: true, provider: llmCfg.provider || 'local', reply: result.positive.slice(0, 500) });
+    const raw: any = loadJson<any>(config.llm_config_file, {});
+    const d = migrateLlmConfig(raw);
+    const idx = req.body?.profile_index ?? d.active ?? 0;
+    const profiles: any[] = d.profiles || [];
+    if (idx < 0 || idx >= profiles.length) return res.status(400).json({ error: 'invalid profile_index' });
+    const profile = profiles[idx];
+    const provider = profile.provider || 'custom';
+
+    // 用实际的标签翻译 prompt 测试，拿到原始回复再展示
+    const systemPrompt = 'You are a Danbooru tag generator. Reply ONLY with:\nPOSITIVE: <english tags>\nNEGATIVE: <english tags>';
+    const userPrompt = '一个可爱的女孩在阳光下微笑';
+    let rawReply = '';
+
+    if (provider === 'google') {
+      const apiKey = profile.google_api_key || '';
+      if (!apiKey) return res.json({ ok: false, error: 'Google API Key 未配置' });
+      const model = profile.google_model || 'gemma-4-31b-it';
+      const r = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        { systemInstruction: { parts: [{ text: systemPrompt }] }, contents: [{ parts: [{ text: userPrompt }] }] },
+        { timeout: 60000 }
+      );
+      rawReply = r.data.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
+    } else {
+      const endpoint = profile.custom_endpoint;
+      if (!endpoint) return res.json({ ok: false, error: '端点未配置' });
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (profile.custom_api_key) headers['Authorization'] = `Bearer ${profile.custom_api_key}`;
+      const r = await axios.post(`${endpoint.replace(/\/+$/, '')}/chat/completions`, {
+        model: profile.custom_model || 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7, max_tokens: 500,
+      }, { headers, timeout: 60000 });
+      rawReply = r.data.choices?.[0]?.message?.content || '';
+    }
+
+    // 尝试解析 POSITIVE:/NEGATIVE:
+    const posMatch = rawReply.match(/POSITIVE:\s*(.+?)(?:\n|$)/i);
+    const negMatch = rawReply.match(/NEGATIVE:\s*(.+?)(?:\n|$)/i);
+    if (posMatch) {
+      res.json({ ok: true, provider, profile_index: idx, reply: `POSITIVE: ${posMatch[1].trim()}\nNEGATIVE: ${negMatch ? negMatch[1].trim() : ''}` });
+    } else {
+      res.json({ ok: false, provider, profile_index: idx, error: '模型返回格式不符合要求（需要 POSITIVE:/NEGATIVE:）', raw: rawReply.slice(0, 500) });
+    }
   } catch (e: any) {
-    res.json({ ok: false, provider: '', error: (e.message || String(e)).slice(0, 500) });
+    const msg = e.response?.data ? JSON.stringify(e.response.data).slice(0, 300) : (e.message || String(e));
+    res.json({ ok: false, error: msg.slice(0, 500) });
+  }
+});
+
+// POST /api/draw/admin/llm_config/models
+router.post('/llm_config/models', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const raw: any = loadJson<any>(config.llm_config_file, {});
+    const d = migrateLlmConfig(raw);
+    const idx = req.body?.profile_index ?? d.active ?? 0;
+    const profiles: any[] = d.profiles || [];
+    if (idx < 0 || idx >= profiles.length) return res.status(400).json({ error: 'invalid profile_index' });
+    const profile = profiles[idx];
+    const provider = profile.provider || 'custom';
+    let models: string[] = [];
+
+    if (provider === 'google') {
+      const apiKey = profile.google_api_key || '';
+      if (!apiKey) return res.json({ ok: false, error: 'Google API Key 未配置' });
+      const r = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, { timeout: 15000 });
+      models = (r.data.models || []).map((m: any) => m.name).filter(Boolean);
+    } else {
+      const endpoint = profile.custom_endpoint;
+      if (!endpoint) return res.json({ ok: false, error: '端点未配置' });
+      const url = `${endpoint.replace(/\/+$/, '')}/models`;
+      const headers: Record<string, string> = {};
+      if (provider === 'custom' && profile.custom_api_key) headers['Authorization'] = `Bearer ${profile.custom_api_key}`;
+      const r = await axios.get(url, { timeout: 15000, headers });
+      models = (r.data.data || []).map((m: any) => m.id).filter(Boolean);
+    }
+
+    res.json({ ok: true, models, provider, profile_index: idx });
+  } catch (e: any) {
+    res.json({ ok: false, error: (e.message || String(e)).slice(0, 500) });
   }
 });
 

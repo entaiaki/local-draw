@@ -2,6 +2,7 @@ import express, { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { loadConfig } from '../services/config.js';
+import sharp from 'sharp';
 
 const router = Router();
 router.use(express.json({ limit: "50mb" }));
@@ -34,11 +35,27 @@ function loadCreatorMap(): Record<string, number> {
 }
 
 // GET /api/output/file
-router.get('/file', (req: Request, res: Response) => {
+router.get('/file', async (req: Request, res: Response) => {
   const fp = resolveOutputPath(req.query.path as string);
   if (!fp) return res.status(404).json({ error: 'not found' });
   const ext = path.extname(fp).toLowerCase();
   if (!OUTPUT_IMAGE_EXTS.includes(ext)) return res.status(400).json({ error: 'not an image' });
+  // 自动压缩（WebP 优先）
+  try {
+    const stat = fs.statSync(fp);
+    if (stat.size > 50 * 1024) {
+      const accept = (req.headers.accept || '').toLowerCase();
+      const preferWebp = accept.includes('image/webp');
+      const pipeline = sharp(fp, { animated: ext === '.gif' }).rotate();
+      if (preferWebp) {
+        const buf = await pipeline.webp({ quality: 75, effort: 0 }).toBuffer();
+        if (buf.length < stat.size * 0.8) { res.type('image/webp').send(buf); return; }
+      } else {
+        const buf = await pipeline.jpeg({ quality: 80, mozjpeg: true }).toBuffer();
+        if (buf.length < stat.size * 0.8) { res.type('image/jpeg').send(buf); return; }
+      }
+    }
+  } catch {}
   const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
   res.sendFile(fp, { headers: { 'Content-Type': mt[ext] || 'image/png' } });
 });
@@ -64,9 +81,16 @@ router.get('/list', (req: Request, res: Response) => {
 router.get('/featured', (req: Request, res: Response) => {
   const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
   let paths: string[] = [];
-  try { if (fs.existsSync(featuredFile)) paths = JSON.parse(fs.readFileSync(featuredFile, 'utf-8')); } catch {}
+  try {
+    if (fs.existsSync(featuredFile)) {
+      const raw = fs.readFileSync(featuredFile, 'utf-8').trim();
+      // 支持 JSON 数组和纯文本（每行一个路径）两种格式
+      if (raw.startsWith('[')) paths = JSON.parse(raw);
+      else paths = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    }
+  } catch {}
   const cmap = loadCreatorMap();
-  const items = paths.map((p: string) => ({ path: p, creator_id: String(cmap[p] || '') })).filter(i => i.creator_id);
+  const items = paths.map((p: string) => ({ path: p, creator_id: String(cmap[p] || '?') }));
   res.json({ items, total: items.length });
 });
 

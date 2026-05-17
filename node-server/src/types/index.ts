@@ -26,12 +26,10 @@ export interface RunRequest {
   workflow_path: string;
   inline_workflow?: Record<string, unknown>;
   direct_prompt: string;
-  nl_prompt?: string;
-  rewrite?: boolean;
+  negative_prompt?: string;
   width?: number;
   height?: number;
   style_tags?: string;
-  negative_prompt?: string;
   seed?: number;
   image1_name?: string;
   image2_name?: string;
@@ -53,16 +51,22 @@ export interface Limits {
   category_order: string[];
 }
 
+export interface LlmProfile {
+  name?: string;
+  provider: 'local' | 'google' | 'custom';
+  local_endpoint?: string;
+  google_api_key?: string;
+  google_model?: string;
+  google_thinking?: string;
+  custom_endpoint?: string;
+  custom_api_key?: string;
+  custom_model?: string;
+  llm_stream?: boolean;
+}
+
 export interface LlmConfig {
-  provider: string;
-  local_endpoint: string;
-  google_api_key: string;
-  google_model: string;
-  google_thinking: string;
-  custom_endpoint: string;
-  custom_api_key: string;
-  custom_model: string;
-  llm_stream: boolean;
+  profiles: LlmProfile[];
+  active: number;
 }
 
 export interface WsStatusMessage {

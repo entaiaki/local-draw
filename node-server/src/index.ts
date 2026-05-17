@@ -5,13 +5,23 @@ import { WebSocketServer } from 'ws';
 import path from 'path';
 import fs from 'fs';
 import axios from 'axios';
-import { jwtAuth } from './middleware/auth.js';
+import { jwtAuth, requireAuth } from './middleware/auth.js';
 import { queueRouter } from './routes/queue.js';
 import { imageRouter } from './routes/images.js';
 import { adminRouter } from './routes/admin.js';
 import { workflowRouter } from './routes/workflow.js';
 import { statusRouter, setupWsStatus } from './routes/status.js';
 import { loadConfig } from './services/config.js';
+
+// CLI arg parsing: --host HOST --port PORT
+const argv = process.argv.slice(2);
+for (let i = 0; i < argv.length; i++) {
+  if (argv[i] === '--host' && argv[i + 1]) {
+    process.env.WEB_HOST = argv[++i];
+  } else if (argv[i] === '--port' && argv[i + 1]) {
+    process.env.WEB_PORT = argv[++i];
+  }
+}
 
 const app = express();
 const server = createServer(app);
@@ -41,11 +51,8 @@ app.get('/api/_diag', (req, res) => {
 
 // Additional API routes
 app.get('/api/resolutions', (req, res) => {
-  res.json({ presets: [
-    { label: '512×512', w: 512, h: 512 }, { label: '768×768', w: 768, h: 768 },
-    { label: '1024×1024', w: 1024, h: 1024 }, { label: '1216×832', w: 1216, h: 832 },
-    { label: '832×1216', w: 832, h: 1216 },
-  ]});
+  const rf = path.join(path.dirname(config.creator_map_file), 'resolutions.json');
+  try { res.json(JSON.parse(fs.readFileSync(rf, 'utf-8'))); } catch { res.json({ presets: [] }); }
 });
 
 app.get('/api/style_thumbnail', (req, res) => {
@@ -154,6 +161,30 @@ app.delete('/api/draw/my-images', (req, res) => {
   res.json({ ok: true });
 });
 
+// 全局图片压缩（低CPU，sharp/libvips）
+const IMG_MIN_SIZE = 50 * 1024; // <50KB 不压缩
+async function compressImage(fp: string, req: Request, res: Response): Promise<boolean> {
+  try {
+    const stat = fs.statSync(fp);
+    if (!stat.isFile() || stat.size < IMG_MIN_SIZE) return false;
+    const ext = path.extname(fp).toLowerCase();
+    const acceptHdr = typeof req.headers?.get === 'function' ? req.headers.get('accept') : req.headers['accept'];
+    const preferWebp = (acceptHdr || '').toLowerCase().includes('image/webp');
+    const sharp = require('sharp');
+    let pipeline = sharp(fp, { animated: ext === '.gif' }).rotate();
+    if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
+      if (preferWebp) {
+        const buf = await pipeline.webp({ quality: 75, effort: 0 }).toBuffer();
+        if (buf.length < stat.size * 0.8) { res.setHeader('Content-Type', 'image/webp'); res.send(buf); return true; }
+      } else {
+        const buf = await pipeline.jpeg({ quality: 80, mozjpeg: true }).toBuffer();
+        if (buf.length < stat.size * 0.8) { res.setHeader('Content-Type', 'image/jpeg'); res.send(buf); return true; }
+      }
+    }
+  } catch {}
+  return false;
+}
+
 // GET /api/image (本地优先，ComfyUI 兜底)
 app.get('/api/image', async (req, res) => {
   const filename = req.query.filename as string;
@@ -161,7 +192,10 @@ app.get('/api/image', async (req, res) => {
   if (!filename) return res.status(400).json({ error: 'need filename' });
   // 先从本地 output 目录找
   const localPath = path.join(config.output_dir, subfolder, filename);
-  if (fs.existsSync(localPath)) return res.sendFile(localPath);
+  if (fs.existsSync(localPath)) {
+    if (await compressImage(localPath, req, res)) return;
+    return res.sendFile(localPath);
+  }
   // 本地没有则从 ComfyUI 代理
   try {
     const comfyApi = axios.create({ baseURL: `http://${config.comfyui_host}:${config.comfyui_port}`, timeout: 30000 });
@@ -171,11 +205,16 @@ app.get('/api/image', async (req, res) => {
   } catch { res.status(404).json({ error: 'image not found' }); }
 });
 
-// 原图访问
+// 原图访问（支持 .blob 后缀）
 app.get('/api/uploads/:filename', (req, res) => {
   const fp = path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'), req.params.filename);
-  if (fp.startsWith(path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'))) && fs.existsSync(fp)) return res.sendFile(fp);
-  res.status(404).json({ error: 'not found' });
+  if (!fp.startsWith(path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'))) || !fs.existsSync(fp)) {
+    return res.status(404).json({ error: 'not found' });
+  }
+  const ext = path.extname(fp).toLowerCase();
+  const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.blob': 'image/png' };
+  if (mt[ext]) res.type(mt[ext]);
+  res.sendFile(fp);
 });
 
 // POST /api/img2img/upload
@@ -188,9 +227,15 @@ app.post('/api/img2img/upload', async (req, res) => {
     const image1 = files?.image1?.[0];
     const image2 = files?.image2?.[0];
     if (!image1) return res.status(400).json({ error: 'need image1' });
+	  if ((image1?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
+	  if (image2 && (image2?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
 
     const uuid = require('uuid');
-    const ext1 = image1.originalname?.split('.').pop() || 'png';
+    let ext1 = (image1.originalname?.split('.').pop()?.toLowerCase()) || '';
+	    const mimeExt = image1.mimetype?.split('/').pop() || '';
+	    if (!ext1 || ext1 === 'blob' || !['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext1)) {
+	      ext1 = (mimeExt === 'jpeg' ? 'jpg' : mimeExt) || 'png';
+	    }
     const safeName1 = `img2img_${uuid.v4().replace(/-/g, '').slice(0, 12)}_${Math.floor(Date.now() / 1000)}.${ext1}`;
     // 保存原图到永久目录
     const upDir = path.join(process.cwd(), '..', 'web', 'uploads');
@@ -229,6 +274,40 @@ app.post('/api/_reset', (req, res) => {
   const { setActive, resetActive } = require('./routes/status.js');
   resetActive();
   res.json({ ok: true });
+});
+
+// POST /api/translate — LLM 前置翻译
+const _translateRate: Record<string, number> = {};
+app.post('/api/translate', requireAuth, async (req, res) => {
+  const uid = String(req.user?.id || '');
+  const now = Date.now();
+  if (_translateRate[uid] && now - _translateRate[uid] < 10000) {
+    return res.status(429).json({ error: '操作太频繁，请 10 秒后再试' });
+  }
+  _translateRate[uid] = now;
+
+  const { prompt, original_prompt, negative_prompt } = req.body || {};
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'need prompt' });
+  }
+
+  // SSE 流式返回
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    const { translatePrompt } = await import('./services/llm.js');
+    let positive = '', negative = '';
+    const onChunk = (text: string) => {
+      res.write(`event: chunk\ndata: ${JSON.stringify({ text })}\n\n`);
+    };
+    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, config, onChunk);
+    res.write(`event: done\ndata: ${JSON.stringify({ positive: result.positive, negative: result.negative })}\n\n`);
+  } catch (e: any) {
+    res.write(`event: error\ndata: ${JSON.stringify({ message: (e.message || String(e)).slice(0, 500) })}\n\n`);
+  }
+  res.end();
 });
 
 // WebSocket status

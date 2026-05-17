@@ -42,7 +42,7 @@ export function loadConfig(): AppConfig {
   }
 
   return {
-    web_host: process.env.WEB_HOST || '0.0.0.0',
+    web_host: process.env.WEB_HOST || '127.0.0.1',
     web_port: parseInt(process.env.WEB_PORT || '8080'),
     jwt_secret: jwtSecret,
     comfyui_host: process.env.COMFYUI_HOST || '127.0.0.1',

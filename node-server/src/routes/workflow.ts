@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import { loadConfig } from '../services/config.js';
+import { workflowToPromptApi } from '../services/runner.js';
 
 const router = Router();
 const config = loadConfig();
@@ -67,7 +68,21 @@ router.get('/workflows/current', async (req: Request, res: Response) => {
     const resp = await comfyApi.get(`/api/userdata/workflows%2F${encodedPath}`, {
       headers: { 'Comfy-User': '' },
     });
-    res.json(resp.data);
+    // 提取默认正向/负向提示词
+    let builtin_prompt = '';
+    let builtin_negative_prompt = '';
+    try {
+      const { prompt_dict, positive_ref, negative_ref } = workflowToPromptApi(resp.data);
+      if (positive_ref) {
+        const v = prompt_dict[positive_ref[0]]?.inputs?.[positive_ref[1]];
+        if (typeof v === 'string') builtin_prompt = v;
+      }
+      if (negative_ref) {
+        const v = prompt_dict[negative_ref[0]]?.inputs?.[negative_ref[1]];
+        if (typeof v === 'string') builtin_negative_prompt = v;
+      }
+    } catch {}
+    res.json({ ...resp.data, builtin_prompt, builtin_negative_prompt });
   } catch {
     res.status(404).json({ error: 'workflow not found' });
   }
@@ -86,19 +101,6 @@ router.get('/styles', (req: Request, res: Response) => {
   } catch {
     res.json({ styles: [] });
   }
-});
-
-// GET /api/resolutions
-router.get('/resolutions', (req: Request, res: Response) => {
-  res.json({
-    presets: [
-      { label: '512×512', w: 512, h: 512 },
-      { label: '768×768', w: 768, h: 768 },
-      { label: '1024×1024', w: 1024, h: 1024 },
-      { label: '1216×832', w: 1216, h: 832 },
-      { label: '832×1216', w: 832, h: 1216 },
-    ],
-  });
 });
 
 export { router as workflowRouter };
