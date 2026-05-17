@@ -26,3 +26,5 @@ web/workflow_meta.json
 web/thumbnails
 web/style_thumbnails
 web/lora_links
+web/uploads/
+node-server/node_modules/
