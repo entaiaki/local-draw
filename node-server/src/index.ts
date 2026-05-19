@@ -308,8 +308,11 @@ app.post('/api/translate', requireAuth, async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
 
   try {
-    const { loadConfig } = await import('./services/config.js');
+    const { loadConfig, loadJson } = await import('./services/config.js');
 	    const freshConfig = loadConfig();
+		    const llmCfg = loadJson(freshConfig.llm_config_file, {});
+		    const activeProfile = llmCfg.profiles?.[llmCfg.active ?? 0];
+		    console.log(`[LLM] translate, profile: ${activeProfile?.name || 'unnamed'}, provider: ${activeProfile?.provider || 'local'}`);
 	    const { translatePrompt } = await import('./services/llm.js');
     let positive = '', negative = '';
     const onChunk = (text: string) => {
