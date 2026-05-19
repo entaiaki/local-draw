@@ -235,7 +235,7 @@ router.get('/draw-banned', requireAdmin, (req: Request, res: Response) => {
   // loadBans defined above
   const bans = loadBans();
   const now = Math.floor(Date.now() / 1000);
-  res.json({ banned: bans.filter((b: any) => b.banned_until > now).map((b: any) => ({ user_id: b.user_id, reason: b.reason, banned_until: b.banned_until, remaining_days: Math.max(1, Math.ceil((b.banned_until - now) / 86400)) })) });
+  res.json({ banned: bans.filter((b: any) => b.banned_until > now).map((b: any) => ({ user_id: b.user_id, reason: b.reason, banned_at: b.banned_at, banned_until: b.banned_until, remaining_days: Math.max(1, Math.ceil((b.banned_until - now) / 86400)) })) });
 });
 
 // POST /api/draw/admin/draw-ban
@@ -249,7 +249,7 @@ router.post('/draw-ban', requireAdmin, (req: Request, res: Response) => {
   bans = bans.filter((b: any) => b.user_id !== user_id);
   bans.push({ user_id, reason: reason || '违规行为', banned_at: Math.floor(Date.now() / 1000), banned_until: Math.floor(Date.now() / 1000) + days * 86400 });
   saveBans(bans);
-  res.json({ ok: true, banned: bans.filter((b: any) => b.user_id === user_id).map((b: any) => ({ user_id: b.user_id, reason: b.reason, banned_until: b.banned_until, remaining_days: days })) });
+  res.json({ ok: true, banned: bans.filter((b: any) => b.user_id === user_id).map((b: any) => ({ user_id: b.user_id, reason: b.reason, banned_at: b.banned_at, banned_until: b.banned_until, remaining_days: days })) });
 });
 
 // POST /api/draw/admin/draw-unban
