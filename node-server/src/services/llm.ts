@@ -55,7 +55,7 @@ export async function callGoogle(system: string, user: string, cfg: Record<strin
 
   // Combine system + user into one content (main branch approach)
   const body: Record<string, any> = {
-    contents: [{ role: 'user', parts: [{ text: system + '
+        contents: [{ role: 'user', parts: [{ text: system + '
 
 ' + user }] }],
     generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
