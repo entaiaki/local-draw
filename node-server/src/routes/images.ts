@@ -182,6 +182,11 @@ router.delete('/my-images', (req: Request, res: Response) => {
       fs.renameSync(file + '.tmp', file);
     }
   } catch {}
+  // Delete actual file
+  try {
+    const fp = resolveOutputPath(relPath);
+    if (fp) fs.unlinkSync(fp);
+  } catch {}
   res.json({ ok: true });
 });
 
