@@ -354,8 +354,7 @@ router.get('/recent', requireAdmin, (req, res) => {
 router.get('/images_by_user', requireAdmin, (req, res) => {
   const uid = parseInt(req.query.user_id as string);
   const cmap: Record<string, number> = {};
-  try { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('
-')) { const p = ln.split('	'); if (p.length === 2) cmap[p[0].trim()] = parseInt(p[1].trim()); } } catch {}
+  try { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) { const p = ln.split('	'); if (p.length === 2) cmap[p[0].trim()] = parseInt(p[1].trim()); } } catch {}
   let items: any[] = Object.entries(cmap).filter(([, v]) => v === uid).map(([k]) => ({ path: k }));
   // sort by file mtime descending (newest first)
   if (fs.existsSync(config.output_dir)) {
