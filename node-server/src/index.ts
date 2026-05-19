@@ -37,12 +37,13 @@ const config = loadConfig();
 // Auth middleware
 app.use('/api', jwtAuth(config));
 
-// Routes
-app.use('/api/draw', queueRouter);
-app.use('/api/output', imageRouter);
-app.use('/api/draw/admin', adminRouter);
-app.use('/api/draw', statusRouter);
-app.use('/api', workflowRouter);
+// Routes (dynamic import for hot reload support)
+const hot = (modPath: string, exportName = 'default') => (req: any, res: any, next: any) => { import(modPath).then(m => (m[exportName] || m.default || m)(req, res, next)).catch(next); };
+app.use('/api/draw', hot('./routes/queue.js', 'queueRouter'));
+app.use('/api/output', hot('./routes/images.js', 'imageRouter'));
+app.use('/api/draw/admin', hot('./routes/admin.js', 'adminRouter'));
+app.use('/api/draw', hot('./routes/status.js', 'statusRouter'));
+app.use('/api', hot('./routes/workflow.js', 'workflowRouter'));
 app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));
 
 // Health check
@@ -150,14 +151,13 @@ app.delete('/api/draw/my-images', (req, res) => {
   if (!user?.id) return res.status(401).json({ detail: 'unauthorized' });
   const relPath = req.body?.path as string;
   if (!relPath) return res.status(400).json({ error: 'need path' });
-  const file = config.creator_map_file;
+  // Record to deleted list (keep UID and file)
   try {
-    if (fs.existsSync(file)) {
-      let lines = fs.readFileSync(file, 'utf-8').split('\n').filter(l => l.trim());
-      lines = lines.filter(l => !l.startsWith(relPath + '\t'));
-      fs.writeFileSync(file + '.tmp', lines.join('\n') + '\n', 'utf-8');
-      fs.renameSync(file + '.tmp', file);
-    }
+    const df = path.join(path.dirname(config.creator_map_file), 'deleted_images.json');
+    let deleted: string[] = [];
+    try { deleted = JSON.parse(fs.readFileSync(df, 'utf-8')); } catch {}
+    if (!deleted.includes(relPath)) deleted.push(relPath);
+    fs.writeFileSync(df, JSON.stringify(deleted, null, 2), 'utf-8');
   } catch {}
   res.json({ ok: true });
 });
