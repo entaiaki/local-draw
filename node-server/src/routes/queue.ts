@@ -210,14 +210,14 @@ router.post('/queue', async (req: Request, res: Response) => {
 
   // Turnstile verification
   const turnstileToken = req.body?.turnstile_token as string;
-  if (turnstileToken) {
-    try {
-      const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
-        new URLSearchParams({ secret: config.turnstile_secret_key, response: turnstileToken }),
-        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-      if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败，请刷新后重试' });
-    } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
-  }
+  if (!turnstileToken) return res.status(403).json({ detail: '请完成人机验证' });
+
+  try {
+    const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      new URLSearchParams({ secret: config.turnstile_secret_key, response: turnstileToken }),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败，请刷新后重试' });
+  } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
 
   const body = req.body as Record<string, unknown>;
   queueIdCounter++;
