@@ -276,7 +276,7 @@ router.post('/featured/add', requireAdmin, (req: Request, res: Response) => {
   if (!imagePath) return res.status(400).json({ error: 'need path' });
   const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
   const paths = loadJson<string[]>(featuredFile, []);
-  if (!paths.includes(imagePath)) paths.push(imagePath);
+  if (!paths.includes(imagePath)) paths.unshift(imagePath);
   saveJson(featuredFile, paths);
   res.json({ ok: true, items: paths });
 });
