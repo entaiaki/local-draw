@@ -354,8 +354,19 @@ router.get('/recent', requireAdmin, (req, res) => {
 router.get('/images_by_user', requireAdmin, (req, res) => {
   const uid = parseInt(req.query.user_id as string);
   const cmap: Record<string, number> = {};
-  try { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) { const p = ln.split('\t'); if (p.length === 2) cmap[p[0].trim()] = parseInt(p[1].trim()); } } catch {}
-  const items = Object.entries(cmap).filter(([, v]) => v === uid).map(([k]) => ({ path: k }));
+  try { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('
+')) { const p = ln.split('	'); if (p.length === 2) cmap[p[0].trim()] = parseInt(p[1].trim()); } } catch {}
+  let items: any[] = Object.entries(cmap).filter(([, v]) => v === uid).map(([k]) => ({ path: k }));
+  // sort by file mtime descending (newest first)
+  if (fs.existsSync(config.output_dir)) {
+    for (const item of items) {
+      try {
+        const s = fs.statSync(path.join(config.output_dir, item.path));
+        item.mtime = s.mtimeMs / 1000;
+      } catch {}
+    }
+    items.sort((a: any, b: any) => (b.mtime || 0) - (a.mtime || 0));
+  }
   res.json({ items, total: items.length });
 });
 
