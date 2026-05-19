@@ -89,12 +89,26 @@ export async function callGoogle(system: string, user: string, cfg: Record<strin
     }
   }
 
-  if ((!fullText || !fullText.includes('POSITIVE:')) && thoughtText) {
-    const posMatch = thoughtText.match(/POSITIVE:\s*(.+?)(?:\n|$)/);
-    const negMatch = thoughtText.match(/NEGATIVE:\s*(.+?)(?:\n|$)/);
+  if (  if ((!fullText || !fullText.includes('POSITIVE:')) && thoughtText) {
+    // Try to extract POSITIVE/NEGATIVE from thought text
+    const posMatch = thoughtText.match(/POSITIVE:\s*(.+?)(?:
+|$)/);
+    const negMatch = thoughtText.match(/NEGATIVE:\s*(.+?)(?:
+|$)/);
     if (posMatch) {
       fullText = `POSITIVE: ${posMatch[1].trim()}`;
-      if (negMatch) fullText += `\nNEGATIVE: ${negMatch[1].trim()}`;
+      if (negMatch) fullText += `
+NEGATIVE: ${negMatch[1].trim()}`;
+    } else {
+      // Extract backtick-wrapped tag blocks from thought chain, pick the one with most commas
+      const backtickBlocks = thoughtText.match(/\`([^\`]+)\`/g);
+      if (backtickBlocks) {
+        const tagBlocks = backtickBlocks.map((b: string) => b.replace(/\`/g, '').trim()).filter((b: string) => b.includes(','));
+        if (tagBlocks.length > 0) {
+          const best = tagBlocks.reduce((a: string, b: string) => a.split(',').length > b.split(',').length ? a : b);
+          fullText = `POSITIVE: ${best}`;
+        }
+      }
     }
   }
 
