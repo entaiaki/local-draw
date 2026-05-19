@@ -96,8 +96,8 @@ export async function callGoogle(system: string, user: string, cfg: Record<strin
     if (posMatch) {
       fullText = `POSITIVE: ${posMatch[1].trim()}`;
       if (negMatch) fullText += `\nNEGATIVE: ${negMatch[1].trim()}`;
-    } else {
-      
+    }
+  }
   return fullText;
 }
 
