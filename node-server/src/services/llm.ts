@@ -53,9 +53,11 @@ export async function callGoogle(system: string, user: string, cfg: Record<strin
   const model = cfg.google_model || 'gemma-4-31b-it';
   if (!apiKey) throw new Error('Google API Key 未配置');
 
-  const body: Record<string, unknown> = {
-    systemInstruction: { role: 'user', parts: [{ text: system }] },
-    contents: [{ role: 'user', parts: [{ text: user }] }],
+  // Combine system + user into one content (main branch approach)
+  const body: Record<string, any> = {
+    contents: [{ role: 'user', parts: [{ text: system + '
+
+' + user }] }],
     generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
     safetySettings: [
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
@@ -66,19 +68,36 @@ export async function callGoogle(system: string, user: string, cfg: Record<strin
   };
 
   if (cfg.google_thinking?.startsWith('level_')) {
-    body.generationConfig = { ...body.generationConfig as any, thinkingConfig: { thinkingLevel: cfg.google_thinking.slice(6) } };
+    body.generationConfig.thinkingConfig = { thinkingLevel: cfg.google_thinking.slice(6) };
   }
 
   const url = `${GOOGLE_API_BASE}/models/${model}:generateContent?key=${apiKey}`;
   const resp = await axios.post(url, body, { timeout: 120000 });
   const data = resp.data;
 
-  // Extract text from response
+  // Check prompt-level block
+  const pf = data.promptFeedback || {};
+  if (pf.blockReason) {
+    throw new Error('Google 内容过滤拦截: ' + pf.blockReason);
+  }
+
+  const debugInfo: string[] = [];
   const candidates = data.candidates || [];
   let fullText = '';
   let thoughtText = '';
 
   for (const cand of candidates) {
+    const finishReason = cand.finishReason || '';
+    if (finishReason && finishReason !== 'STOP') {
+      debugInfo.push('finishReason=' + finishReason);
+    }
+    const safety = cand.safetyRatings || [];
+    if (safety) {
+      const blocked = safety.filter((s: any) => s.blocked);
+      if (blocked.length > 0) {
+        debugInfo.push('safety_blocked=' + JSON.stringify(blocked).slice(0, 200));
+      }
+    }
     const parts = cand.content?.parts || [];
     for (const p of parts) {
       if (p.thought) {
@@ -89,15 +108,36 @@ export async function callGoogle(system: string, user: string, cfg: Record<strin
     }
   }
 
+  fullText = fullText.trim();
+
+  // Main branch: extract from thought chain if non-thought is empty or missing POSITIVE:
   if ((!fullText || !fullText.includes('POSITIVE:')) && thoughtText) {
-        // Try to extract POSITIVE/NEGATIVE from thought text
+    // Try to extract POSITIVE/NEGATIVE from thought text directly
     const posMatch = thoughtText.match(/POSITIVE:\s*(.+?)(?:\n|$)/);
     const negMatch = thoughtText.match(/NEGATIVE:\s*(.+?)(?:\n|$)/);
     if (posMatch) {
-      fullText = `POSITIVE: ${posMatch[1].trim()}`;
-      if (negMatch) fullText += `\nNEGATIVE: ${negMatch[1].trim()}`;
+      fullText = 'POSITIVE: ' + posMatch[1].trim();
+      if (negMatch) fullText += '
+NEGATIVE: ' + negMatch[1].trim();
+    } else {
+      // Extract backtick-wrapped tag blocks from thought chain, pick the one with most commas
+      const backtickBlocks = thoughtText.match(/\`([^\`]+)\`/g);
+      if (backtickBlocks) {
+        const tagBlocks = backtickBlocks.map((b: string) => b.replace(/\`/g, '').trim()).filter((b: string) => b.includes(','));
+        if (tagBlocks.length > 0) {
+          const best = tagBlocks.reduce((a: string, b: string) => a.split(',').length > b.split(',').length ? a : b);
+          fullText = best;
+        }
+      }
     }
   }
+
+  if (!fullText) {
+    const detail = debugInfo.length > 0 ? debugInfo.join('; ') : '无额外信息';
+    const thoughtPreview = thoughtText ? thoughtText.slice(0, 200) : '(无)';
+    throw new Error('Google LLM 返回空内容 | 调试: ' + detail + ' | 思维链前200字: ' + thoughtPreview);
+  }
+
   return fullText;
 }
 
