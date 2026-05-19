@@ -115,8 +115,7 @@ export async function callGoogle(system: string, user: string, cfg: Record<strin
     const negMatch = thoughtText.match(/NEGATIVE:\s*(.+?)(?:\n|$)/);
     if (posMatch) {
       fullText = 'POSITIVE: ' + posMatch[1].trim();
-            if (negMatch) fullText += '
-NEGATIVE: ' + negMatch[1].trim();
+            if (negMatch) fullText += '\nNEGATIVE: ' + negMatch[1].trim();
     } else {
       // Extract backtick-wrapped tag blocks from thought chain, pick the one with most commas
       const backtickBlocks = thoughtText.match(/\`([^\`]+)\`/g);
