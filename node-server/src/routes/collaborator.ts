@@ -104,6 +104,7 @@ collaboratorRouter.use(express.json({ limit: '50mb' }));
 
 // GET /api/draw/collaborator/images
 collaboratorRouter.get('/images', requireCollaborator, (req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   const limit = parseInt(req.query.limit as string) || 200;
   const offset = parseInt(req.query.offset as string) || 0;
   const cmap: Record<string, string> = {};
