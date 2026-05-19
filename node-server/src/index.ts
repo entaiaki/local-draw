@@ -308,12 +308,14 @@ app.post('/api/translate', requireAuth, async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
 
   try {
-    const { translatePrompt } = await import('./services/llm.js');
+    const { loadConfig } = await import('./services/config.js');
+	    const freshConfig = loadConfig();
+	    const { translatePrompt } = await import('./services/llm.js');
     let positive = '', negative = '';
     const onChunk = (text: string) => {
       res.write(`event: chunk\ndata: ${JSON.stringify({ text })}\n\n`);
     };
-    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, config, onChunk);
+    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, onChunk);
     res.write(`event: done\ndata: ${JSON.stringify({ positive: result.positive, negative: result.negative })}\n\n`);
   } catch (e: any) {
     res.write(`event: error\ndata: ${JSON.stringify({ message: (e.message || String(e)).slice(0, 500) })}\n\n`);
