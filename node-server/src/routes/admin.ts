@@ -411,7 +411,7 @@ router.post('/report/resolve', requireAdmin, (req, res) => {
 // GET /api/draw/admin/recommendations
 router.get('/recommendations', requireAdmin, (req, res) => {
   const f = config.creator_map_file.replace('creator_users.txt', 'recommendations.json');
-  try { const d = JSON.parse(fs.readFileSync(f, 'utf-8')); res.json({ items: d, total: d.length }); } catch { res.json({ items: [], total: 0 }); }
+  try { const d = JSON.parse(fs.readFileSync(f, 'utf-8')).filter((i: any) => i.status === 'pending'); res.json({ items: d, total: d.length }); } catch { res.json({ items: [], total: 0 }); }
 });
 
 // POST /api/draw/admin/recommendations/resolve
