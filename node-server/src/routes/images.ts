@@ -131,7 +131,7 @@ router.post('/fork', async (req, res) => {
       if (positive_ref) { const v = prompt_dict[positive_ref[0]]?.inputs?.[positive_ref[1]]; if (typeof v === 'string') bp = v; }
       if (negative_ref) { const v = prompt_dict[negative_ref[0]]?.inputs?.[negative_ref[1]]; if (typeof v === 'string') bn = v; }
       const wfName = wfPath.replace(/\.json$/i, '').split('/').pop() || '';
-	      return res.json({ workflow_api: prompt_dict, workflow_path: wfPath, workflow_name: wfName, builtin_prompt: bp || meta?.prompt || '', builtin_negative_prompt: bn || meta?.negative_prompt || '', seed: Math.floor(Math.random() * 2147483647) + 1 });
+	      return res.json({ workflow_api: prompt_dict, workflow_path: wfPath, workflow_name: wfName, builtin_prompt: meta?.prompt || bp || '', builtin_negative_prompt: meta?.negative_prompt || bn || '', seed: Math.floor(Math.random() * 2147483647) + 1 });
     }
     // 有 metadata 但无 workflow_path 时拒绝
     if (!meta?.workflow_path) return res.status(400).json({ error: '该图片无工作流信息，无法 Fork' });
