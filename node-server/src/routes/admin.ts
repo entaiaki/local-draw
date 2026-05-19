@@ -416,7 +416,18 @@ router.get('/recommendations', requireAdmin, (req, res) => {
 
 // POST /api/draw/admin/recommendations/resolve
 router.post('/recommendations/resolve', requireAdmin, (req, res) => {
-  res.json({ ok: true });
+  const f = config.creator_map_file.replace('creator_users.txt', 'recommendations.json');
+  try {
+    const items = JSON.parse(fs.readFileSync(f, 'utf-8'));
+    const idx = items.findIndex((i: any) => i.id === req.body?.rec_id);
+    if (idx >= 0) {
+      items[idx].status = req.body?.action === 'approve' ? 'approved' : 'rejected';
+      items[idx].admin_reason = req.body?.reason || '';
+      items[idx].resolved_at = Date.now() / 1000;
+      fs.writeFileSync(f, JSON.stringify(items, null, 2), 'utf-8');
+    }
+    res.json({ ok: true });
+  } catch { res.json({ ok: true }); }
 });
 
 // GET /api/draw/admin/workflow_files
