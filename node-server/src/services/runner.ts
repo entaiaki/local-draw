@@ -189,6 +189,9 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
     }
 
     prompt[nid] = { inputs: extractInputs(node, linkMap), class_type: ntype, _meta: { title: node.title || ntype } };
+	    if (ntype === 'LoraLoader' && typeof prompt[nid].inputs.lora_name === 'string' && !prompt[nid].inputs.lora_name.includes('/') && !prompt[nid].inputs.lora_name.includes('\\')) {
+	      prompt[nid].inputs.lora_name = 'WAI\\' + prompt[nid].inputs.lora_name;
+	    }
   }
 
   return findClipRefs(prompt);
