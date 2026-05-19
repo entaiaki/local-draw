@@ -287,7 +287,17 @@ app.post('/api/translate', requireAuth, async (req, res) => {
   }
   _translateRate[uid] = now;
 
-  const { prompt, original_prompt, negative_prompt } = req.body || {};
+  // Turnstile verification
+	  const tsToken = req.body?.turnstile_token;
+	  if (!tsToken) return res.status(403).json({ detail: '请完成人机验证' });
+	  try {
+	    const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
+	      new URLSearchParams({ secret: config.turnstile_secret_key, response: tsToken }),
+	      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+	    if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败' });
+	  } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
+
+	  const { prompt, original_prompt, negative_prompt } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'need prompt' });
   }
