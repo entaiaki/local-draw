@@ -331,7 +331,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 	      positive_ref = result.positive_ref;
 	      negative_ref = result.negative_ref;
 	    }
-    const finalPrompt = req.direct_prompt || '';
+    const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
 
     if (!positive_ref) throw new Error('未找到正向 CLIPTextEncode 节点');
 	    // Inject prompt
