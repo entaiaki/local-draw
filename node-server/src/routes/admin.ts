@@ -324,7 +324,11 @@ router.get('/recent', requireAdmin, (req, res) => {
   // Load creator_map
   const cmap: Record<string, string> = {};
   try { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) { const p = ln.split('\t'); if (p.length === 2) cmap[p[0].trim()] = p[1].trim(); } } catch {}
-  // Load queue state for prompt/original image info
+  // Load deleted images list
+	  const deletedFile = path.join(path.dirname(config.creator_map_file), 'deleted_images.json');
+	  let deletedList: string[] = [];
+	  try { deletedList = JSON.parse(fs.readFileSync(deletedFile, 'utf-8')); } catch {}
+	  // Load queue state for prompt/original image info
   // 加载 prompt 元数据
   const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
   let promptMeta: Record<string, any> = {};
@@ -338,7 +342,7 @@ router.get('/recent', requireAdmin, (req, res) => {
         const s = fs.statSync(path.join(config.output_dir, f));
         const uid = cmap[f] || '';
         const m = promptMeta[f] || {};
-        items.push({ path: f, mtime: s.mtimeMs / 1000, size: s.size, creator_id: uid, user_id: uid, prompt: String(m.prompt || ''), nl_prompt: String(m.nl_prompt || ''), negative_prompt: String(m.negative_prompt || ''), rewrite: Boolean(m.rewrite), image1: String(m.image1 || ''), image2: String(m.image2 || '') });
+        items.push({ path: f, mtime: s.mtimeMs / 1000, size: s.size, creator_id: uid, user_id: uid, deleted: deletedList.includes(f), prompt: String(m.prompt || ''), nl_prompt: String(m.nl_prompt || ''), negative_prompt: String(m.negative_prompt || ''), rewrite: Boolean(m.rewrite), image1: String(m.image1 || ''), image2: String(m.image2 || '') });
       } catch {}
     }
   }

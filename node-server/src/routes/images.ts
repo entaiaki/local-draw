@@ -182,6 +182,14 @@ router.delete('/my-images', (req: Request, res: Response) => {
       fs.renameSync(file + '.tmp', file);
     }
   } catch {}
+  // Record to deleted list
+  try {
+    const df = path.join(path.dirname(cfg.creator_map_file), 'deleted_images.json');
+    let deleted: string[] = [];
+    try { deleted = JSON.parse(fs.readFileSync(df, 'utf-8')); } catch {}
+    if (!deleted.includes(relPath)) deleted.push(relPath);
+    fs.writeFileSync(df, JSON.stringify(deleted, null, 2), 'utf-8');
+  } catch {}
   res.json({ ok: true });
 });
 
