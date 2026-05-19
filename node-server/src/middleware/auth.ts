@@ -69,7 +69,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const secret = loadSecret();
   const user = verifyToken(token, secret);
   if (!user) {
-    return res.status(401).json({ detail: 'token 无效或已过期，请重新登录' });
+    return res.status(401).json({ detail: '登录凭证已过期，请刷新页面或重新登录' });
   }
   req.user = user;
   // Check ban status

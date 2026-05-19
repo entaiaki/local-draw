@@ -197,7 +197,7 @@ router.post('/queue', async (req: Request, res: Response) => {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   const user = verifyToken(token, config.jwt_secret);
-  if (!user) return res.status(401).json({ detail: 'token 无效或已过期' });
+  if (!user) return res.status(401).json({ detail: '登录凭证已过期，请刷新页面或重新登录' });
   if (user.role !== 'admin' && user.role !== 'user') return res.status(403).json({ detail: '已禁止生图' });
 
   // Cooldown check (simplified)
@@ -262,7 +262,7 @@ router.get('/my-queue', (req: Request, res: Response) => {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   const user = verifyToken(token, config.jwt_secret);
-  if (!user) return res.status(401).json({ detail: 'token 无效或已过期' });
+  if (!user) return res.status(401).json({ detail: '登录凭证已过期，请刷新页面或重新登录' });
 
   const now = Date.now() / 1000;
   const items = queueItems
