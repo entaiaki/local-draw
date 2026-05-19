@@ -172,17 +172,7 @@ router.delete('/my-images', (req: Request, res: Response) => {
   const relPath = req.body?.path as string;
   if (!relPath) return res.status(400).json({ error: 'need path' });
 
-  // Remove from creator_map
-  const file = cfg.creator_map_file;
-  try {
-    if (fs.existsSync(file)) {
-      let lines = fs.readFileSync(file, 'utf-8').split('\n').filter(l => l.trim());
-      lines = lines.filter(l => !l.startsWith(relPath + '\t') && !l.startsWith(relPath));
-      fs.writeFileSync(file + '.tmp', lines.join('\n') + '\n', 'utf-8');
-      fs.renameSync(file + '.tmp', file);
-    }
-  } catch {}
-  // Record to deleted list
+  // Record to deleted list (keep UID and file, just mark as deleted for admin)
   try {
     const df = path.join(path.dirname(cfg.creator_map_file), 'deleted_images.json');
     let deleted: string[] = [];
