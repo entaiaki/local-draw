@@ -43,7 +43,7 @@ app.use('/api/output', imageRouter);
 app.use('/api/draw/admin', adminRouter);
 app.use('/api/draw', statusRouter);
 app.use('/api', workflowRouter);
-app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));
 
 // Health check
 app.get('/api/_diag', (req, res) => {
