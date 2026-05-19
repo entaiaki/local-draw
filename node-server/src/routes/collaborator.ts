@@ -88,8 +88,9 @@ adminCollaboratorRouter.post('/nominations/resolve', requireAdmin, (req: Request
     if (action === 'approve') {
       const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
       const featured = loadJson<string[]>(featuredFile, []);
-      for (const p of nominations[idx].image_paths || []) {
-        if (!featured.includes(p)) featured.push(p);
+      const paths = nominations[idx].image_paths || [];
+      for (let i = paths.length - 1; i >= 0; i--) {
+        if (!featured.includes(paths[i])) featured.unshift(paths[i]);
       }
       saveJson(featuredFile, featured);
     }
