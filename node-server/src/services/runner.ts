@@ -13,6 +13,7 @@ const semQueue: (() => void)[] = [];
 let semLocked = false;
 
 async function acquire(): Promise<void> {
+  if (activeCount < 0) activeCount = 0;
   if (!semLocked && activeCount < MAX_CONCURRENT) { semLocked = true; return; }
   return new Promise(r => semQueue.push(r));
 }
@@ -23,8 +24,8 @@ function release(): void {
 }
 
 function releaseAcquired(): void {
-  activeCount--;
-  if (semQueue.length > 0) { semQueue.shift()!(); }
+  if (activeCount > 0) activeCount--;
+  if (semQueue.length > 0) { semQueue.shift()(); }
   else { semLocked = false; }
 }
 
