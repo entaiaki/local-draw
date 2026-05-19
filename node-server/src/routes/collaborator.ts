@@ -104,6 +104,8 @@ collaboratorRouter.use(express.json({ limit: '50mb' }));
 
 // GET /api/draw/collaborator/images
 collaboratorRouter.get('/images', requireCollaborator, (req: Request, res: Response) => {
+  const limit = parseInt(req.query.limit as string) || 200;
+  const offset = parseInt(req.query.offset as string) || 0;
   const cmap: Record<string, string> = {};
   try { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) { const p = ln.split('\t'); if (p.length === 2) cmap[p[0].trim()] = p[1].trim(); } } catch {}
   const items: any[] = [];
@@ -118,7 +120,7 @@ collaboratorRouter.get('/images', requireCollaborator, (req: Request, res: Respo
     }
   }
   items.sort((a: any, b: any) => (b.mtime || 0) - (a.mtime || 0));
-  res.json({ items, total: items.length });
+  res.json({ items: items.slice(offset, offset + limit), total: items.length });
 });
 
 // GET /api/draw/collaborator/recommendations
