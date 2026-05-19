@@ -21,6 +21,7 @@ export interface AppConfig {
   limits_file: string;
   llm_config_file: string;
   state_file: string;
+	  turnstile_secret_key: string;
 }
 
 const here = path.join(process.cwd(), '..', 'web');
@@ -60,6 +61,7 @@ export function loadConfig(): AppConfig {
     limits_file: path.join(here, 'limits.json'),
     llm_config_file: path.join(here, 'llm_config.json'),
     state_file: path.join(here, 'state.json'),
+	    turnstile_secret_key: process.env.TURNSTILE_SECRET_KEY || (() => { try { const e = fs.readFileSync(path.join(here, '.env'), 'utf-8'); const m = e.match(/^TURNSTILE_SECRET_KEY="(.+?)"\s*$/m); return m ? m[1].trim() : ''; } catch { return ''; } })(),
   };
 }
 
