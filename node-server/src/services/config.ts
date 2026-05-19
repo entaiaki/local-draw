@@ -61,7 +61,7 @@ export function loadConfig(): AppConfig {
     limits_file: path.join(here, 'limits.json'),
     llm_config_file: path.join(here, 'llm_config.json'),
     state_file: path.join(here, 'state.json'),
-	    turnstile_secret_key: process.env.TURNSTILE_SECRET_KEY || (() => { try { const e = fs.readFileSync(path.join(here, '.env'), 'utf-8'); const m = e.match(/^TURNSTILE_SECRET_KEY="(.+?)"\s*$/m); return m ? m[1].trim() : ''; } catch { return ''; } })(),
+	    turnstile_secret_key: process.env.TURNSTILE_SECRET_KEY || (() => { for (const dir of [here, path.join(here, '..')]) { try { const e = fs.readFileSync(path.join(dir, '.env'), 'utf-8'); const m = e.match(/^TURNSTILE_SECRET_KEY="(.+?)"\s*$/m); if (m) return m[1].trim(); } catch {} } return ''; })(),
   };
 }
 
