@@ -42,6 +42,8 @@ const hot = (modPath: string, exportName = 'default') => (req: any, res: any, ne
 app.use('/api/draw', hot('./routes/queue.js', 'queueRouter'));
 app.use('/api/output', hot('./routes/images.js', 'imageRouter'));
 app.use('/api/draw/admin', hot('./routes/admin.js', 'adminRouter'));
+app.use('/api/draw/admin', hot('./routes/collaborator.js', 'adminCollaboratorRouter'));
+app.use('/api/draw/collaborator', hot('./routes/collaborator.js', 'collaboratorRouter'));
 app.use('/api/draw', hot('./routes/status.js', 'statusRouter'));
 app.use('/api', hot('./routes/workflow.js', 'workflowRouter'));
 app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));

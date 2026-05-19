@@ -132,3 +132,44 @@ export function checkBan(userId: number): { detail: string; code: string; reason
     banned_until: ban.banned_until,
   };
 }
+
+export interface CollaboratorEntry {
+  user_id: number;
+  added_by: number;
+  added_at: number;
+}
+
+export function loadCollaborators(): CollaboratorEntry[] {
+  try {
+    const f = path.join(process.cwd(), '..', 'web', 'collaborators.json');
+    if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf-8'));
+  } catch {}
+  return [];
+}
+
+export function saveCollaborators(list: CollaboratorEntry[]): void {
+  const f = path.join(process.cwd(), '..', 'web', 'collaborators.json');
+  fs.writeFileSync(f, JSON.stringify(list, null, 2), 'utf-8');
+}
+
+export function requireCollaborator(req: Request, res: Response, next: NextFunction) {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const secret = loadSecret();
+  const user = verifyToken(token, secret);
+  if (!user) {
+    return res.status(401).json({ detail: '论坛登录凭证已过期，请刷新页面或重新登录' });
+  }
+  // Admin passes through
+  if (user.role === 'admin') {
+    req.user = user;
+    return next();
+  }
+  // Check collaborator list
+  const collaborators = loadCollaborators();
+  if (!collaborators.some(c => c.user_id === user.id)) {
+    return res.status(403).json({ detail: '需要协作者权限' });
+  }
+  req.user = user;
+  next();
+}
