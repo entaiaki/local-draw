@@ -21,6 +21,7 @@ export function jwtAuth(config: AppConfig) {
       const secret = loadSecret();
       const user = verifyToken(token, secret);
       if (user) {
+        req.user = user;
         const banErr = checkBan(user.id);
         if (banErr) return res.status(403).json(banErr);
       }

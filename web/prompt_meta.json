@@ -22221,5 +22221,96 @@
     "workflow_path": "",
     "image1": "img2img_210f5edf07b5_1779273896.jpg",
     "image2": "img2img_428c610e2519_1779273896.blob"
+  },
+  "ComfyUI_13130_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{copper coins},{taoist priest},{{black underwear}},wide sleeves,long sleeves,tassel,{{bandages}},china clothes,hanfu,sash,ponytail,arm wrap,red ribbon,{{red robes}},coat,messy hair,{black short dress},",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13131_.png": {
+    "prompt": "by hikawa shou, hiyuki \\(wuthering waves\\),  colored eyelashes, diamond-shaped pupils, white hair, red eyes,",
+    "negative_prompt": "text, watermark, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, mammal, anthro, furry, ambiguous form, feral, semi-anthro,\nvibrant colors, oversaturated, high saturation, neon colors, vivid\n",
+    "workflow_path": "WAI/绯雪.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13132_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{{{huge brush,writing brush,on shoulder}}},black taoist robe,china clothes,{talisman earring,hairpin,{{{control ink splashing}}}},upper body,",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13133_.png": {
+    "prompt": "by kantoku, huohuo (honkai: star rail), honkai (series), 1girl, fox girl, fox ears, fox tail, green eyes, paw-shaped pupils, symbol-shaped pupils, green hair, long hair, yin yang hair ornament, ahoge, hair ornament, hat, long sleeves, bare shoulders, yin yang,",
+    "negative_prompt": "worst quality, low",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13134_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{ear rings,light makeup,large breast,lipstick}},{{{hanfu,white silk robe,elegant,china sword,white shoes}}},{{flying,kendo,sword image}},{{xianxia,mountain,floating buildings,floating islands,outdoor,lightning,temple}},",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13135_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{ear rings,light makeup,large breast,lipstick}},{ear rings,light makeup,large breast,lipstick}},{{{hanfu,white silk robe,elegant,china sword,white shoes}}},{{flying,kendo,sword image}},{{xianxia,mountain,floating buildings,floating islands,outdoor,lightning,temple}},",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13136_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{ear rings,light makeup,large breast,lipstick}},{ear rings,light makeup,large breast,lipstick}},{{{hanfu,white silk robe,elegant,china sword,white shoes}}},{{flying,kendo,sword image}},{{xianxia,mountain,floating buildings,floating islands,outdoor,lightning,temple}},",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13137_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{ear rings,light makeup,large breast,lipstick}},{ear rings,light makeup,large breast,lipstick}},{{{hanfu,white silk robe,elegant,china sword,white shoes}}},{{flying,kendo,sword image}},{{xianxia,mountain,floating buildings,floating islands,outdoor,lightning,temple}},",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01966_.png": {
+    "prompt": "参考图2，把图1男角色的发色改成深绿渐变色，除了上色之外图1的一切维持不变",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_6b0c5261da4b_1779274135.jpg",
+    "image2": "img2img_4b4746ec552d_1779274135.blob"
+  },
+  "ComfyUI_13138_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{ear rings,light makeup,large breast,lipstick}},{ear rings,light makeup,large breast,lipstick}},{{{hanfu,white silk robe,elegant,china sword,white shoes}}},{{flying,kendo,sword image}},{{xianxia,mountain,floating buildings,floating islands,outdoor,lightning,temple}},",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13139_.png": {
+    "prompt": "by kantoku, huohuo (honkai: star rail), honkai (series), 1girl, fox girl, fox ears, fox tail, green eyes, paw-shaped pupils, symbol-shaped pupils, green hair, long hair, yin yang hair ornament, ahoge, hair ornament, hat, long sleeves, bare shoulders, yin yang, curled up, holding toes, feet, toes",
+    "negative_prompt": "worst quality, low",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13140_.png": {
+    "prompt": "by hikawa shou, 1girl, solo, cosplay, nude, full body, looking at mirror, reflection, mirror, standing",
+    "negative_prompt": "worst quality, low",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13141_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\nkimono,kimono dress,backless outfit,crystal high heels,bridal gauntlets,earrings,frilled dress,frills,waist cape,laurel crown,leaf on head,aqua shawl,white dress,cross-laced corset,golden bangle,blue bow,clothing cutout,",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
   }
 }
