@@ -22200,5 +22200,26 @@
     "workflow_path": "WAI/丛雨.json",
     "image1": "",
     "image2": ""
+  },
+  "ComfyUI_13128_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\nchinese clothes,{duster},green robe,hair bun,hands up,hanfu,holding duster,red shirt,",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13129_.png": {
+    "prompt": "by momoko \\(momopoco\\), 1girl, solo, ((black_sclera:1.2)), ((skinny)), ((white hair)), Hair wings，white eyes, long hair, breasts, looking at viewer, navel, bare shoulders, very long hair, collarbone, white hair,  small breasts,  black hair, streaked hair,  multiple_braids,  square_pupils, expressionless,light blush,((tattoo:1.2)), neck_tattoo, shoulder_tattoo, hand_tattoo, full-body_tattoo, leg_tattoo, black_nails, toenail_polish, off_shoulder,  messy hair, disheveled hair, asymmetric bangs, (long bangs:1.2), (long_braid:1.2), chest_tattoo, back_tattoo,\n\n{copper coins},{taoist priest},{{black underwear}},wide sleeves,long sleeves,tassel,{{bandages}},china clothes,hanfu,sash,ponytail,arm wrap,red ribbon,{{red robes}},coat,messy hair,{black short dress},",
+    "negative_prompt": "Text, watermark, worst quality, old, early, low quality, low resolution, signature, username, logo, bad hands, mutated hands, mammals, humans, furry, ambiguous shapes, wild, semi-human, bright colors, oversaturated, high saturation, neon, vivid. Bad anatomy, bad hands, text, error, missing fingers, extra fingers, fewer fingers, cropped, JPEG artifacts, signature, watermark, username, blurry, artist name, bad proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, merged fingers, too many fingers, long neck, altered hands, poorly drawn hands, not drawing face, deformed, distorted, ugly,bad proportion,disproportionate body,short legs,stubby limbs,too long torso,unbalanced figure,flat body,malformed body,ugly body ratio",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
+  },
+  "Flux2-Klein-Edit_01965_.png": {
+    "prompt": "参考图2，为图1上色，除了上色之外图1的一切维持不变",
+    "negative_prompt": "",
+    "workflow_path": "",
+    "image1": "img2img_210f5edf07b5_1779273896.jpg",
+    "image2": "img2img_428c610e2519_1779273896.blob"
   }
 }
