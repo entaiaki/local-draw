@@ -1,8 +1,8 @@
 [
   {
-    "user_id": 642,
-    "reason": "生成猎奇图片",
-    "banned_at": 1779056129,
-    "banned_until": 1779142529
+    "user_id": 899,
+    "reason": "你的XP不像人类",
+    "banned_at": 1779205649,
+    "banned_until": 1779292049
   }
 ]

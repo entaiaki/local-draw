@@ -131,7 +131,15 @@ app.post('/api/draw/recommend', (req, res) => {
   const recFile = path.join(path.dirname(config.creator_map_file), 'recommendations.json');
   let items: any[] = [];
   try { items = JSON.parse(fs.readFileSync(recFile, 'utf-8')); } catch {}
-  items.push({ image_path, reason: reason || '', status: 'pending', created_at: Date.now() / 1000 });
+  const user: any = (req as any).user || {};
+  items.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    image_path,
+    user_id: user.id || 0,
+    user_reason: reason || '',
+    status: 'pending',
+    timestamp: Date.now() / 1000,
+  });
   fs.writeFileSync(recFile, JSON.stringify(items, null, 2), 'utf-8');
   res.json({ ok: true });
 });

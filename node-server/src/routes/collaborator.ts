@@ -129,7 +129,16 @@ collaboratorRouter.get('/images', requireCollaborator, (req: Request, res: Respo
 collaboratorRouter.get('/recommendations', requireCollaborator, (req: Request, res: Response) => {
   const f = config.creator_map_file.replace('creator_users.txt', 'recommendations.json');
   try {
-    const d = JSON.parse(fs.readFileSync(f, 'utf-8')).filter((i: any) => i.status === 'pending');
+    const items = JSON.parse(fs.readFileSync(f, 'utf-8'));
+    let changed = false;
+    for (const item of items) {
+      if (!item.id) {
+        item.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        changed = true;
+      }
+    }
+    if (changed) fs.writeFileSync(f, JSON.stringify(items, null, 2), 'utf-8');
+    const d = items.filter((i: any) => i.status === 'pending');
     res.json({ items: d, total: d.length });
   } catch {
     res.json({ items: [], total: 0 });

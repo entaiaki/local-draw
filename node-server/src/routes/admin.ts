@@ -425,7 +425,19 @@ router.post('/report/resolve', requireAdmin, (req, res) => {
 // GET /api/draw/admin/recommendations
 router.get('/recommendations', requireAdmin, (req, res) => {
   const f = config.creator_map_file.replace('creator_users.txt', 'recommendations.json');
-  try { const d = JSON.parse(fs.readFileSync(f, 'utf-8')).filter((i: any) => i.status === 'pending'); res.json({ items: d, total: d.length }); } catch { res.json({ items: [], total: 0 }); }
+  try {
+    const items = JSON.parse(fs.readFileSync(f, 'utf-8'));
+    let changed = false;
+    for (const item of items) {
+      if (!item.id) {
+        item.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        changed = true;
+      }
+    }
+    if (changed) fs.writeFileSync(f, JSON.stringify(items, null, 2), 'utf-8');
+    const d = items.filter((i: any) => i.status === 'pending');
+    res.json({ items: d, total: d.length });
+  } catch { res.json({ items: [], total: 0 }); }
 });
 
 // POST /api/draw/admin/recommendations/resolve
@@ -433,11 +445,20 @@ router.post('/recommendations/resolve', requireAdmin, (req, res) => {
   const f = config.creator_map_file.replace('creator_users.txt', 'recommendations.json');
   try {
     const items = JSON.parse(fs.readFileSync(f, 'utf-8'));
-    const idx = items.findIndex((i: any) => i.id === req.body?.rec_id);
+    let idx = -1;
+    if (req.body?.rec_id) {
+      idx = items.findIndex((i: any) => i.id === req.body.rec_id);
+    }
+    if (idx < 0 && req.body?.image_path) {
+      idx = items.findIndex((i: any) => i.status === 'pending' && i.image_path === req.body.image_path);
+    }
     if (idx >= 0) {
       items[idx].status = req.body?.action === 'approve' ? 'approved' : 'rejected';
       items[idx].admin_reason = req.body?.reason || '';
       items[idx].resolved_at = Date.now() / 1000;
+      if (!items[idx].id) {
+        items[idx].id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      }
       fs.writeFileSync(f, JSON.stringify(items, null, 2), 'utf-8');
     }
     res.json({ ok: true });
