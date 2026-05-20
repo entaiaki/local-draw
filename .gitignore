@@ -21,6 +21,15 @@ web/announcement.json
 web/maintenance.json
 web/draw_users.json
 web/workflow_meta.json
+web/banned_users.txt
+web/collaborators.json
+web/deleted_images.json
+web/gpu_kwh.json
+web/nominations.json
+web/prompt_map.json
+web/prompt_meta.json
+web/queue_state.json
+web/recommendations.json
 
 # ── 运行时图片 & 资源 ──
 web/thumbnails

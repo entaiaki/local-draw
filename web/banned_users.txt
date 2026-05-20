@@ -1,8 +1,0 @@
-[
-  {
-    "user_id": 899,
-    "reason": "你的XP不像人类",
-    "banned_at": 1779205649,
-    "banned_until": 1779292049
-  }
-]
