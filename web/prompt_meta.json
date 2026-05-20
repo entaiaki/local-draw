@@ -22312,5 +22312,26 @@
     "workflow_path": "WAI/无Lora.json",
     "image1": "",
     "image2": ""
+  },
+  "ComfyUI_13142_.png": {
+    "prompt": "by hikawa shou, 37(DITG), girl, cosplay, nude, full body, looking at mirror, mirror reflection",
+    "negative_prompt": "worst quality,",
+    "workflow_path": "WAI/新37.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13143_.png": {
+    "prompt": "by hikawa shou, 37(DITG), girl, cosplay, nude, full body, looking at mirror, mirror reflection",
+    "negative_prompt": "worst quality,",
+    "workflow_path": "WAI/新37.json",
+    "image1": "",
+    "image2": ""
+  },
+  "ComfyUI_13144_.png": {
+    "prompt": "by kantoku, huohuo (honkai: star rail), honkai (series), 1girl, fox girl, fox ears, fox tail, green eyes, paw-shaped pupils, symbol-shaped pupils, green hair, long hair, yin yang hair ornament, ahoge, hair ornament, hat, long sleeves, bare shoulders, yin yang, curled up, holding toes, feet, toes",
+    "negative_prompt": "worst quality, low",
+    "workflow_path": "WAI/无Lora.json",
+    "image1": "",
+    "image2": ""
   }
 }

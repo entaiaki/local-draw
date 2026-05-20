@@ -146,9 +146,14 @@ app.post('/api/draw/recommend', (req, res) => {
 
 // GET /api/draw/my-recommendations
 app.get('/api/draw/my-recommendations', (req, res) => {
+  const user: any = (req as any).user;
+  if (!user?.id) return res.status(401).json({ detail: 'unauthorized' });
   const recFile = path.join(path.dirname(config.creator_map_file), 'recommendations.json');
-  try { const d = JSON.parse(fs.readFileSync(recFile, 'utf-8')); res.json({ items: d, total: d.length }); }
-  catch { res.json({ items: [], total: 0 }); }
+  try {
+    const all = JSON.parse(fs.readFileSync(recFile, 'utf-8'));
+    const d = all.filter((i: any) => i.user_id === user.id);
+    res.json({ items: d, total: d.length });
+  } catch { res.json({ items: [], total: 0 }); }
 });
 
 // DELETE /api/draw/my-images
