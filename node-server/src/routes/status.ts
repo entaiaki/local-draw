@@ -68,11 +68,15 @@ router.get('/my-images', (req: Request, res: Response) => {
   if (!user?.id) return res.status(401).json({ detail: 'unauthorized' });
 
   const cmap = loadCreatorMap(cfg.creator_map_file);
+  const deletedFile = path.join(path.dirname(cfg.creator_map_file), 'deleted_images.json');
+  let deletedList: string[] = [];
+  try { deletedList = JSON.parse(fs.readFileSync(deletedFile, 'utf-8')); } catch {}
   const items: { path: string; mtime: number }[] = [];
   const exts = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 
   for (const [relPath, uid] of Object.entries(cmap)) {
     if (uid !== user.id) continue;
+    if (deletedList.includes(relPath)) continue;
     const relNorm = relPath.replace(/\\/g, '/').replace(/^\//, '');
     if (relNorm.includes('..')) continue;
     for (const baseDir of [cfg.output_dir, cfg.archive_dir]) {
