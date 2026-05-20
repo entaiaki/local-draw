@@ -460,6 +460,15 @@ router.post('/recommendations/resolve', requireAdmin, (req, res) => {
         items[idx].id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
       }
       fs.writeFileSync(f, JSON.stringify(items, null, 2), 'utf-8');
+      // 通过自荐 → 自动加入精选
+      if (req.body?.action === 'approve' && items[idx].image_path) {
+        const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
+        const featured = loadJson<string[]>(featuredFile, []);
+        if (!featured.includes(items[idx].image_path)) {
+          featured.unshift(items[idx].image_path);
+          saveJson(featuredFile, featured);
+        }
+      }
     }
     res.json({ ok: true });
   } catch { res.json({ ok: true }); }

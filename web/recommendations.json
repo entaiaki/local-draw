@@ -124,29 +124,37 @@
   {
     "image_path": "ComfyUI_12171_.png",
     "reason": "",
-    "status": "pending",
+    "status": "approved",
     "created_at": 1779197066.853,
-    "id": "mpdwrwdozqyyjj"
+    "id": "mpdwrwdozqyyjj",
+    "admin_reason": "",
+    "resolved_at": 1779273688.538
   },
   {
     "image_path": "ComfyUI_12186_.png",
     "reason": "",
-    "status": "pending",
+    "status": "approved",
     "created_at": 1779197086.079,
-    "id": "mpdwrwdos8t28p"
+    "id": "mpdwrwdos8t28p",
+    "admin_reason": "",
+    "resolved_at": 1779273685.458
   },
   {
     "image_path": "ComfyUI_12742_.png",
     "reason": "",
-    "status": "pending",
+    "status": "rejected",
     "created_at": 1779244644.044,
-    "id": "mpdwrwdo84tbbt"
+    "id": "mpdwrwdo84tbbt",
+    "admin_reason": "r18",
+    "resolved_at": 1779273681.619
   },
   {
     "image_path": "ComfyUI_12793_.png",
     "reason": "",
-    "status": "pending",
+    "status": "approved",
     "created_at": 1779250217.627,
-    "id": "mpdwrwdo2xviot"
+    "id": "mpdwrwdo2xviot",
+    "admin_reason": "",
+    "resolved_at": 1779273676.788
   }
 ]
