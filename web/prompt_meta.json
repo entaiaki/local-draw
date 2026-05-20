@@ -22333,5 +22333,12 @@
     "workflow_path": "WAI/无Lora.json",
     "image1": "",
     "image2": ""
+  },
+  "ComfyUI_13145_.png": {
+    "prompt": "by hikawa shou, 37(DITG), girl, cosplay, nude, full body, looking at mirror, mirror reflection, masturbation, pussy, genitals, spreading legs, solo",
+    "negative_prompt": "worst quality,",
+    "workflow_path": "WAI/新37.json",
+    "image1": "",
+    "image2": ""
   }
 }
