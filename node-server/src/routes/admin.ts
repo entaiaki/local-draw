@@ -175,8 +175,7 @@ router.post('/llm_config/test', requireAdmin, async (req: Request, res: Response
       const r = await axios.post(`${endpoint.replace(/\/+$/, '')}/chat/completions`, {
         model: profile.custom_model || 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
+          { role: 'user', content: systemPrompt + '\n\n' + userPrompt },
         ],
         temperature: 0.7, max_tokens: 500,
       }, { headers, timeout: 60000 });
@@ -189,8 +188,7 @@ router.post('/llm_config/test', requireAdmin, async (req: Request, res: Response
     if (posMatch) {
       res.json({ ok: true, provider, profile_index: idx, reply: `POSITIVE: ${posMatch[1].trim()}\nNEGATIVE: ${negMatch ? negMatch[1].trim() : ''}` });
     } else {
-      // Fallback: 无格式时全部内容作为正向提示词
-      res.json({ ok: true, provider, profile_index: idx, reply: `（无 POSITIVE/NEGATIVE 格式，已自动填入全部内容）\nPOSITIVE: ${rawReply.trim().slice(0, 500)}` });
+      res.json({ ok: false, provider, profile_index: idx, error: '模型返回格式不符合要求（需要 POSITIVE:/NEGATIVE:）', raw: rawReply.slice(0, 500) });
     }
   } catch (e: any) {
     const msg = e.response?.data ? JSON.stringify(e.response.data).slice(0, 300) : (e.message || String(e));
