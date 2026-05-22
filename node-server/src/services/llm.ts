@@ -30,8 +30,8 @@ export interface LlmResult {
 }
 
 export function parsePosNeg(text: string): LlmResult {
-  const posMatch = text.match(/POSITIVE:\s*(.+?)(?:\n|$)/);
-  const negMatch = text.match(/NEGATIVE:\s*(.+?)(?:\n|$)/);
+  const posMatch = text.match(/POSITIVE:\s*(.+?)(?=\s*NEGATIVE:|\n|$)/);
+  const negMatch = text.match(/NEGATIVE:\s*(.+?)$/);
   if (!posMatch) {
     throw new Error(`模型拒绝了该请求或返回格式异常: ${text.slice(0, 200)}`);
   }
