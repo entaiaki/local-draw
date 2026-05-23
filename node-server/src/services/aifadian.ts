@@ -50,7 +50,7 @@ export async function queryOrder(
   }
 }
 
-// 按 custom_order_id（论坛用户ID）查询最近已支付的订单
+// 按 custom_order_id 或 remark（论坛用户ID）查询最近已支付的订单
 export async function queryPaidByRemark(
   customId: string,
   userId: string,
@@ -60,7 +60,12 @@ export async function queryPaidByRemark(
     const data = await callApi({ page: 1, per_page: 100 }, userId, token);
     if (data.ec !== 200) return { ec: data.ec, error: data.em || 'query failed' };
     const list: AifadianQueryResult[] = data.data?.list || [];
-    return { ec: 200, orders: list.filter((o) => o.custom_order_id === customId && o.status === 2) };
+    return {
+      ec: 200,
+      orders: list.filter(
+        (o) => o.status === 2 && (o.custom_order_id === customId || o.remark === customId),
+      ),
+    };
   } catch (e: any) {
     return { ec: -1, error: e.message || String(e) };
   }
