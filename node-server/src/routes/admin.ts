@@ -4,7 +4,7 @@ import { loadConfig, loadLimits, saveJson, DEFAULT_LIMITS, loadJson } from '../s
 import { Limits } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
-import { loadPointsConfig as loadPointsCfg } from './wallet.js';
+import { loadPointsConfig as loadPointsCfg, creatorUserIds } from './wallet.js';
 
 interface BanEntry {
   user_id: number;
@@ -534,7 +534,17 @@ router.post('/points-config', requireAdmin, (req, res) => {
 router.get('/wallets', requireAdmin, (req, res) => {
   const wf = path.join(path.dirname(config.creator_map_file), 'wallets.json');
   const wallets = loadJson<Record<string, { balance: number; total_purchased: number }>>(wf, {});
-  // Return as array for easier display
+  const seen = new Set(Object.keys(wallets));
+  let changed = false;
+  for (const uid of creatorUserIds()) {
+    const key = String(uid);
+    if (!seen.has(key)) {
+      wallets[key] = { balance: 0, total_purchased: 0 };
+      seen.add(key);
+      changed = true;
+    }
+  }
+  if (changed) saveJson(wf, wallets);
   const items = Object.entries(wallets).map(([uid, w]) => ({ user_id: Number(uid), ...w }));
   res.json({ items });
 });

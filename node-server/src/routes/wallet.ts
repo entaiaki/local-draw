@@ -46,10 +46,31 @@ function getUserId(req: Request): number | null {
   return user?.id || null;
 }
 
+function creatorUserIds(): Set<number> {
+  const ids = new Set<number>();
+  try {
+    const f = path.join(HERE, 'creator_users.txt');
+    if (fs.existsSync(f)) {
+      for (const line of fs.readFileSync(f, 'utf-8').split('\n')) {
+        const parts = line.trim().split('\t');
+        if (parts.length === 2 && /^\d+$/.test(parts[1].trim())) ids.add(Number(parts[1].trim()));
+      }
+    }
+  } catch {}
+  return ids;
+}
+
 // GET /api/wallet/balance
 router.get('/balance', async (req: Request, res: Response) => {
   const uid = getUserId(req);
   if (!uid) return res.status(401).json({ error: 'unauthorized' });
+
+  // Auto-create wallet for users who have generated images but no wallet entry
+  const wallets = loadWallets();
+  if (!wallets[uid] && creatorUserIds().has(uid)) {
+    wallets[uid] = { balance: 0, total_purchased: 0 };
+    saveWallets(wallets);
+  }
 
   const wallets = loadWallets();
   const wallet = wallets[uid] || { balance: 0, total_purchased: 0 };
@@ -175,3 +196,4 @@ export function refundPoints(userId: number, cost: number): void {
 
 export { router as walletRouter };
 export { loadPointsConfig as loadPointsCfg };
+export { creatorUserIds };
