@@ -143,6 +143,11 @@ loadQueueState();
       const cur = queuedUserIds[qi.user_id] || 0;
       if (cur > 1) queuedUserIds[qi.user_id] = cur - 1;
       else delete queuedUserIds[qi.user_id];
+      // Refund points for jobs that were running when server died
+      const { refundPoints, loadPointsCfg } = await import('./wallet.js');
+      const cfg = loadPointsCfg();
+      const isImg2img = !!((qi.params as any)?.image1_name);
+      refundPoints(qi.user_id, isImg2img ? cfg.image_to_image : cfg.text_to_image);
     }
   }
   saveQueueState();
