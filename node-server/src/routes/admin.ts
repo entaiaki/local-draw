@@ -481,8 +481,9 @@ router.get('/workflow_files', requireAdmin, async (req, res) => {
       params: { dir: 'workflows', recurse: 'true', split: 'false', full_info: 'true' }, headers: { 'Comfy-User': '' }
     });
     // ComfyUI returns an array; normalize to { files: [...] }
-    const data = Array.isArray(r.data) ? { files: r.data, category_order: [] } : r.data;
-    res.json(data);
+    const raw = Array.isArray(r.data) ? r.data : [];
+    const files = raw.map((f: any) => (typeof f === 'string' ? f : f.path || f.name || String(f))).filter(Boolean);
+    res.json({ files, category_order: [] });
   } catch { res.json({ files: [], category_order: [] }); }
 });
 
