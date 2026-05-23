@@ -39,20 +39,28 @@ function scanTagsDir(): { path: string; name: string; thumbnail: boolean; catego
   const tagsDir = path.join(config.workflows_dir, 'tags');
   if (!fs.existsSync(tagsDir)) return [];
   const result: { path: string; name: string; thumbnail: boolean; category: string }[] = [];
-  for (const file of fs.readdirSync(tagsDir)) {
-    if (!file.endsWith('.txt')) continue;
-    const baseName = file.slice(0, -4);
-    const wfRelPath = `tags/${file}`;
-    let hasThumb = false;
-    for (const ext of THUMB_EXTS) {
-      if (fs.existsSync(path.join(tagsDir, baseName + ext))) { hasThumb = true; break; }
+  for (const entry of fs.readdirSync(tagsDir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      const catDir = path.join(tagsDir, entry.name);
+      for (const file of fs.readdirSync(catDir)) {
+        if (!file.endsWith('.txt')) continue;
+        const baseName = file.slice(0, -4);
+        const wfRelPath = `tags/${entry.name}/${file}`;
+        let hasThumb = false;
+        for (const ext of THUMB_EXTS) {
+          if (fs.existsSync(path.join(catDir, baseName + ext))) { hasThumb = true; break; }
+        }
+        result.push({ path: wfRelPath, name: baseName, thumbnail: hasThumb, category: entry.name });
+      }
+    } else if (entry.isFile() && entry.name.endsWith('.txt')) {
+      const baseName = entry.name.slice(0, -4);
+      const wfRelPath = `tags/${entry.name}`;
+      let hasThumb = false;
+      for (const ext of THUMB_EXTS) {
+        if (fs.existsSync(path.join(tagsDir, baseName + ext))) { hasThumb = true; break; }
+      }
+      result.push({ path: wfRelPath, name: baseName, thumbnail: hasThumb, category: 'Tag预设' });
     }
-    result.push({
-      path: wfRelPath,
-      name: baseName,
-      thumbnail: hasThumb,
-      category: 'Tag预设',
-    });
   }
   return result;
 }
