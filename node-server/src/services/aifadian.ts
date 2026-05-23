@@ -10,6 +10,14 @@ function sign(token: string, params: string, ts: number, userId: string): string
   return md5(`${token}params${params}ts${ts}user_id${userId}`);
 }
 
+export interface AifadianSku {
+  sku_id: string;
+  count: number;
+  price?: string;
+  floor_price?: string;
+  name?: string;
+}
+
 export interface AifadianQueryResult {
   out_trade_no: string;
   custom_order_id: string;
@@ -19,6 +27,7 @@ export interface AifadianQueryResult {
   status: number; // 2 = paid
   remark: string;
   pay_time?: number;
+  sku_detail?: AifadianSku[];
 }
 
 async function callApi(paramsObj: Record<string, any>, userId: string, token: string): Promise<any> {

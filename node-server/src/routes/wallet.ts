@@ -88,8 +88,14 @@ router.get('/balance', async (req: Request, res: Response) => {
         const existing = orders.find((o) => o.order_id === paidOrder.out_trade_no && o.status === 'paid');
         console.log(`[wallet] order ${paidOrder.out_trade_no} existing=${!!existing} status=${paidOrder.status}`);
         if (existing) continue;
-        // Credit points
-        const pts = 6000;
+        // Credit points — multiply by sku count (support multi-unit purchases)
+        let pts = 0;
+        const skus = paidOrder.sku_detail || [];
+        if (skus.length > 0) {
+          for (const sku of skus) pts += (sku.count || 1) * 6000;
+        } else {
+          pts = 6000;
+        }
         wallet.balance = (wallet.balance || 0) + pts;
         wallet.total_purchased = (wallet.total_purchased || 0) + pts;
         orders.push({
