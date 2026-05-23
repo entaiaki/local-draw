@@ -474,43 +474,7 @@ router.post('/recommendations/resolve', requireAdmin, (req, res) => {
   } catch { res.json({ ok: true }); }
 });
 
-// GET /api/draw/admin/workflow_files
-router.get('/workflow_files', requireAdmin, async (req, res) => {
-  try {
-    const r = await axios.get(`http://${config.comfyui_host}:${config.comfyui_port}/api/userdata`, {
-      params: { dir: 'workflows', recurse: 'true', split: 'false', full_info: 'true' }, headers: { 'Comfy-User': '' }
-    });
-    // ComfyUI returns an array; normalize to { files: [...] }
-    const raw = Array.isArray(r.data) ? r.data : [];
-    const files = raw
-      .map((f: any) => (typeof f === 'string' ? f : f.path || f.name || String(f)))
-      .filter(Boolean)
-      .filter((p: string) => p.startsWith('WAI/'));
-    res.json({ files, category_order: [] });
-  } catch { res.json({ files: [], category_order: [] }); }
-});
-
-// GET /api/draw/admin/workflow_meta
-router.get('/workflow_meta', requireAdmin, (req, res) => {
-  const f = config.creator_map_file.replace('creator_users.txt', 'workflow_meta.json');
-  try { const d = JSON.parse(fs.readFileSync(f, 'utf-8')); const arr = Array.isArray(d) ? d.filter((m: any) => m.workflow?.startsWith('WAI/')) : []; res.json({ workflow_meta: arr }); } catch { res.json({ workflow_meta: [] }); }
-});
-
-// POST /api/draw/admin/workflow_meta
-router.post('/workflow_meta', requireAdmin, (req, res) => {
-  const f = config.creator_map_file.replace('creator_users.txt', 'workflow_meta.json');
-  try {
-    const { workflow_meta } = req.body || {};
-    if (Array.isArray(workflow_meta)) {
-      fs.writeFileSync(f, JSON.stringify(workflow_meta, null, 2), 'utf-8');
-      res.json({ ok: true, workflow_meta });
-    } else {
-      res.status(400).json({ error: 'workflow_meta must be array' });
-    }
-  } catch { res.status(500).json({ error: 'save failed' }); }
-});
-
-// POST /api/draw/admin/workflow_rename
+// POST /api/draw/admin/workflow_rename (stub, kept for compatibility)
 router.post('/workflow_rename', requireAdmin, (req, res) => { res.json({ ok: true }); });
 
 // GET /api/draw/admin/style_thumbnail

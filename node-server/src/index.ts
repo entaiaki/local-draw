@@ -103,23 +103,31 @@ app.get('/api/styles', (req, res) => {
   } catch { res.json({ styles: [] }); }
 });
 
+const THUMB_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
+
 app.get('/api/thumbnail', (req, res) => {
   const p = req.query.path as string;
   if (!p) return res.status(404).json({ error: 'no thumbnail' });
+
+  // Look for thumbnail alongside workflow file: workflows/<subdir>/<category>/<basename>.ext
+  const workflowsDir = config.workflows_dir || path.join(process.cwd(), '..', 'node-server', 'workflows');
+  // p is like "鸣潮/卡提希娅.json" or "WAI/鸣潮/卡提希娅.json"
+  // Remove WAI/ or ANIMA/ prefix if present, then we have "category/name.json"
+  const relPath = p.replace(/^(WAI|ANIMA)\//i, '');
+  const baseName = relPath.replace(/\.json$/i, '');
+  for (const ext of THUMB_EXTS) {
+    const fp = path.resolve(workflowsDir, baseName + ext);
+    if (fp.startsWith(path.resolve(workflowsDir)) && fs.existsSync(fp)) return res.sendFile(fp);
+    // Also check with WAI/ prefix
+    const fp2 = path.resolve(workflowsDir, 'WAI', baseName + ext);
+    if (fp2.startsWith(path.resolve(workflowsDir)) && fs.existsSync(fp2)) return res.sendFile(fp2);
+    // Also check with ANIMA/ prefix
+    const fp3 = path.resolve(workflowsDir, 'ANIMA', baseName + ext);
+    if (fp3.startsWith(path.resolve(workflowsDir)) && fs.existsSync(fp3)) return res.sendFile(fp3);
+  }
+
+  // Fallback: old thumbnails directory
   const thumbDir = config.thumb_dir || path.join(process.cwd(), '..', 'web', 'thumbnails');
-
-  // 从 workflow_meta.json 查缩略图映射
-  const metaFile = path.join(path.dirname(config.creator_map_file), 'workflow_meta.json');
-  try {
-    const metaList = JSON.parse(fs.readFileSync(metaFile, 'utf-8'));
-    const meta = metaList.find((m: any) => m.workflow === p);
-    if (meta?.thumbnail) {
-      const fp = path.resolve(thumbDir, meta.thumbnail);
-      if (fp.startsWith(path.resolve(thumbDir)) && fs.existsSync(fp)) return res.sendFile(fp);
-    }
-  } catch {}
-
-  // 直接按文件名找
   const thumbPath = path.join(thumbDir, path.basename(p));
   if (fs.existsSync(thumbPath)) return res.sendFile(thumbPath);
 

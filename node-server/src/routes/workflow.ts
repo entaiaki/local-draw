@@ -8,52 +8,57 @@ import { workflowToPromptApi } from '../services/runner.js';
 const router = Router();
 const config = loadConfig();
 
+const THUMB_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+
+function scanWorkflowsDir(baseDir: string): { path: string; name: string; thumbnail: boolean; category: string }[] {
+  if (!fs.existsSync(baseDir)) return [];
+  const result: { path: string; name: string; thumbnail: boolean; category: string }[] = [];
+  for (const catDir of fs.readdirSync(baseDir, { withFileTypes: true })) {
+    if (!catDir.isDirectory()) continue;
+    const dirPath = path.join(baseDir, catDir.name);
+    for (const file of fs.readdirSync(dirPath)) {
+      if (!file.endsWith('.json')) continue;
+      const baseName = file.slice(0, -5);
+      const wfRelPath = `${catDir.name}/${file}`;
+      let hasThumb = false;
+      for (const ext of THUMB_EXTS) {
+        if (fs.existsSync(path.join(dirPath, baseName + ext))) { hasThumb = true; break; }
+      }
+      result.push({
+        path: wfRelPath,
+        name: baseName,
+        thumbnail: hasThumb,
+        category: catDir.name,
+      });
+    }
+  }
+  return result;
+}
+
 // GET /api/workflows
 router.get('/workflows', async (req: Request, res: Response) => {
   const subdir = req.query.subdir as string || '';
-  // Load workflow meta for thumbnail/category mapping
-  const metaFile = path.join(path.dirname(config.creator_map_file), 'workflow_meta.json');
-  let metaList: { workflow: string; thumbnail?: string; category?: string }[] = [];
-  try { metaList = JSON.parse(fs.readFileSync(metaFile, 'utf-8')); } catch {}
-  const metaMap = new Map(metaList.map(m => [m.workflow, m]));
-  const thumbDir = config.thumb_dir || path.join(process.cwd(), '..', 'web', 'thumbnails');
+
+  // Build the base directory path
+  const baseDir = subdir
+    ? path.join(config.workflows_dir, subdir)
+    : config.workflows_dir;
 
   try {
+    // Try ComfyUI API first
     const comfyApi = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
     const params: any = { dir: 'workflows', recurse: 'true' };
     if (subdir) params.dir = `workflows/${subdir}`;
-    const resp = await comfyApi.get('/api/userdata', { params, headers: { 'Comfy-User': '' } });
-    const files: string[] = Array.isArray(resp.data) ? resp.data.map((f: any) => (typeof f === 'string' ? f : f.path || f.name || String(f))).filter(Boolean) : [];
-    const workflows = files.map((f: string) => {
-      const wfPath = subdir ? `${subdir}/${f}` : f;
-      const meta = metaMap.get(wfPath);
-      return {
-        path: wfPath,
-        name: f.replace(/\.json$/, ''),
-        thumbnail: meta?.thumbnail ? fs.existsSync(path.join(thumbDir, meta.thumbnail)) : false,
-        category: meta?.category || '',
-      };
-    });
-    res.json({ workflows, category_order: [] });
+    await comfyApi.get('/api/userdata', { params, headers: { 'Comfy-User': '' } });
+    // If ComfyUI is reachable, we still scan our local dirs for correct category/thumbnail data
+    const workflows = scanWorkflowsDir(baseDir);
+    const categoryOrder = [...new Set(workflows.map(w => w.category))];
+    res.json({ workflows, category_order: categoryOrder });
   } catch {
-    const dir = subdir ? path.join(config.workflows_dir, subdir) : config.workflows_dir;
-    const files: string[] = [];
-    if (fs.existsSync(dir)) {
-      for (const f of fs.readdirSync(dir)) {
-        if (f.endsWith('.json')) files.push(f);
-      }
-    }
-    const workflows = files.map((f: string) => {
-      const wfPath = subdir ? `${subdir}/${f}` : f;
-      const meta = metaMap.get(wfPath);
-      return {
-        path: wfPath,
-        name: f.replace(/\.json$/, ''),
-        thumbnail: meta?.thumbnail ? fs.existsSync(path.join(thumbDir, meta.thumbnail)) : false,
-        category: meta?.category || '',
-      };
-    });
-    res.json({ workflows, category_order: [] });
+    // Fallback: local filesystem
+    const workflows = scanWorkflowsDir(baseDir);
+    const categoryOrder = [...new Set(workflows.map(w => w.category))];
+    res.json({ workflows, category_order: categoryOrder });
   }
 });
 
