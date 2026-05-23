@@ -13,6 +13,7 @@ import { workflowRouter } from './routes/workflow.js';
 import { statusRouter, setupWsStatus } from './routes/status.js';
 import { loadConfig, loadJson } from './services/config.js';
 import { walletRouter, deductPoints, refundPoints, loadPointsCfg } from './routes/wallet.js';
+import { presetRouter } from './routes/presets.js';
 
 // CLI arg parsing: --host HOST --port PORT
 const argv = process.argv.slice(2);
@@ -60,6 +61,7 @@ app.use('/api/draw', hot('./routes/status.js', 'statusRouter'));
 app.use('/api', hot('./routes/workflow.js', 'workflowRouter'));
 app.use('/api/wallet', walletRouter);
 app.use('/api/draw/admin', walletRouter);
+app.use('/api', presetRouter);
 app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));
 
 // Health check
