@@ -316,57 +316,38 @@ app.post('/api/translate', requireAuth, async (req, res) => {
   }
   _translateRate[uid] = now;
 
-  // Points check
-  if ((req as any).user?.role !== 'admin') {
-    const ptCfg = loadPointsCfg();
-    const ptResult = deductPoints((req as any).user?.id, ptCfg.llm_translate);
-    if (!ptResult.ok) {
-      return res.status(402).json({ error: '点数不足', need: ptCfg.llm_translate, balance: ptResult.balance || 0 });
-    }
-  }
-
   // Turnstile verification
-	  const tsToken = req.body?.turnstile_token;
-	  if (!tsToken) return res.status(403).json({ detail: '请完成人机验证' });
-	  try {
-	    const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
-	      new URLSearchParams({ secret: config.turnstile_secret_key, response: tsToken }),
-	      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-	    if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败' });
-	  } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
+  const tsToken = req.body?.turnstile_token;
+  if (!tsToken) return res.status(403).json({ detail: '请完成人机验证' });
+  try {
+    const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      new URLSearchParams({ secret: config.turnstile_secret_key, response: tsToken }),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败' });
+  } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
 
-	  const { prompt, original_prompt, negative_prompt } = req.body || {};
+  const { prompt, original_prompt, negative_prompt } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'need prompt' });
   }
 
-  // SSE 流式返回
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
   try {
     const { loadConfig, loadJson } = await import('./services/config.js');
-	    const freshConfig = loadConfig();
-		    const llmCfg = loadJson(freshConfig.llm_config_file, {});
-		    const activeProfile = llmCfg.profiles?.[llmCfg.active ?? 0];
-		    console.log(`[LLM] translate, profile: ${activeProfile?.name || 'unnamed'}, provider: ${activeProfile?.provider || 'local'}`);
-	    const { translatePrompt } = await import('./services/llm.js');
-    let positive = '', negative = '';
-    const onChunk = (text: string) => {
-      res.write(`event: chunk\ndata: ${JSON.stringify({ text })}\n\n`);
-    };
-    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, onChunk);
-    res.write(`event: done\ndata: ${JSON.stringify({ positive: result.positive, negative: result.negative })}\n\n`);
-  } catch (e: any) {
-    // Refund points on failure
+    const freshConfig = loadConfig();
+    const llmCfg = loadJson(freshConfig.llm_config_file, {});
+    const activeProfile = llmCfg.profiles?.[llmCfg.active ?? 0];
+    console.log(`[LLM] translate, profile: ${activeProfile?.name || 'unnamed'}, provider: ${activeProfile?.provider || 'local'}`);
+    const { translatePrompt } = await import('./services/llm.js');
+    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig);
+    // Deduct points only on success
     if ((req as any).user?.role !== 'admin') {
       const ptCfg = loadPointsCfg();
-      refundPoints((req as any).user?.id, ptCfg.llm_translate);
+      deductPoints((req as any).user?.id, ptCfg.llm_translate);
     }
-    res.write(`event: error\ndata: ${JSON.stringify({ message: (e.message || String(e)).slice(0, 500) })}\n\n`);
+    res.json({ ok: true, positive: result.positive, negative: result.negative });
+  } catch (e: any) {
+    res.json({ ok: false, error: (e.message || String(e)).slice(0, 1000) });
   }
-  res.end();
 });
 
 // WebSocket status
