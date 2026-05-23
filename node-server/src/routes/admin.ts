@@ -525,9 +525,9 @@ router.post('/points-config', requireAdmin, (req, res) => {
   if (typeof signup_bonus === 'number') cfg.signup_bonus = signup_bonus;
   if (Object.keys(cfg).length === 0) return res.status(400).json({ error: 'no valid fields' });
   const pf = path.join(path.dirname(config.creator_map_file), 'points_config.json');
-  const current = JSON.parse(fs.readFileSync(pf, 'utf-8'));
+  const current = loadJson<Record<string, any>>(pf, {});
   Object.assign(current, cfg);
-  fs.writeFileSync(pf, JSON.stringify(current, null, 2), 'utf-8');
+  saveJson(pf, current);
   res.json({ ok: true, config: current });
 });
 
