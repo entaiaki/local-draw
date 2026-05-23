@@ -12,6 +12,7 @@ import { adminRouter } from './routes/admin.js';
 import { workflowRouter } from './routes/workflow.js';
 import { statusRouter, setupWsStatus } from './routes/status.js';
 import { loadConfig } from './services/config.js';
+import { walletRouter, deductPoints, loadPointsCfg } from './routes/wallet.js';
 
 // CLI arg parsing: --host HOST --port PORT
 const argv = process.argv.slice(2);
@@ -46,6 +47,8 @@ app.use('/api/draw/admin', hot('./routes/collaborator.js', 'adminCollaboratorRou
 app.use('/api/draw/collaborator', hot('./routes/collaborator.js', 'collaboratorRouter'));
 app.use('/api/draw', hot('./routes/status.js', 'statusRouter'));
 app.use('/api', hot('./routes/workflow.js', 'workflowRouter'));
+app.use('/api/wallet', walletRouter);
+app.use('/api/draw/admin', walletRouter);
 app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));
 
 // Health check
@@ -301,6 +304,15 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     return res.status(429).json({ error: '操作太频繁，请 10 秒后再试' });
   }
   _translateRate[uid] = now;
+
+  // Points check
+  if ((req as any).user?.role !== 'admin') {
+    const ptCfg = loadPointsCfg();
+    const ptResult = deductPoints((req as any).user?.id, ptCfg.llm_translate);
+    if (!ptResult.ok) {
+      return res.status(402).json({ error: '点数不足', need: ptCfg.llm_translate, balance: ptResult.balance || 0 });
+    }
+  }
 
   // Turnstile verification
 	  const tsToken = req.body?.turnstile_token;

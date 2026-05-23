@@ -4,6 +4,7 @@ import { loadConfig, loadLimits, saveJson, DEFAULT_LIMITS, loadJson } from '../s
 import { Limits } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
+import { loadPointsConfig as loadPointsCfg } from './wallet.js';
 
 interface BanEntry {
   user_id: number;
@@ -508,6 +509,25 @@ router.get('/style_thumbnail', (req, res) => {
 router.get('/styles', requireAdmin, (req, res) => {
   const sf = path.join(path.dirname(config.creator_map_file), 'styles.json');
   try { res.json(JSON.parse(fs.readFileSync(sf, 'utf-8'))); } catch { res.json({ styles: [] }); }
+});
+
+// GET|POST /api/draw/admin/points-config
+router.get('/points-config', requireAdmin, (req, res) => {
+  res.json(loadPointsCfg());
+});
+
+router.post('/points-config', requireAdmin, (req, res) => {
+  const { text_to_image, image_to_image, llm_translate } = req.body || {};
+  const cfg: any = {};
+  if (typeof text_to_image === 'number') cfg.text_to_image = text_to_image;
+  if (typeof image_to_image === 'number') cfg.image_to_image = image_to_image;
+  if (typeof llm_translate === 'number') cfg.llm_translate = llm_translate;
+  if (Object.keys(cfg).length === 0) return res.status(400).json({ error: 'no valid fields' });
+  const pf = path.join(path.dirname(config.creator_map_file), 'points_config.json');
+  const current = JSON.parse(fs.readFileSync(pf, 'utf-8'));
+  Object.assign(current, cfg);
+  fs.writeFileSync(pf, JSON.stringify(current, null, 2), 'utf-8');
+  res.json({ ok: true, config: current });
 });
 
 export { router as adminRouter };

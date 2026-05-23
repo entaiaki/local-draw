@@ -1,0 +1,53 @@
+- generic [active] [ref=e1]:
+  - img [ref=e2]
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - link "爱发电" [ref=e8] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e9]: 爱发电
+            - link "首页" [ref=e10] [cursor=pointer]:
+              - /url: /feed
+              - text: 首页
+            - link "发现" [ref=e11] [cursor=pointer]:
+              - /url: /explore
+              - text: 发现
+            - link "动漫" [ref=e12] [cursor=pointer]:
+              - /url: /cartoon
+              - text: 动漫
+            - link "音乐" [ref=e13] [cursor=pointer]:
+              - /url: /music
+              - text: 音乐
+            - link " App 下载" [ref=e14] [cursor=pointer]:
+              - /url: /app
+              - generic [ref=e15]: 
+              - text: App 下载
+            - generic [ref=e16]:
+              - generic [ref=e17]: 
+              - textbox "搜索..." [ref=e18]
+          - generic [ref=e19]:
+            - generic [ref=e20] [cursor=pointer]: 登录
+            - generic [ref=e22] [cursor=pointer]: 注册
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - generic [ref=e25] [cursor=pointer]:
+              - generic [ref=e26]: 
+              - text: 语言(简体中文)
+              - generic [ref=e27]: 
+            - generic [ref=e28]: © 2026 afdian.com
+            - link "关于我们" [ref=e29] [cursor=pointer]:
+              - /url: /album/248b4bb2c9b111e9a9bb52540025c377/92aa33b68b4a11e8aa6952540025c377
+            - link "使用协议与条款" [ref=e30] [cursor=pointer]:
+              - /url: /term
+            - link "隐私政策" [ref=e31] [cursor=pointer]:
+              - /url: /privacy
+          - generic [ref=e32]:
+            - link "爱发电招聘" [ref=e33] [cursor=pointer]:
+              - /url: /p/d74eef386ad211eb87a052540025c377
+            - link "创作者指南" [ref=e34] [cursor=pointer]:
+              - /url: /album/248b4bb2c9b111e9a9bb52540025c377
+            - generic [ref=e35]: 电羊科技（北京）有限公司
+          - generic [ref=e37] [cursor=pointer]: 网上有害信息举报专区
+    - text: 

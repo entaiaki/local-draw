@@ -6,6 +6,7 @@ import { verifyToken } from '../middleware/auth.js';
 import { QueueItem, RunRequest } from '../types/index.js';
 import { loadLimits, loadConfig, saveJson, loadJson } from '../services/config.js';
 import { resetRunner } from '../services/runner.js';
+import { deductPoints, loadPointsCfg } from './wallet.js';
 
 const router = Router();
 router.use(express.json({ limit: "50mb" }));
@@ -206,6 +207,17 @@ router.post('/queue', async (req: Request, res: Response) => {
   const currentQ = queuedUserIds[user.id] || 0;
   if (currentQ >= maxQ) {
     return res.status(429).json({ detail: `你的队列已满（最多 ${maxQ} 个），请等待后再试` });
+  }
+
+  // Points check
+  if (user.role !== 'admin') {
+    const pointsCfg = loadPointsCfg();
+    const isImg2img = !!(req.body as any)?.image1_name;
+    const cost = isImg2img ? pointsCfg.image_to_image : pointsCfg.text_to_image;
+    const ptResult = deductPoints(user.id, cost);
+    if (!ptResult.ok) {
+      return res.status(402).json({ error: '点数不足', need: cost, balance: ptResult.balance || 0 });
+    }
   }
 
   // Turnstile verification
