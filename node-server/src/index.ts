@@ -123,7 +123,7 @@ app.get('/api/thumbnail', (req, res) => {
 
   // Look for thumbnail alongside workflow file: workflows/<subdir>/<category>/<basename>.ext
   const workflowsDir = config.workflows_dir || path.join(process.cwd(), '..', 'node-server', 'workflows');
-  const baseName = p.replace(/\.json$/i, '');
+  const baseName = p.replace(/\.(json|txt)$/i, '');
   for (const ext of THUMB_EXTS) {
     const fp = path.resolve(workflowsDir, baseName + ext);
     if (fp.startsWith(path.resolve(workflowsDir)) && fs.existsSync(fp)) return res.sendFile(fp);
