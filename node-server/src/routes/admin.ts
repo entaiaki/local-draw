@@ -400,15 +400,154 @@ router.post('/delete_batch', requireAdmin, (req, res) => {
   res.json({ ok: true, deleted, failed });
 });
 
-// GET /api/draw/admin/gc
+const GC_OUTPUT_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
+
+function gcScanDeletedImages(outputDir: string, archiveDir: string): { deletedFile: string; list: string[]; onDisk: string[] } {
+  const deletedFile = path.join(path.dirname(config.creator_map_file), 'deleted_images.json');
+  const list: string[] = loadJson<string[]>(deletedFile, []);
+  const onDisk: string[] = [];
+  const dirs = [outputDir].concat(fs.existsSync(archiveDir) ? [archiveDir] : []);
+  for (const f of list) {
+    for (const dir of dirs) {
+      const fp = path.resolve(dir, f);
+      if (fp.startsWith(path.resolve(dir)) && fs.existsSync(fp)) { onDisk.push(f); break; }
+    }
+  }
+  return { deletedFile, list, onDisk };
+}
+
+function gcLoadCreatorMap(): Record<string, number> {
+  const map: Record<string, number> = {};
+  try {
+    if (fs.existsSync(config.creator_map_file)) {
+      for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) {
+        const parts = ln.split('\t');
+        if (parts.length === 2 && /^\d+$/.test(parts[1].trim())) map[parts[0].trim()] = parseInt(parts[1].trim());
+      }
+    }
+  } catch {}
+  return map;
+}
+
+function gcLoadFeaturedList(): string[] {
+  const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
+  try {
+    const raw = fs.readFileSync(featuredFile, 'utf-8').trim();
+    return raw.startsWith('[') ? JSON.parse(raw) : raw.split('\n').map(l => l.trim()).filter(Boolean);
+  } catch { return []; }
+}
+
+function gcLoadPromptMeta(): Record<string, any> {
+  const f = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+  try { return JSON.parse(fs.readFileSync(f, 'utf-8')); } catch { return {}; }
+}
+
+function gcOutputFiles(outputDir: string): string[] {
+  try {
+    return fs.readdirSync(outputDir).filter(f => {
+      if (fs.statSync(path.join(outputDir, f)).isDirectory()) return false;
+      return GC_OUTPUT_EXTS.includes(path.extname(f).toLowerCase());
+    });
+  } catch { return []; }
+}
+
+// GET /api/draw/admin/gc — dry-run report
 router.get('/gc', requireAdmin, (req, res) => {
-  // Simplified GC - just report
-  res.json({ cleaned: { orphaned_files: 0, stale_queue: 0 } });
+  const outputDir = config.output_dir;
+  const archiveDir = config.archive_dir;
+  const cmap = gcLoadCreatorMap();
+  const featured = gcLoadFeaturedList();
+
+  const deletedInfo = gcScanDeletedImages(outputDir, archiveDir);
+  const allFiles = gcOutputFiles(outputDir);
+
+  const orphanedMappingCount = Object.keys(cmap).filter(f => !fs.existsSync(path.join(outputDir, f))).length;
+
+  const orphanedFiles = allFiles.filter(f => !cmap[f] && !featured.includes(f));
+
+  res.json({
+    dry_run: true,
+    to_clean: {
+      deleted_image_files: deletedInfo.onDisk.length,
+      orphaned_mappings: orphanedMappingCount,
+      unclaimed_output_files: orphanedFiles.length
+    }
+  });
 });
 
-// POST /api/draw/admin/gc
+// POST /api/draw/admin/gc — execute cleanup
 router.post('/gc', requireAdmin, (req, res) => {
-  res.json({ cleaned: { orphaned_files: 0, stale_queue: 0 } });
+  const outputDir = config.output_dir;
+  const archiveDir = config.archive_dir;
+  const dirs = [outputDir].concat(fs.existsSync(archiveDir) ? [archiveDir] : []);
+
+  // 1. Delete user-deleted image files from disk
+  const deletedInfo = gcScanDeletedImages(outputDir, archiveDir);
+  let deletedFileCount = 0;
+  for (const f of deletedInfo.onDisk) {
+    for (const dir of dirs) {
+      const fp = path.resolve(dir, f);
+      if (fp.startsWith(path.resolve(dir)) && fs.existsSync(fp)) {
+        try { fs.unlinkSync(fp); deletedFileCount++; } catch {}
+      }
+    }
+  }
+  // Clear deleted_images.json
+  fs.writeFileSync(deletedInfo.deletedFile, '[]', 'utf-8');
+
+  // 2. Remove orphaned creator_map entries (files no longer on disk)
+  const cmap = gcLoadCreatorMap();
+  const validLines: string[] = [];
+  for (const [f, uid] of Object.entries(cmap)) {
+    if (fs.existsSync(path.join(outputDir, f))) {
+      validLines.push(`${f}\t${uid}`);
+    }
+  }
+  const orphanedMappingCount = Object.keys(cmap).length - validLines.length;
+  if (validLines.length > 0) {
+    fs.writeFileSync(config.creator_map_file, validLines.join('\n') + '\n', 'utf-8');
+  } else {
+    fs.writeFileSync(config.creator_map_file, '', 'utf-8');
+  }
+
+  // 3. Remove matching prompt_meta entries
+  const pmFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+  const pm = gcLoadPromptMeta();
+  let pmRemoved = 0;
+  for (const key of Object.keys(pm)) {
+    if (!fs.existsSync(path.join(outputDir, key))) {
+      delete pm[key];
+      pmRemoved++;
+    }
+  }
+  fs.writeFileSync(pmFile, JSON.stringify(pm, null, 2), 'utf-8');
+
+  // 4. Remove stale featured entries
+  const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
+  const featured = gcLoadFeaturedList();
+  const validFeatured = featured.filter(f => fs.existsSync(path.join(outputDir, f)));
+  const featuredRemoved = featured.length - validFeatured.length;
+  fs.writeFileSync(featuredFile, JSON.stringify(validFeatured, null, 2), 'utf-8');
+
+  // 5. Delete unclaimed files (no UID, not featured, in output root)
+  const cmapAfter = gcLoadCreatorMap();
+  const featuredAfter = gcLoadFeaturedList();
+  const allFiles = gcOutputFiles(outputDir);
+  const toDelete = allFiles.filter(f => !cmapAfter[f] && !featuredAfter.includes(f));
+  let unclaimedDeleted = 0;
+  for (const f of toDelete) {
+    try { fs.unlinkSync(path.join(outputDir, f)); unclaimedDeleted++; } catch {}
+  }
+
+  res.json({
+    cleaned: {
+      deleted_image_files: deletedFileCount,
+      orphaned_mappings: orphanedMappingCount,
+      prompt_meta_removed: pmRemoved,
+      featured_removed: featuredRemoved,
+      unclaimed_output_files: unclaimedDeleted
+    }
+  });
 });
 
 // GET /api/draw/admin/reports
