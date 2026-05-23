@@ -31,6 +31,7 @@ export interface RunRequest {
   negative_prompt?: string;
   width?: number;
   height?: number;
+  style_tags?: string;
   seed?: number;
   image1_name?: string;
   image2_name?: string;

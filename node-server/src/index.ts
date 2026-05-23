@@ -75,6 +75,38 @@ app.get('/api/resolutions', (req, res) => {
   try { res.json(JSON.parse(fs.readFileSync(rf, 'utf-8'))); } catch { res.json({ presets: [] }); }
 });
 
+const STYLE_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
+
+app.get('/api/styles', (req, res) => {
+  const stylesDir = path.join(path.dirname(config.creator_map_file), 'styles');
+  try {
+    if (!fs.existsSync(stylesDir)) return res.json({ styles: [] });
+    const files = fs.readdirSync(stylesDir).filter(f => STYLE_IMAGE_EXTS.includes(path.extname(f).toLowerCase()));
+    const styles = files.map(f => ({
+      name: path.basename(f, path.extname(f)),
+      tags: path.basename(f, path.extname(f)),
+      image: f,
+      thumbnail_url: `/api/style_thumbnail?name=${encodeURIComponent(f)}`,
+    }));
+    res.json({ styles });
+  } catch { res.json({ styles: [] }); }
+});
+
+app.get('/api/style_thumbnail', (req, res) => {
+  const name = req.query.name as string;
+  if (!name) return res.status(404).json({ error: 'no style' });
+  const stylesDir = path.join(path.dirname(config.creator_map_file), 'styles');
+  try {
+    const direct = path.resolve(stylesDir, name);
+    if (direct.startsWith(path.resolve(stylesDir)) && fs.existsSync(direct)) return res.sendFile(direct);
+    for (const ext of STYLE_IMAGE_EXTS) {
+      const fp = path.resolve(stylesDir, name + ext);
+      if (fp.startsWith(path.resolve(stylesDir)) && fs.existsSync(fp)) return res.sendFile(fp);
+    }
+    res.status(404).json({ error: 'not found' });
+  } catch { res.status(404).json({ error: 'not found' }); }
+});
+
 const THUMB_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
 
 app.get('/api/thumbnail', (req, res) => {
