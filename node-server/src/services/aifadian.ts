@@ -26,13 +26,23 @@ async function callApi(paramsObj: Record<string, any>, userId: string, token: st
   const ts = Math.floor(Date.now() / 1000);
   const signStr = sign(token, params, ts, userId);
 
-  const resp = await fetch(`${API_BASE}/query-order`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: userId, params, ts, sign: signStr }),
-    signal: AbortSignal.timeout(10000),
-  });
-  return resp.json();
+  const url = `${API_BASE}/query-order`;
+  const body = JSON.stringify({ user_id: userId, params, ts, sign: signStr });
+  console.log(`[aifadian] POST ${url} ts=${ts} sign=${signStr.slice(0,8)}...`);
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      signal: AbortSignal.timeout(10000),
+    });
+    const data = await resp.json();
+    console.log(`[aifadian] response ec=${data.ec} list=${data.data?.list?.length || 0}`);
+    return data;
+  } catch (e: any) {
+    console.log(`[aifadian] fetch error: ${e.message}`);
+    throw e;
+  }
 }
 
 export async function queryOrder(

@@ -57,19 +57,21 @@ router.get('/balance', async (req: Request, res: Response) => {
   // Poll aifadian for paid orders matching this user's remark (UID)
   const aifadianUserId = process.env.AIFADIAN_USER_ID || '';
   const aifadianToken = process.env.AIFADIAN_API_KEY || '';
+  console.log(`[wallet] balance check uid=${uid} aifadianCfg=${!!(aifadianUserId && aifadianToken)}`);
   if (aifadianUserId && aifadianToken) {
     const result = await queryPaidByRemark(String(uid), aifadianUserId, aifadianToken);
+    console.log(`[wallet] aifadian result ec=${result.ec} orders=${result.orders?.length} error=${result.error || 'none'}`);
     if (result.ec === 200 && result.orders.length > 0) {
       const orders = loadOrders();
       let changed = false;
       for (const paidOrder of result.orders) {
         const existing = orders.find((o) => o.order_id === paidOrder.out_trade_no && o.status === 'paid');
+        console.log(`[wallet] order ${paidOrder.out_trade_no} existing=${!!existing} status=${paidOrder.status}`);
         if (existing) continue;
         // Credit points
-        const pts = 6000; // fixed for now, could expand per plan
+        const pts = 6000;
         wallet.balance = (wallet.balance || 0) + pts;
         wallet.total_purchased = (wallet.total_purchased || 0) + pts;
-        // Record order
         orders.push({
           order_id: paidOrder.out_trade_no,
           user_id: uid,
@@ -87,6 +89,7 @@ router.get('/balance', async (req: Request, res: Response) => {
         saveOrders(orders);
         wallets[uid] = wallet;
         saveWallets(wallets);
+        console.log(`[wallet] credited uid=${uid} newBalance=${wallet.balance}`);
       }
     }
   }
