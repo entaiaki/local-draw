@@ -14,7 +14,7 @@ function walletFile() { return path.join(HERE, 'wallets.json'); }
 function ordersFile() { return path.join(HERE, 'orders.json'); }
 function pointsConfigFile() { return path.join(HERE, 'points_config.json'); }
 
-const DEFAULT_POINTS_CONFIG = { text_to_image: 10, image_to_image: 100, llm_translate: 1 };
+const DEFAULT_POINTS_CONFIG = { text_to_image: 10, image_to_image: 100, llm_translate: 1, signup_bonus: 0 };
 
 interface Wallet {
   balance: number;
@@ -65,11 +65,14 @@ router.get('/balance', async (req: Request, res: Response) => {
   const uid = getUserId(req);
   if (!uid) return res.status(401).json({ error: 'unauthorized' });
 
-  // Auto-create wallet for users who have generated images but no wallet entry
+  // Auto-create wallet for new users, give signup bonus if configured
   let wallets = loadWallets();
-  if (!wallets[uid] && creatorUserIds().has(uid)) {
-    wallets[uid] = { balance: 0, total_purchased: 0 };
+  if (!wallets[uid]) {
+    const ptsCfg = loadPointsConfig();
+    const bonus = ptsCfg.signup_bonus || 0;
+    wallets[uid] = { balance: bonus, total_purchased: bonus };
     saveWallets(wallets);
+    if (bonus > 0) console.log(`[wallet] signup bonus uid=${uid} bonus=${bonus}`);
     wallets = loadWallets();
   }
   const wallet = wallets[uid] || { balance: 0, total_purchased: 0 };
