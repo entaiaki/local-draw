@@ -1,6 +1,6 @@
 {
   "1": {
-    "balance": 1146,
+    "balance": 1236,
     "total_purchased": 666
   },
   "55": {
@@ -100,7 +100,7 @@
     "total_purchased": 666
   },
   "308": {
-    "balance": 42140,
+    "balance": 42190,
     "total_purchased": 42000
   },
   "321": {
@@ -152,7 +152,7 @@
     "total_purchased": 666
   },
   "447": {
-    "balance": 826,
+    "balance": 856,
     "total_purchased": 666
   },
   "478": {
@@ -260,7 +260,7 @@
     "total_purchased": 666
   },
   "681": {
-    "balance": 1466,
+    "balance": 1616,
     "total_purchased": 666
   },
   "692": {
@@ -344,7 +344,7 @@
     "total_purchased": 666
   },
   "854": {
-    "balance": 986,
+    "balance": 1046,
     "total_purchased": 666
   },
   "856": {
@@ -678,6 +678,10 @@
   "1067": {
     "balance": 6000,
     "total_purchased": 6000
+  },
+  "1068": {
+    "balance": 666,
+    "total_purchased": 666
   },
   "1069": {
     "balance": 666,
