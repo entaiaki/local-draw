@@ -67,7 +67,7 @@ function scanTagsDir(): { path: string; name: string; thumbnail: boolean; catego
 
 function baseWorkflowPath(subdir: string): string | null {
   const dir = subdir || 'WAI';
-  const basePath = `${dir}/无Lora/无Lora.json`;
+  const basePath = `${dir}/通用/无Lora.json`;
   const fullPath = path.join(config.workflows_dir, basePath);
   return fs.existsSync(fullPath) ? basePath : null;
 }
