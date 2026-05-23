@@ -24,6 +24,17 @@ for (let i = 0; i < argv.length; i++) {
   }
 }
 
+// Load .env into process.env
+for (const dir of [process.cwd(), path.join(process.cwd(), '..')]) {
+  try {
+    const envContent = fs.readFileSync(path.join(dir, '.env'), 'utf-8');
+    for (const line of envContent.split('\n')) {
+      const m = line.match(/^(\w+)="([^"]*)"\s*$/);
+      if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+    }
+  } catch {}
+}
+
 const app = express();
 const server = createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws/status' });
