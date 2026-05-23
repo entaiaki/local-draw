@@ -65,14 +65,22 @@ router.get('/balance', async (req: Request, res: Response) => {
   const uid = getUserId(req);
   if (!uid) return res.status(401).json({ error: 'unauthorized' });
 
-  // Auto-create wallet for new users, give signup bonus if configured
+  // Auto-create wallet, give signup bonus if configured
   let wallets = loadWallets();
+  const ptsCfg = loadPointsConfig();
+  const bonus = ptsCfg.signup_bonus || 0;
+
   if (!wallets[uid]) {
-    const ptsCfg = loadPointsConfig();
-    const bonus = ptsCfg.signup_bonus || 0;
     wallets[uid] = { balance: bonus, total_purchased: bonus };
     saveWallets(wallets);
     if (bonus > 0) console.log(`[wallet] signup bonus uid=${uid} bonus=${bonus}`);
+    wallets = loadWallets();
+  } else if (bonus > 0 && wallets[uid].balance === 0 && wallets[uid].total_purchased === 0) {
+    // Retroactively grant bonus to users who had 0/0 wallets from scanner
+    wallets[uid].balance = bonus;
+    wallets[uid].total_purchased = bonus;
+    saveWallets(wallets);
+    console.log(`[wallet] signup bonus (retro) uid=${uid} bonus=${bonus}`);
     wallets = loadWallets();
   }
   const wallet = wallets[uid] || { balance: 0, total_purchased: 0 };
