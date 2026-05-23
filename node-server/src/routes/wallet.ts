@@ -86,7 +86,7 @@ router.post('/create-order', (req: Request, res: Response) => {
   const uid = getUserId(req);
   if (!uid) return res.status(401).json({ error: 'unauthorized' });
 
-  const { pay_url: planUrl } = req.body || {};
+  const { pay_url: planUrl, points } = req.body || {};
   if (!planUrl) return res.status(400).json({ error: 'need pay_url' });
 
   const orderId = 'order_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
@@ -96,7 +96,7 @@ router.post('/create-order', (req: Request, res: Response) => {
     user_id: uid,
     plan_id: '',
     amount: 0,
-    points: 0,
+    points: Number(points) || 0,
     status: 'pending',
     remark: String(uid),
     created_at: Date.now() / 1000,
@@ -107,7 +107,7 @@ router.post('/create-order', (req: Request, res: Response) => {
   saveOrders(orders);
 
   const payUrl = planUrl.replace('remark=1', `remark=${uid}`);
-  res.json({ pay_url: payUrl, order_id: orderId });
+  res.json({ pay_url: payUrl, order_id: orderId, points: order.points });
 });
 
 // GET /api/wallet/plans (public)
