@@ -42,8 +42,8 @@ function getClientId(): string {
 }
 
 async function loadWorkflow(path: string): Promise<any> {
-  const tail = path.replace(/\\/g, '/').split('/').map(p => encodeURIComponent(p)).join('%2F');
-  const url = `http://${config.comfyui_host}:${config.comfyui_port}/api/userdata/workflows%2F${tail}`;
+  const segments = `workflows/${path}`.replace(/\\/g, '/').split('/').map(p => encodeURIComponent(p));
+  const url = `http://${config.comfyui_host}:${config.comfyui_port}/api/userdata/${segments.join('/')}`;
   try {
     const r = await axios.get(url, { headers: { 'Comfy-User': '' }, timeout: 10000, params: {} });
     return r.data;

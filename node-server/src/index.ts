@@ -111,19 +111,10 @@ app.get('/api/thumbnail', (req, res) => {
 
   // Look for thumbnail alongside workflow file: workflows/<subdir>/<category>/<basename>.ext
   const workflowsDir = config.workflows_dir || path.join(process.cwd(), '..', 'node-server', 'workflows');
-  // p is like "鸣潮/卡提希娅.json" or "WAI/鸣潮/卡提希娅.json"
-  // Remove WAI/ or ANIMA/ prefix if present, then we have "category/name.json"
-  const relPath = p.replace(/^(WAI|ANIMA)\//i, '');
-  const baseName = relPath.replace(/\.json$/i, '');
+  const baseName = p.replace(/\.json$/i, '');
   for (const ext of THUMB_EXTS) {
     const fp = path.resolve(workflowsDir, baseName + ext);
     if (fp.startsWith(path.resolve(workflowsDir)) && fs.existsSync(fp)) return res.sendFile(fp);
-    // Also check with WAI/ prefix
-    const fp2 = path.resolve(workflowsDir, 'WAI', baseName + ext);
-    if (fp2.startsWith(path.resolve(workflowsDir)) && fs.existsSync(fp2)) return res.sendFile(fp2);
-    // Also check with ANIMA/ prefix
-    const fp3 = path.resolve(workflowsDir, 'ANIMA', baseName + ext);
-    if (fp3.startsWith(path.resolve(workflowsDir)) && fs.existsSync(fp3)) return res.sendFile(fp3);
   }
 
   // Fallback: old thumbnails directory

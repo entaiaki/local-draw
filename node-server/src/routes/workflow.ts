@@ -10,7 +10,7 @@ const config = loadConfig();
 
 const THUMB_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 
-function scanWorkflowsDir(baseDir: string): { path: string; name: string; thumbnail: boolean; category: string }[] {
+function scanWorkflowsDir(baseDir: string, subdir = ''): { path: string; name: string; thumbnail: boolean; category: string }[] {
   if (!fs.existsSync(baseDir)) return [];
   const result: { path: string; name: string; thumbnail: boolean; category: string }[] = [];
   for (const catDir of fs.readdirSync(baseDir, { withFileTypes: true })) {
@@ -19,7 +19,7 @@ function scanWorkflowsDir(baseDir: string): { path: string; name: string; thumbn
     for (const file of fs.readdirSync(dirPath)) {
       if (!file.endsWith('.json')) continue;
       const baseName = file.slice(0, -5);
-      const wfRelPath = `${catDir.name}/${file}`;
+      const wfRelPath = subdir ? `${subdir}/${catDir.name}/${file}` : `${catDir.name}/${file}`;
       let hasThumb = false;
       for (const ext of THUMB_EXTS) {
         if (fs.existsSync(path.join(dirPath, baseName + ext))) { hasThumb = true; break; }
@@ -51,12 +51,12 @@ router.get('/workflows', async (req: Request, res: Response) => {
     if (subdir) params.dir = `workflows/${subdir}`;
     await comfyApi.get('/api/userdata', { params, headers: { 'Comfy-User': '' } });
     // If ComfyUI is reachable, we still scan our local dirs for correct category/thumbnail data
-    const workflows = scanWorkflowsDir(baseDir);
+    const workflows = scanWorkflowsDir(baseDir, subdir);
     const categoryOrder = [...new Set(workflows.map(w => w.category))];
     res.json({ workflows, category_order: categoryOrder });
   } catch {
     // Fallback: local filesystem
-    const workflows = scanWorkflowsDir(baseDir);
+    const workflows = scanWorkflowsDir(baseDir, subdir);
     const categoryOrder = [...new Set(workflows.map(w => w.category))];
     res.json({ workflows, category_order: categoryOrder });
   }
@@ -69,8 +69,9 @@ router.get('/workflows/current', async (req: Request, res: Response) => {
 
   try {
     const comfyApi = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
-    const encodedPath = encodeURIComponent(wfPath);
-    const resp = await comfyApi.get(`/api/userdata/workflows%2F${encodedPath}`, {
+    // Split path into segments and encode each, then join with /
+    const segments = `workflows/${wfPath}`.split('/').map(s => encodeURIComponent(s));
+    const resp = await comfyApi.get(`/api/userdata/${segments.join('/')}`, {
       headers: { 'Comfy-User': '' },
     });
     // 提取默认正向/负向提示词
