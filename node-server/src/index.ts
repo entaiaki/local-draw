@@ -247,6 +247,23 @@ app.get('/api/uploads/:filename', (req, res) => {
   res.sendFile(fp);
 });
 
+// POST /api/draw/admin/wf_thumbnail
+app.post('/api/draw/admin/wf_thumbnail', (req, res) => {
+  const multer = require('multer');
+  const upload = multer().single('file');
+  upload(req, res, (err: any) => {
+    if (err) return res.status(400).json({ error: 'upload failed' });
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: 'no file' });
+    const thumbDir = path.join(process.cwd(), '..', 'web', 'thumbnails');
+    fs.mkdirSync(thumbDir, { recursive: true });
+    const ext = path.extname(file.originalname) || '.png';
+    const filename = `wf_${Date.now().toString(36)}${ext}`;
+    fs.writeFileSync(path.join(thumbDir, filename), file.buffer);
+    res.json({ ok: true, filename });
+  });
+});
+
 // POST /api/img2img/upload
 app.post('/api/img2img/upload', async (req, res) => {
   const multer = require('multer');
