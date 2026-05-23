@@ -530,4 +530,59 @@ router.post('/points-config', requireAdmin, (req, res) => {
   res.json({ ok: true, config: current });
 });
 
+// GET /api/draw/admin/wallets
+router.get('/wallets', requireAdmin, (req, res) => {
+  const wf = path.join(path.dirname(config.creator_map_file), 'wallets.json');
+  const wallets = loadJson<Record<string, { balance: number; total_purchased: number }>>(wf, {});
+  // Return as array for easier display
+  const items = Object.entries(wallets).map(([uid, w]) => ({ user_id: Number(uid), ...w }));
+  res.json({ items });
+});
+
+// POST /api/draw/admin/wallets/set
+router.post('/wallets/set', requireAdmin, (req, res) => {
+  const { user_id, balance, total_purchased } = req.body || {};
+  if (!user_id) return res.status(400).json({ error: 'need user_id' });
+  const wf = path.join(path.dirname(config.creator_map_file), 'wallets.json');
+  const wallets = loadJson<Record<string, any>>(wf, {});
+  const key = String(user_id);
+  if (!wallets[key]) wallets[key] = { balance: 0, total_purchased: 0 };
+  if (typeof balance === 'number') wallets[key].balance = balance;
+  if (typeof total_purchased === 'number') wallets[key].total_purchased = total_purchased;
+  saveJson(wf, wallets);
+  res.json({ ok: true, wallet: wallets[key] });
+});
+
+// GET /api/draw/admin/plans
+router.get('/plans', requireAdmin, (req, res) => {
+  const pf = path.join(path.dirname(config.creator_map_file), 'plans.json');
+  const plans = loadJson<any[]>(pf, []);
+  res.json({ items: plans });
+});
+
+// POST /api/draw/admin/plans
+router.post('/plans', requireAdmin, (req, res) => {
+  const { id, name, points, price, plan_id, sku_id } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'need id' });
+  const pf = path.join(path.dirname(config.creator_map_file), 'plans.json');
+  const plans = loadJson<any[]>(pf, []);
+  const idx = plans.findIndex((p: any) => p.id === id);
+  const entry = { id, name: name || '', points: points || 0, price: price || 0, plan_id: plan_id || '', sku_id: sku_id || '' };
+  if (idx >= 0) plans[idx] = entry;
+  else plans.push(entry);
+  saveJson(pf, plans);
+  res.json({ ok: true, plans });
+});
+
+// DELETE /api/draw/admin/plans/:id
+router.delete('/plans/:id', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const pf = path.join(path.dirname(config.creator_map_file), 'plans.json');
+  const plans = loadJson<any[]>(pf, []);
+  const idx = plans.findIndex((p: any) => p.id === id);
+  if (idx >= 0) plans.splice(idx, 1);
+  saveJson(pf, plans);
+  res.json({ ok: true, plans });
+});
+
 export { router as adminRouter };
