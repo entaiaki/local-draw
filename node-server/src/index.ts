@@ -77,16 +77,23 @@ app.get('/api/resolutions', (req, res) => {
 
 const STYLE_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 
+function stylesDirFor(subdir: string): string {
+  const base = path.dirname(config.creator_map_file);
+  if (!subdir) return path.join(base, 'styles_wai');
+  return path.join(base, 'styles_' + subdir);
+}
+
 app.get('/api/styles', (req, res) => {
-  const stylesDir = path.join(path.dirname(config.creator_map_file), 'styles');
+  const subdir = (req.query.subdir as string) || '';
+  const sDir = stylesDirFor(subdir);
   try {
-    if (!fs.existsSync(stylesDir)) return res.json({ styles: [] });
-    const files = fs.readdirSync(stylesDir).filter(f => STYLE_IMAGE_EXTS.includes(path.extname(f).toLowerCase()));
+    if (!fs.existsSync(sDir)) return res.json({ styles: [] });
+    const files = fs.readdirSync(sDir).filter(f => STYLE_IMAGE_EXTS.includes(path.extname(f).toLowerCase()));
     const styles = files.map(f => ({
       name: path.basename(f, path.extname(f)),
       tags: path.basename(f, path.extname(f)),
       image: f,
-      thumbnail_url: `/api/style_thumbnail?name=${encodeURIComponent(f)}`,
+      thumbnail_url: `/api/style_thumbnail?name=${encodeURIComponent(f)}&subdir=${encodeURIComponent(subdir)}`,
     }));
     res.json({ styles });
   } catch { res.json({ styles: [] }); }
@@ -94,14 +101,15 @@ app.get('/api/styles', (req, res) => {
 
 app.get('/api/style_thumbnail', (req, res) => {
   const name = req.query.name as string;
+  const subdir = (req.query.subdir as string) || '';
   if (!name) return res.status(404).json({ error: 'no style' });
-  const stylesDir = path.join(path.dirname(config.creator_map_file), 'styles');
+  const sDir = stylesDirFor(subdir);
   try {
-    const direct = path.resolve(stylesDir, name);
-    if (direct.startsWith(path.resolve(stylesDir)) && fs.existsSync(direct)) return res.sendFile(direct);
+    const direct = path.resolve(sDir, name);
+    if (direct.startsWith(path.resolve(sDir)) && fs.existsSync(direct)) return res.sendFile(direct);
     for (const ext of STYLE_IMAGE_EXTS) {
-      const fp = path.resolve(stylesDir, name + ext);
-      if (fp.startsWith(path.resolve(stylesDir)) && fs.existsSync(fp)) return res.sendFile(fp);
+      const fp = path.resolve(sDir, name + ext);
+      if (fp.startsWith(path.resolve(sDir)) && fs.existsSync(fp)) return res.sendFile(fp);
     }
     res.status(404).json({ error: 'not found' });
   } catch { res.status(404).json({ error: 'not found' }); }
