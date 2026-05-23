@@ -117,6 +117,11 @@ router.get('/plans', (req: Request, res: Response) => {
   res.json({ items: plans });
 });
 
+// GET /api/wallet/points-config (public)
+router.get('/points-config', (req: Request, res: Response) => {
+  res.json(loadPointsConfig());
+});
+
 // GET /api/wallet/orders
 router.get('/orders', (req: Request, res: Response) => {
   const uid = getUserId(req);
