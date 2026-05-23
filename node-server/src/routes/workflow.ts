@@ -23,7 +23,7 @@ router.get('/workflows', async (req: Request, res: Response) => {
     const params: any = { dir: 'workflows', recurse: 'true' };
     if (subdir) params.dir = `workflows/${subdir}`;
     const resp = await comfyApi.get('/api/userdata', { params, headers: { 'Comfy-User': '' } });
-    const files: string[] = Array.isArray(resp.data) ? resp.data.filter((f: any) => typeof f === 'string' && f.startsWith('WAI/')) : [];
+    const files: string[] = Array.isArray(resp.data) ? resp.data.map((f: any) => (typeof f === 'string' ? f : f.path || f.name || String(f))).filter(Boolean) : [];
     const workflows = files.map((f: string) => {
       const wfPath = subdir ? `${subdir}/${f}` : f;
       const meta = metaMap.get(wfPath);
