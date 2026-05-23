@@ -481,7 +481,7 @@ router.get('/workflow_files', requireAdmin, async (req, res) => {
       params: { dir: 'workflows', recurse: 'true', split: 'false', full_info: 'true' }, headers: { 'Comfy-User': '' }
     });
     res.json(r.data);
-  } catch { res.json({ workflows: [], category_order: [] }); }
+  } catch { res.json({ files: [], category_order: [] }); }
 });
 
 // GET /api/draw/admin/workflow_meta
