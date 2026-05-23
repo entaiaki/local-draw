@@ -553,6 +553,32 @@ router.post('/wallets/set', requireAdmin, (req, res) => {
   res.json({ ok: true, wallet: wallets[key] });
 });
 
+// POST /api/draw/admin/wallets/give
+router.post('/wallets/give', requireAdmin, (req, res) => {
+  const { user_id, points } = req.body || {};
+  const pts = parseInt(points) || 0;
+  if (pts <= 0) return res.status(400).json({ error: 'need points > 0' });
+  const wf = path.join(path.dirname(config.creator_map_file), 'wallets.json');
+  const wallets = loadJson<Record<string, any>>(wf, {});
+  let count = 0;
+  if (user_id) {
+    const key = String(user_id);
+    if (!wallets[key]) wallets[key] = { balance: 0, total_purchased: 0 };
+    wallets[key].balance = (wallets[key].balance || 0) + pts;
+    wallets[key].total_purchased = (wallets[key].total_purchased || 0) + pts;
+    count = 1;
+  } else {
+    // 全部用户
+    for (const key of Object.keys(wallets)) {
+      wallets[key].balance = (wallets[key].balance || 0) + pts;
+      wallets[key].total_purchased = (wallets[key].total_purchased || 0) + pts;
+      count++;
+    }
+  }
+  saveJson(wf, wallets);
+  res.json({ ok: true, count });
+});
+
 // GET /api/draw/admin/plans
 router.get('/plans', requireAdmin, (req, res) => {
   const pf = path.join(path.dirname(config.creator_map_file), 'plans.json');
