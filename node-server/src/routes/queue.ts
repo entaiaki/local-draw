@@ -219,7 +219,8 @@ router.post('/queue', async (req: Request, res: Response) => {
   if (user.role !== 'admin') {
     const pointsCfg = loadPointsCfg();
     const isImg2img = !!(req.body as any)?.image1_name;
-    deductedCost = isImg2img ? pointsCfg.image_to_image : pointsCfg.text_to_image;
+    const mode = (req.body as any)?.mode as string;
+    deductedCost = isImg2img ? pointsCfg.image_to_image : (mode === 'anima' ? pointsCfg.text_to_image_anima : pointsCfg.text_to_image);
     const ptResult = deductPoints(user.id, deductedCost);
     if (!ptResult.ok) {
       return res.status(402).json({ error: '点数不足', need: deductedCost, balance: ptResult.balance || 0 });

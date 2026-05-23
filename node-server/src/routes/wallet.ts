@@ -14,7 +14,7 @@ function walletFile() { return path.join(HERE, 'wallets.json'); }
 function ordersFile() { return path.join(HERE, 'orders.json'); }
 function pointsConfigFile() { return path.join(HERE, 'points_config.json'); }
 
-const DEFAULT_POINTS_CONFIG = { text_to_image: 10, image_to_image: 100, llm_translate: 1, signup_bonus: 0 };
+const DEFAULT_POINTS_CONFIG = { text_to_image: 10, image_to_image: 100, llm_translate: 1, signup_bonus: 0, text_to_image_anima: 20 };
 
 interface Wallet {
   balance: number;

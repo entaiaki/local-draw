@@ -343,7 +343,7 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败' });
   } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
 
-  const { prompt, original_prompt, negative_prompt } = req.body || {};
+  const { prompt, original_prompt, negative_prompt, mode } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'need prompt' });
   }
@@ -353,9 +353,9 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     const freshConfig = loadConfig();
     const llmCfg = loadJson(freshConfig.llm_config_file, {});
     const activeProfile = llmCfg.profiles?.[llmCfg.active ?? 0];
-    console.log(`[LLM] translate, profile: ${activeProfile?.name || 'unnamed'}, provider: ${activeProfile?.provider || 'local'}`);
+    console.log(`[LLM] translate, profile: ${activeProfile?.name || 'unnamed'}, provider: ${activeProfile?.provider || 'local'}, mode: ${mode || 'wai'}`);
     const { translatePrompt } = await import('./services/llm.js');
-    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig);
+    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, undefined, mode === 'anima');
     // Deduct points only on success
     if ((req as any).user?.role !== 'admin') {
       const ptCfg = loadPointsCfg();

@@ -195,8 +195,24 @@ export async function translatePrompt(
   negativePrompt?: string,
   config?: AppConfig,
   onChunk?: (text: string) => void,
+  animaMode?: boolean,
 ): Promise<LlmResult> {
   const cfg = getActiveProfile(config!);
+
+  if (animaMode) {
+    // Anima: translate CN→EN natural language, no tags, no negative
+    const animaSystem = `${NSFW_RULE}\n\nTranslate the user's Chinese description into natural English. Keep the original meaning and style. Output ONLY the English translation, nothing else. No tags, no formatting, no explanations.`;
+    let result: string;
+    if (cfg.provider === 'google') {
+      result = await callGoogle(animaSystem, prompt, cfg);
+    } else if (cfg.provider === 'custom') {
+      result = await callOpenAI(animaSystem, prompt, cfg.custom_endpoint, cfg.custom_api_key, cfg.custom_model, onChunk);
+    } else {
+      result = await callOpenAI(animaSystem, prompt, cfg.local_endpoint || config?.lms_api || '', '', '', onChunk);
+    }
+    return { positive: result.trim(), negative: '' };
+  }
+
   let negCtx = '';
   if (negativePrompt) {
     negCtx = `\n\nCurrent negative tags (improve or replace as needed):\n${negativePrompt}`;
@@ -220,7 +236,7 @@ export async function translatePrompt(
   } else if (cfg.provider === 'custom') {
     result = await callOpenAI(system, user, cfg.custom_endpoint, cfg.custom_api_key, cfg.custom_model, onChunk);
   } else {
-    result = await callOpenAI(system, user, cfg.local_endpoint || config?.lms_api || '', '', '', onChunk);
+    result = await callOpenAI(system, user, cfg.local_endpoint || config?.lms_api || '', '', onChunk);
   }
 
   return parsePosNeg(result);
