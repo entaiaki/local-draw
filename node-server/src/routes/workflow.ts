@@ -69,9 +69,11 @@ router.get('/workflows/current', async (req: Request, res: Response) => {
 
   try {
     const comfyApi = axios.create({ baseURL: config.comfyui_api, timeout: 10000 });
-    // Split path into segments and encode each, then join with /
-    const segments = `workflows/${wfPath}`.split('/').map(s => encodeURIComponent(s));
-    const resp = await comfyApi.get(`/api/userdata/${segments.join('/')}`, {
+    const lastSlash = wfPath.lastIndexOf('/');
+    const dir = lastSlash >= 0 ? `workflows/${wfPath.slice(0, lastSlash)}` : 'workflows';
+    const filename = lastSlash >= 0 ? wfPath.slice(lastSlash + 1) : wfPath;
+    const resp = await comfyApi.get('/api/userdata', {
+      params: { dir, filename },
       headers: { 'Comfy-User': '' },
     });
     // 提取默认正向/负向提示词

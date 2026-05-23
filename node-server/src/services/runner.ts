@@ -42,10 +42,13 @@ function getClientId(): string {
 }
 
 async function loadWorkflow(path: string): Promise<any> {
-  const segments = `workflows/${path}`.replace(/\\/g, '/').split('/').map(p => encodeURIComponent(p));
-  const url = `http://${config.comfyui_host}:${config.comfyui_port}/api/userdata/${segments.join('/')}`;
+  // Use dir + filename query params instead of URL path for better subdirectory support
+  const lastSlash = path.lastIndexOf('/');
+  const dir = lastSlash >= 0 ? `workflows/${path.slice(0, lastSlash)}` : 'workflows';
+  const filename = lastSlash >= 0 ? path.slice(lastSlash + 1) : path;
+  const url = `http://${config.comfyui_host}:${config.comfyui_port}/api/userdata`;
   try {
-    const r = await axios.get(url, { headers: { 'Comfy-User': '' }, timeout: 10000, params: {} });
+    const r = await axios.get(url, { headers: { 'Comfy-User': '' }, timeout: 10000, params: { dir, filename } });
     return r.data;
   } catch (e: any) {
     console.log(`[loadWorkflow] FAILED: ${e.message}`, e.response?.data ? JSON.stringify(e.response.data).slice(0, 200) : '');
