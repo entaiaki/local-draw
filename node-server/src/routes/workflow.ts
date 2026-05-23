@@ -93,19 +93,4 @@ router.get('/workflows/current', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/styles
-router.get('/styles', (req: Request, res: Response) => {
-  const stylesFile = path.join(path.dirname(config.creator_map_file), 'styles.json');
-  try {
-    const styles = JSON.parse(fs.readFileSync(stylesFile, 'utf-8'));
-    const result = styles.map((s: any) => ({
-      ...s,
-      thumbnail_url: s.image ? `/api/style_thumbnail?name=${encodeURIComponent(s.image)}` : undefined,
-    }));
-    res.json({ styles: result });
-  } catch {
-    res.json({ styles: [] });
-  }
-});
-
 export { router as workflowRouter };

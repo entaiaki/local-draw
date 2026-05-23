@@ -616,24 +616,6 @@ router.post('/recommendations/resolve', requireAdmin, (req, res) => {
 // POST /api/draw/admin/workflow_rename (stub, kept for compatibility)
 router.post('/workflow_rename', requireAdmin, (req, res) => { res.json({ ok: true }); });
 
-// GET /api/draw/admin/style_thumbnail
-router.get('/style_thumbnail', (req, res) => {
-  const name = req.query.name as string;
-  if (!name) return res.status(404).json({ error: 'no style' });
-  const thumbDir = config.thumb_dir || path.join(process.cwd(), '..', 'web', 'thumbnails');
-  for (const ext of ['.png', '.jpg', '.jpeg', '.webp', '.gif']) {
-    const fp = path.resolve(thumbDir, name + ext);
-    if (fp.startsWith(path.resolve(thumbDir)) && fs.existsSync(fp)) return res.sendFile(fp);
-  }
-  res.status(404).json({ error: 'not found' });
-});
-
-// GET /api/draw/admin/styles
-router.get('/styles', requireAdmin, (req, res) => {
-  const sf = path.join(path.dirname(config.creator_map_file), 'styles.json');
-  try { res.json(JSON.parse(fs.readFileSync(sf, 'utf-8'))); } catch { res.json({ styles: [] }); }
-});
-
 // GET|POST /api/draw/admin/points-config
 router.get('/points-config', requireAdmin, (req, res) => {
   res.json(loadPointsCfg());

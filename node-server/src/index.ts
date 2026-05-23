@@ -75,36 +75,6 @@ app.get('/api/resolutions', (req, res) => {
   try { res.json(JSON.parse(fs.readFileSync(rf, 'utf-8'))); } catch { res.json({ presets: [] }); }
 });
 
-app.get('/api/style_thumbnail', (req, res) => {
-  const name = req.query.name as string;
-  if (!name) return res.status(404).json({ error: 'no style' });
-  const dirs = [
-    config.thumb_dir || path.join(process.cwd(), '..', 'web', 'thumbnails'),
-    path.join(process.cwd(), '..', 'web', 'style_thumbnails'),
-  ];
-  for (const dir of dirs) {
-    const direct = path.resolve(dir, name);
-    if (direct.startsWith(path.resolve(dir)) && fs.existsSync(direct)) return res.sendFile(direct);
-    for (const ext of ['.png', '.jpg', '.jpeg', '.webp', '.gif']) {
-      const fp = path.resolve(dir, name + ext);
-      if (fp.startsWith(path.resolve(dir)) && fs.existsSync(fp)) return res.sendFile(fp);
-    }
-  }
-  res.status(404).json({ error: 'not found' });
-});
-
-app.get('/api/styles', (req, res) => {
-  const sf = path.join(path.dirname(config.creator_map_file), 'styles.json');
-  try {
-    const styles = JSON.parse(fs.readFileSync(sf, 'utf-8'));
-    const result = styles.map((s: any) => ({
-      ...s,
-      thumbnail_url: s.image ? `/api/style_thumbnail?name=${encodeURIComponent(s.image)}` : undefined,
-    }));
-    res.json({ styles: result });
-  } catch { res.json({ styles: [] }); }
-});
-
 const THUMB_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
 
 app.get('/api/thumbnail', (req, res) => {
