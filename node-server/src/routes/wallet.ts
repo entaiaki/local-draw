@@ -105,7 +105,8 @@ router.post('/create-order', (req: Request, res: Response) => {
   orders.push(order);
   saveOrders(orders);
 
-  const payUrl = `https://ifdian.net/order/create?plan_id=${PLAN_ID}&remark=${uid}`;
+  const sku = encodeURIComponent(`[{"sku_id":"f2bed062565411f1b13f5254001e7c00","count":1}]`);
+  const payUrl = `https://www.ifdian.net/order/create?remark=${uid}&product_type=1&plan_id=${PLAN_ID}&sku=${sku}&viokrz_ex=0`;
   res.json({ pay_url: payUrl, order_id: orderId });
 });
 
