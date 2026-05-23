@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-const API_BASE = 'https://api.ifdian.net/api/open';
+const API_BASE = 'https://ifdian.net/api/open';
 
 function md5(s: string): string {
   return crypto.createHash('md5').update(s, 'utf8').digest('hex');
