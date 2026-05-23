@@ -51,6 +51,7 @@ export interface Limits {
   gpu_cache_ttl_ms: number;
   gc_interval_hours: number;
   category_order: string[];
+  turnstile_enabled?: boolean;
 }
 
 export interface LlmProfile {

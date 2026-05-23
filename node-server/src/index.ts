@@ -11,7 +11,7 @@ import { imageRouter } from './routes/images.js';
 import { adminRouter } from './routes/admin.js';
 import { workflowRouter } from './routes/workflow.js';
 import { statusRouter, setupWsStatus } from './routes/status.js';
-import { loadConfig } from './services/config.js';
+import { loadConfig, loadJson } from './services/config.js';
 import { walletRouter, deductPoints, refundPoints, loadPointsCfg } from './routes/wallet.js';
 
 // CLI arg parsing: --host HOST --port PORT
@@ -333,14 +333,17 @@ app.post('/api/translate', requireAuth, async (req, res) => {
   _translateRate[uid] = now;
 
   // Turnstile verification
-  const tsToken = req.body?.turnstile_token;
-  if (!tsToken) return res.status(403).json({ detail: '请完成人机验证' });
-  try {
-    const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
-      new URLSearchParams({ secret: config.turnstile_secret_key, response: tsToken }),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-    if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败' });
-  } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
+  const tsLimits = loadJson<Record<string, any>>(path.join(path.dirname(config.creator_map_file), 'limits.json'), {});
+  if (tsLimits.turnstile_enabled !== false) {
+    const tsToken = req.body?.turnstile_token;
+    if (!tsToken) return res.status(403).json({ detail: '请完成人机验证' });
+    try {
+      const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
+        new URLSearchParams({ secret: config.turnstile_secret_key, response: tsToken }),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+      if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败' });
+    } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
+  }
 
   const { prompt, original_prompt, negative_prompt, mode } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {

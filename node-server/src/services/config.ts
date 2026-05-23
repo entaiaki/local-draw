@@ -91,6 +91,7 @@ export const DEFAULT_LIMITS: Limits = {
   gpu_cache_ttl_ms: 5000,
   gc_interval_hours: 6,
   category_order: [],
+  turnstile_enabled: true,
 };
 
 export function loadLimits(filePath: string): Limits {
