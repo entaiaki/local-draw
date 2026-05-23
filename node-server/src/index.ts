@@ -12,7 +12,7 @@ import { adminRouter } from './routes/admin.js';
 import { workflowRouter } from './routes/workflow.js';
 import { statusRouter, setupWsStatus } from './routes/status.js';
 import { loadConfig } from './services/config.js';
-import { walletRouter, deductPoints, loadPointsCfg } from './routes/wallet.js';
+import { walletRouter, deductPoints, refundPoints, loadPointsCfg } from './routes/wallet.js';
 
 // CLI arg parsing: --host HOST --port PORT
 const argv = process.argv.slice(2);
@@ -359,6 +359,11 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, onChunk);
     res.write(`event: done\ndata: ${JSON.stringify({ positive: result.positive, negative: result.negative })}\n\n`);
   } catch (e: any) {
+    // Refund points on failure
+    if ((req as any).user?.role !== 'admin') {
+      const ptCfg = loadPointsCfg();
+      refundPoints((req as any).user?.id, ptCfg.llm_translate);
+    }
     res.write(`event: error\ndata: ${JSON.stringify({ message: (e.message || String(e)).slice(0, 500) })}\n\n`);
   }
   res.end();

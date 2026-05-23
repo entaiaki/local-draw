@@ -428,6 +428,14 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
   } catch (e: any) {
     item.status = 'failed';
     item.error = ((e.response?.data ? `${e.message}: ${JSON.stringify(e.response.data)}` : e.message) || String(e)).slice(0,2000);
+    // Refund points on failure
+    try {
+      const { refundPoints, loadPointsCfg } = await import('../routes/wallet.js');
+      const cfg = loadPointsCfg();
+      const isImg2img = !!(item.params as any)?.image1_name;
+      const cost = isImg2img ? cfg.image_to_image : cfg.text_to_image;
+      refundPoints(item.user_id, cost);
+    } catch {}
   } finally {
     item.finished_at = Date.now() / 1000;
     // 清理队列用户计数

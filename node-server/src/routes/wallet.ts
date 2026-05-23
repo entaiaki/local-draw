@@ -147,7 +147,7 @@ router.get('/orders', (req: Request, res: Response) => {
   res.json({ items: orders });
 });
 
-// Deduct points (internal, called from queue.ts and index.ts)
+// Deduct points (internal)
 export function deductPoints(userId: number, cost: number): { ok: boolean; balance?: number; error?: string } {
   if (cost <= 0) return { ok: true };
   const wallets = loadWallets();
@@ -159,6 +159,18 @@ export function deductPoints(userId: number, cost: number): { ok: boolean; balan
   wallets[userId] = w;
   saveWallets(wallets);
   return { ok: true, balance: w.balance };
+}
+
+// Refund points on failure (internal)
+export function refundPoints(userId: number, cost: number): void {
+  if (cost <= 0) return;
+  const wallets = loadWallets();
+  const w = wallets[userId];
+  if (w) {
+    w.balance = (w.balance || 0) + cost;
+    saveWallets(wallets);
+    console.log(`[wallet] refund uid=${userId} cost=${cost} newBalance=${w.balance}`);
+  }
 }
 
 export { router as walletRouter };

@@ -6,7 +6,7 @@ import { verifyToken } from '../middleware/auth.js';
 import { QueueItem, RunRequest } from '../types/index.js';
 import { loadLimits, loadConfig, saveJson, loadJson } from '../services/config.js';
 import { resetRunner } from '../services/runner.js';
-import { deductPoints, loadPointsCfg } from './wallet.js';
+import { deductPoints, refundPoints, loadPointsCfg } from './wallet.js';
 
 const router = Router();
 router.use(express.json({ limit: "50mb" }));
@@ -210,26 +210,31 @@ router.post('/queue', async (req: Request, res: Response) => {
   }
 
   // Points check
+  let deductedCost = 0;
   if (user.role !== 'admin') {
     const pointsCfg = loadPointsCfg();
     const isImg2img = !!(req.body as any)?.image1_name;
-    const cost = isImg2img ? pointsCfg.image_to_image : pointsCfg.text_to_image;
-    const ptResult = deductPoints(user.id, cost);
+    deductedCost = isImg2img ? pointsCfg.image_to_image : pointsCfg.text_to_image;
+    const ptResult = deductPoints(user.id, deductedCost);
     if (!ptResult.ok) {
-      return res.status(402).json({ error: '点数不足', need: cost, balance: ptResult.balance || 0 });
+      return res.status(402).json({ error: '点数不足', need: deductedCost, balance: ptResult.balance || 0 });
     }
+  }
+
+  function refundOnFail() {
+    if (deductedCost > 0) refundPoints(user.id, deductedCost);
   }
 
   // Turnstile verification
   const turnstileToken = req.body?.turnstile_token as string;
-  if (!turnstileToken) return res.status(403).json({ detail: '请完成人机验证' });
+  if (!turnstileToken) { refundOnFail(); return res.status(403).json({ detail: '请完成人机验证' }); }
 
   try {
     const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
       new URLSearchParams({ secret: config.turnstile_secret_key, response: turnstileToken }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-    if (!tsResp.data?.success) return res.status(403).json({ detail: '人机验证失败，请刷新后重试' });
-  } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
+    if (!tsResp.data?.success) { refundOnFail(); return res.status(403).json({ detail: '人机验证失败，请刷新后重试' }); }
+  } catch { refundOnFail(); return res.status(503).json({ detail: '人机验证服务不可用' }); }
 
   const body = req.body as Record<string, unknown>;
   queueIdCounter++;
@@ -237,6 +242,7 @@ router.post('/queue', async (req: Request, res: Response) => {
 
   // Validate workflow
   if (!body.direct_prompt && !body.workflow_path && !body.inline_workflow && !body.image1_name) {
+    refundOnFail();
     return res.status(400).json({ detail: '未指定工作流' });
   }
 
