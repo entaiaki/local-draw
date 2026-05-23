@@ -37,3 +37,5 @@ web/style_thumbnails
 web/lora_links
 web/uploads/
 node-server/node_modules/
+.playwright-mcp/
+aifadian-api-docs.md

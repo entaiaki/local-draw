@@ -1,8 +1,0 @@
-[     250ms] [WARNING] Manifest: property 'start_url' ignored, should be same origin as document. @ https://static.afdiancdn.com/static/manifest.json?v=3:0
-[     330ms] [LOG] %c爱发电 color:rgba(148,108,230,1);text-shadow: 0 1px 1px #bbb;font-size:16px @ https://static.afdiancdn.com/js/app.c75fd4b2.js:0
-[     330ms] [LOG] 赞助一下：%chttps://afdian.com/a/afdian color:rgba(148,108,230,1) @ https://static.afdiancdn.com/js/app.c75fd4b2.js:0
-[     399ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ https://www.ifdian.net/p/9c65d9cc617011ed81c352540025c377:0
-[     650ms] [WARNING] One of your code blocks includes unescaped HTML. This is a potentially serious security risk. @ https://static.afdiancdn.com/js/chunk-vendors.84887a5f.js:88
-[     650ms] [WARNING] https://github.com/highlightjs/highlight.js/wiki/security @ https://static.afdiancdn.com/js/chunk-vendors.84887a5f.js:88
-[     650ms] [WARNING] The element with unescaped HTML: @ https://static.afdiancdn.com/js/chunk-vendors.84887a5f.js:88
-[     650ms] [WARNING] JSHandle@node @ https://static.afdiancdn.com/js/chunk-vendors.84887a5f.js:88
