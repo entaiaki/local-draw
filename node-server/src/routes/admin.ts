@@ -480,14 +480,16 @@ router.get('/workflow_files', requireAdmin, async (req, res) => {
     const r = await axios.get(`http://${config.comfyui_host}:${config.comfyui_port}/api/userdata`, {
       params: { dir: 'workflows', recurse: 'true', split: 'false', full_info: 'true' }, headers: { 'Comfy-User': '' }
     });
-    res.json(r.data);
+    // ComfyUI returns an array; normalize to { files: [...] }
+    const data = Array.isArray(r.data) ? { files: r.data, category_order: [] } : r.data;
+    res.json(data);
   } catch { res.json({ files: [], category_order: [] }); }
 });
 
 // GET /api/draw/admin/workflow_meta
 router.get('/workflow_meta', requireAdmin, (req, res) => {
   const f = config.creator_map_file.replace('creator_users.txt', 'workflow_meta.json');
-  try { res.json(JSON.parse(fs.readFileSync(f, 'utf-8'))); } catch { res.json([]); }
+  try { const d = JSON.parse(fs.readFileSync(f, 'utf-8')); res.json({ workflow_meta: Array.isArray(d) ? d : [] }); } catch { res.json({ workflow_meta: [] }); }
 });
 
 // POST /api/draw/admin/workflow_rename
