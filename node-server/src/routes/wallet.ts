@@ -63,22 +63,24 @@ router.get('/balance', async (req: Request, res: Response) => {
       const orders = loadOrders();
       let changed = false;
       for (const paidOrder of result.orders) {
-        // Check if we already recorded this order
-        const existing = orders.find((o) => o.order_id === paidOrder.out_trade_no || (o.status === 'paid' && o.remark === String(uid) && o.points > 0));
-        if (existing?.status === 'paid') continue;
-        // Find matching pending order or create new credit entry
-        const match = orders.find((o) => o.status === 'pending' && o.remark === String(uid));
-        if (match) {
-          match.status = 'paid';
-          match.paid_at = Math.floor(Date.now() / 1000);
-          const pts = match.points || 0;
-          wallet.balance = (wallet.balance || 0) + pts;
-          wallet.total_purchased = (wallet.total_purchased || 0) + pts;
-        } else {
-          // No matching pending order — still credit (e.g. direct payment without creating order first)
-          wallet.balance = (wallet.balance || 0) + 6000;
-          wallet.total_purchased = (wallet.total_purchased || 0) + 6000;
-        }
+        const existing = orders.find((o) => o.order_id === paidOrder.out_trade_no && o.status === 'paid');
+        if (existing) continue;
+        // Credit points
+        const pts = 6000; // fixed for now, could expand per plan
+        wallet.balance = (wallet.balance || 0) + pts;
+        wallet.total_purchased = (wallet.total_purchased || 0) + pts;
+        // Record order
+        orders.push({
+          order_id: paidOrder.out_trade_no,
+          user_id: uid,
+          plan_id: '',
+          amount: 0,
+          points: pts,
+          status: 'paid',
+          remark: String(uid),
+          created_at: Date.now() / 1000,
+          paid_at: Math.floor(Date.now() / 1000),
+        });
         changed = true;
       }
       if (changed) {
@@ -117,7 +119,7 @@ router.post('/create-order', (req: Request, res: Response) => {
   orders.push(order);
   saveOrders(orders);
 
-  const payUrl = planUrl.replace('remark=1', `remark=${uid}`);
+  const payUrl = planUrl.replace('remark=1', `remark=${uid}`) + `&custom_order_id=${uid}`;
   res.json({ pay_url: payUrl, order_id: orderId, points: order.points });
 });
 
