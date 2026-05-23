@@ -2,7 +2,7 @@ import express, { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { loadConfig, loadJson, saveJson } from '../services/config.js';
-import { queryOrder } from '../services/aifadian.js';
+import { queryPaidByRemark } from '../services/aifadian.js';
 
 const router = Router();
 router.use(express.json());
@@ -54,24 +54,35 @@ router.get('/balance', async (req: Request, res: Response) => {
   const wallets = loadWallets();
   const wallet = wallets[uid] || { balance: 0, total_purchased: 0 };
 
-  // Check pending orders - poll aifadian
-  const orders = loadOrders();
-  const pending = orders.filter((o) => o.user_id === uid && o.status === 'pending');
-  if (pending.length > 0) {
-    const aifadianUserId = process.env.AIFADIAN_USER_ID || '';
-    const aifadianToken = process.env.AIFADIAN_API_KEY || '';
-    if (aifadianUserId && aifadianToken) {
-      for (const order of pending) {
-        const result = await queryOrder(order.order_id, aifadianUserId, aifadianToken);
-        if (result.order?.status === 2) {
-          order.status = 'paid';
-          order.paid_at = Math.floor(Date.now() / 1000);
-          wallet.balance = (wallet.balance || 0) + order.points;
-          wallet.total_purchased = (wallet.total_purchased || 0) + order.points;
+  // Poll aifadian for paid orders matching this user's remark (UID)
+  const aifadianUserId = process.env.AIFADIAN_USER_ID || '';
+  const aifadianToken = process.env.AIFADIAN_API_KEY || '';
+  if (aifadianUserId && aifadianToken) {
+    const result = await queryPaidByRemark(String(uid), aifadianUserId, aifadianToken);
+    if (result.ec === 200 && result.orders.length > 0) {
+      const orders = loadOrders();
+      let changed = false;
+      for (const paidOrder of result.orders) {
+        // Check if we already recorded this order
+        const existing = orders.find((o) => o.order_id === paidOrder.out_trade_no || (o.status === 'paid' && o.remark === String(uid) && o.points > 0));
+        if (existing?.status === 'paid') continue;
+        // Find matching pending order or create new credit entry
+        const match = orders.find((o) => o.status === 'pending' && o.remark === String(uid));
+        if (match) {
+          match.status = 'paid';
+          match.paid_at = Math.floor(Date.now() / 1000);
+          const pts = match.points || 0;
+          wallet.balance = (wallet.balance || 0) + pts;
+          wallet.total_purchased = (wallet.total_purchased || 0) + pts;
+        } else {
+          // No matching pending order — still credit (e.g. direct payment without creating order first)
+          wallet.balance = (wallet.balance || 0) + 6000;
+          wallet.total_purchased = (wallet.total_purchased || 0) + 6000;
         }
+        changed = true;
       }
-      saveOrders(orders);
-      if (wallet.balance > 0 || wallet.total_purchased > 0) {
+      if (changed) {
+        saveOrders(orders);
         wallets[uid] = wallet;
         saveWallets(wallets);
       }

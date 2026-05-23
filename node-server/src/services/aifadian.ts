@@ -21,31 +21,46 @@ export interface AifadianQueryResult {
   pay_time?: number;
 }
 
+async function callApi(paramsObj: Record<string, any>, userId: string, token: string): Promise<any> {
+  const params = JSON.stringify(paramsObj);
+  const ts = Math.floor(Date.now() / 1000);
+  const signStr = sign(token, params, ts, userId);
+
+  const resp = await fetch(`${API_BASE}/query-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, params, ts, sign: signStr }),
+    signal: AbortSignal.timeout(10000),
+  });
+  return resp.json();
+}
+
 export async function queryOrder(
   outTradeNo: string,
   userId: string,
   token: string,
 ): Promise<{ ec: number; order?: AifadianQueryResult; error?: string }> {
-  const params = JSON.stringify({ out_trade_no: outTradeNo });
-  const ts = Math.floor(Date.now() / 1000);
-  const signStr = sign(token, params, ts, userId);
-
-  const body = { user_id: userId, params, ts, sign: signStr };
-
   try {
-    const resp = await fetch(`${API_BASE}/query-order`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(10000),
-    });
-    const data = await resp.json();
-    if (data.ec !== 200) {
-      return { ec: data.ec, error: data.em || 'query failed' };
-    }
+    const data = await callApi({ out_trade_no: outTradeNo }, userId, token);
+    if (data.ec !== 200) return { ec: data.ec, error: data.em || 'query failed' };
     const list: AifadianQueryResult[] = data.data?.list || [];
-    const order = list.find((o) => o.out_trade_no === outTradeNo);
-    return { ec: 200, order };
+    return { ec: 200, order: list.find((o) => o.out_trade_no === outTradeNo) };
+  } catch (e: any) {
+    return { ec: -1, error: e.message || String(e) };
+  }
+}
+
+// 按 remark（论坛用户ID）查询最近已支付的订单
+export async function queryPaidByRemark(
+  remark: string,
+  userId: string,
+  token: string,
+): Promise<{ ec: number; orders: AifadianQueryResult[]; error?: string }> {
+  try {
+    const data = await callApi({ page: 1, per_page: 50 }, userId, token);
+    if (data.ec !== 200) return { ec: data.ec, error: data.em || 'query failed' };
+    const list: AifadianQueryResult[] = data.data?.list || [];
+    return { ec: 200, orders: list.filter((o) => o.remark === remark && o.status === 2) };
   } catch (e: any) {
     return { ec: -1, error: e.message || String(e) };
   }
