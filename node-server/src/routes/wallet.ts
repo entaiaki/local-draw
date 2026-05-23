@@ -172,7 +172,10 @@ router.get('/plans', (req: Request, res: Response) => {
 
 // GET /api/wallet/points-config (public)
 router.get('/points-config', (req: Request, res: Response) => {
-  res.json(loadPointsConfig());
+  const cfg = loadPointsConfig();
+  const limits = loadJson<Record<string, any>>(path.join(HERE, 'limits.json'), {});
+  (cfg as any).turnstile_enabled = limits.turnstile_enabled !== false;
+  res.json(cfg);
 });
 
 // GET /api/wallet/orders
