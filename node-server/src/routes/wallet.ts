@@ -15,7 +15,6 @@ function ordersFile() { return path.join(HERE, 'orders.json'); }
 function pointsConfigFile() { return path.join(HERE, 'points_config.json'); }
 
 const DEFAULT_POINTS_CONFIG = { text_to_image: 10, image_to_image: 100, llm_translate: 1 };
-const PAY_URL_TEMPLATE = 'https://www.ifdian.net/order/create?remark=1&product_type=1&plan_id=f2b6ebcc565411f195575254001e7c00&sku=%5B%7B%22sku_id%22%3A%22f2bed062565411f1b13f5254001e7c00%22,%22count%22%3A1%7D%5D&viokrz_ex=0';
 
 interface Wallet {
   balance: number;
@@ -87,6 +86,9 @@ router.post('/create-order', (req: Request, res: Response) => {
   const uid = getUserId(req);
   if (!uid) return res.status(401).json({ error: 'unauthorized' });
 
+  const { pay_url: planUrl } = req.body || {};
+  if (!planUrl) return res.status(400).json({ error: 'need pay_url' });
+
   const orderId = 'order_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
 
   const order: Order = {
@@ -104,8 +106,15 @@ router.post('/create-order', (req: Request, res: Response) => {
   orders.push(order);
   saveOrders(orders);
 
-  const payUrl = PAY_URL_TEMPLATE.replace('remark=1', `remark=${uid}`);
+  const payUrl = planUrl.replace('remark=1', `remark=${uid}`);
   res.json({ pay_url: payUrl, order_id: orderId });
+});
+
+// GET /api/wallet/plans (public)
+router.get('/plans', (req: Request, res: Response) => {
+  const pf = path.join(HERE, 'plans.json');
+  const plans = loadJson<any[]>(pf, []);
+  res.json({ items: plans });
 });
 
 // GET /api/wallet/orders

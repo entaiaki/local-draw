@@ -562,12 +562,12 @@ router.get('/plans', requireAdmin, (req, res) => {
 
 // POST /api/draw/admin/plans
 router.post('/plans', requireAdmin, (req, res) => {
-  const { id, name, points, price, plan_id, sku_id } = req.body || {};
+  const { id, name, points, url } = req.body || {};
   if (!id) return res.status(400).json({ error: 'need id' });
   const pf = path.join(path.dirname(config.creator_map_file), 'plans.json');
   const plans = loadJson<any[]>(pf, []);
   const idx = plans.findIndex((p: any) => p.id === id);
-  const entry = { id, name: name || '', points: points || 0, price: price || 0, plan_id: plan_id || '', sku_id: sku_id || '' };
+  const entry = { id, name: name || '', points: points || 0, url: url || '' };
   if (idx >= 0) plans[idx] = entry;
   else plans.push(entry);
   saveJson(pf, plans);
