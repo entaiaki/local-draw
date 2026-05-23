@@ -41,6 +41,7 @@ router.post('/presets', (req: Request, res: Response) => {
   if (content.length > 2000) return res.status(400).json({ error: 'content too long (max 2000)' });
   const all = loadPresets();
   if (!all[user]) all[user] = [];
+  if (all[user].length >= 500) return res.status(400).json({ error: 'preset limit reached (max 500)' });
   const preset = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: name.trim(), content: content.trim(), type };
   all[user].push(preset);
   savePresets(all);

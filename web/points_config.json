@@ -2,5 +2,6 @@
   "text_to_image": 10,
   "image_to_image": 30,
   "llm_translate": 1,
-  "signup_bonus": 666
+  "signup_bonus": 666,
+  "text_to_image_anima": 15
 }
