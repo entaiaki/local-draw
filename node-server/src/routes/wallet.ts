@@ -66,13 +66,12 @@ router.get('/balance', async (req: Request, res: Response) => {
   if (!uid) return res.status(401).json({ error: 'unauthorized' });
 
   // Auto-create wallet for users who have generated images but no wallet entry
-  const wallets = loadWallets();
+  let wallets = loadWallets();
   if (!wallets[uid] && creatorUserIds().has(uid)) {
     wallets[uid] = { balance: 0, total_purchased: 0 };
     saveWallets(wallets);
+    wallets = loadWallets();
   }
-
-  const wallets = loadWallets();
   const wallet = wallets[uid] || { balance: 0, total_purchased: 0 };
 
   // Poll aifadian for paid orders matching this user's remark (UID)
