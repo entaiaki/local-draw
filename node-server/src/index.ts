@@ -5,7 +5,7 @@ import { WebSocketServer } from 'ws';
 import path from 'path';
 import fs from 'fs';
 import axios from 'axios';
-import { jwtAuth, requireAuth } from './middleware/auth.js';
+import { jwtAuth, requireAuth, requireAdmin } from './middleware/auth.js';
 import { queueRouter } from './routes/queue.js';
 import { imageRouter } from './routes/images.js';
 import { adminRouter } from './routes/admin.js';
@@ -49,6 +49,9 @@ const config = loadConfig();
 
 // Auth middleware
 app.use('/api', jwtAuth(config));
+
+// Global admin guard: all /api/draw/admin/* routes require admin role
+app.use('/api/draw/admin', requireAdmin);
 
 // Routes (dynamic import for hot reload support)
 const hot = (modPath: string, exportName = 'default') => (req: any, res: any, next: any) => { import(modPath).then(m => (m[exportName] || m.default || m)(req, res, next)).catch(next); };
