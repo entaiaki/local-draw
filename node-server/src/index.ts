@@ -77,15 +77,12 @@ app.get('/api/resolutions', (req, res) => {
 
 const STYLE_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 
-function stylesDirFor(subdir: string): string {
-  const base = path.dirname(config.creator_map_file);
-  if (!subdir) return path.join(base, 'styles_wai');
-  return path.join(base, 'styles_' + subdir);
+function stylesDir() {
+  return path.join(path.dirname(config.creator_map_file), 'styles');
 }
 
 app.get('/api/styles', (req, res) => {
-  const subdir = (req.query.subdir as string) || '';
-  const sDir = stylesDirFor(subdir);
+  const sDir = stylesDir();
   try {
     if (!fs.existsSync(sDir)) return res.json({ styles: [] });
     const files = fs.readdirSync(sDir).filter(f => STYLE_IMAGE_EXTS.includes(path.extname(f).toLowerCase()));
@@ -93,7 +90,7 @@ app.get('/api/styles', (req, res) => {
       name: path.basename(f, path.extname(f)),
       tags: path.basename(f, path.extname(f)),
       image: f,
-      thumbnail_url: `/api/style_thumbnail?name=${encodeURIComponent(f)}&subdir=${encodeURIComponent(subdir)}`,
+      thumbnail_url: `/api/style_thumbnail?name=${encodeURIComponent(f)}`,
     }));
     res.json({ styles });
   } catch { res.json({ styles: [] }); }
@@ -101,9 +98,8 @@ app.get('/api/styles', (req, res) => {
 
 app.get('/api/style_thumbnail', (req, res) => {
   const name = req.query.name as string;
-  const subdir = (req.query.subdir as string) || '';
   if (!name) return res.status(404).json({ error: 'no style' });
-  const sDir = stylesDirFor(subdir);
+  const sDir = stylesDir();
   try {
     const direct = path.resolve(sDir, name);
     if (direct.startsWith(path.resolve(sDir)) && fs.existsSync(direct)) return res.sendFile(direct);
