@@ -382,7 +382,7 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     } catch { return res.status(503).json({ detail: '人机验证服务不可用' }); }
   }
 
-  const { prompt, original_prompt, negative_prompt, mode } = req.body || {};
+  const { prompt, original_prompt, negative_prompt, mode, rewrite } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'need prompt' });
   }
@@ -392,13 +392,21 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     const freshConfig = loadConfig();
     const llmCfg = loadJson(freshConfig.llm_config_file, {});
     const activeProfile = llmCfg.profiles?.[llmCfg.active ?? 0];
-    console.log(`[LLM] translate, profile: ${activeProfile?.name || 'unnamed'}, provider: ${activeProfile?.provider || 'local'}, mode: ${mode || 'wai'}`);
-    const { translatePrompt } = await import('./services/llm.js');
-    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, undefined, mode === 'anima');
-    // Deduct points only on success
+    console.log(`[LLM] translate, mode: ${mode || 'wai'}, rewrite: ${!!rewrite}`);
+    const { translatePrompt, estimateTokens } = await import('./services/llm.js');
+    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, undefined, mode === 'anima', !!rewrite);
+    // Token-based billing
+    const systemPrompt = mode === 'anima'
+      ? 'Translate the user Chinese description into natural English...'
+      : 'Convert the user Chinese description into English Danbooru tags...';
+    const inputTokens = estimateTokens(systemPrompt) + estimateTokens(prompt + (rewrite ? ' ' + (original_prompt || '') + ' ' + (negative_prompt || '') : ''));
+    const outputTokens = estimateTokens(result.positive) + estimateTokens(result.negative || '');
+    const totalTokens = inputTokens + outputTokens;
     const ptCfg = loadPointsCfg();
-    await deductPoints((req as any).user?.id, ptCfg.llm_translate);
-    res.json({ ok: true, positive: result.positive, negative: result.negative });
+    const tokenPerPoint = ptCfg.llm_token_per_point || 1000;
+    const cost = Math.max(1, Math.ceil(totalTokens / tokenPerPoint));
+    await deductPoints((req as any).user?.id, cost);
+    res.json({ ok: true, positive: result.positive, negative: result.negative, cost });
   } catch (e: any) {
     res.json({ ok: false, error: (e.message || String(e)).slice(0, 1000) });
   }

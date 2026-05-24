@@ -30,6 +30,11 @@ web/prompt_map.json
 web/prompt_meta.json
 web/queue_state.json
 web/recommendations.json
+web/wallets.json
+web/orders.json
+web/presets.json
+web/points_config.json
+web/styles/
 
 # ── 运行时图片 & 资源 ──
 web/thumbnails

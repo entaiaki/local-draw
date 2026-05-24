@@ -29,6 +29,15 @@ export interface LlmResult {
   negative: string;
 }
 
+export function estimateTokens(text: string): number {
+  let t = 0;
+  for (const c of text) {
+    if (c.charCodeAt(0) > 127) t += 1;
+    else t += 0.25;
+  }
+  return Math.max(1, Math.ceil(t));
+}
+
 export function parsePosNeg(text: string): LlmResult {
   const posMatch = text.match(/POSITIVE:\s*(.+?)(?=\s*NEGATIVE:|\n|$)/);
   const negMatch = text.match(/NEGATIVE:\s*(.+?)$/);
@@ -196,48 +205,37 @@ export async function translatePrompt(
   config?: AppConfig,
   onChunk?: (text: string) => void,
   animaMode?: boolean,
+  rewrite?: boolean,
 ): Promise<LlmResult> {
   const cfg = getActiveProfile(config!);
+  const useOriginal = rewrite && originalPrompt;
+
+  async function callLLM(system: string, user: string): Promise<string> {
+    if (cfg.provider === 'google') return callGoogle(system, user, cfg);
+    if (cfg.provider === 'custom') return callOpenAI(system, user, cfg.custom_endpoint, cfg.custom_api_key, cfg.custom_model, onChunk);
+    return callOpenAI(system, user, cfg.local_endpoint || config?.lms_api || '', '', '', onChunk);
+  }
 
   if (animaMode) {
-    // Anima: translate CN→EN natural language, no tags, no negative
-    const animaSystem = `${NSFW_RULE}\n\nTranslate the user's Chinese description into natural English. Keep the original meaning and style. Output ONLY the English translation, nothing else. No tags, no formatting, no explanations.`;
-    let result: string;
-    if (cfg.provider === 'google') {
-      result = await callGoogle(animaSystem, prompt, cfg);
-    } else if (cfg.provider === 'custom') {
-      result = await callOpenAI(animaSystem, prompt, cfg.custom_endpoint, cfg.custom_api_key, cfg.custom_model, onChunk);
-    } else {
-      result = await callOpenAI(animaSystem, prompt, cfg.local_endpoint || config?.lms_api || '', '', '', onChunk);
+    if (useOriginal) {
+      const system = `${NSFW_RULE}\n\nYou have an existing English description and a Chinese modification request. Combine them into an improved English description. Keep the original style, details and meaning. Output ONLY the English description, nothing else.`;
+      const result = await callLLM(system, `Current English description:\n${originalPrompt}\n\nModification:\n${prompt}`);
+      return { positive: result.trim(), negative: '' };
     }
+    const system = `${NSFW_RULE}\n\nTranslate the user's Chinese description into natural English. Keep the original meaning and style. Output ONLY the English translation, nothing else. No tags, no formatting, no explanations.`;
+    const result = await callLLM(system, prompt);
     return { positive: result.trim(), negative: '' };
   }
 
-  let negCtx = '';
-  if (negativePrompt) {
-    negCtx = `\n\nCurrent negative tags (improve or replace as needed):\n${negativePrompt}`;
+  if (useOriginal) {
+    let negCtx = '';
+    if (negativePrompt) negCtx = `\n\nCurrent negative tags (improve or replace as needed):\n${negativePrompt}`;
+    const system = `${NSFW_RULE}\n\nThe user gives you existing tags and a modification request in Chinese.\nMerge the modification into the existing tags. Keep unchanged tags.\nAlso generate appropriate negative tags.\n\n${LLM_NEGATIVE_HINT}\n\n${LLM_OUTPUT_RULE}`;
+    const result = await callLLM(system, `Current positive tags:\n${originalPrompt}${negCtx}\n\nModification:\n${prompt}`);
+    return parsePosNeg(result);
   }
 
-  let system: string;
-  let user: string;
-
-  if (originalPrompt) {
-    system = `${NSFW_RULE}\n\nThe user gives you existing tags and a modification request in Chinese.\nMerge the modification into the existing tags. Keep unchanged tags.\nAlso generate appropriate negative tags.\n\n${LLM_NEGATIVE_HINT}\n\n${LLM_OUTPUT_RULE}`;
-    user = `Current positive tags:\n${originalPrompt}${negCtx}\n\nModification:\n${prompt}`;
-  } else {
-    system = `${NSFW_RULE}\n\nConvert the user Chinese description into English Danbooru tags.\nAlso generate appropriate negative tags.\n\n${LLM_NEGATIVE_HINT}\n\n${LLM_OUTPUT_RULE}`;
-    user = `${prompt}${negCtx}`;
-  }
-
-  let result: string;
-
-  if (cfg.provider === 'google') {
-    result = await callGoogle(system, user, cfg);
-  } else if (cfg.provider === 'custom') {
-    result = await callOpenAI(system, user, cfg.custom_endpoint, cfg.custom_api_key, cfg.custom_model, onChunk);
-  } else {
-    result = await callOpenAI(system, user, cfg.local_endpoint || config?.lms_api || '', '', onChunk);
-  }
-
+  const system = `${NSFW_RULE}\n\nConvert the user Chinese description into English Danbooru tags.\nAlso generate appropriate negative tags.\n\n${LLM_NEGATIVE_HINT}\n\n${LLM_OUTPUT_RULE}`;
+  const result = await callLLM(system, prompt);
   return parsePosNeg(result);
 }
