@@ -613,6 +613,38 @@ router.post('/recommendations/resolve', requireAdmin, (req, res) => {
   } catch { res.json({ ok: true }); }
 });
 
+// POST /api/draw/admin/recommendations/resolve-batch
+router.post('/recommendations/resolve-batch', requireAdmin, (req, res) => {
+  const { rec_ids, action, reason } = req.body || {};
+  if (!Array.isArray(rec_ids) || rec_ids.length === 0) return res.status(400).json({ error: 'need rec_ids' });
+  if (action !== 'approve' && action !== 'reject') return res.status(400).json({ error: 'action must be approve or reject' });
+  const f = config.creator_map_file.replace('creator_users.txt', 'recommendations.json');
+  try {
+    const items = JSON.parse(fs.readFileSync(f, 'utf-8'));
+    const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
+    const featured: string[] = loadJson<string[]>(featuredFile, []);
+    let changed = false;
+    for (const id of rec_ids) {
+      const idx = items.findIndex((i: any) => i.id === id);
+      if (idx >= 0 && items[idx].status === 'pending') {
+        items[idx].status = action === 'approve' ? 'approved' : 'rejected';
+        items[idx].admin_reason = reason || '';
+        items[idx].resolved_at = Date.now() / 1000;
+        if (!items[idx].id) items[idx].id = id;
+        if (action === 'approve' && items[idx].image_path && !featured.includes(items[idx].image_path)) {
+          featured.unshift(items[idx].image_path);
+        }
+        changed = true;
+      }
+    }
+    if (changed) {
+      fs.writeFileSync(f, JSON.stringify(items, null, 2), 'utf-8');
+      saveJson(featuredFile, featured);
+    }
+    res.json({ ok: true, resolved: rec_ids.length });
+  } catch { res.json({ ok: true, resolved: 0 }); }
+});
+
 // POST /api/draw/admin/workflow_rename (stub, kept for compatibility)
 router.post('/workflow_rename', requireAdmin, (req, res) => { res.json({ ok: true }); });
 
