@@ -53,6 +53,12 @@ app.use('/api', jwtAuth(config));
 // Global admin guard: all /api/draw/admin/* routes require admin role
 app.use('/api/draw/admin', requireAdmin);
 
+// Global auth guard for endpoints that need login
+app.use('/api/_reset', requireAuth);
+app.use('/api/img2img', requireAuth);
+app.use('/api/draw/recommend', requireAuth);
+app.use('/api/output', requireAuth);
+
 // Routes (dynamic import for hot reload support)
 const hot = (modPath: string, exportName = 'default') => (req: any, res: any, next: any) => { import(modPath).then(m => (m[exportName] || m.default || m)(req, res, next)).catch(next); };
 app.use('/api/draw', hot('./routes/queue.js', 'queueRouter'));
