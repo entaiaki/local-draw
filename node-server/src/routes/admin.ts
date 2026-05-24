@@ -314,7 +314,7 @@ router.post('/announcement', requireAdmin, (req, res) => {
   const data = req.body.announcement || req.body;
   const f = config.creator_map_file.replace('creator_users.txt', 'announcement.json');
   fs.writeFileSync(f, JSON.stringify(data, null, 2), 'utf-8');
-  res.json({ ok: true });
+  res.json({ ok: true, announcement: data });
 });
 
 // GET /api/draw/admin/recent
