@@ -306,32 +306,19 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 
     // Load workflow
     let workflowData: any;
-    if (req.inline_workflow && typeof req.inline_workflow === 'object' && Object.keys(req.inline_workflow).length > 0) workflowData = req.inline_workflow;
-    else if (req.workflow_path && req.workflow_path !== 'fork') workflowData = await loadWorkflow(req.workflow_path);
+    if (req.workflow_path && req.workflow_path !== 'fork') workflowData = await loadWorkflow(req.workflow_path);
     else if (req.image1_name) {
       const wfName = req.image2_name ? 'Flux2-Klein-图片编辑 (多图).json' : 'Flux2-Klein-图片编辑 (单图).json';
       workflowData = await loadWorkflow(`Flux/${wfName}`);
     }
     else if (!req.workflowData) throw new Error('未指定工作流');
-	    // If inline_workflow_api provided, use it directly
 	    let prompt_dict: any;
 	    let positive_ref: [string, string] | null = null;
 	    let negative_ref: [string, string] | null = null;
-	    if (req.inline_workflow_api && typeof req.inline_workflow_api === 'object') {
-	      prompt_dict = req.inline_workflow_api;
-	      for (const [nid, nd] of Object.entries(prompt_dict)) {
-	        const node = nd as any;
-	        if (node.class_type === 'CLIPTextEncode' || node.class_type === 'CLIPTextEncodeSDXL') {
-	          if (!positive_ref) positive_ref = [nid, 'text'];
-	          else if (!negative_ref) negative_ref = [nid, 'text'];
-	        }
-	      }
-	    } else {
-	      const result = workflowToPromptApi(workflowData);
-	      prompt_dict = result.prompt_dict;
-	      positive_ref = result.positive_ref;
-	      negative_ref = result.negative_ref;
-	    }
+	    const result = workflowToPromptApi(workflowData);
+	    prompt_dict = result.prompt_dict;
+	    positive_ref = result.positive_ref;
+	    negative_ref = result.negative_ref;
     const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
 
     if (!positive_ref) throw new Error('未找到正向 CLIPTextEncode 节点');
