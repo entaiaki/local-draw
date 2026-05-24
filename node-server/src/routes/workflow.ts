@@ -130,7 +130,7 @@ router.get('/workflows/current', async (req: Request, res: Response) => {
       const resp = await comfyApi.get(`/api/userdata/workflows%2F${encoded}`, {
         headers: { 'Comfy-User': '' },
       });
-      res.json({ ...resp.data, builtin_prompt: content, builtin_negative_prompt: '', workflow_path: baseWfPath });
+      res.json({ ...resp.data, builtin_prompt: content, builtin_negative_prompt: '' });
     } catch {
       res.status(404).json({ error: 'base workflow not found on ComfyUI' });
     }
