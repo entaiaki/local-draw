@@ -78,6 +78,16 @@ app.get('/api/_diag', (req, res) => {
   res.json({ active_count: 0, active_status: null, subscribers: wss.clients.size });
 });
 
+// Public announcement endpoint
+app.get('/api/announcement', (req, res) => {
+  const f = path.join(path.dirname(config.creator_map_file), 'announcement.json');
+  try {
+    const d = JSON.parse(fs.readFileSync(f, 'utf-8'));
+    if (d.enabled) res.json({ announcement: d });
+    else res.json({ announcement: null });
+  } catch { res.json({ announcement: null }); }
+});
+
 // Additional API routes
 app.get('/api/resolutions', (req, res) => {
   const rf = path.join(path.dirname(config.creator_map_file), 'resolutions.json');
