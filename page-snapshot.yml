@@ -1,0 +1,1063 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "danbooru artists' styles" [ref=e7] [cursor=pointer]:
+            - /url: ../danbooru-artist/
+        - listitem [ref=e8]:
+          - link "danbooru characters" [ref=e9] [cursor=pointer]:
+            - /url: ../danbooru-character/
+        - listitem [ref=e10]:
+          - link "e621 artists' styles" [ref=e11] [cursor=pointer]:
+            - /url: ../e621-artist/
+        - listitem [ref=e12]:
+          - link "e621 characters" [ref=e13] [cursor=pointer]:
+            - /url: ../e621-character/
+        - listitem [ref=e14]:
+          - link "Online JPEG Compressor" [ref=e15] [cursor=pointer]:
+            - /url: /online-jpg-compressor/default.html
+      - search [ref=e16]:
+        - generic [ref=e17]:
+          - searchbox "Search character" [ref=e18]
+          - button "Search" [ref=e19] [cursor=pointer]
+  - banner [ref=e21]:
+    - heading "Danbooru characters in NoobAI-XL (NAI-XL)/illustrious/Pony" [level=3] [ref=e25]
+    - insertion [ref=e27]:
+      - generic [ref=e30]:
+        - heading "These are topics related to the article that might interest you" [level=2] [ref=e32]: Discover more
+        - link "eyewear" [ref=e33] [cursor=pointer]:
+          - generic "eyewear" [ref=e34]
+          - img [ref=e36]
+        - link "Swimwear" [ref=e38] [cursor=pointer]:
+          - generic "Swimwear" [ref=e39]
+          - img [ref=e41]
+        - link "Clothing" [ref=e43] [cursor=pointer]:
+          - generic "Clothing" [ref=e44]
+          - img [ref=e46]
+  - generic [ref=e48]:
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - text: "Character: trailblazer \\(honkai: star rail\\)"
+          - link [ref=e52] [cursor=pointer]:
+            - /url: "search.asp?charactername=trailblazer \\(honkai: star rail\\)"
+        - link "thumbnail" [ref=e57] [cursor=pointer]:
+          - /url: "#"
+          - img "thumbnail" [ref=e58]
+        - generic [ref=e59]:
+          - generic [ref=e60]
+          - generic [ref=e65]: "trailblazer \\(honkai: star rail\\), honkai \\(series\\), 1girl, yellow eyes, hair between eyes, grey hair, long hair, medium hair, white shirt, black jacket, black gloves, long sleeves"
+      - insertion [ref=e67]:
+        - generic [ref=e70]:
+          - heading "These are topics related to the article that might interest you" [level=2] [ref=e72]: Discover more
+          - link "bikin" [ref=e73] [cursor=pointer]
+          - link "Strategy Games" [ref=e78] [cursor=pointer]
+          - link "headdress" [ref=e83] [cursor=pointer]
+    - generic [ref=e88]:
+      - generic [ref=e89]:
+        - generic [ref=e90]:
+          - text: "Character: firefly \\(honkai: star rail\\)"
+          - link [ref=e91] [cursor=pointer]:
+            - /url: "search.asp?charactername=firefly \\(honkai: star rail\\)"
+        - link "thumbnail" [ref=e96] [cursor=pointer]:
+          - /url: "#"
+          - img "thumbnail" [ref=e97]
+        - generic [ref=e98]:
+          - generic [ref=e99]: "Prompt tags:"
+          - generic [ref=e100]: "firefly \\(honkai: star rail\\), honkai \\(series\\), 1girl, hair between eyes, purple eyes, grey hair, long hair, black hairband, hair intakes, white shirt, black jacket, long sleeves"
+      - insertion [ref=e102]:
+        - generic [ref=e105]:
+          - heading "These are topics related to the article that might interest you" [level=2] [ref=e107]: Discover more
+          - link "swimsuit" [ref=e108] [cursor=pointer]
+          - link "outfit" [ref=e113] [cursor=pointer]
+          - link "clothing" [ref=e118] [cursor=pointer]
+    - generic [ref=e123]:
+      - generic [ref=e124]:
+        - generic [ref=e125]:
+          - text: "Character: stelle \\(honkai: star rail\\)"
+          - link [ref=e126] [cursor=pointer]:
+            - /url: "search.asp?charactername=stelle \\(honkai: star rail\\)"
+        - link "thumbnail" [ref=e131] [cursor=pointer]:
+          - /url: "#"
+          - img "thumbnail" [ref=e132]
+        - generic [ref=e133]:
+          - generic [ref=e134]: "Prompt tags:"
+          - generic [ref=e135]: "stelle \\(honkai: star rail\\), honkai \\(series\\), 1girl, yellow eyes, hair between eyes, grey hair, long hair, medium hair, medium breasts, thighs, white shirt, black jacket, black gloves"
+      - insertion [ref=e137]:
+        - generic [ref=e140]:
+          - heading "These are topics related to the article that might interest you" [level=2] [ref=e142]: Discover more
+          - link "Women's Clothing" [ref=e143] [cursor=pointer]
+          - link "Online Image Galleries" [ref=e148] [cursor=pointer]
+          - link "Photo & Image Sharing" [ref=e153] [cursor=pointer]
+    - generic [ref=e158]:
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - text: "Character: kafka \\(honkai: star rail\\)"
+          - link [ref=e161] [cursor=pointer]:
+            - /url: "search.asp?charactername=kafka \\(honkai: star rail\\)"
+        - link "thumbnail" [ref=e166] [cursor=pointer]:
+          - /url: "#"
+          - img "thumbnail" [ref=e167]
+        - generic [ref=e168]:
+          - generic [ref=e169]: "Prompt tags:"
+          - generic [ref=e170]
+      - insertion [ref=e178]:
+        - generic [ref=e181]:
+          - heading "These are topics related to the article that might interest you" [level=2] [ref=e183]: Discover more
+          - link "bikini" [ref=e184] [cursor=pointer]
+          - link "Bikinis" [ref=e189] [cursor=pointer]
+          - link "Scale Models" [ref=e194] [cursor=pointer]
+    - generic [ref=e199]:
+      - generic [ref=e200]:
+        - generic [ref=e201]:
+          - text: "Character: acheron \\(honkai: star rail\\)"
+          - link [ref=e202] [cursor=pointer]:
+            - /url: "search.asp?charactername=acheron \\(honkai: star rail\\)"
+        - link "thumbnail" [ref=e207] [cursor=pointer]:
+          - /url: "#"
+          - img "thumbnail" [ref=e208]
+        - generic [ref=e209]:
+          - generic [ref=e210]: "Prompt tags:"
+          - generic [ref=e211]: "acheron \\(honkai: star rail\\), honkai \\(series\\), 1girl, purple eyes, hair over one eye, purple hair, very long hair, long hair, streaked hair, hair ornament, large breasts, cleavage, thighs, leg tattoo, navel, black gloves, black shorts, white coat, black choker, single bare shoulder, bare shoulders, mi"
+      - insertion [ref=e213]:
+        - generic [ref=e216]:
+          - heading "These are topics related to the article that might interest you" [level=2] [ref=e218]: Discover more
+          - link "Roleplaying Games" [ref=e219] [cursor=pointer]
+          - link "Gaming Reference & Reviews" [ref=e224] [cursor=pointer]
+          - link "Computer & Video Games" [ref=e229] [cursor=pointer]
+    - generic [ref=e235]:
+      - generic [ref=e236]:
+        - text: "Character: march 7th \\(honkai: star rail\\)"
+        - link [ref=e237] [cursor=pointer]:
+          - /url: "search.asp?charactername=march 7th \\(honkai: star rail\\)"
+          - img [ref=e238]
+      - link "thumbnail" [ref=e242] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e243]
+      - generic [ref=e244]:
+        - generic [ref=e245]: "Prompt tags:"
+        - generic [ref=e246]: "march 7th \\(honkai: star rail\\), honkai \\(series\\), 1girl, blue eyes, pink eyes, two-tone eyes, hair between eyes, pink hair, medium hair, medium breasts, collarbone, white shirt, blue jacket, tied jacket, blue skirt, black gloves, long sleeves, black choker, single earring, buttons"
+    - generic [ref=e247]:
+      - generic [ref=e248]:
+        - generic [ref=e249]:
+          - text: "Character: sparkle \\(honkai: star rail\\)"
+          - link [ref=e250] [cursor=pointer]:
+            - /url: "search.asp?charactername=sparkle \\(honkai: star rail\\)"
+        - link "thumbnail" [ref=e255] [cursor=pointer]:
+          - /url: "#"
+          - img "thumbnail" [ref=e256]
+        - generic [ref=e257]:
+          - generic [ref=e258]: "Prompt tags:"
+          - generic [ref=e259]: "sparkle \\(honkai: star rail\\), honkai \\(series\\), 1girl, pink eyes, red eyes, black hair, very long hair, brown hair, long hair, twintails, medium breasts, thighs, mask on head, red dress, fox mask, black gloves, bare shoulders, black choker, detached sleeves, facial mark, neck bell, criss-cross halter,"
+      - insertion [ref=e261]
+    - generic [ref=e263]:
+      - insertion [ref=e265]
+      - generic [ref=e267]:
+        - generic [ref=e268]:
+          - text: "Character: caelus \\(honkai: star rail\\)"
+          - link [ref=e269] [cursor=pointer]:
+            - /url: "search.asp?charactername=caelus \\(honkai: star rail\\)"
+        - link "thumbnail" [ref=e274] [cursor=pointer]:
+          - /url: "#"
+          - img "thumbnail" [ref=e275]
+        - generic [ref=e276]:
+          - generic [ref=e277]: "Prompt tags:"
+          - generic [ref=e278]
+    - generic [ref=e283]:
+      - generic [ref=e284]:
+        - text: "Character: aventurine \\(honkai: star rail\\)"
+        - link [ref=e285] [cursor=pointer]:
+          - /url: "search.asp?charactername=aventurine \\(honkai: star rail\\)"
+          - img [ref=e286]
+      - link "thumbnail" [ref=e290] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e291]
+      - generic [ref=e292]:
+        - generic [ref=e293]: "Prompt tags:"
+        - generic [ref=e294]: "aventurine \\(honkai: star rail\\), honkai \\(series\\), 1boy, hair between eyes, purple eyes, multicolored eyes, blonde hair, short hair, neck tattoo, collared shirt, black gloves, aqua shirt, black jacket, earrings, bracelet, pectoral cleavage, fur trim"
+    - generic [ref=e296]:
+      - generic [ref=e297]:
+        - text: "Character: silver wolf \\(honkai: star rail\\)"
+        - link [ref=e298] [cursor=pointer]:
+          - /url: "search.asp?charactername=silver wolf \\(honkai: star rail\\)"
+          - img [ref=e299]
+      - link "thumbnail" [ref=e303] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e304]
+      - generic [ref=e305]:
+        - generic [ref=e306]: "Prompt tags:"
+        - generic [ref=e307]:
+          - text: "silver wolf \\(honkai: star rail\\), honkai \\(series\\), 1girl, grey eyes, hair between eyes, eyewear on head, goggles on head, grey hair, long hair, drill hair, ponytail, crossed bangs, hair ribbon, thighs, thigh strap, navel, black jacket, fur-trimmed jacket, black gloves, white shirt, black shorts, fingerles"
+          - link "Textiles & Nonwovens" [ref=e308] [cursor=pointer]
+    - generic [ref=e313]:
+      - generic [ref=e314]:
+        - text: "Character: robin \\(honkai: star rail\\)"
+        - link [ref=e315] [cursor=pointer]:
+          - /url: "search.asp?charactername=robin \\(honkai: star rail\\)"
+          - img [ref=e316]
+      - link "thumbnail" [ref=e320] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e321]
+      - generic [ref=e322]:
+        - generic [ref=e323]: "Prompt tags:"
+        - generic [ref=e324]: "robin \\(honkai: star rail\\), honkai \\(series\\), 1girl, hair between eyes, aqua eyes, green eyes, long hair, very long hair, blue hair, purple hair, white gloves, white dress, halo, bare shoulders, detached sleeves, short sleeves, head wings, white wings"
+    - generic [ref=e326]:
+      - generic [ref=e327]:
+        - text: "Character: dan heng \\(honkai: star rail\\)"
+        - link [ref=e328] [cursor=pointer]:
+          - /url: "search.asp?charactername=dan heng \\(honkai: star rail\\)"
+          - img [ref=e329]
+      - link "thumbnail" [ref=e333] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e334]
+      - generic [ref=e335]:
+        - generic [ref=e336]: "Prompt tags:"
+        - generic [ref=e337]:
+          - text: "dan heng \\(honkai: star rail\\), honkai \\(series\\), 1boy, pointy ears, dragon horns, green horns, hair between eyes, green eyes, aqua eyes, black hair, long hair, short hair, chinese clothes, chinese clothes, black gloves, fingerless gloves, long sleeves, detached sleeves, earrings, eyeliner, red eyeliner,"
+          - link "Apparel" [ref=e338] [cursor=pointer]
+    - generic [ref=e343]:
+      - generic [ref=e344]:
+        - text: "Character: black swan \\(honkai: star rail\\)"
+        - link [ref=e345] [cursor=pointer]:
+          - /url: "search.asp?charactername=black swan \\(honkai: star rail\\)"
+          - img [ref=e346]
+      - link "thumbnail" [ref=e350] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e351]
+      - generic [ref=e352]:
+        - generic [ref=e353]: "Prompt tags:"
+        - generic [ref=e354]: "black swan \\(honkai: star rail\\), honkai: star rail, 1girl, purple eyes, hair between eyes, yellow eyes, purple hair, very long hair, large breasts, cleavage, thighs, veil, purple dress, black gloves, elbow gloves, sleeveless dress, bare shoulders"
+    - generic [ref=e356]:
+      - generic [ref=e357]:
+        - text: "Character: blade \\(honkai: star rail\\)"
+        - link [ref=e358] [cursor=pointer]:
+          - /url: "search.asp?charactername=blade \\(honkai: star rail\\)"
+          - img [ref=e359]
+      - link "thumbnail" [ref=e363] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e364]
+      - generic [ref=e365]:
+        - generic [ref=e366]: "Prompt tags:"
+        - generic [ref=e367]: "blade \\(honkai: star rail\\), honkai \\(series\\), 1boy, red eyes, hair over one eye, long hair, black hair, blue hair, parted bangs, chinese clothes, chinese clothes, black jacket, long sleeves, earrings, bandaged hand"
+    - generic [ref=e369]:
+      - generic [ref=e370]:
+        - text: "Character: dr. ratio \\(honkai: star rail\\)"
+        - link [ref=e371] [cursor=pointer]:
+          - /url: "search.asp?charactername=dr. ratio \\(honkai: star rail\\)"
+          - img [ref=e372]
+      - link "thumbnail" [ref=e376] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e377]
+      - generic [ref=e378]:
+        - generic [ref=e379]: "Prompt tags:"
+        - generic [ref=e380]: "dr. ratio \\(honkai: star rail\\), honkai \\(series\\), 1boy, hair between eyes, red eyes, yellow eyes, short hair, blue hair, hair ornament, black gloves, fingerless gloves, collared shirt, black shirt, pectoral cleavage"
+    - generic [ref=e382]:
+      - generic [ref=e383]:
+        - text: "Character: topaz \\(honkai: star rail\\)"
+        - link [ref=e384] [cursor=pointer]:
+          - /url: "search.asp?charactername=topaz \\(honkai: star rail\\)"
+          - img [ref=e385]
+      - link "thumbnail" [ref=e389] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e390]
+      - generic [ref=e391]:
+        - generic [ref=e392]: "Prompt tags:"
+        - generic [ref=e393]: "topaz \\(honkai: star rail\\), honkai \\(series\\), 1girl, blue eyes, hair between eyes, purple eyes, red hair, streaked hair, short hair, white hair, colored inner hair, grey hair, two-tone hair, hair ornament, large breasts, cleavage, thighs, thigh strap, black gloves, bare shoulders, detached sleeves"
+    - generic [ref=e395]:
+      - generic [ref=e396]:
+        - text: "Character: jingliu \\(honkai: star rail\\)"
+        - link [ref=e397] [cursor=pointer]:
+          - /url: "search.asp?charactername=jingliu \\(honkai: star rail\\)"
+          - img [ref=e398]
+      - link "thumbnail" [ref=e402] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e403]
+      - generic [ref=e404]:
+        - generic [ref=e405]: "Prompt tags:"
+        - generic [ref=e406]: "jingliu \\(honkai: star rail\\), honkai \\(series\\), 1girl, red eyes, hair between eyes, white hair, long hair, high ponytail, ponytail, medium breasts, large breasts, thighs, black gloves, blue dress, bare shoulders, detached sleeves, blue sleeves"
+    - generic [ref=e408]:
+      - generic [ref=e409]:
+        - text: "Character: himeko \\(honkai: star rail\\)"
+        - link [ref=e410] [cursor=pointer]:
+          - /url: "search.asp?charactername=himeko \\(honkai: star rail\\)"
+          - img [ref=e411]
+      - link "thumbnail" [ref=e415] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e416]
+      - generic [ref=e417]:
+        - generic [ref=e418]: "Prompt tags:"
+        - generic [ref=e419]: "himeko \\(honkai: star rail\\), honkai \\(series\\), 1girl, yellow eyes, hair between eyes, red hair, long hair, very long hair, large breasts, mole on breast, cleavage, thighs, white dress, black gloves, bare shoulders, earrings, single glove"
+    - generic [ref=e421]:
+      - generic [ref=e422]:
+        - text: "Character: dan heng \\(imbibitor lunae\\) \\(honkai: star rail\\)"
+        - link [ref=e423] [cursor=pointer]:
+          - /url: "search.asp?charactername=dan heng \\(imbibitor lunae\\) \\(honkai: star rail\\)"
+          - img [ref=e424]
+      - link "thumbnail" [ref=e428] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e429]
+      - generic [ref=e430]:
+        - generic [ref=e431]: "Prompt tags:"
+        - generic [ref=e432]:
+          - text: "dan heng \\(imbibitor lunae) (honkai: star rail\\), honkai \\(series\\), 1boy, pointy ears, dragon horns, green horns, hair between eyes, green eyes, aqua eyes, black hair, long hair, very long hair, chinese"
+          - link "clothes" [ref=e433] [cursor=pointer]:
+            - /url: "#"
+          - text: ", chinese clothes, black gloves, fingerless gloves, long sleeves, detached sleeves, bare shoulders, earrings, dra"
+          - link "Apparel" [ref=e436] [cursor=pointer]
+    - generic [ref=e441]:
+      - generic [ref=e442]:
+        - text: "Character: ruan mei \\(honkai: star rail\\)"
+        - link [ref=e443] [cursor=pointer]:
+          - /url: "search.asp?charactername=ruan mei \\(honkai: star rail\\)"
+          - img [ref=e444]
+      - link "thumbnail" [ref=e448] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e449]
+      - generic [ref=e450]:
+        - generic [ref=e451]: "Prompt tags:"
+        - generic [ref=e452]: "ruan mei \\(honkai: star rail\\), honkai: star rail, 1girl, hair between eyes, aqua eyes, blue eyes, green eyes, black hair, long hair, brown hair, hair intakes, medium breasts, large breasts, cleavage, thighs, chinese clothes, chinese clothes, aqua dress, blue gloves, bare shoulders, shoulder cutout, short"
+    - generic [ref=e454]:
+      - generic [ref=e455]:
+        - text: "Character: fu xuan \\(honkai: star rail\\)"
+        - link [ref=e456] [cursor=pointer]:
+          - /url: "search.asp?charactername=fu xuan \\(honkai: star rail\\)"
+          - img [ref=e457]
+      - link "thumbnail" [ref=e461] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e462]
+      - generic [ref=e463]:
+        - generic [ref=e464]: "Prompt tags:"
+        - generic [ref=e465]: "fu xuan \\(honkai: star rail\\), honkai \\(series\\), 1girl, yellow eyes, pink eyes, pink hair, bow-shaped hair, very long hair, long hair, parted bangs, low twintails, hair stick, hair rings, bare shoulders, detached sleeves, tassel, forehead jewel"
+    - generic [ref=e467]:
+      - generic [ref=e468]:
+        - text: "Character: sunday \\(honkai: star rail\\)"
+        - link [ref=e469] [cursor=pointer]:
+          - /url: "search.asp?charactername=sunday \\(honkai: star rail\\)"
+          - img [ref=e470]
+      - link "thumbnail" [ref=e474] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e475]
+      - generic [ref=e476]:
+        - generic [ref=e477]: "Prompt tags:"
+        - generic [ref=e478]: "sunday \\(honkai: star rail\\), honkai: star rail, 1boy, yellow eyes, hair between eyes, grey hair, medium hair, long hair, blue hair, white gloves, halo, long sleeves, head wings, white wings, feathered wings, earrings, white wings"
+    - generic [ref=e480]:
+      - generic [ref=e481]:
+        - text: "Character: feixiao \\(honkai: star rail\\)"
+        - link [ref=e482] [cursor=pointer]:
+          - /url: "search.asp?charactername=feixiao \\(honkai: star rail\\)"
+          - img [ref=e483]
+      - link "thumbnail" [ref=e487] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e488]
+      - generic [ref=e489]:
+        - generic [ref=e490]: "Prompt tags:"
+        - generic [ref=e491]: "feixiao \\(honkai: star rail\\), honkai: star rail, 1girl, fox girl, fox ears, animal ears, green eyes, long hair, white hair, grey hair, very long hair, parted bangs, ponytail, high ponytail, large breasts, chinese clothes, chinese clothes, earrings, forehead jewel, eyeliner, red eyeliner"
+    - generic [ref=e493]:
+      - generic [ref=e494]:
+        - text: "Character: seele \\(honkai: star rail\\)"
+        - link [ref=e495] [cursor=pointer]:
+          - /url: "search.asp?charactername=seele \\(honkai: star rail\\)"
+          - img [ref=e496]
+      - link "thumbnail" [ref=e500] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e501]
+      - generic [ref=e502]:
+        - generic [ref=e503]: "Prompt tags:"
+        - generic [ref=e504]:
+          - text: "seele \\(honkai: star rail\\), honkai \\(series\\), 1girl, hair between eyes, purple eyes, blue eyes, purple hair, long hair, colored inner hair, blue hair, very long hair, ahoge, medium breasts, thighs, covered navel, purple scarf, black"
+          - link "shorts" [ref=e505] [cursor=pointer]:
+            - /url: "#"
+          - text: ", bare shoulders"
+    - generic [ref=e509]:
+      - generic [ref=e510]:
+        - text: "Character: herta \\(honkai: star rail\\)"
+        - link [ref=e511] [cursor=pointer]:
+          - /url: "search.asp?charactername=herta \\(honkai: star rail\\)"
+          - img [ref=e512]
+      - link "thumbnail" [ref=e516] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e517]
+      - generic [ref=e518]:
+        - generic [ref=e519]: "Prompt tags:"
+        - generic [ref=e520]:
+          - text: "herta \\(honkai: star rail\\), honkai \\(series\\), 1girl, purple eyes, brown hair, very long hair, long hair, hair intakes, hair flower, black"
+          - link "headwear" [ref=e521] [cursor=pointer]:
+            - /url: "#"
+          - text: ", white dress, hat flower, long sleeves, shoulder cutout, purple choker, key necklace, doll joints, beret, key, chain, lock, black hat"
+          - link "Headwear" [ref=e524] [cursor=pointer]
+    - generic [ref=e529]:
+      - generic [ref=e530]:
+        - text: "Character: pom-pom \\(honkai: star rail\\)"
+        - link [ref=e531] [cursor=pointer]:
+          - /url: "search.asp?charactername=pom-pom \\(honkai: star rail\\)"
+          - img [ref=e532]
+      - link "thumbnail" [ref=e536] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e537]
+      - generic [ref=e538]:
+        - generic [ref=e539]: "Prompt tags:"
+        - generic [ref=e540]: "pom-pom \\(honkai: star rail\\), honkai \\(series\\), 1girl, blue eyes, hair between eyes, pink eyes, two-tone eyes, pink hair, medium hair, long hair, medium breasts, white shirt, long sleeves"
+    - generic [ref=e542]:
+      - generic [ref=e543]:
+        - text: "Character: boothill \\(honkai: star rail\\)"
+        - link [ref=e544] [cursor=pointer]:
+          - /url: "search.asp?charactername=boothill \\(honkai: star rail\\)"
+          - img [ref=e545]
+      - link "thumbnail" [ref=e549] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e550]
+      - generic [ref=e551]:
+        - generic [ref=e552]: "Prompt tags:"
+        - generic [ref=e553]: "boothill \\(honkai: star rail\\), honkai \\(series\\), 1boy, sharp teeth, ear piercing, red eyes, hair over one eye, mole under eye, black hair, white hair, long hair, two-tone hair, split-color hair, cowboy hat, black jacket, hat feather, earrings, cyborg, black hat"
+    - generic [ref=e555]:
+      - generic [ref=e556]:
+        - text: "Character: yunli \\(honkai: star rail\\)"
+        - link [ref=e557] [cursor=pointer]:
+          - /url: "search.asp?charactername=yunli \\(honkai: star rail\\)"
+          - img [ref=e558]
+      - link "thumbnail" [ref=e562] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e563]
+      - generic [ref=e564]:
+        - generic [ref=e565]: "Prompt tags:"
+        - generic [ref=e566]:
+          - text: "yunli \\(honkai: star rail\\), honkai \\(series\\), 1girl, hair between eyes, yellow eyes, orange eyes, long hair, grey hair, low twintails, hairclip, chinese clothes, chinese clothes, detached sleeves, bare shoulders, short sleeves, detached collar, headpiece, stomach"
+          - link "Apparel" [ref=e567] [cursor=pointer]
+    - generic [ref=e572]:
+      - generic [ref=e573]:
+        - text: "Character: tingyun \\(honkai: star rail\\)"
+        - link [ref=e574] [cursor=pointer]:
+          - /url: "search.asp?charactername=tingyun \\(honkai: star rail\\)"
+          - img [ref=e575]
+      - link "thumbnail" [ref=e579] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e580]
+      - generic [ref=e581]:
+        - generic [ref=e582]: "Prompt tags:"
+        - generic [ref=e583]: "tingyun \\(honkai: star rail\\), honkai \\(series\\), 1girl, fox girl, fox ears, fox tail, animal ear fluff, hair between eyes, green eyes, brown hair, long hair, ponytail, large breasts, medium breasts, cleavage, thighs, brown dress, bare shoulders, detached sleeves, bracelet"
+    - generic [ref=e585]:
+      - generic [ref=e586]:
+        - text: "Character: sam \\(honkai: star rail\\)"
+        - link [ref=e587] [cursor=pointer]:
+          - /url: "search.asp?charactername=sam \\(honkai: star rail\\)"
+          - img [ref=e588]
+      - link "thumbnail" [ref=e592] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e593]
+      - generic [ref=e594]:
+        - generic [ref=e595]: "Prompt tags:"
+        - generic [ref=e596]: "sam \\(honkai: star rail\\), honkai: star rail, 1girl, hair between eyes, blue eyes, long hair, grey hair, black hairband, hair intakes, armor"
+    - generic [ref=e598]:
+      - generic [ref=e599]:
+        - text: "Character: huohuo \\(honkai: star rail\\)"
+        - link [ref=e600] [cursor=pointer]:
+          - /url: "search.asp?charactername=huohuo \\(honkai: star rail\\)"
+          - img [ref=e601]
+      - link "thumbnail" [ref=e605] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e606]
+      - generic [ref=e607]:
+        - generic [ref=e608]: "Prompt tags:"
+        - generic [ref=e609]: "huohuo \\(honkai: star rail\\), honkai \\(series\\), 1girl, fox girl, fox ears, fox tail, green eyes, paw-shaped pupils, symbol-shaped pupils, green hair, long hair, yin yang hair ornament, ahoge, hair ornament, hat, long sleeves, bare shoulders, yin yang"
+    - generic [ref=e611]:
+      - generic [ref=e612]:
+        - text: "Character: march 7th \\(hunt\\) \\(honkai: star rail\\)"
+        - link [ref=e613] [cursor=pointer]:
+          - /url: "search.asp?charactername=march 7th \\(hunt\\) \\(honkai: star rail\\)"
+          - img [ref=e614]
+      - link "thumbnail" [ref=e618] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e619]
+      - generic [ref=e620]:
+        - generic [ref=e621]: "Prompt tags:"
+        - generic [ref=e622]: "march 7th \\(hunt) (honkai: star rail\\), honkai: star rail, 1girl, blue eyes, two-tone eyes, pink eyes, purple eyes, pink pupils, pink hair, official alternate hairstyle, medium hair, medium breasts, chinese clothes, black gloves, fingerless gloves, black dress, chinese clothes, blue belt, jingle bell, hairpin, si"
+    - generic [ref=e624]:
+      - generic [ref=e625]:
+        - text: "Character: jade \\(honkai: star rail\\)"
+        - link [ref=e626] [cursor=pointer]:
+          - /url: "search.asp?charactername=jade \\(honkai: star rail\\)"
+          - img [ref=e627]
+      - link "thumbnail" [ref=e631] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e632]
+      - generic [ref=e633]:
+        - generic [ref=e634]: "Prompt tags:"
+        - generic [ref=e635]: "jade \\(honkai: star rail\\), honkai \\(series\\), 1girl, blue eyes, purple hair, long hair, pink hair, very long hair, large breasts, cleavage, hat, black gloves, black bra, nail polish, purple nails, bracelet, necklace, snake, black hat"
+    - generic [ref=e637]:
+      - generic [ref=e638]:
+        - text: "Character: trotter \\(honkai: star rail\\)"
+        - link [ref=e639] [cursor=pointer]:
+          - /url: "search.asp?charactername=trotter \\(honkai: star rail\\)"
+          - img [ref=e640]
+      - link "thumbnail" [ref=e644] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e645]
+      - generic [ref=e646]:
+        - generic [ref=e647]: "Prompt tags:"
+        - generic [ref=e648]: "trotter \\(honkai: star rail\\), honkai: star rail, 1girl, blue eyes, hair between eyes, purple eyes, red hair, streaked hair, white hair, short hair, colored inner hair, grey hair, two-tone hair, hair ornament, large breasts, cleavage, thighs, thigh strap, black gloves, bare shoulders, detached sleeves, b"
+    - generic [ref=e650]:
+      - generic [ref=e651]:
+        - text: "Character: clara \\(honkai: star rail\\)"
+        - link [ref=e652] [cursor=pointer]:
+          - /url: "search.asp?charactername=clara \\(honkai: star rail\\)"
+          - img [ref=e653]
+      - link "thumbnail" [ref=e657] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e658]
+      - generic [ref=e659]:
+        - generic [ref=e660]: "Prompt tags:"
+        - generic [ref=e661]: "clara \\(honkai: star rail\\), honkai: star rail, 1girl, red eyes, hair between eyes, pink eyes, white hair, long hair, grey hair, very long hair, sidelocks, hair intakes, feet, legs, barefoot, red jacket, red coat, long sleeves"
+    - generic [ref=e663]:
+      - generic [ref=e664]:
+        - text: "Character: numby \\(honkai: star rail\\)"
+        - link [ref=e665] [cursor=pointer]:
+          - /url: "search.asp?charactername=numby \\(honkai: star rail\\)"
+          - img [ref=e666]
+      - link "thumbnail" [ref=e670] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e671]
+      - generic [ref=e672]:
+        - generic [ref=e673]: "Prompt tags:"
+        - generic [ref=e674]: "numby \\(honkai: star rail\\), honkai: star rail, 1girl, blue eyes, hair between eyes, purple eyes, red hair, streaked hair, white hair, short hair, colored inner hair, grey hair, two-tone hair, hair ornament, large breasts, cleavage, thighs, thigh strap, black gloves, bare shoulders, detached sleeves, b"
+    - generic [ref=e676]:
+      - generic [ref=e677]:
+        - text: "Character: yanqing \\(honkai: star rail\\)"
+        - link [ref=e678] [cursor=pointer]:
+          - /url: "search.asp?charactername=yanqing \\(honkai: star rail\\)"
+          - img [ref=e679]
+      - link "thumbnail" [ref=e683] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e684]
+      - generic [ref=e685]:
+        - generic [ref=e686]: "Prompt tags:"
+        - generic [ref=e687]:
+          - text: "yanqing \\(honkai: star rail\\), honkai: star rail, 1boy, yellow eyes, long hair, blonde hair, ahoge, ponytail, parted bangs, sidelocks, chinese"
+          - link "clothes" [ref=e688] [cursor=pointer]:
+            - /url: "#"
+          - text: ", chinese clothes, fingerless gloves, long sleeves"
+          - link "Apparel" [ref=e691] [cursor=pointer]
+    - generic [ref=e696]:
+      - generic [ref=e697]:
+        - text: "Character: march 7th \\(preservation\\) \\(honkai: star rail\\)"
+        - link [ref=e698] [cursor=pointer]:
+          - /url: "search.asp?charactername=march 7th \\(preservation\\) \\(honkai: star rail\\)"
+          - img [ref=e699]
+      - link "thumbnail" [ref=e703] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e704]
+      - generic [ref=e705]:
+        - generic [ref=e706]: "Prompt tags:"
+        - generic [ref=e707]: "march 7th \\(preservation) (honkai: star rail\\), honkai \\(series\\), 1girl, blue eyes, two-tone eyes, pink eyes, pink pupils, pink hair, medium hair, medium breasts, white shirt, blue jacket, bra strap, black gloves, tied jacket, partially fingerless gloves, pleated skirt, blue skirt, long sleeves, black choker, buttons, s"
+    - generic [ref=e709]:
+      - generic [ref=e710]:
+        - text: "Character: jiaoqiu \\(honkai: star rail\\)"
+        - link [ref=e711] [cursor=pointer]:
+          - /url: "search.asp?charactername=jiaoqiu \\(honkai: star rail\\)"
+          - img [ref=e712]
+      - link "thumbnail" [ref=e716] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e717]
+      - generic [ref=e718]:
+        - generic [ref=e719]: "Prompt tags:"
+        - generic [ref=e720]: "jiaoqiu \\(honkai: star rail\\), honkai \\(series\\), 1boy, fox boy, fox ears, animal ear fluff, fox tail, hair between eyes, pink hair, long hair, chinese clothes, chinese clothes, white shirt, black gloves, bishounen"
+    - generic [ref=e722]:
+      - generic [ref=e723]:
+        - text: "Character: qingque \\(honkai: star rail\\)"
+        - link [ref=e724] [cursor=pointer]:
+          - /url: "search.asp?charactername=qingque \\(honkai: star rail\\)"
+          - img [ref=e725]
+      - link "thumbnail" [ref=e729] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e730]
+      - generic [ref=e731]:
+        - generic [ref=e732]: "Prompt tags:"
+        - generic [ref=e733]: "qingque \\(honkai: star rail\\), honkai: star rail, 1girl, green eyes, hair between eyes, long hair, brown hair, light brown hair, low twintails, braid, twintails, hairclip, green dress, bare shoulders, long sleeves, shoulder cutout, mahjong tile"
+    - generic [ref=e735]:
+      - generic [ref=e736]:
+        - text: "Character: bailu \\(honkai: star rail\\)"
+        - link [ref=e737] [cursor=pointer]:
+          - /url: "search.asp?charactername=bailu \\(honkai: star rail\\)"
+          - img [ref=e738]
+      - link "thumbnail" [ref=e742] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e743]
+      - generic [ref=e744]:
+        - generic [ref=e745]: "Prompt tags:"
+        - generic [ref=e746]: "bailu \\(honkai: star rail\\), honkai: star rail, 1girl, dragon horns, dragon tail, pointy ears, hair between eyes, blue eyes, aqua eyes, purple hair, long hair, very long hair, blue hair, crossed bangs, ahoge, twin braids, hair tubes, detached sleeves, long sleeves, dragon girl"
+    - generic [ref=e748]:
+      - generic [ref=e749]:
+        - text: "Character: lingsha \\(honkai: star rail\\)"
+        - link [ref=e750] [cursor=pointer]:
+          - /url: "search.asp?charactername=lingsha \\(honkai: star rail\\)"
+          - img [ref=e751]
+      - link "thumbnail" [ref=e755] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e756]
+      - generic [ref=e757]:
+        - generic [ref=e758]: "Prompt tags:"
+        - generic [ref=e759]: "lingsha \\(honkai: star rail\\), honkai: star rail, 1girl, pointy ears, orange eyes, red eyes, brown hair, long hair, very long hair, black hair, blunt bangs, ahoge, cleavage, navel, bare shoulders, colored extremities"
+    - generic [ref=e761]:
+      - generic [ref=e762]:
+        - text: "Character: asta \\(honkai: star rail\\)"
+        - link [ref=e763] [cursor=pointer]:
+          - /url: "search.asp?charactername=asta \\(honkai: star rail\\)"
+          - img [ref=e764]
+      - link "thumbnail" [ref=e768] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e769]
+      - generic [ref=e770]:
+        - generic [ref=e771]: "Prompt tags:"
+        - generic [ref=e772]: "asta \\(honkai: star rail\\), honkai: star rail, 1girl, blue eyes, hair between eyes, pink hair, medium hair, long hair, braid, hair ornament, hairclip, medium breasts, white shirt, sleeveless shirt, bare shoulders, detached sleeves, one side up, id card"
+    - generic [ref=e774]:
+      - generic [ref=e775]:
+        - text: "Character: luocha \\(honkai: star rail\\)"
+        - link [ref=e776] [cursor=pointer]:
+          - /url: "search.asp?charactername=luocha \\(honkai: star rail\\)"
+          - img [ref=e777]
+      - link "thumbnail" [ref=e781] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e782]
+      - generic [ref=e783]:
+        - generic [ref=e784]: "Prompt tags:"
+        - generic [ref=e785]:
+          - text: "luocha \\(honkai: star rail\\), honkai: star rail, 1boy, hair between eyes, green eyes, blonde hair, long hair, chinese clothes, black shirt, black gloves, white coat, white pants, long sleeves, bishounen"
+          - link "Apparel" [ref=e786] [cursor=pointer]
+    - generic [ref=e791]:
+      - generic [ref=e792]:
+        - text: "Character: sushang \\(honkai: star rail\\)"
+        - link [ref=e793] [cursor=pointer]:
+          - /url: "search.asp?charactername=sushang \\(honkai: star rail\\)"
+          - img [ref=e794]
+      - link "thumbnail" [ref=e798] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e799]
+      - generic [ref=e800]:
+        - generic [ref=e801]: "Prompt tags:"
+        - generic [ref=e802]: "sushang \\(honkai: star rail\\), honkai: star rail, 1girl, brown eyes, brown hair, long hair, very long hair, twintails, braid, hair bell, large breasts, medium breasts, chinese clothes, chinese clothes, bare shoulders, long sleeves"
+    - generic [ref=e804]:
+      - generic [ref=e805]:
+        - text: "Character: moze \\(honkai: star rail\\)"
+        - link [ref=e806] [cursor=pointer]:
+          - /url: "search.asp?charactername=moze \\(honkai: star rail\\)"
+          - img [ref=e807]
+      - link "thumbnail" [ref=e811] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e812]
+      - generic [ref=e813]:
+        - generic [ref=e814]: "Prompt tags:"
+        - generic [ref=e815]: "moze \\(honkai: star rail\\), honkai \\(series\\), 1boy, hair between eyes, purple eyes, multicolored eyes, grey hair, short hair, purple jacket, black gloves, hood up, purple hood"
+    - generic [ref=e817]:
+      - generic [ref=e818]:
+        - text: "Character: argenti \\(honkai: star rail\\)"
+        - link [ref=e819] [cursor=pointer]:
+          - /url: "search.asp?charactername=argenti \\(honkai: star rail\\)"
+          - img [ref=e820]
+      - link "thumbnail" [ref=e824] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e825]
+      - generic [ref=e826]:
+        - generic [ref=e827]: "Prompt tags:"
+        - generic [ref=e828]: "argenti \\(honkai: star rail\\), honkai: star rail, 1boy, green eyes, hair between eyes, red hair, long hair, curtained hair, streaked hair, ahoge, parted bangs, white armor, knight, gauntlets, knight, pauldrons, breastplate"
+    - generic [ref=e830]:
+      - generic [ref=e831]:
+        - text: "Character: gallagher \\(honkai: star rail\\)"
+        - link [ref=e832] [cursor=pointer]:
+          - /url: "search.asp?charactername=gallagher \\(honkai: star rail\\)"
+          - img [ref=e833]
+      - link "thumbnail" [ref=e837] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e838]
+      - generic [ref=e839]:
+        - generic [ref=e840]: "Prompt tags:"
+        - generic [ref=e841]: "gallagher \\(honkai: star rail\\), honkai: star rail, 1boy, beard stubble, brown eyes, hair between eyes, red eyes, brown hair, medium hair, long hair, black shirt, red necktie, stubble, bara, muscular male"
+    - generic [ref=e843]:
+      - generic [ref=e844]:
+        - text: "Character: guinaifen \\(honkai: star rail\\)"
+        - link [ref=e845] [cursor=pointer]:
+          - /url: "search.asp?charactername=guinaifen \\(honkai: star rail\\)"
+          - img [ref=e846]
+      - link "thumbnail" [ref=e850] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e851]
+      - generic [ref=e852]:
+        - generic [ref=e853]: "Prompt tags:"
+        - generic [ref=e854]:
+          - text: "guinaifen \\(honkai: star rail\\), honkai: star rail, 1girl, hair between eyes, yellow eyes, orange eyes, orange hair, long hair, very long hair, ponytail, side ponytail, hair flower, large breasts, medium breasts, chinese clothes, black gloves, chinese clothes, bare shoulders, detached sleeves"
+          - link "Apparel" [ref=e855] [cursor=pointer]
+    - generic [ref=e860]:
+      - generic [ref=e861]:
+        - text: "Character: pela \\(honkai: star rail\\)"
+        - link [ref=e862] [cursor=pointer]:
+          - /url: "search.asp?charactername=pela \\(honkai: star rail\\)"
+          - img [ref=e863]
+      - link "thumbnail" [ref=e867] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e868]
+      - generic [ref=e869]:
+        - generic [ref=e870]: "Prompt tags:"
+        - generic [ref=e871]:
+          - text: "pela \\(honkai: star rail\\), honkai \\(series\\), 1girl, blue eyes, glasses, round"
+          - link "eyewear" [ref=e872] [cursor=pointer]:
+            - /url: "#"
+          - text: ", long hair, blue hair, purple hair, hat tassel, black gloves, black"
+          - link "headwear" [ref=e875] [cursor=pointer]:
+            - /url: "#"
+          - text: ", black pantyhose, elbow gloves, beret, blue neckerchief, black hat"
+    - generic [ref=e879]:
+      - generic [ref=e880]:
+        - text: "Character: yukong \\(honkai: star rail\\)"
+        - link [ref=e881] [cursor=pointer]:
+          - /url: "search.asp?charactername=yukong \\(honkai: star rail\\)"
+          - img [ref=e882]
+      - link "thumbnail" [ref=e886] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e887]
+      - generic [ref=e888]:
+        - generic [ref=e889]: "Prompt tags:"
+        - generic [ref=e890]:
+          - text: "yukong \\(honkai: star rail\\), honkai: star rail, 1girl, fox girl, fox ears, animal ear fluff, fox tail, purple eyes, hair between eyes, long hair, green hair, very long hair, blue hair, hair ornament, large breasts, cleavage, thighs, legs, bare shoulders"
+          - link "Headwear" [ref=e891] [cursor=pointer]
+    - generic [ref=e896]:
+      - generic [ref=e897]:
+        - text: "Character: yingxing \\(honkai: star rail\\)"
+        - link [ref=e898] [cursor=pointer]:
+          - /url: "search.asp?charactername=yingxing \\(honkai: star rail\\)"
+          - img [ref=e899]
+      - link "thumbnail" [ref=e903] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e904]
+      - generic [ref=e905]:
+        - generic [ref=e906]: "Prompt tags:"
+        - generic [ref=e907]:
+          - text: "yingxing \\(honkai: star rail\\), honkai: star rail, 1boy, red eyes, long hair, white hair, parted bangs, ponytail, chinese"
+          - link "clothes" [ref=e908] [cursor=pointer]:
+            - /url: "#"
+          - text: ", chinese clothes, long sleeves"
+    - generic [ref=e912]:
+      - generic [ref=e913]:
+        - text: "Character: tail \\(honkai: star rail\\)"
+        - link [ref=e914] [cursor=pointer]:
+          - /url: "search.asp?charactername=tail \\(honkai: star rail\\)"
+          - img [ref=e915]
+      - link "thumbnail" [ref=e919] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e920]
+      - generic [ref=e921]:
+        - generic [ref=e922]: "Prompt tags:"
+        - generic [ref=e923]: "tail \\(honkai: star rail\\), honkai: star rail, 1girl, fox girl, fox ears, fox tail, fiery tail, green eyes, paw-shaped pupils, symbol-shaped pupils, green hair, long hair, yin yang hair ornament, ahoge, hair ornament, hat, white socks, long sleeves, bare shoulders, detached sleeves, yin yang, talisman"
+    - generic [ref=e925]:
+      - generic [ref=e926]:
+        - text: "Character: firefly \\(ar-26710\\) \\(honkai: star rail\\)"
+        - link [ref=e927] [cursor=pointer]:
+          - /url: "search.asp?charactername=firefly \\(ar-26710\\) \\(honkai: star rail\\)"
+          - img [ref=e928]
+      - link "thumbnail" [ref=e932] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e933]
+      - generic [ref=e934]:
+        - generic [ref=e935]: "Prompt tags:"
+        - generic [ref=e936]: "firefly \\(ar-26710) (honkai: star rail\\), honkai: star rail, 1girl, purple eyes, hair between eyes, two-tone eyes, grey hair, long hair, very long hair, white hair, black hairband, medium breasts, pilot suit, pilot suit, white bodysuit"
+    - generic [ref=e938]:
+      - generic [ref=e939]:
+        - text: "Character: misha \\(honkai: star rail\\)"
+        - link [ref=e940] [cursor=pointer]:
+          - /url: "search.asp?charactername=misha \\(honkai: star rail\\)"
+          - img [ref=e941]
+      - link "thumbnail" [ref=e945] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e946]
+      - generic [ref=e947]:
+        - generic [ref=e948]: "Prompt tags:"
+        - generic [ref=e949]: "misha \\(honkai: star rail\\), honkai: star rail, 1boy, purple eyes, hair over one eye, colored eyelashes, light blue hair, long hair, short hair, ponytail, low ponytail, hair bow, white gloves, hat, white shirt, blue vest, black headwear, long sleeves, black bow, black hat"
+    - generic [ref=e951]:
+      - generic [ref=e952]:
+        - text: "Character: hanya \\(honkai: star rail\\)"
+        - link [ref=e953] [cursor=pointer]:
+          - /url: "search.asp?charactername=hanya \\(honkai: star rail\\)"
+          - img [ref=e954]
+      - link "thumbnail" [ref=e958] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e959]
+      - generic [ref=e960]:
+        - generic [ref=e961]: "Prompt tags:"
+        - generic [ref=e962]:
+          - text: "hanya \\(honkai: star rail\\), honkai: star rail, 1girl, hair between eyes, grey eyes, grey hair, long hair, hair ornament, large breasts, cleavage, thighs, chinese clothes, black gloves, chinese clothes, blue dress, bare shoulders, detached sleeves"
+          - link "Apparel" [ref=e963] [cursor=pointer]
+    - generic [ref=e968]:
+      - generic [ref=e969]:
+        - text: "Character: clockie \\(honkai: star rail\\)"
+        - link [ref=e970] [cursor=pointer]:
+          - /url: "search.asp?charactername=clockie \\(honkai: star rail\\)"
+          - img [ref=e971]
+      - link "thumbnail" [ref=e975] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e976]
+      - generic [ref=e977]:
+        - generic [ref=e978]: "Prompt tags:"
+        - generic [ref=e979]: "clockie \\(honkai: star rail\\), honkai: star rail, purple eyes, hair between eyes, hair over one eye, grey hair, light blue hair, long hair, ponytail, white shirt, white gloves, long sleeves, black hat"
+    - generic [ref=e981]:
+      - generic [ref=e982]:
+        - text: "Character: trailblazer \\(trash cake\\) \\(honkai: star rail\\)"
+        - link [ref=e983] [cursor=pointer]:
+          - /url: "search.asp?charactername=trailblazer \\(trash cake\\) \\(honkai: star rail\\)"
+          - img [ref=e984]
+      - link "thumbnail" [ref=e988] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e989]
+      - generic [ref=e990]:
+        - generic [ref=e991]: "Prompt tags:"
+        - generic [ref=e992]: "trailblazer \\(trash cake) (honkai: star rail\\), honkai: star rail, hair between eyes, purple eyes, yellow eyes, blue eyes, short hair, blonde hair, black hair, long sleeves, black cat"
+    - generic [ref=e994]:
+      - generic [ref=e995]:
+        - text: "Character: dan feng \\(honkai: star rail\\)"
+        - link [ref=e996] [cursor=pointer]:
+          - /url: "search.asp?charactername=dan feng \\(honkai: star rail\\)"
+          - img [ref=e997]
+      - link "thumbnail" [ref=e1001] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1002]
+      - generic [ref=e1003]:
+        - generic [ref=e1004]: "Prompt tags:"
+        - generic [ref=e1005]: "dan feng \\(honkai: star rail\\), honkai: star rail, 1boy, pointy ears, dragon horns, green horns, hair between eyes, aqua eyes, green eyes, black hair, long hair, very long hair, chinese clothes, chinese clothes, black gloves, long sleeves, earrings, dragon boy, red eyeliner, eyeliner"
+    - generic [ref=e1007]:
+      - generic [ref=e1008]:
+        - text: "Character: xueyi \\(honkai: star rail\\)"
+        - link [ref=e1009] [cursor=pointer]:
+          - /url: "search.asp?charactername=xueyi \\(honkai: star rail\\)"
+          - img [ref=e1010]
+      - link "thumbnail" [ref=e1014] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1015]
+      - generic [ref=e1016]:
+        - generic [ref=e1017]: "Prompt tags:"
+        - generic [ref=e1018]: "xueyi \\(honkai: star rail\\), honkai: star rail, 1girl, red eyes, hair between eyes, short hair, colored inner hair, black hair, red hair, medium hair, brown hair, medium breasts, chinese clothes, chinese clothes, bare shoulders"
+    - generic [ref=e1020]:
+      - generic [ref=e1021]:
+        - text: "Character: natasha \\(honkai: star rail\\)"
+        - link [ref=e1022] [cursor=pointer]:
+          - /url: "search.asp?charactername=natasha \\(honkai: star rail\\)"
+          - img [ref=e1023]
+      - link "thumbnail" [ref=e1027] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1028]
+      - generic [ref=e1029]:
+        - generic [ref=e1030]: "Prompt tags:"
+        - generic [ref=e1031]: "natasha \\(honkai: star rail\\), honkai: star rail, 1girl, mole under mouth, hair between eyes, red eyes, purple eyes, long hair, blue hair, medium hair, sidelocks, large breasts"
+    - generic [ref=e1033]:
+      - generic [ref=e1034]:
+        - text: "Character: aventurine \\(anan\\) \\(honkai: star rail\\)"
+        - link [ref=e1035] [cursor=pointer]:
+          - /url: "search.asp?charactername=aventurine \\(anan\\) \\(honkai: star rail\\)"
+          - img [ref=e1036]
+      - link "thumbnail" [ref=e1040] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1041]
+      - generic [ref=e1042]:
+        - generic [ref=e1043]: "Prompt tags:"
+        - generic [ref=e1044]: "aventurine \\(anan) (honkai: star rail\\), honkai: star rail, 1boy, hair between eyes, purple eyes, multicolored eyes, short hair, blonde hair, parted bangs, neck tattoo, collarbone, black shirt, long sleeves, virtual youtuber, pajamas, black pajamas, pajamas, black pajamas, pillow"
+    - generic [ref=e1046]:
+      - generic [ref=e1047]:
+        - text: "Character: blade \\(sesame cake\\) \\(honkai: star rail\\)"
+        - link [ref=e1048] [cursor=pointer]:
+          - /url: "search.asp?charactername=blade \\(sesame cake\\) \\(honkai: star rail\\)"
+          - img [ref=e1049]
+      - link "thumbnail" [ref=e1053] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1054]
+      - generic [ref=e1055]:
+        - generic [ref=e1056]: "Prompt tags:"
+        - generic [ref=e1057]:
+          - text: "blade \\(sesame cake) (honkai: star rail\\), honkai: star rail, 1boy, bandaged tail, red eyes, hair between eyes, hair over one eye, long hair, black hair, parted bangs, chinese clothes, chinese clothes, long sleeves, earrings, black cat, animal, bandaged hand"
+          - link "Apparel" [ref=e1058] [cursor=pointer]
+    - generic [ref=e1063]:
+      - generic [ref=e1064]:
+        - text: "Character: wubbaboo \\(honkai: star rail\\)"
+        - link [ref=e1065] [cursor=pointer]:
+          - /url: "search.asp?charactername=wubbaboo \\(honkai: star rail\\)"
+          - img [ref=e1066]
+      - link "thumbnail" [ref=e1070] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1071]
+      - generic [ref=e1072]:
+        - generic [ref=e1073]: "Prompt tags:"
+        - generic [ref=e1074]: "wubbaboo \\(honkai: star rail\\), honkai: star rail, 1girl, hair between eyes, long hair, grey hair, ahoge, long sleeves"
+    - generic [ref=e1076]:
+      - generic [ref=e1077]:
+        - text: "Character: baiheng \\(honkai: star rail\\)"
+        - link [ref=e1078] [cursor=pointer]:
+          - /url: "search.asp?charactername=baiheng \\(honkai: star rail\\)"
+          - img [ref=e1079]
+      - link "thumbnail" [ref=e1083] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1084]
+      - generic [ref=e1085]:
+        - generic [ref=e1086]: "Prompt tags:"
+        - generic [ref=e1087]: "baiheng \\(honkai: star rail\\), honkai: star rail, 1girl, floating hair, fox ears, red eyes, hair between eyes, white hair, long hair, very long hair, high ponytail, ponytail, sidelocks, medium breasts, thighs, black gloves, blue dress, white skirt, detached sleeves, blue sleeves, bare shoulders, black bl"
+    - generic [ref=e1089]:
+      - generic [ref=e1090]:
+        - text: "Character: hook \\(honkai: star rail\\)"
+        - link [ref=e1091] [cursor=pointer]:
+          - /url: "search.asp?charactername=hook \\(honkai: star rail\\)"
+          - img [ref=e1092]
+      - link "thumbnail" [ref=e1096] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1097]
+      - generic [ref=e1098]:
+        - generic [ref=e1099]: "Prompt tags:"
+        - generic [ref=e1100]:
+          - text: "hook \\(honkai: star rail\\), honkai: star rail, 1girl, yellow eyes, hair between eyes, blonde hair, long hair, twintails, low twintails, black gloves, white"
+          - link "headwear" [ref=e1101] [cursor=pointer]:
+            - /url: "#"
+          - text: ", fur-trimmed coat, brown coat, black footwear, brown gloves, open coat, hat, long sleeves"
+          - link "Headwear" [ref=e1104] [cursor=pointer]
+    - generic [ref=e1109]:
+      - generic [ref=e1110]:
+        - text: "Character: peppy \\(honkai: star rail\\)"
+        - link [ref=e1111] [cursor=pointer]:
+          - /url: "search.asp?charactername=peppy \\(honkai: star rail\\)"
+          - img [ref=e1112]
+      - link "thumbnail" [ref=e1116] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1117]
+      - generic [ref=e1118]:
+        - generic [ref=e1119]: "Prompt tags:"
+        - generic [ref=e1120]: "peppy \\(honkai: star rail\\), honkai: star rail, 1girl, blue eyes, purple eyes, hair between eyes, pink hair, medium hair, long hair, medium breasts, white shirt, black skirt, bare shoulders, dog, one side up"
+    - generic [ref=e1122]:
+      - generic [ref=e1123]:
+        - text: "Character: svarog \\(honkai: star rail\\)"
+        - link [ref=e1124] [cursor=pointer]:
+          - /url: "search.asp?charactername=svarog \\(honkai: star rail\\)"
+          - img [ref=e1125]
+      - link "thumbnail" [ref=e1129] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1130]
+      - generic [ref=e1131]:
+        - generic [ref=e1132]: "Prompt tags:"
+        - generic [ref=e1133]: "svarog \\(honkai: star rail\\), honkai: star rail, 1girl, red eyes, hair between eyes, pink eyes, long hair, white hair, grey hair, sidelocks, feet, legs, barefoot, red jacket, red coat, long sleeves, robot"
+    - generic [ref=e1135]:
+      - generic [ref=e1136]:
+        - text: "Character: dan heng \\(rice dumpling\\) \\(honkai: star rail\\)"
+        - link [ref=e1137] [cursor=pointer]:
+          - /url: "search.asp?charactername=dan heng \\(rice dumpling\\) \\(honkai: star rail\\)"
+          - img [ref=e1138]
+      - link "thumbnail" [ref=e1142] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1143]
+      - generic [ref=e1144]:
+        - generic [ref=e1145]: "Prompt tags:"
+        - generic [ref=e1146]: "dan heng \\(rice dumpling) (honkai: star rail\\), honkai: star rail,"
+    - generic [ref=e1148]:
+      - generic [ref=e1149]:
+        - text: "Character: kakavasha \\(honkai: star rail\\)"
+        - link [ref=e1150] [cursor=pointer]:
+          - /url: "search.asp?charactername=kakavasha \\(honkai: star rail\\)"
+          - img [ref=e1151]
+      - link "thumbnail" [ref=e1155] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1156]
+      - generic [ref=e1157]:
+        - generic [ref=e1158]: "Prompt tags:"
+        - generic [ref=e1159]: "kakavasha \\(honkai: star rail\\), honkai: star rail, 1boy, hair between eyes, multicolored eyes, purple eyes, blonde hair, short hair, medium hair, neck tattoo, collarbone, torn shirt, white shirt, long sleeves"
+    - generic [ref=e1161]:
+      - generic [ref=e1162]:
+        - text: "Character: origami bird \\(honkai: star rail\\)"
+        - link [ref=e1163] [cursor=pointer]:
+          - /url: "search.asp?charactername=origami bird \\(honkai: star rail\\)"
+          - img [ref=e1164]
+      - link "thumbnail" [ref=e1168] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1169]
+      - generic [ref=e1170]:
+        - generic [ref=e1171]: "Prompt tags:"
+        - generic [ref=e1172]: "origami bird \\(honkai: star rail\\), honkai: star rail, 1girl, hair between eyes, green eyes, long hair, white hair, hair intakes, large breasts, thigh strap, black gloves, halo, bare shoulders, head wings"
+    - generic [ref=e1174]:
+      - generic [ref=e1175]:
+        - text: "Character: firefly \\(jepella rebellion\\) \\(honkai: star rail\\)"
+        - link [ref=e1176] [cursor=pointer]:
+          - /url: "search.asp?charactername=firefly \\(jepella rebellion\\) \\(honkai: star rail\\)"
+          - img [ref=e1177]
+      - link "thumbnail" [ref=e1181] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1182]
+      - generic [ref=e1183]:
+        - generic [ref=e1184]: "Prompt tags:"
+        - generic [ref=e1185]: "firefly \\(jepella rebellion) (honkai: star rail\\), honkai: star rail, 1girl, purple eyes, two-tone eyes, hair between eyes, grey hair, long hair, very long hair, black hairband, hair ornament, black jacket, black gloves, pencil skirt"
+    - generic [ref=e1187]:
+      - generic [ref=e1188]:
+        - text: "Character: arlan \\(honkai: star rail\\)"
+        - link [ref=e1189] [cursor=pointer]:
+          - /url: "search.asp?charactername=arlan \\(honkai: star rail\\)"
+          - img [ref=e1190]
+      - link "thumbnail" [ref=e1194] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1195]
+      - generic [ref=e1196]:
+        - generic [ref=e1197]: "Prompt tags:"
+        - generic [ref=e1198]: "arlan \\(honkai: star rail\\), honkai: star rail, 1boy, dark-skinned male, purple eyes, pink eyes, hair between eyes, hair over one eye, short hair, white hair, streaked hair, black hair, grey hair, ponytail, short ponytail, scar on face, dog"
+    - generic [ref=e1200]:
+      - generic [ref=e1201]:
+        - text: "Character: fuyuan \\(honkai: star rail\\)"
+        - link [ref=e1202] [cursor=pointer]:
+          - /url: "search.asp?charactername=fuyuan \\(honkai: star rail\\)"
+          - img [ref=e1203]
+      - link "thumbnail" [ref=e1207] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1208]
+      - generic [ref=e1209]:
+        - generic [ref=e1210]: "Prompt tags:"
+        - generic [ref=e1211]: "fuyuan \\(honkai: star rail\\), honkai: star rail,"
+    - generic [ref=e1213]:
+      - generic [ref=e1214]:
+        - text: "Character: luka \\(honkai: star rail\\)"
+        - link [ref=e1215] [cursor=pointer]:
+          - /url: "search.asp?charactername=luka \\(honkai: star rail\\)"
+          - img [ref=e1216]
+      - link "thumbnail" [ref=e1220] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1221]
+      - generic [ref=e1222]:
+        - generic [ref=e1223]: "Prompt tags:"
+        - generic [ref=e1224]: "luka \\(honkai: star rail\\), honkai: star rail, 1boy, sweatdrop, blue eyes, hair between eyes, red hair, short hair, ahoge, sweat, black gloves, necklace, earrings, single mechanical arm, abs"
+    - generic [ref=e1226]:
+      - generic [ref=e1227]:
+        - text: "Character: diting \\(honkai: star rail\\)"
+        - link [ref=e1228] [cursor=pointer]:
+          - /url: "search.asp?charactername=diting \\(honkai: star rail\\)"
+          - img [ref=e1229]
+      - link "thumbnail" [ref=e1233] [cursor=pointer]:
+        - /url: "#"
+        - img "thumbnail" [ref=e1234]
+      - generic [ref=e1235]:
+        - generic [ref=e1236]: "Prompt tags:"
+        - generic [ref=e1237]:
+          - text: "diting \\(honkai: star rail\\), honkai: star rail, 1girl, floating hair, yellow eyes, hair between eyes, long hair, orange hair, very long hair, side ponytail, ponytail, medium breasts, chinese"
+          - link "clothes" [ref=e1238] [cursor=pointer]:
+            - /url: "#"
+          - text: ", black gloves, chinese clothes, detached sleeves, bare shoulders"
+          - link "Apparel" [ref=e1241] [cursor=pointer]
+  - insertion [ref=e1246]
+  - alert [ref=e1248]:
+    - paragraph [ref=e1249]:
+      - link "NoobAI-XL (NAI-XL)" [ref=e1250] [cursor=pointer]:
+        - /url: https://civitai.com/models/833294/noobai-xl-nai-xl
+      - text: is a powerful model for Stable Diffusion, it is able to draw thousands of characters posted on Danbooru.
+    - paragraph [ref=e1251]:
+      - text: All character preview images are created by
+      - link "WebUI Forge" [ref=e1252] [cursor=pointer]:
+        - /url: https://github.com/lllyasviel/stable-diffusion-webui-forge
+      - text: with model NoobAI-XL (NAI-XL) V-Pred-1.0.
+      - iframe [ref=e1257]:
+        - region [ref=f6e2]:
+          - generic [ref=f6e4]
+      - text: The
+      - link "Illustrious" [ref=e1258] [cursor=pointer]:
+        - /url: https://civitai.com/models/795765
+      - text: model and
+      - link "Pony" [ref=e1259] [cursor=pointer]:
+        - /url: https://civitai.com/models/257749
+      - text: model are also support many danbooru characters - so users of Illustrious or Pony can also refer to these previews and use the same prompt tags.
+      - link "Anime & Manga" [ref=e1260] [cursor=pointer]:
+        - img [ref=e1262]
+        - text: Anime & Manga
+    - paragraph [ref=e1264]: The prompt and configuration parameters used for generating each image are embedded within the images themselves. Simply save any image and open it in Stable Diffusion to view the exact settings.
