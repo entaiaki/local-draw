@@ -216,12 +216,12 @@ router.post('/queue', async (req: Request, res: Response) => {
 
   // Points check
   let deductedCost = 0;
-  if (user.role !== 'admin') {
-    const pointsCfg = loadPointsCfg();
-    const isImg2img = !!(req.body as any)?.image1_name;
-    const wfPath = (req.body as any)?.workflow_path as string || '';
-    const isAnima = wfPath.startsWith('ANIMA/');
-    deductedCost = isImg2img ? pointsCfg.image_to_image : (isAnima ? pointsCfg.text_to_image_anima : pointsCfg.text_to_image);
+  const pointsCfg = loadPointsCfg();
+  const isImg2img = !!(req.body as any)?.image1_name;
+  const wfPath = (req.body as any)?.workflow_path as string || '';
+  const isAnima = wfPath.startsWith('ANIMA/');
+  deductedCost = isImg2img ? pointsCfg.image_to_image : (isAnima ? pointsCfg.text_to_image_anima : pointsCfg.text_to_image);
+  if (deductedCost > 0) {
     const ptResult = await deductPoints(user.id, deductedCost);
     if (!ptResult.ok) {
       return res.status(402).json({ error: '点数不足', need: deductedCost, balance: ptResult.balance || 0 });

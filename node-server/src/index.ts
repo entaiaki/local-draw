@@ -396,10 +396,8 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     const { translatePrompt } = await import('./services/llm.js');
     const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, undefined, mode === 'anima');
     // Deduct points only on success
-    if ((req as any).user?.role !== 'admin') {
-      const ptCfg = loadPointsCfg();
-      await deductPoints((req as any).user?.id, ptCfg.llm_translate);
-    }
+    const ptCfg = loadPointsCfg();
+    await deductPoints((req as any).user?.id, ptCfg.llm_translate);
     res.json({ ok: true, positive: result.positive, negative: result.negative });
   } catch (e: any) {
     res.json({ ok: false, error: (e.message || String(e)).slice(0, 1000) });
