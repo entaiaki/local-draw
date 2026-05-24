@@ -32,12 +32,12 @@ export interface LlmResult {
 export function parsePosNeg(text: string): LlmResult {
   const posMatch = text.match(/POSITIVE:\s*(.+?)(?=\s*NEGATIVE:|\n|$)/);
   const negMatch = text.match(/NEGATIVE:\s*(.+?)$/);
-  if (!posMatch) {
-    throw new Error(`模型拒绝了该请求或返回格式异常: ${text.slice(0, 200)}`);
+  if (!posMatch || !posMatch[1].trim()) {
+    throw new Error(`模型返回格式异常，缺少 POSITIVE 行: ${text.slice(0, 200)}`);
   }
   return {
     positive: posMatch[1].trim(),
-    negative: negMatch ? negMatch[1].trim() : '',
+    negative: negMatch && negMatch[1].trim() ? negMatch[1].trim() : '',
   };
 }
 
