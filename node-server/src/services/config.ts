@@ -26,8 +26,10 @@ export interface AppConfig {
 
 const here = path.join(process.cwd(), '..', 'web');
 
+// ComfyUI 基础路径，所有派生路径由此拼接
+const COMFYUI_BASE = process.env.COMFYUI_BASE || 'C:\\Users\\acofo\\Documents\\ComfyUI';
+
 export function loadConfig(): AppConfig {
-  // 从 .env 文件加载 JWT_SECRET
   let jwtSecret = process.env.JWT_SECRET || '';
   if (!jwtSecret) {
     for (const dir of [here, path.join(here, '..')]) {
@@ -47,21 +49,21 @@ export function loadConfig(): AppConfig {
     web_port: parseInt(process.env.WEB_PORT || '8080'),
     jwt_secret: jwtSecret,
     comfyui_host: process.env.COMFYUI_HOST || '127.0.0.1',
-    comfyui_port: parseInt(process.env.COMFYUI_PORT || '8188'),
+    comfyui_port: parseInt(process.env.COMFYUI_PORT || '8000'),
     get comfyui_api() { return `http://${this.comfyui_host}:${this.comfyui_port}`; },
     get comfyui_ws() { return `ws://${this.comfyui_host}:${this.comfyui_port}`; },
     lms_host: process.env.LMS_HOST || '127.0.0.1',
     lms_port: parseInt(process.env.LMS_PORT || '1234'),
     get lms_api() { return `http://${this.lms_host}:${this.lms_port}`; },
-    output_dir: process.env.OUTPUT_DIR || 'C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\output',
-    archive_dir: process.env.ARCHIVE_DIR || 'C:\\Users\\acofo\\Documents\\ComfyUI\\archived_output',
-    thumb_dir: path.join(path.join(process.cwd(), '..', 'web'), 'thumbnails'),
-    workflows_dir: process.env.COMFYUI_WORKFLOWS_DIR || 'C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\user\\default\\workflows',
+    output_dir: path.join(COMFYUI_BASE, 'output'),
+    archive_dir: path.join(COMFYUI_BASE, 'archived_output'),
+    thumb_dir: path.join(here, 'thumbnails'),
+    workflows_dir: path.join(COMFYUI_BASE, 'user', 'default', 'workflows'),
     creator_map_file: path.join(here, 'creator_users.txt'),
     limits_file: path.join(here, 'limits.json'),
     llm_config_file: path.join(here, 'llm_config.json'),
     state_file: path.join(here, 'state.json'),
-	    turnstile_secret_key: process.env.TURNSTILE_SECRET_KEY || (() => { for (const dir of [here, path.join(here, '..')]) { try { const e = fs.readFileSync(path.join(dir, '.env'), 'utf-8'); const m = e.match(/^TURNSTILE_SECRET_KEY="(.+?)"\s*$/m); if (m) return m[1].trim(); } catch {} } return ''; })(),
+    turnstile_secret_key: process.env.TURNSTILE_SECRET_KEY || (() => { for (const dir of [here, path.join(here, '..')]) { try { const e = fs.readFileSync(path.join(dir, '.env'), 'utf-8'); const m = e.match(/^TURNSTILE_SECRET_KEY="(.+?)"\s*$/m); if (m) return m[1].trim(); } catch {} } return ''; })(),
   };
 }
 
