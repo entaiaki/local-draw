@@ -10,6 +10,15 @@ router.use(express.json());
 const config = loadConfig();
 const HERE = path.dirname(config.creator_map_file);
 
+// Serialization lock for wallet writes (prevents V2 race condition)
+let walletLock = Promise.resolve();
+function withWalletLock<T>(fn: () => T): Promise<T> {
+  let release: () => void;
+  const prev = walletLock;
+  walletLock = new Promise(r => { release = r; });
+  return prev.then(() => { try { return fn(); } finally { release(); } });
+}
+
 function walletFile() { return path.join(HERE, 'wallets.json'); }
 function ordersFile() { return path.join(HERE, 'orders.json'); }
 function pointsConfigFile() { return path.join(HERE, 'points_config.json'); }
@@ -188,29 +197,33 @@ router.get('/orders', (req: Request, res: Response) => {
 });
 
 // Deduct points (internal)
-export function deductPoints(userId: number, cost: number): { ok: boolean; balance?: number; error?: string } {
+export async function deductPoints(userId: number, cost: number): Promise<{ ok: boolean; balance?: number; error?: string }> {
   if (cost <= 0) return { ok: true };
-  const wallets = loadWallets();
-  const w = wallets[userId];
-  if (!w || (w.balance || 0) < cost) {
-    return { ok: false, error: '点数不足', balance: w?.balance || 0 };
-  }
-  w.balance -= cost;
-  wallets[userId] = w;
-  saveWallets(wallets);
-  return { ok: true, balance: w.balance };
+  return withWalletLock(() => {
+    const wallets = loadWallets();
+    const w = wallets[userId];
+    if (!w || (w.balance || 0) < cost) {
+      return { ok: false, error: '点数不足', balance: w?.balance || 0 };
+    }
+    w.balance -= cost;
+    wallets[userId] = w;
+    saveWallets(wallets);
+    return { ok: true, balance: w.balance };
+  });
 }
 
 // Refund points on failure (internal)
-export function refundPoints(userId: number, cost: number): void {
+export async function refundPoints(userId: number, cost: number): Promise<void> {
   if (cost <= 0) return;
-  const wallets = loadWallets();
-  const w = wallets[userId];
-  if (w) {
-    w.balance = (w.balance || 0) + cost;
-    saveWallets(wallets);
-    console.log(`[wallet] refund uid=${userId} cost=${cost} newBalance=${w.balance}`);
-  }
+  return withWalletLock(() => {
+    const wallets = loadWallets();
+    const w = wallets[userId];
+    if (w) {
+      w.balance = (w.balance || 0) + cost;
+      saveWallets(wallets);
+      console.log(`[wallet] refund uid=${userId} cost=${cost} newBalance=${w.balance}`);
+    }
+  });
 }
 
 export { router as walletRouter };

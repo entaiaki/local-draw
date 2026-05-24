@@ -369,7 +369,7 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     // Deduct points only on success
     if ((req as any).user?.role !== 'admin') {
       const ptCfg = loadPointsCfg();
-      deductPoints((req as any).user?.id, ptCfg.llm_translate);
+      await deductPoints((req as any).user?.id, ptCfg.llm_translate);
     }
     res.json({ ok: true, positive: result.positive, negative: result.negative });
   } catch (e: any) {

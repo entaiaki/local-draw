@@ -147,7 +147,7 @@ loadQueueState();
       const { refundPoints, loadPointsCfg } = await import('./wallet.js');
       const cfg = loadPointsCfg();
       const isImg2img = !!((qi.params as any)?.image1_name);
-      refundPoints(qi.user_id, isImg2img ? cfg.image_to_image : cfg.text_to_image);
+      await refundPoints(qi.user_id, isImg2img ? cfg.image_to_image : cfg.text_to_image);
     }
   }
   saveQueueState();
@@ -221,26 +221,26 @@ router.post('/queue', async (req: Request, res: Response) => {
     const isImg2img = !!(req.body as any)?.image1_name;
     const mode = (req.body as any)?.mode as string;
     deductedCost = isImg2img ? pointsCfg.image_to_image : (mode === 'anima' ? pointsCfg.text_to_image_anima : pointsCfg.text_to_image);
-    const ptResult = deductPoints(user.id, deductedCost);
+    const ptResult = await deductPoints(user.id, deductedCost);
     if (!ptResult.ok) {
       return res.status(402).json({ error: '点数不足', need: deductedCost, balance: ptResult.balance || 0 });
     }
   }
 
-  function refundOnFail() {
-    if (deductedCost > 0) refundPoints(user.id, deductedCost);
+  async function refundOnFail() {
+    if (deductedCost > 0) await refundPoints(user.id, deductedCost);
   }
 
   // Turnstile verification
   if (limits.turnstile_enabled !== false) {
     const turnstileToken = req.body?.turnstile_token as string;
-    if (!turnstileToken) { refundOnFail(); return res.status(403).json({ detail: '请完成人机验证' }); }
+    if (!turnstileToken) { await refundOnFail(); return res.status(403).json({ detail: '请完成人机验证' }); }
     try {
       const tsResp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify',
         new URLSearchParams({ secret: config.turnstile_secret_key, response: turnstileToken }),
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-      if (!tsResp.data?.success) { refundOnFail(); return res.status(403).json({ detail: '人机验证失败，请刷新后重试' }); }
-    } catch { refundOnFail(); return res.status(503).json({ detail: '人机验证服务不可用' }); }
+      if (!tsResp.data?.success) { await refundOnFail(); return res.status(403).json({ detail: '人机验证失败，请刷新后重试' }); }
+    } catch { await refundOnFail(); return res.status(503).json({ detail: '人机验证服务不可用' }); }
   }
 
   const body = req.body as Record<string, unknown>;
@@ -248,8 +248,8 @@ router.post('/queue', async (req: Request, res: Response) => {
   const itemId = queueIdCounter;
 
   // Validate workflow
-  if (!body.direct_prompt && !body.workflow_path && !body.inline_workflow && !body.image1_name) {
-    refundOnFail();
+  if (!body.direct_prompt && !body.workflow_path && !body.image1_name) {
+    await refundOnFail();
     return res.status(400).json({ detail: '未指定工作流' });
   }
 

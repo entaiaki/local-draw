@@ -433,7 +433,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       const isImg2img = !!(item.params as any)?.image1_name;
       const mode = (item.params as any)?.mode as string;
       const cost = isImg2img ? cfg.image_to_image : (mode === 'anima' ? cfg.text_to_image_anima : cfg.text_to_image);
-      refundPoints(item.user_id, cost);
+      await refundPoints(item.user_id, cost);
     } catch {}
   } finally {
     item.finished_at = Date.now() / 1000;
