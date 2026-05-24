@@ -280,17 +280,26 @@ async function waitForCompletion(promptId: string, timeout = 120): Promise<any> 
   throw new Error('无法获取 history');
 }
 
-export function setCreatorMap(rel: string, userId: number): void {
-  const file = config.creator_map_file;
-  const lockFile = file + '.lock';
-  try {
-    let lines: string[] = [];
-    if (fs.existsSync(file)) lines = fs.readFileSync(file, 'utf-8').split('\n').filter(l => l.trim());
-    lines = lines.filter(l => l.split('\t')[0] !== rel);
-    lines.push(`${rel}\t${userId}`);
-    fs.writeFileSync(file + '.tmp', lines.join('\n') + '\n', 'utf-8');
-    fs.renameSync(file + '.tmp', file);
-  } catch {}
+let creatorMapLock = Promise.resolve();
+function withCreatorMapLock<T>(fn: () => T): Promise<T> {
+  let release: () => void;
+  const prev = creatorMapLock;
+  creatorMapLock = new Promise(r => { release = r; });
+  return prev.then(() => { try { return fn(); } finally { release(); } });
+}
+
+export async function setCreatorMap(rel: string, userId: number): Promise<void> {
+  return withCreatorMapLock(() => {
+    const file = config.creator_map_file;
+    try {
+      let lines: string[] = [];
+      if (fs.existsSync(file)) lines = fs.readFileSync(file, 'utf-8').split('\n').filter(l => l.trim());
+      lines = lines.filter(l => l.split('\t')[0] !== rel);
+      lines.push(`${rel}\t${userId}`);
+      fs.writeFileSync(file + '.tmp', lines.join('\n') + '\n', 'utf-8');
+      fs.renameSync(file + '.tmp', file);
+    } catch {}
+  });
 }
 
 export async function runQueueTask(item: QueueItem): Promise<void> {
@@ -410,7 +419,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     delete promptMeta['_pending_' + promptId];
     for (const img of images) {
       const relPath = img.subfolder ? `${img.subfolder}/${img.filename}` : img.filename;
-      setCreatorMap(relPath, userId);
+      await setCreatorMap(relPath, userId);
       promptMeta[relPath] = {
         prompt: finalPrompt || req.direct_prompt || '',
         

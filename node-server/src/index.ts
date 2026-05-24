@@ -344,6 +344,13 @@ app.post('/api/_reset', (req, res) => {
 
 // POST /api/translate — LLM 前置翻译
 const _translateRate: Record<string, number> = {};
+// Periodic cleanup of stale rate limit entries (every 5 min)
+setInterval(() => {
+  const cutoff = Date.now() - 30000;
+  for (const [uid, ts] of Object.entries(_translateRate)) {
+    if (ts < cutoff) delete _translateRate[uid];
+  }
+}, 300000).unref();
 app.post('/api/translate', requireAuth, async (req, res) => {
   const uid = String(req.user?.id || '');
   const now = Date.now();

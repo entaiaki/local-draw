@@ -374,9 +374,10 @@ router.delete('/delete', requireAdmin, (req, res) => {
   const { path: imagePath } = req.body || {};
   if (!imagePath) return res.status(400).json({ error: 'need path' });
   let deleted = 0, failed = 0;
+  const safe = path.basename(imagePath.replace(/\\/g, '/'));
   const dirs = [config.output_dir, config.archive_dir];
   for (const dir of dirs) {
-    const fp = path.resolve(dir, imagePath.replace(/\\/g, '/').replace(/^\//, ''));
+    const fp = path.resolve(dir, safe);
     if (fp.startsWith(path.resolve(dir)) && fs.existsSync(fp)) {
       try { fs.unlinkSync(fp); deleted++; } catch { failed++; }
     }
@@ -390,8 +391,9 @@ router.post('/delete_batch', requireAdmin, (req, res) => {
   if (!Array.isArray(paths)) return res.status(400).json({ error: 'need paths array' });
   let deleted = 0, failed = 0;
   for (const p of paths) {
+    const safe = path.basename(String(p).replace(/\\/g, '/'));
     for (const dir of [config.output_dir, config.archive_dir]) {
-      const fp = path.resolve(dir, String(p).replace(/\\/g, '/').replace(/^\//, ''));
+      const fp = path.resolve(dir, safe);
       if (fp.startsWith(path.resolve(dir)) && fs.existsSync(fp)) {
         try { fs.unlinkSync(fp); deleted++; } catch { failed++; }
       }
