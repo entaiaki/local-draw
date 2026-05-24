@@ -555,7 +555,10 @@ router.post('/gc', requireAdmin, (req, res) => {
 // GET /api/draw/admin/reports
 router.get('/reports', requireAdmin, (req, res) => {
   const f = config.creator_map_file.replace('creator_users.txt', 'reports.json');
-  try { res.json(JSON.parse(fs.readFileSync(f, 'utf-8'))); } catch { res.json([]); }
+  try {
+    const items = JSON.parse(fs.readFileSync(f, 'utf-8'));
+    res.json({ reports: items, total: items.length });
+  } catch { res.json({ reports: [], total: 0 }); }
 });
 
 // POST /api/draw/admin/report/resolve
