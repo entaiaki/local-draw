@@ -224,9 +224,12 @@ async function compressImage(fp: string, req: Request, res: Response): Promise<b
 
 // GET /api/image (本地优先，ComfyUI 兜底)
 app.get('/api/image', async (req, res) => {
-  const filename = req.query.filename as string;
-  const subfolder = (req.query.subfolder as string) || '';
+  let filename = req.query.filename as string;
+  let subfolder = (req.query.subfolder as string) || '';
   if (!filename) return res.status(400).json({ error: 'need filename' });
+  // Sanitize: strip directory components to prevent path traversal (V8)
+  filename = path.basename(filename);
+  if (subfolder.includes('..') || subfolder.startsWith('/') || subfolder.startsWith('\\')) subfolder = '';
   // 先从本地 output 目录找
   const localPath = path.join(config.output_dir, subfolder, filename);
   if (fs.existsSync(localPath)) {
@@ -244,7 +247,7 @@ app.get('/api/image', async (req, res) => {
 
 // 原图访问（支持 .blob 后缀）
 app.get('/api/uploads/:filename', (req, res) => {
-  const fp = path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'), req.params.filename);
+  const fp = path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'), path.basename(req.params.filename));
   if (!fp.startsWith(path.resolve(path.join(process.cwd(), '..', 'web', 'uploads'))) || !fs.existsSync(fp)) {
     return res.status(404).json({ error: 'not found' });
   }
