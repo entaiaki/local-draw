@@ -44,11 +44,7 @@ export interface Limits {
   max_queue_per_user: number;
   image_rate_window_sec: number;
   image_rate_max: number;
-  report_window_sec: number;
-  report_window_max: number;
-  report_pending_max: number;
-  gpu_poll_interval_ms: number;
-  gpu_cache_ttl_ms: number;
+
   gc_interval_hours: number;
   category_order: string[];
   turnstile_enabled?: boolean;

@@ -86,11 +86,7 @@ export const DEFAULT_LIMITS: Limits = {
   max_queue_per_user: 1,
   image_rate_window_sec: 60,
   image_rate_max: 120,
-  report_window_sec: 300,
-  report_window_max: 3,
-  report_pending_max: 10,
-  gpu_poll_interval_ms: 5000,
-  gpu_cache_ttl_ms: 5000,
+
   gc_interval_hours: 168,
   category_order: [],
   turnstile_enabled: true,
