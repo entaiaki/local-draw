@@ -374,7 +374,6 @@ app.post('/api/translate', requireAuth, async (req, res) => {
 
   // Turnstile verification
   if (limits.turnstile_enabled !== false) {
-  if (tsLimits.turnstile_enabled !== false) {
     const tsToken = req.body?.turnstile_token;
     if (!tsToken) return res.status(403).json({ detail: '请完成人机验证' });
     try {
