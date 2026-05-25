@@ -17,6 +17,7 @@ export function setupWsStatus(server: WebSocketServer, config: AppConfig) {
   server.on('connection', (ws: WebSocket) => {
     ws.send(JSON.stringify({ type: 'status', online: server.clients.size, active: activeCount, busy: activeCount > 0, ...(activeStatus || {}) }));
     ws.on('close', () => broadcast({ type: 'online', count: server.clients.size }));
+    ws.on('error', () => {});
   });
 }
 
