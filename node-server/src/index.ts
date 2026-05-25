@@ -71,6 +71,7 @@ app.use('/api', hot('./routes/workflow.js', 'workflowRouter'));
 app.use('/api/wallet', walletRouter);
 app.use('/api/draw/admin', walletRouter);
 app.use('/api', presetRouter);
+app.use('/api/draw', hot('./routes/agreement.js', 'agreementRouter'));
 app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));
 
 // Health check
@@ -364,14 +365,15 @@ setInterval(() => {
 app.post('/api/translate', requireAuth, async (req, res) => {
   const uid = String(req.user?.id || '');
   const now = Date.now();
-  const llmCooldownMs = (tsLimits?.llm_cooldown_sec || 10) * 1000;
+  const limits = loadJson<Record<string, any>>(path.join(path.dirname(config.creator_map_file), 'limits.json'), {});
+  const llmCooldownMs = (limits.llm_cooldown_sec || 10) * 1000;
   if (_translateRate[uid] && now - _translateRate[uid] < llmCooldownMs) {
     return res.status(429).json({ error: `操作太频繁，请 ${llmCooldownMs / 1000} 秒后再试` });
   }
   _translateRate[uid] = now;
 
   // Turnstile verification
-  const tsLimits = loadJson<Record<string, any>>(path.join(path.dirname(config.creator_map_file), 'limits.json'), {});
+  if (limits.turnstile_enabled !== false) {
   if (tsLimits.turnstile_enabled !== false) {
     const tsToken = req.body?.turnstile_token;
     if (!tsToken) return res.status(403).json({ detail: '请完成人机验证' });
