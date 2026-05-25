@@ -364,8 +364,9 @@ setInterval(() => {
 app.post('/api/translate', requireAuth, async (req, res) => {
   const uid = String(req.user?.id || '');
   const now = Date.now();
-  if (_translateRate[uid] && now - _translateRate[uid] < 10000) {
-    return res.status(429).json({ error: '操作太频繁，请 10 秒后再试' });
+  const llmCooldownMs = (tsLimits?.llm_cooldown_sec || 10) * 1000;
+  if (_translateRate[uid] && now - _translateRate[uid] < llmCooldownMs) {
+    return res.status(429).json({ error: `操作太频繁，请 ${llmCooldownMs / 1000} 秒后再试` });
   }
   _translateRate[uid] = now;
 

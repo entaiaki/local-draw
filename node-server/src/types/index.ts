@@ -45,6 +45,7 @@ export interface Limits {
   image_rate_window_sec: number;
   image_rate_max: number;
 
+  llm_cooldown_sec: number;
   gc_interval_hours: number;
   category_order: string[];
   turnstile_enabled?: boolean;

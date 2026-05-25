@@ -87,6 +87,7 @@ export const DEFAULT_LIMITS: Limits = {
   image_rate_window_sec: 60,
   image_rate_max: 120,
 
+  llm_cooldown_sec: 10,
   gc_interval_hours: 168,
   category_order: [],
   turnstile_enabled: true,
