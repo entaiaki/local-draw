@@ -91,7 +91,7 @@ export const DEFAULT_LIMITS: Limits = {
   report_pending_max: 10,
   gpu_poll_interval_ms: 5000,
   gpu_cache_ttl_ms: 5000,
-  gc_interval_hours: 6,
+  gc_interval_hours: 168,
   category_order: [],
   turnstile_enabled: true,
 };

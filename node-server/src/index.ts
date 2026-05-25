@@ -415,6 +415,9 @@ app.post('/api/translate', requireAuth, async (req, res) => {
 // WebSocket status
 setupWsStatus(wss, config);
 
+// Auto GC
+import('./routes/admin.js').then(m => m.startAutoGc());
+
 const PORT = parseInt(process.env.PORT || config.web_port || '8080');
 server.listen(PORT, config.web_host || '0.0.0.0', () => {
   console.log(`Server running on http://${config.web_host || '0.0.0.0'}:${PORT}`);

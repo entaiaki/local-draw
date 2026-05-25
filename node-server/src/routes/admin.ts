@@ -453,35 +453,18 @@ function gcOutputFiles(outputDir: string): string[] {
   } catch { return []; }
 }
 
-// GET /api/draw/admin/gc — dry-run report
-router.get('/gc', requireAdmin, (req, res) => {
-  const outputDir = config.output_dir;
-  const archiveDir = config.archive_dir;
-  const cmap = gcLoadCreatorMap();
-  const featured = gcLoadFeaturedList();
+const WEB_DIR = path.dirname(config.creator_map_file);
+const UPLOADS_DIR = path.join(WEB_DIR, 'uploads');
+const QUEUE_STATE_FILE = path.join(WEB_DIR, 'queue_state.json');
+const UPLOADS_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const QUEUE_TRIM_AGE_MS = 24 * 60 * 60 * 1000;
+const GC_WEEKLY_MS = 7 * 24 * 60 * 60 * 1000;
 
-  const deletedInfo = gcScanDeletedImages(outputDir, archiveDir);
-  const allFiles = gcOutputFiles(outputDir);
-
-  const orphanedMappingCount = Object.keys(cmap).filter(f => !fs.existsSync(path.join(outputDir, f))).length;
-
-  const orphanedFiles = allFiles.filter(f => !cmap[f] && !featured.includes(f));
-
-  res.json({
-    dry_run: true,
-    to_clean: {
-      deleted_image_files: deletedInfo.onDisk.length,
-      orphaned_mappings: orphanedMappingCount,
-      unclaimed_output_files: orphanedFiles.length
-    }
-  });
-});
-
-// POST /api/draw/admin/gc — execute cleanup
-router.post('/gc', requireAdmin, (req, res) => {
+export async function runGc(): Promise<Record<string, number>> {
   const outputDir = config.output_dir;
   const archiveDir = config.archive_dir;
   const dirs = [outputDir].concat(fs.existsSync(archiveDir) ? [archiveDir] : []);
+  const cleaned: Record<string, number> = {};
 
   // 1. Delete user-deleted image files from disk
   const deletedInfo = gcScanDeletedImages(outputDir, archiveDir);
@@ -494,18 +477,16 @@ router.post('/gc', requireAdmin, (req, res) => {
       }
     }
   }
-  // Clear deleted_images.json
   fs.writeFileSync(deletedInfo.deletedFile, '[]', 'utf-8');
+  cleaned.deleted_image_files = deletedFileCount;
 
-  // 2. Remove orphaned creator_map entries (files no longer on disk)
+  // 2. Remove orphaned creator_map entries
   const cmap = gcLoadCreatorMap();
   const validLines: string[] = [];
   for (const [f, uid] of Object.entries(cmap)) {
-    if (fs.existsSync(path.join(outputDir, f))) {
-      validLines.push(`${f}\t${uid}`);
-    }
+    if (fs.existsSync(path.join(outputDir, f))) validLines.push(`${f}\t${uid}`);
   }
-  const orphanedMappingCount = Object.keys(cmap).length - validLines.length;
+  cleaned.orphaned_mappings = Object.keys(cmap).length - validLines.length;
   if (validLines.length > 0) {
     fs.writeFileSync(config.creator_map_file, validLines.join('\n') + '\n', 'utf-8');
   } else {
@@ -513,25 +494,23 @@ router.post('/gc', requireAdmin, (req, res) => {
   }
 
   // 3. Remove matching prompt_meta entries
-  const pmFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+  const pmFile = path.join(WEB_DIR, 'prompt_meta.json');
   const pm = gcLoadPromptMeta();
   let pmRemoved = 0;
   for (const key of Object.keys(pm)) {
-    if (!fs.existsSync(path.join(outputDir, key))) {
-      delete pm[key];
-      pmRemoved++;
-    }
+    if (!fs.existsSync(path.join(outputDir, key))) { delete pm[key]; pmRemoved++; }
   }
   fs.writeFileSync(pmFile, JSON.stringify(pm, null, 2), 'utf-8');
+  cleaned.prompt_meta_removed = pmRemoved;
 
   // 4. Remove stale featured entries
-  const featuredFile = config.creator_map_file.replace('creator_users.txt', 'featured.txt');
+  const featuredFile = path.join(WEB_DIR, 'featured.txt');
   const featured = gcLoadFeaturedList();
   const validFeatured = featured.filter(f => fs.existsSync(path.join(outputDir, f)));
-  const featuredRemoved = featured.length - validFeatured.length;
+  cleaned.featured_removed = featured.length - validFeatured.length;
   fs.writeFileSync(featuredFile, JSON.stringify(validFeatured, null, 2), 'utf-8');
 
-  // 5. Delete unclaimed files (no UID, not featured, in output root)
+  // 5. Delete unclaimed files
   const cmapAfter = gcLoadCreatorMap();
   const featuredAfter = gcLoadFeaturedList();
   const allFiles = gcOutputFiles(outputDir);
@@ -540,17 +519,105 @@ router.post('/gc', requireAdmin, (req, res) => {
   for (const f of toDelete) {
     try { fs.unlinkSync(path.join(outputDir, f)); unclaimedDeleted++; } catch {}
   }
+  cleaned.unclaimed_output_files = unclaimedDeleted;
+
+  // 6. Clean old uploads (img2img input files)
+  let uploadsDeleted = 0;
+  if (fs.existsSync(UPLOADS_DIR)) {
+    const now = Date.now();
+    for (const f of fs.readdirSync(UPLOADS_DIR)) {
+      const fp = path.join(UPLOADS_DIR, f);
+      try {
+        if (fs.statSync(fp).isFile() && now - fs.statSync(fp).mtimeMs > UPLOADS_MAX_AGE_MS) {
+          fs.unlinkSync(fp); uploadsDeleted++;
+        }
+      } catch {}
+    }
+  }
+  cleaned.uploads_cleaned = uploadsDeleted;
+
+  // 7. Trim old queue state entries
+  let queueTrimmed = 0;
+  if (fs.existsSync(QUEUE_STATE_FILE)) {
+    try {
+      const q = JSON.parse(fs.readFileSync(QUEUE_STATE_FILE, 'utf-8'));
+      const items = q.items || [];
+      const cutoff = Date.now() / 1000 - QUEUE_TRIM_AGE_MS / 1000;
+      const kept = items.filter((i: any) => {
+        const t = i.finished_at || i.created_at || 0;
+        return t > cutoff || (i.status !== 'done' && i.status !== 'failed');
+      });
+      queueTrimmed = items.length - kept.length;
+      q.items = kept;
+      fs.writeFileSync(QUEUE_STATE_FILE, JSON.stringify(q, null, 2), 'utf-8');
+    } catch {}
+  }
+  cleaned.queue_trimmed = queueTrimmed;
+
+  return cleaned;
+}
+
+// GET /api/draw/admin/gc — dry-run report
+router.get('/gc', requireAdmin, (req, res) => {
+  const outputDir = config.output_dir;
+  const archiveDir = config.archive_dir;
+  const cmap = gcLoadCreatorMap();
+  const featured = gcLoadFeaturedList();
+
+  const deletedInfo = gcScanDeletedImages(outputDir, archiveDir);
+  const allFiles = gcOutputFiles(outputDir);
+
+  const orphanedMappingCount = Object.keys(cmap).filter(f => !fs.existsSync(path.join(outputDir, f))).length;
+  const orphanedFiles = allFiles.filter(f => !cmap[f] && !featured.includes(f));
+
+  let uploadsCount = 0;
+  if (fs.existsSync(UPLOADS_DIR)) {
+    const now = Date.now();
+    for (const f of fs.readdirSync(UPLOADS_DIR)) {
+      const fp = path.join(UPLOADS_DIR, f);
+      try { if (fs.statSync(fp).isFile() && now - fs.statSync(fp).mtimeMs > UPLOADS_MAX_AGE_MS) uploadsCount++; } catch {}
+    }
+  }
+
+  let queueTrimmable = 0;
+  if (fs.existsSync(QUEUE_STATE_FILE)) {
+    try {
+      const q = JSON.parse(fs.readFileSync(QUEUE_STATE_FILE, 'utf-8'));
+      const cutoff = Date.now() / 1000 - QUEUE_TRIM_AGE_MS / 1000;
+      queueTrimmable = (q.items || []).filter((i: any) => (i.status === 'done' || i.status === 'failed') && (i.finished_at || i.created_at || 0) <= cutoff).length;
+    } catch {}
+  }
 
   res.json({
-    cleaned: {
-      deleted_image_files: deletedFileCount,
+    dry_run: true,
+    to_clean: {
+      deleted_image_files: deletedInfo.onDisk.length,
       orphaned_mappings: orphanedMappingCount,
-      prompt_meta_removed: pmRemoved,
-      featured_removed: featuredRemoved,
-      unclaimed_output_files: unclaimedDeleted
+      unclaimed_output_files: orphanedFiles.length,
+      uploads_stale: uploadsCount,
+      queue_old_entries: queueTrimmable,
     }
   });
 });
+
+// POST /api/draw/admin/gc — execute cleanup
+router.post('/gc', requireAdmin, async (req, res) => {
+  const cleaned = await runGc();
+  res.json({ cleaned });
+});
+
+export function startAutoGc(): void {
+  const schedule = () => {
+    const limits = loadLimits(config.limits_file);
+    const intervalMs = (limits.gc_interval_hours || 168) * 3600000;
+    setTimeout(() => {
+      runGc().then(r => console.log(`[GC] 自动清理完成: ${JSON.stringify(r)}`)).catch(e => console.error(`[GC] 自动清理失败: ${e}`));
+      schedule();
+    }, intervalMs).unref();
+  };
+  schedule();
+  console.log(`[GC] 自动清理已启动（可在配置页修改间隔）`);
+}
 
 // GET /api/draw/admin/recommendations
 router.get('/recommendations', requireAdmin, (req, res) => {
