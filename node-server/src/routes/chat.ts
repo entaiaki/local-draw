@@ -279,6 +279,7 @@ router.delete('/chat-presets/:id', async (req: Request, res: Response) => {
 interface ChatHistoryMessage {
   role: string;
   content: string;
+  imageUrls?: string[];
 }
 
 type HistoryStore = Record<number, ChatHistoryMessage[]>;
