@@ -280,6 +280,7 @@ interface ChatHistoryMessage {
   role: string;
   content: string;
   imageUrls?: string[];
+  systemPrompt?: string;
 }
 
 type HistoryStore = Record<number, ChatHistoryMessage[]>;
