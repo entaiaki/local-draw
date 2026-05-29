@@ -2,9 +2,6 @@ import { Router, Request, Response } from 'express';
 import { verifyToken } from '../middleware/auth.js';
 import { loadConfig, loadJson } from '../services/config.js';
 import { streamChat, callGoogle } from '../services/llm.js';
-import { deductPoints, loadPointsCfg } from './wallet.js';
-import { queueItems, queuedUserIds, nextQueueId, saveQueueState } from './queue.js';
-import type { QueueItem } from '../types/index.js';
 
 const router = Router();
 const config = loadConfig();
@@ -43,7 +40,7 @@ function getActiveProfile(): Record<string, any> {
   return profiles[active] || {};
 }
 
-// POST /api/draw/chat — SSE
+// POST /api/draw/chat — SSE，纯 LLM 流式输出，不涉及队列/生图
 router.post('/chat', async (req: Request, res: Response) => {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -85,7 +82,6 @@ router.post('/chat', async (req: Request, res: Response) => {
   for (const h of body.history || []) {
     messages.push({ role: h.role, content: h.content });
   }
-  // system prompt 拼入 user 消息（与文生图 callOpenAI 保持一致）
   messages.push({ role: 'user', content: systemContent + '\n\n' + body.message });
 
   // SSE headers
@@ -106,7 +102,6 @@ router.post('/chat', async (req: Request, res: Response) => {
   let apiKey = '';
   let model = '';
   if (provider === 'google') {
-    // Google 不支持流式 chat，回退到非流式
     endpoint = '';
     apiKey = cfg.google_api_key || '';
     model = cfg.google_model || '';
@@ -122,7 +117,6 @@ router.post('/chat', async (req: Request, res: Response) => {
     let fullText = '';
 
     if (provider === 'google') {
-      // Google: 非流式调用（system + history + user 拼成一条 user 消息）
       let historyText = '';
       for (const h of body.history || []) {
         historyText += `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}\n`;
@@ -136,11 +130,9 @@ router.post('/chat', async (req: Request, res: Response) => {
         res.end();
         return;
       }
-      // 一次性发送全部文本（过滤 [GEN:]）
       const cleanText = fullText.replace(/\s*\[GEN:\s*.+?\]\s*/g, ' ').replace(/\s+/g, ' ').trim();
       if (cleanText) send('text', { content: cleanText });
     } else {
-      // OpenAI 兼容: 流式调用
       let lastCleanLen = 0;
       try {
         await streamChat(messages, endpoint, apiKey, model, (delta) => {
@@ -162,64 +154,15 @@ router.post('/chat', async (req: Request, res: Response) => {
       }
     }
 
-    // 提取所有 [GEN: tags]
+    // 提取所有 [GEN: tags]，返回给前端，由前端调用 addToQueue 生图
     const genRegex = /\[GEN:\s*(.+?)\]/g;
     const genTagsList: string[] = [];
     let m;
     while ((m = genRegex.exec(fullText)) !== null) {
       genTagsList.push(m[1].trim());
     }
-
-    // 批量入队
-    if (genTagsList.length > 0 && body.workflow_path) {
-      const pointsCfg = loadPointsCfg();
-      const costPer = pointsCfg.text_to_image || 0;
-
-      for (let idx = 0; idx < genTagsList.length; idx++) {
-        const tags = genTagsList[idx];
-        const finalPrompt = body.style_tags?.trim()
-          ? `${body.style_tags.trim()}, ${tags}`
-          : tags;
-
-        // 扣点
-        if (costPer > 0) {
-          const r = await deductPoints(user.id, costPer);
-          if (!r.ok) {
-            send('error', { message: `生图 #${idx + 1} 扣点失败: 余额不足` });
-            continue;
-          }
-        }
-
-        const itemId = nextQueueId();
-        const item: QueueItem = {
-          id: itemId,
-          user_id: user.id,
-          params: {
-            direct_prompt: finalPrompt,
-            workflow_path: body.workflow_path,
-            style_tags: '',
-            negative_prompt: body.negative_prompt || 'worst quality, low quality, blurry',
-          },
-          status: 'pending',
-          created_at: Date.now() / 1000,
-          started_at: null,
-          finished_at: null,
-          error: null,
-        };
-        queueItems.push(item);
-        queuedUserIds[user.id] = (queuedUserIds[user.id] || 0) + 1;
-        saveQueueState();
-
-        send('gen_queued', { tags, item_id: itemId, index: idx, total: genTagsList.length });
-
-        // 启动后台 runner
-        (async () => {
-          try {
-            const { runQueueTask } = await import('../services/runner.js');
-            await runQueueTask(item);
-          } catch {}
-        })();
-      }
+    if (genTagsList.length > 0) {
+      send('gen_tags', { tags: genTagsList });
     }
 
     send('done', {});

@@ -301,6 +301,7 @@ router.get('/my-queue', (req: Request, res: Response) => {
       finished_at: qi.finished_at,
       error: qi.error,
       position: qi.status === 'pending' || qi.status === 'waiting' ? queuePosition(qi.id) : null,
+      _output_files: (qi.params as any)?._output_files || [],
     }));
 
   res.json({ items, total: items.length });
