@@ -198,6 +198,56 @@ export async function callOpenAI(system: string, user: string, endpoint: string,
   }
 }
 
+/**
+ * 流式聊天：接受完整 messages 数组，逐 token 回调，返回完整文本。
+ * 用于角色扮演聊天端点。
+ */
+export async function streamChat(
+  messages: Array<{ role: string; content: string }>,
+  endpoint: string,
+  apiKey: string,
+  model: string,
+  onChunk: (delta: string) => void,
+): Promise<string> {
+  const body: any = {
+    model: model || 'gpt-3.5-turbo',
+    messages,
+    temperature: 0.9,
+    max_tokens: 2048,
+    stream: true,
+  };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+  const resp = await axios.post(`${endpoint}/chat/completions`, body, {
+    headers,
+    timeout: 120000,
+    responseType: 'stream',
+  });
+  const chunks: string[] = [];
+  const stream = resp.data;
+  let buffer = '';
+  for await (const chunk of stream) {
+    buffer += chunk.toString();
+    while (true) {
+      const i = buffer.indexOf('\n');
+      if (i === -1) break;
+      const line = buffer.slice(0, i).trim();
+      buffer = buffer.slice(i + 1);
+      if (line.startsWith('data:')) {
+        const json = line.slice(5).trim();
+        if (json === '[DONE]') break;
+        try {
+          const obj = JSON.parse(json);
+          const text = obj.choices?.[0]?.delta?.content || '';
+          if (text) { chunks.push(text); onChunk(text); }
+        } catch {}
+      }
+    }
+  }
+  return chunks.join('');
+}
+
 export async function translatePrompt(
   prompt: string,
   originalPrompt?: string,

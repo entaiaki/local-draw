@@ -72,6 +72,7 @@ app.use('/api/wallet', walletRouter);
 app.use('/api/draw/admin', walletRouter);
 app.use('/api', presetRouter);
 app.use('/api/draw', hot('./routes/agreement.js', 'agreementRouter'));
+app.use('/api/draw', hot('./routes/chat.js', 'chatRouter'));
 app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));
 
 // Health check
