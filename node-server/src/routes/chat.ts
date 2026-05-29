@@ -3,8 +3,6 @@ import { verifyToken } from '../middleware/auth.js';
 import { loadConfig, loadJson, saveJson } from '../services/config.js';
 import { streamChat, callGoogle, estimateTokens } from '../services/llm.js';
 import { deductPoints, loadPointsCfg } from './wallet.js';
-import { workflowToPromptApi } from '../services/runner.js';
-import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
@@ -116,6 +114,7 @@ router.post('/chat', async (req: Request, res: Response) => {
   const workflowPath = sanitizeStr(rawBody.workflow_path, 300);
   const styleTags = sanitizeStr(rawBody.style_tags, 500);
   const negativePrompt = sanitizeStr(rawBody.negative_prompt, 1000);
+  const workflowPrompt = sanitizeStr(rawBody.workflow_prompt, 2000) || '(无)';
   const genEnabled = rawBody.gen_enabled !== false;
   const mode = rawBody.mode === 'anima' ? 'anima' : 'wai';
 
@@ -140,23 +139,6 @@ router.post('/chat', async (req: Request, res: Response) => {
     return res.status(429).json({ detail: `请 ${Math.ceil((COOLDOWN_MS - (now - last)) / 1000)} 秒后再试` });
   }
   _chatCooldown[user.id] = now;
-
-  // 读取工作流 builtin prompt
-  let workflowPrompt = '(无)';
-  if (workflowPath) {
-    try {
-      const wfPath = path.join(config.workflows_dir, workflowPath);
-      if (fs.existsSync(wfPath) && path.resolve(wfPath).startsWith(path.resolve(config.workflows_dir))) {
-        const wfData = JSON.parse(fs.readFileSync(wfPath, 'utf-8'));
-        const { prompt_dict, positive_ref } = workflowToPromptApi(wfData);
-        if (positive_ref) {
-          const [nid, inp] = positive_ref;
-          const v = prompt_dict?.[nid]?.inputs?.[inp];
-          if (typeof v === 'string' && v.trim()) workflowPrompt = v.trim().slice(0, 2000);
-        }
-      }
-    } catch {}
-  }
 
   // 构建 system prompt
   const negRef = negativePrompt || 'worst quality, low quality, blurry';
