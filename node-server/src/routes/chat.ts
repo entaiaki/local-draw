@@ -208,7 +208,7 @@ router.post('/chat', async (req: Request, res: Response) => {
         res.end();
         return;
       }
-      const cleanText = fullText.replace(/\s*\[GEN[:\s].+?[\]）]\s*/g, ' ').replace(/\s+/g, ' ').trim();
+      const cleanText = fullText.replace(/\s*\[GEN[^\]）]*[\]）]\s*/g, ' ').replace(/\s+/g, ' ').trim();
       if (cleanText) send('text', { content: cleanText });
     } else {
       let lastCleanLen = 0;
@@ -218,7 +218,9 @@ router.post('/chat', async (req: Request, res: Response) => {
           const cleanFull = fullText
             .replace(/\s*\[GEN[:\s].+?\]\s*/g, '')
             .replace(/\s*\[GEN[:\s].+?）\s*/g, '')
-            .replace(/\s*\[GEN[:\s][^\]）]*$/, '');
+            .replace(/\s*\[GEN[^\]]*\]\s*/g, '')
+            .replace(/\s*\[GEN[^）]*）\s*/g, '')
+            .replace(/\s*\[GEN[^\]）]*$/, '');
           const cleanDelta = cleanFull.slice(lastCleanLen);
           if (cleanDelta) {
             send('text', { content: cleanDelta });
