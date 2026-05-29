@@ -146,13 +146,12 @@ router.post('/chat', async (req: Request, res: Response) => {
   if (workflowPath) {
     try {
       const wfPath = path.join(config.workflows_dir, workflowPath);
-      // 双重校验：resolve 后必须在 workflows_dir 内
       if (fs.existsSync(wfPath) && path.resolve(wfPath).startsWith(path.resolve(config.workflows_dir))) {
         const wfData = JSON.parse(fs.readFileSync(wfPath, 'utf-8'));
-        const { positive_ref } = workflowToPromptApi(wfData);
+        const { prompt_dict, positive_ref } = workflowToPromptApi(wfData);
         if (positive_ref) {
           const [nid, inp] = positive_ref;
-          const v = wfData?.[nid]?.inputs?.[inp];
+          const v = prompt_dict?.[nid]?.inputs?.[inp];
           if (typeof v === 'string' && v.trim()) workflowPrompt = v.trim().slice(0, 2000);
         }
       }
