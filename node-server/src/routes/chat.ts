@@ -8,6 +8,9 @@ import path from 'path';
 const router = Router();
 const config = loadConfig();
 
+// 聊天冷却：用户 ID → 上次请求时间
+const _chatCooldown: Record<number, number> = {};
+
 const CHAT_SYSTEM_TEMPLATE = `{role_setup}
 
 {gen_instruction}
@@ -68,6 +71,15 @@ router.post('/chat', async (req: Request, res: Response) => {
   const body = req.body as ChatRequestBody;
   if (!body.system_prompt?.trim()) return res.status(400).json({ detail: '请填写角色设定' });
   if (!body.message?.trim()) return res.status(400).json({ detail: '消息不能为空' });
+
+  // 冷却检查
+  const now = Date.now();
+  const last = _chatCooldown[user.id] || 0;
+  const cooldownMs = 3000; // 3 秒冷却
+  if (now - last < cooldownMs) {
+    return res.status(429).json({ detail: `请 ${Math.ceil((cooldownMs - (now - last)) / 1000)} 秒后再试` });
+  }
+  _chatCooldown[user.id] = now;
 
   // 读取工作流自带的 builtin prompt
   let workflowPrompt = '(无)';
@@ -160,7 +172,7 @@ router.post('/chat', async (req: Request, res: Response) => {
           const cleanFull = fullText
             .replace(/\s*\[GEN[:\s].+?\]\s*/g, '')
             .replace(/\s*\[GEN[:\s].+?）\s*/g, '')
-            .replace(/\s*\[GEN[:\s][^\]]*$/, '');
+            .replace(/\s*\[GEN[:\s][^\]）]*$/, '');
           const cleanDelta = cleanFull.slice(lastCleanLen);
           if (cleanDelta) {
             send('text', { content: cleanDelta });
@@ -176,6 +188,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     }
 
     // 提取所有 [GEN: tags]，返回给前端，由前端调用 addToQueue 生图
+    let genCount = 0;
     if (genEnabled) {
       const genRegex = /\[GEN[:\s]\s*(.+?)[\]）]/g;
       const genTagsList: string[] = [];
@@ -184,6 +197,7 @@ router.post('/chat', async (req: Request, res: Response) => {
         genTagsList.push(m[1].trim());
       }
       if (genTagsList.length > 0) {
+        genCount = genTagsList.length;
         send('gen_tags', { tags: genTagsList });
       }
     }
@@ -191,7 +205,6 @@ router.post('/chat', async (req: Request, res: Response) => {
     // Token 计费
     let llmCost = 0;
     let llmTokens = 0;
-    let genCount = 0;
     try {
       const ptCfg = loadPointsCfg();
       const tokenPerPoint = ptCfg.llm_token_per_point || 1000;
@@ -231,8 +244,8 @@ function loadAllPresets(): PresetStore {
   return loadJson<PresetStore>(presetsFile(), {});
 }
 
-async function saveAllPresets(data: PresetStore): Promise<boolean> {
-  return saveJson(presetsFile(), data);
+function saveAllPresets(data: PresetStore): void {
+  try { saveJson(presetsFile(), data); } catch {}
 }
 
 function genId(): string {
@@ -269,7 +282,7 @@ router.post('/chat-presets', async (req: Request, res: Response) => {
   if (existing >= 0) list[existing] = preset;
   else list.push(preset);
   all[user.id] = list;
-  await saveAllPresets(all);
+  saveAllPresets(all);
   res.json({ ok: true, preset });
 });
 
@@ -284,7 +297,7 @@ router.delete('/chat-presets/:id', async (req: Request, res: Response) => {
   const all = loadAllPresets();
   const list = (all[user.id] || []).filter(p => p.id !== id);
   all[user.id] = list;
-  await saveAllPresets(all);
+  saveAllPresets(all);
   res.json({ ok: true });
 });
 
