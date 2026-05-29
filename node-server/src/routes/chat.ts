@@ -293,8 +293,8 @@ function loadAllHistory(): HistoryStore {
   return loadJson<HistoryStore>(historyFile(), {});
 }
 
-async function saveAllHistory(data: HistoryStore): Promise<boolean> {
-  return saveJson(historyFile(), data);
+function saveAllHistory(data: HistoryStore): void {
+  try { saveJson(historyFile(), data); } catch {}
 }
 
 // GET /api/draw/chat-history
@@ -325,7 +325,7 @@ router.post('/chat-history', async (req: Request, res: Response) => {
   // 最多保留 MAX_HISTORY 条
   if (list.length > MAX_HISTORY) list.splice(0, list.length - MAX_HISTORY);
   all[user.id] = list;
-  await saveAllHistory(all);
+  saveAllHistory(all);
   res.json({ ok: true, total: list.length });
 });
 
@@ -338,7 +338,7 @@ router.delete('/chat-history', async (req: Request, res: Response) => {
 
   const all = loadAllHistory();
   delete all[user.id];
-  await saveAllHistory(all);
+  saveAllHistory(all);
   res.json({ ok: true });
 });
 
