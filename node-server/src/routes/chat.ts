@@ -81,11 +81,12 @@ router.post('/chat', async (req: Request, res: Response) => {
     .replace('{workflow_prompt}', workflowPrompt)
     .replace('{negative_ref}', negRef);
 
-  const messages = [{ role: 'system', content: systemContent }];
+  const messages: Array<{ role: string; content: string }> = [];
   for (const h of body.history || []) {
     messages.push({ role: h.role, content: h.content });
   }
-  messages.push({ role: 'user', content: body.message });
+  // system prompt 拼入 user 消息（与文生图 callOpenAI 保持一致）
+  messages.push({ role: 'user', content: systemContent + '\n\n' + body.message });
 
   // SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
@@ -121,9 +122,14 @@ router.post('/chat', async (req: Request, res: Response) => {
     let fullText = '';
 
     if (provider === 'google') {
-      // Google: 非流式调用
+      // Google: 非流式调用（system + history + user 拼成一条 user 消息）
+      let historyText = '';
+      for (const h of body.history || []) {
+        historyText += `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}\n`;
+      }
+      const googleUserMsg = historyText + systemContent + '\n\n' + body.message;
       try {
-        fullText = await callGoogle(systemContent, body.message, cfg);
+        fullText = await callGoogle('', googleUserMsg, cfg);
       } catch (e: any) {
         send('error', { message: e.message || 'LLM 调用失败' });
         send('done', {});
