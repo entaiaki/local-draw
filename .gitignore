@@ -34,6 +34,9 @@ web/wallets.json
 web/orders.json
 web/presets.json
 web/points_config.json
+web/chat_presets.json
+web/chat_history.json
+web/custom_head.json
 web/styles/
 
 # ── 运行时图片 & 资源 ──
