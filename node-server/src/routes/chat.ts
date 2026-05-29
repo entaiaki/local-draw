@@ -1,8 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { verifyToken } from '../middleware/auth.js';
-import { loadConfig, loadJson } from '../services/config.js';
+import { loadConfig, loadJson, saveJson } from '../services/config.js';
 import { streamChat, callGoogle, estimateTokens } from '../services/llm.js';
 import { deductPoints, loadPointsCfg } from './wallet.js';
+import path from 'path';
 
 const router = Router();
 const config = loadConfig();
@@ -196,6 +197,81 @@ router.post('/chat', async (req: Request, res: Response) => {
   }
 
   res.end();
+});
+
+// ==================== 角色预设 CRUD ====================
+
+interface ChatPreset {
+  id: string;
+  name: string;
+  systemPrompt: string;
+}
+
+type PresetStore = Record<number, ChatPreset[]>;
+
+function presetsFile(): string {
+  return path.join(path.dirname(config.creator_map_file), 'chat_presets.json');
+}
+
+function loadAllPresets(): PresetStore {
+  return loadJson<PresetStore>(presetsFile(), {});
+}
+
+async function saveAllPresets(data: PresetStore): Promise<boolean> {
+  return saveJson(presetsFile(), data);
+}
+
+function genId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// GET /api/draw/chat-presets
+router.get('/chat-presets', async (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '未登录' });
+
+  const all = loadAllPresets();
+  const items = all[user.id] || [];
+  res.json({ items });
+});
+
+// POST /api/draw/chat-presets
+router.post('/chat-presets', async (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '未登录' });
+
+  const { name, systemPrompt } = req.body || {};
+  if (!name?.trim()) return res.status(400).json({ detail: '角色名不能为空' });
+  if (!systemPrompt?.trim()) return res.status(400).json({ detail: '角色设定不能为空' });
+
+  const all = loadAllPresets();
+  const list = all[user.id] || [];
+  const existing = list.findIndex(p => p.name === name.trim());
+  const preset: ChatPreset = { id: existing >= 0 ? list[existing].id : genId(), name: name.trim(), systemPrompt: systemPrompt.trim() };
+  if (existing >= 0) list[existing] = preset;
+  else list.push(preset);
+  all[user.id] = list;
+  await saveAllPresets(all);
+  res.json({ ok: true, preset });
+});
+
+// DELETE /api/draw/chat-presets/:id
+router.delete('/chat-presets/:id', async (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '未登录' });
+
+  const id = req.params.id;
+  const all = loadAllPresets();
+  const list = (all[user.id] || []).filter(p => p.id !== id);
+  all[user.id] = list;
+  await saveAllPresets(all);
+  res.json({ ok: true });
 });
 
 export { router as chatRouter };
