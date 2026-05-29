@@ -273,7 +273,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     send('error', { message: `计费异常：${e.message || '未知'}` });
   }
 
-  send('done', { llm_cost: llmCost, llm_tokens: llmTokens, gen_count: genCount });
+  send('done', { llm_cost: llmCost, llm_tokens: llmTokens, gen_count: genCount, raw_text: fullText });
   res.end();
 });
 
