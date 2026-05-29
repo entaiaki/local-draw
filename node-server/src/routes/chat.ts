@@ -9,7 +9,13 @@ const config = loadConfig();
 
 const CHAT_SYSTEM_TEMPLATE = `{role_setup}
 
-你可以在对话中自然地生成图片。在回复中插入生图标记：
+{gen_instruction}
+
+当前工作流自带提示词：{workflow_prompt}
+
+负面提示词参考：{negative_ref}`;
+
+const GEN_INSTRUCTION = `你可以在对话中自然地生成图片。在回复中插入生图标记：
 [GEN: 英文Danbooru tags, 用逗号分隔]
 
 重要：[GEN: ...] 标记是系统指令，用户完全看不到它。不要在文字中提及、解释或引用 [GEN:] 标记。
@@ -19,11 +25,7 @@ const CHAT_SYSTEM_TEMPLATE = `{role_setup}
 - 每句对话都配一张图，不要跳过
 - tags 用英文 Danbooru 格式，描述当前这句话对应的画面
 - CRITICAL: [GEN: ...] 中的 tags 必须以角色自身的 tag 开头（如角色名、外观特征），然后才是动作、表情、场景等。角色 tag 不能省略或删除
-- 以角色扮演的方式自然回复，[GEN:] 标记穿插在文本中，但用户看不到它们
-
-当前工作流自带提示词：{workflow_prompt}
-
-负面提示词参考：{negative_ref}`;
+- 以角色扮演的方式自然回复，[GEN:] 标记穿插在文本中，但用户看不到它们`;
 
 interface ChatRequestBody {
   message: string;
@@ -32,6 +34,7 @@ interface ChatRequestBody {
   system_prompt: string;
   negative_prompt?: string;
   history: Array<{ role: string; content: string }>;
+  gen_enabled?: boolean;
 }
 
 function getActiveProfile(): Record<string, any> {
@@ -74,8 +77,10 @@ router.post('/chat', async (req: Request, res: Response) => {
   }
 
   const negRef = body.negative_prompt?.trim() || 'worst quality, low quality, blurry';
+  const genEnabled = body.gen_enabled !== false; // 默认开启
   const systemContent = CHAT_SYSTEM_TEMPLATE
     .replace('{role_setup}', body.system_prompt.trim())
+    .replace('{gen_instruction}', genEnabled ? GEN_INSTRUCTION : '以角色扮演的方式自然回复用户。不要在回复中提及任何技术标记或生图指令。')
     .replace('{workflow_prompt}', workflowPrompt)
     .replace('{negative_ref}', negRef);
 
@@ -156,23 +161,25 @@ router.post('/chat', async (req: Request, res: Response) => {
     }
 
     // 提取所有 [GEN: tags]，返回给前端，由前端调用 addToQueue 生图
-    const genRegex = /\[GEN:\s*(.+?)\]/g;
-    const genTagsList: string[] = [];
-    let m;
-    while ((m = genRegex.exec(fullText)) !== null) {
-      genTagsList.push(m[1].trim());
-    }
-    if (genTagsList.length > 0) {
-      send('gen_tags', { tags: genTagsList });
+    if (genEnabled) {
+      const genRegex = /\[GEN:\s*(.+?)\]/g;
+      const genTagsList: string[] = [];
+      let m;
+      while ((m = genRegex.exec(fullText)) !== null) {
+        genTagsList.push(m[1].trim());
+      }
+      if (genTagsList.length > 0) {
+        send('gen_tags', { tags: genTagsList });
+      }
     }
 
     // Token 计费
     let llmCost = 0;
     let llmTokens = 0;
+    let genCount = 0;
     try {
       const ptCfg = loadPointsCfg();
       const tokenPerPoint = ptCfg.llm_token_per_point || 1000;
-      // 计算所有消息的 token
       let totalTokens = estimateTokens(systemContent);
       for (const h of body.history || []) totalTokens += estimateTokens(h.content);
       totalTokens += estimateTokens(body.message);
@@ -182,7 +189,7 @@ router.post('/chat', async (req: Request, res: Response) => {
       await deductPoints(user.id, llmCost);
     } catch {}
 
-    send('done', { llm_cost: llmCost, llm_tokens: llmTokens, gen_count: genTagsList.length });
+    send('done', { llm_cost: llmCost, llm_tokens: llmTokens, gen_count: genCount });
   } catch (e: any) {
     send('error', { message: e.message || '未知错误' });
     send('done', {});
