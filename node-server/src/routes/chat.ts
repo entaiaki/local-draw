@@ -149,12 +149,12 @@ router.post('/chat', async (req: Request, res: Response) => {
     .replace('{workflow_prompt}', workflowPrompt)
     .replace('{negative_ref}', negRef);
 
-  // 构建 messages
-  const messages: Array<{ role: string; content: string }> = [];
+  // 构建完整 user prompt：系统指令 + 历史对话 + 当前消息，全部塞进一条 user 消息
+  let fullPrompt = systemContent + '\n\n';
   for (const h of history) {
-    messages.push({ role: h.role, content: h.content });
+    fullPrompt += `${h.role === 'user' ? '用户' : '助手'}: ${h.content}\n`;
   }
-  messages.push({ role: 'user', content: systemContent + '\n\n' + message });
+  fullPrompt += `用户: ${message}`;
 
   // SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
@@ -196,13 +196,8 @@ router.post('/chat', async (req: Request, res: Response) => {
   let fullText = '';
   try {
     if (provider === 'google') {
-      let historyText = '';
-      for (const h of history) {
-        historyText += `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}\n`;
-      }
-      const googleUserMsg = historyText + systemContent + '\n\n' + message;
       try {
-        fullText = await callGoogle('', googleUserMsg, cfg);
+        fullText = await callGoogle('', fullPrompt, cfg);
       } catch (e: any) {
         send('error', { message: e.message || 'LLM 调用失败' });
         send('done', {});
@@ -214,7 +209,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     } else {
       let lastCleanLen = 0;
       try {
-        await streamChat(messages, endpoint, apiKey, model, (delta) => {
+        await streamChat([{ role: 'user', content: fullPrompt }], endpoint, apiKey, model, (delta) => {
           fullText += delta;
           const cleanFull = fullText
             .replace(/\s*\[GEN[:\s].+?\]\s*/g, '')
