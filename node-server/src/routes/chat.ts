@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { verifyToken } from '../middleware/auth.js';
 import { loadConfig, loadJson } from '../services/config.js';
-import { streamChat, callGoogle } from '../services/llm.js';
+import { streamChat, callGoogle, estimateTokens } from '../services/llm.js';
+import { deductPoints, loadPointsCfg } from './wallet.js';
 
 const router = Router();
 const config = loadConfig();
@@ -165,7 +166,23 @@ router.post('/chat', async (req: Request, res: Response) => {
       send('gen_tags', { tags: genTagsList });
     }
 
-    send('done', {});
+    // Token 计费
+    let llmCost = 0;
+    let llmTokens = 0;
+    try {
+      const ptCfg = loadPointsCfg();
+      const tokenPerPoint = ptCfg.llm_token_per_point || 1000;
+      // 计算所有消息的 token
+      let totalTokens = estimateTokens(systemContent);
+      for (const h of body.history || []) totalTokens += estimateTokens(h.content);
+      totalTokens += estimateTokens(body.message);
+      totalTokens += estimateTokens(fullText);
+      llmTokens = totalTokens;
+      llmCost = Math.max(1, Math.ceil(totalTokens / tokenPerPoint));
+      await deductPoints(user.id, llmCost);
+    } catch {}
+
+    send('done', { llm_cost: llmCost, llm_tokens: llmTokens, gen_count: genTagsList.length });
   } catch (e: any) {
     send('error', { message: e.message || '未知错误' });
     send('done', {});
