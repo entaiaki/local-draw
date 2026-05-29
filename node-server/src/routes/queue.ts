@@ -322,4 +322,9 @@ router.delete('/queue', (req: Request, res: Response) => {
   res.json({ ok: true, cleared: 0 });
 });
 
-export { router as queueRouter, queueItems, queuedUserIds, saveQueueState };
+function nextQueueId(): number {
+  queueIdCounter++;
+  return queueIdCounter;
+}
+
+export { router as queueRouter, queueItems, queuedUserIds, nextQueueId, saveQueueState };

@@ -2,8 +2,8 @@ import { Router, Request, Response } from 'express';
 import { verifyToken } from '../middleware/auth.js';
 import { loadConfig, loadJson } from '../services/config.js';
 import { streamChat, callGoogle } from '../services/llm.js';
-import { deductPoints, refundPoints, loadPointsCfg } from './wallet.js';
-import { queueItems, queuedUserIds, saveQueueState } from './queue.js';
+import { deductPoints, loadPointsCfg } from './wallet.js';
+import { queueItems, queuedUserIds, nextQueueId, saveQueueState } from './queue.js';
 import type { QueueItem } from '../types/index.js';
 
 const router = Router();
@@ -172,7 +172,6 @@ router.post('/chat', async (req: Request, res: Response) => {
 
     // 批量入队
     if (genTagsList.length > 0 && body.workflow_path) {
-      let queueIdCounter = queueItems.length > 0 ? Math.max(...queueItems.map(q => q.id)) : 0;
       const pointsCfg = loadPointsCfg();
       const costPer = pointsCfg.text_to_image || 0;
 
@@ -183,18 +182,15 @@ router.post('/chat', async (req: Request, res: Response) => {
           : tags;
 
         // 扣点
-        let deducted = 0;
         if (costPer > 0) {
           const r = await deductPoints(user.id, costPer);
           if (!r.ok) {
             send('error', { message: `生图 #${idx + 1} 扣点失败: 余额不足` });
             continue;
           }
-          deducted = costPer;
         }
 
-        queueIdCounter++;
-        const itemId = queueIdCounter;
+        const itemId = nextQueueId();
         const item: QueueItem = {
           id: itemId,
           user_id: user.id,
