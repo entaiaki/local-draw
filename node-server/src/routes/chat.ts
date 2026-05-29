@@ -274,4 +274,72 @@ router.delete('/chat-presets/:id', async (req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
+// ==================== 聊天记录 ====================
+
+interface ChatHistoryMessage {
+  role: string;
+  content: string;
+}
+
+type HistoryStore = Record<number, ChatHistoryMessage[]>;
+
+const MAX_HISTORY = 500;
+
+function historyFile(): string {
+  return path.join(path.dirname(config.creator_map_file), 'chat_history.json');
+}
+
+function loadAllHistory(): HistoryStore {
+  return loadJson<HistoryStore>(historyFile(), {});
+}
+
+async function saveAllHistory(data: HistoryStore): Promise<boolean> {
+  return saveJson(historyFile(), data);
+}
+
+// GET /api/draw/chat-history
+router.get('/chat-history', async (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '未登录' });
+
+  const all = loadAllHistory();
+  const items = all[user.id] || [];
+  res.json({ items });
+});
+
+// POST /api/draw/chat-history — 追加消息
+router.post('/chat-history', async (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '未登录' });
+
+  const messages = req.body?.messages as ChatHistoryMessage[];
+  if (!Array.isArray(messages)) return res.status(400).json({ detail: 'messages 必须是数组' });
+
+  const all = loadAllHistory();
+  const list = all[user.id] || [];
+  list.push(...messages);
+  // 最多保留 MAX_HISTORY 条
+  if (list.length > MAX_HISTORY) list.splice(0, list.length - MAX_HISTORY);
+  all[user.id] = list;
+  await saveAllHistory(all);
+  res.json({ ok: true, total: list.length });
+});
+
+// DELETE /api/draw/chat-history — 清空
+router.delete('/chat-history', async (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '未登录' });
+
+  const all = loadAllHistory();
+  delete all[user.id];
+  await saveAllHistory(all);
+  res.json({ ok: true });
+});
+
 export { router as chatRouter };
