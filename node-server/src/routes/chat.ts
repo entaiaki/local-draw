@@ -150,7 +150,7 @@ router.post('/chat', async (req: Request, res: Response) => {
         res.end();
         return;
       }
-      const cleanText = fullText.replace(/\s*\[GEN:\s*.+?\]\s*/g, ' ').replace(/\s+/g, ' ').trim();
+      const cleanText = fullText.replace(/\s*\[GEN[:\s].+?[\]）]\s*/g, ' ').replace(/\s+/g, ' ').trim();
       if (cleanText) send('text', { content: cleanText });
     } else {
       let lastCleanLen = 0;
@@ -158,8 +158,9 @@ router.post('/chat', async (req: Request, res: Response) => {
         await streamChat(messages, endpoint, apiKey, model, (delta) => {
           fullText += delta;
           const cleanFull = fullText
-            .replace(/\s*\[GEN:\s*.+?\]\s*/g, '')
-            .replace(/\s*\[GEN:\s*[^\]]*$/, '');
+            .replace(/\s*\[GEN[:\s].+?\]\s*/g, '')
+            .replace(/\s*\[GEN[:\s].+?）\s*/g, '')
+            .replace(/\s*\[GEN[:\s][^\]]*$/, '');
           const cleanDelta = cleanFull.slice(lastCleanLen);
           if (cleanDelta) {
             send('text', { content: cleanDelta });
@@ -176,7 +177,7 @@ router.post('/chat', async (req: Request, res: Response) => {
 
     // 提取所有 [GEN: tags]，返回给前端，由前端调用 addToQueue 生图
     if (genEnabled) {
-      const genRegex = /\[GEN:\s*(.+?)\]/g;
+      const genRegex = /\[GEN[:\s]\s*(.+?)[\]）]/g;
       const genTagsList: string[] = [];
       let m;
       while ((m = genRegex.exec(fullText)) !== null) {
