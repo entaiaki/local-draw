@@ -40,6 +40,18 @@ router.get('/file', async (req: Request, res: Response) => {
   if (!fp) return res.status(404).json({ error: 'not found' });
   const ext = path.extname(fp).toLowerCase();
   if (!OUTPUT_IMAGE_EXTS.includes(ext)) return res.status(400).json({ error: 'not an image' });
+  // raw=1: 跳过压缩，直接下载原图
+  if (req.query.raw === '1') {
+    const filename = path.basename(fp);
+    const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
+    return res.sendFile(fp, {
+      headers: {
+        'Content-Type': mt[ext] || 'image/png',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-cache'
+      }
+    });
+  }
   // 自动压缩（WebP 优先）
   try {
     const stat = fs.statSync(fp);
