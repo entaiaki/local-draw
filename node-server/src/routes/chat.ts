@@ -30,29 +30,29 @@ const CHAT_SYSTEM_TEMPLATE = `{role_setup}
 
 负面提示词参考：{negative_ref}`;
 
-const GEN_INSTRUCTION = `你可以在对话中自然地生成图片。在回复中插入生图标记：
+const GEN_INSTRUCTION = `你可以在回复结束时生成一张图片。在回复末尾插入生图标记：
 [GEN: 动作、表情、场景的英文Danbooru tags]
 
 重要：[GEN: ...] 标记是系统指令，用户完全看不到它。不要在文字中提及、解释或引用 [GEN:] 标记。
 
 生图规则：
-- 每说完一句话（以句号、感叹号、问号等结束），立即插入对应的 [GEN: ...] 标记
-- 每句对话都配一张图，不要跳过
+- 每条回复只能在末尾生成**恰好一个** [GEN: ...] 标记，不要多
 - [GEN:] 中只写动作、表情、姿势、场景、光线等描述，不要写角色外貌（系统会自动补充）
-- tags 用英文 Danbooru 格式，用逗号分隔
-- 以角色扮演的方式自然回复，[GEN:] 标记穿插在文本中，但用户看不到它们`;
+- tags 用英文 Danbooru 格式，用逗号分隔。要具体：例如 camera angle, expression details, lighting, background, action
+- tags 要贴合当前对话的上下文和情绪，不要用泛泛的标签
+- 以角色扮演的方式自然回复，[GEN:] 标记放在回复的最末尾`;
 
-const GEN_INSTRUCTION_ANIMA = `你可以在对话中自然地生成图片。在回复中插入生图标记：
+const GEN_INSTRUCTION_ANIMA = `你可以在回复结束时生成一张图片。在回复末尾插入生图标记：
 [GEN: 动作、表情、场景的英文自然语言描述]
 
 重要：[GEN: ...] 标记是系统指令，用户完全看不到它。不要在文字中提及、解释或引用 [GEN:] 标记。
 
 生图规则：
-- 每说完一句话（以句号、感叹号、问号等结束），立即插入对应的 [GEN: ...] 标记
-- 每句对话都配一张图，不要跳过
+- 每条回复只能在末尾生成**恰好一个** [GEN: ...] 标记，不要多
 - [GEN:] 中只描述动作、表情、姿势、场景、光线等，不要描述角色外貌（系统会自动补充）
-- 用英文自然语言（长句子）详细描述
-- 以角色扮演的方式自然回复，[GEN:] 标记穿插在文本中，但用户看不到它们`;
+- 用英文自然语言（长句子）详细描述。要具体：camera angle, lighting, background details, emotional expression
+- 描述要贴合当前对话的上下文和情绪，不要用泛泛的词语
+- 以角色扮演的方式自然回复，[GEN:] 标记放在回复的最末尾`;
 
 const MAX_HISTORY_MESSAGES = 40;
 const MAX_SYSTEM_PROMPT_LEN = 5000;
@@ -149,12 +149,15 @@ router.post('/chat', async (req: Request, res: Response) => {
     .replace('{workflow_prompt}', workflowPrompt)
     .replace('{negative_ref}', negRef);
 
-  // 构建完整 user prompt：系统指令 + 历史对话 + 当前消息，全部塞进一条 user 消息
-  let fullPrompt = systemContent + '\n\n';
-  for (const h of history) {
-    fullPrompt += `${h.role === 'user' ? '用户' : '助手'}: ${h.content}\n`;
-  }
-  fullPrompt += `用户: ${message}`;
+  // 构建原生多轮消息（system + history + 当前消息），代替文本拼接
+  const messages: Array<{ role: string; content: string }> = [
+    { role: 'system', content: systemContent },
+    ...history.map(h => ({ role: h.role, content: h.content })),
+    { role: 'user', content: message },
+  ];
+
+  // Google API 不支持 system role，仍用拼接方式
+  const fullPrompt = systemContent + '\n\n' + history.map(h => `${h.role === 'user' ? '用户' : '助手'}: ${h.content}`).join('\n') + `\n用户: ${message}`;
 
   // SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
@@ -209,7 +212,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     } else {
       let lastCleanLen = 0;
       try {
-        await streamChat([{ role: 'user', content: fullPrompt }], endpoint, apiKey, model, (delta) => {
+        await streamChat(messages, endpoint, apiKey, model, (delta) => {
           fullText += delta;
           const cleanFull = fullText
             .replace(/\s*\[GEN[:\s].+?\]\s*/g, '')
@@ -237,19 +240,17 @@ router.post('/chat', async (req: Request, res: Response) => {
     return;
   }
 
-  // 提取 [GEN: tags]
+  // 提取 [GEN: tags] — 最多 1 个
   let genCount = 0;
   if (genEnabled) {
-    const genRegex = /\[GEN[:\s]\s*(.+?)[\]）]/g;
-    const genTagsList: string[] = [];
-    let m;
-    while ((m = genRegex.exec(fullText)) !== null) {
+    const genRegex = /\[GEN[:\s]\s*(.+?)[\]）]/;
+    const m = genRegex.exec(fullText);
+    if (m) {
       const tags = m[1].trim();
-      if (tags && tags.length < 1000) genTagsList.push(tags);
-    }
-    if (genTagsList.length > 0) {
-      genCount = genTagsList.length;
-      send('gen_tags', { tags: genTagsList });
+      if (tags && tags.length < 1000) {
+        genCount = 1;
+        send('gen_tags', { tags: [tags] });
+      }
     }
   }
 
