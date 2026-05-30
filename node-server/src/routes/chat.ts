@@ -54,6 +54,21 @@ const GEN_INSTRUCTION_ANIMA = `你可以在回复结束时生成一张图片。�
 - 描述要贴合当前对话的上下文和情绪，不要用泛泛的词语
 - 以角色扮演的方式自然回复，[GEN:] 标记放在回复的最末尾`;
 
+const NUDGE_INSTRUCTION = `你正在和用户进行角色扮演。用户暂时没有回复，请以角色的身份生成一段简短（1-2句）的主动消息来推动对话。
+
+你可以：
+- 倒计时：比如「我数到5」
+- 催促用户回应：比如「你还在吗？」
+- 质问用户为什么犹豫：比如「怎么，怕了？」
+- 挑逗或勾引用户继续：比如「你不想看看接下来会发生什么吗？」
+- 以角色特有的方式威胁或挑战用户
+
+要求：
+- 语气完全符合角色设定
+- 简短有力，1-2句足够
+- 不要提及你是AI或这只是在角色扮演
+- 如果场景有明显变化（表情、姿势、环境），可以在末尾加 [GEN: 英文 tags]`;
+
 const MAX_HISTORY_MESSAGES = 40;
 const MAX_SYSTEM_PROMPT_LEN = 5000;
 const MAX_MESSAGE_LEN = 2000;
@@ -273,6 +288,124 @@ router.post('/chat', async (req: Request, res: Response) => {
   } catch (e: any) {
     send('error', { message: `计费异常：${e.message || '未知'}` });
   }
+
+  send('done', { llm_cost: llmCost, llm_tokens: llmTokens, gen_count: genCount, raw_text: fullText });
+  res.end();
+});
+
+// ==================== 主动沉浸（Nudge）端点 ====================
+
+router.post('/chat/nudge', async (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '论坛登录凭证已过期，请刷新页面或重新登录' });
+  if (user.role !== 'admin' && user.role !== 'user') return res.status(403).json({ detail: '已禁止使用酒馆' });
+
+  const rawBody = req.body;
+  if (!rawBody || typeof rawBody !== 'object') return res.status(400).json({ detail: '请求格式错误' });
+
+  const systemPrompt = sanitizeStr(rawBody.system_prompt, MAX_SYSTEM_PROMPT_LEN).trim();
+  if (!systemPrompt) return res.status(400).json({ detail: '请填写角色设定' });
+
+  const workflowPrompt = sanitizeStr(rawBody.workflow_prompt, 2000) || '(无)';
+  const negativePrompt = sanitizeStr(rawBody.negative_prompt, 1000);
+  const mode = rawBody.mode === 'anima' ? 'anima' : 'wai';
+
+  const rawHistory = Array.isArray(rawBody.history) ? rawBody.history : [];
+  const history: Array<{ role: string; content: string }> = [];
+  for (const h of rawHistory.slice(-MAX_HISTORY_MESSAGES)) {
+    if (!isValidRole(h.role)) continue;
+    const c = sanitizeStr(h.content, MAX_HISTORY_ITEM_CONTENT_LEN);
+    if (c) history.push({ role: h.role, content: c });
+  }
+
+  if (history.length === 0) return res.status(400).json({ detail: '没有对话历史' });
+
+  const negRef = negativePrompt || 'worst quality, low quality, blurry';
+  const nudgeSystemContent = NUDGE_INSTRUCTION + '\n\n角色设定：\n' + systemPrompt + '\n\n工作流自带提示词：' + workflowPrompt + '\n\n负面提示词参考：' + negRef;
+
+  const messages: Array<{ role: string; content: string }> = [
+    { role: 'system', content: nudgeSystemContent },
+    ...history.map(h => ({ role: h.role, content: h.content })),
+  ];
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  let clientDisconnected = false;
+  res.on('close', () => { clientDisconnected = true; });
+
+  function send(event: string, data: unknown) {
+    if (clientDisconnected) return;
+    try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch {}
+  }
+
+  const cfg = getActiveProfile();
+  const provider = cfg.provider || 'custom';
+
+  let endpoint = '';
+  let apiKey = '';
+  let model = '';
+  if (provider === 'google') {
+    apiKey = cfg.google_api_key || '';
+    model = cfg.google_model || '';
+  } else if (provider === 'custom') {
+    endpoint = sanitizeStr(cfg.custom_endpoint, 500).replace(/\/+$/, '');
+    apiKey = sanitizeStr(cfg.custom_api_key, 500);
+    model = sanitizeStr(cfg.custom_model, 200);
+  } else {
+    endpoint = sanitizeStr(cfg.local_endpoint || config.lms_api, 500).replace(/\/+$/, '');
+  }
+
+  let fullText = '';
+  try {
+    if (provider === 'google') {
+      const fullPrompt = nudgeSystemContent + '\n\n' + history.map(h => `${h.role === 'user' ? '用户' : '助手'}: ${h.content}`).join('\n');
+      fullText = await callGoogle('', fullPrompt, cfg);
+      const cleanText = fullText.replace(/\s*\[GEN[^\]）]*[\]）]\s*/g, ' ').replace(/\s+/g, ' ').trim();
+      if (cleanText) send('text', { content: cleanText });
+    } else {
+      let lastCleanLen = 0;
+      await streamChat(messages, endpoint, apiKey, model, (delta) => {
+        fullText += delta;
+        const cleanFull = fullText
+          .replace(/\s*\[GEN[:\s].+?\]\s*/g, '')
+          .replace(/\s*\[GEN[:\s].+?）\s*/g, '')
+          .replace(/\s*\[GEN[^\]]*\]\s*/g, '')
+          .replace(/\s*\[GEN[^）]*）\s*/g, '')
+          .replace(/\s*\[GEN[^\]）]*$/, '');
+        const cleanDelta = cleanFull.slice(lastCleanLen);
+        if (cleanDelta) { send('text', { content: cleanDelta }); lastCleanLen = cleanFull.length; }
+      });
+    }
+  } catch (e: any) {
+    send('error', { message: e.message || '调用失败' });
+    send('done', {});
+    res.end();
+    return;
+  }
+
+  let genCount = 0;
+  const genRegex = /\[GEN[:\s]\s*(.+?)[\]）]/;
+  const m = genRegex.exec(fullText);
+  if (m) { const tags = m[1].trim(); if (tags && tags.length < 1000) { genCount = 1; send('gen_tags', { tags: [tags] }); } }
+
+  let llmCost = 0;
+  let llmTokens = 0;
+  try {
+    const ptCfg = loadPointsCfg();
+    const tokenPerPoint = ptCfg.llm_token_per_point || 1000;
+    let totalTokens = estimateTokens(nudgeSystemContent);
+    for (const h of history) totalTokens += estimateTokens(h.content);
+    totalTokens += estimateTokens(fullText);
+    llmTokens = totalTokens;
+    llmCost = Math.max(1, Math.ceil(totalTokens / tokenPerPoint));
+    await deductPoints(user.id, llmCost);
+  } catch {}
 
   send('done', { llm_cost: llmCost, llm_tokens: llmTokens, gen_count: genCount, raw_text: fullText });
   res.end();
