@@ -20,3 +20,6 @@ web/uploads/
 node-server/node_modules/
 .playwright-mcp/
 aifadian-api-docs.md
+page-snapshot.yml
+test_esc.txt
+test2.txt
