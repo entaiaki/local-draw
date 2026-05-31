@@ -2,6 +2,7 @@ import express, { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 router.use(express.json({ limit: '50mb' }));
@@ -11,7 +12,8 @@ const TTS_INPUT_DIR = path.join(TTS_TEMP_DIR, 'input');
 const TTS_OUTPUT_DIR = path.join(TTS_TEMP_DIR, 'output');
 const TTS_STATE_FILE = path.join(TTS_TEMP_DIR, 'tts_queue_state.json');
 const TTS_RECORDS_FILE = path.join(TTS_TEMP_DIR, 'tts_records.json');
-[TTS_INPUT_DIR, TTS_OUTPUT_DIR].forEach(d => fs.mkdirSync(d, { recursive: true }));
+const TTS_RECORDS_DIR = path.join(TTS_TEMP_DIR, 'records');
+[TTS_INPUT_DIR, TTS_OUTPUT_DIR, TTS_RECORDS_DIR].forEach(d => fs.mkdirSync(d, { recursive: true }));
 
 interface TtsQueueItem {
   id: number;
@@ -252,6 +254,10 @@ interface TtsRecord {
 }
 
 function saveTtsRecord(item: TtsQueueItem): void {
+  const recordOutput = path.join(TTS_RECORDS_DIR, `${item.id}.wav`);
+  if (item.outputPath && fs.existsSync(item.outputPath)) {
+    try { fs.copyFileSync(item.outputPath, recordOutput); } catch {}
+  }
   try {
     const records: TtsRecord[] = JSON.parse(fs.readFileSync(TTS_RECORDS_FILE, 'utf-8'));
     records.unshift({
@@ -263,7 +269,7 @@ function saveTtsRecord(item: TtsQueueItem): void {
       language: item.language,
       audioDuration: item.audioDuration,
       cost: item.cost,
-      outputPath: item.outputPath,
+      outputPath: `tts_temp/records/${item.id}.wav`,
       created_at: item.created_at,
       finished_at: item.finished_at || Date.now() / 1000,
     });
@@ -273,11 +279,58 @@ function saveTtsRecord(item: TtsQueueItem): void {
     const records: TtsRecord[] = [{
       id: item.id, user_id: item.user_id, text: item.text, refText: item.refText,
       xVectorMode: item.xVectorMode, language: item.language, audioDuration: item.audioDuration,
-      cost: item.cost, outputPath: item.outputPath, created_at: item.created_at,
+      cost: item.cost, outputPath: `tts_temp/records/${item.id}.wav`, created_at: item.created_at,
       finished_at: item.finished_at || Date.now() / 1000,
     }];
     fs.writeFileSync(TTS_RECORDS_FILE, JSON.stringify(records, null, 2), 'utf-8');
   }
 }
 
-export { router as ttsRouter, TTS_RECORDS_FILE };
+function loadTtsRecords(): TtsRecord[] {
+  try { return JSON.parse(fs.readFileSync(TTS_RECORDS_FILE, 'utf-8')); } catch { return []; }
+}
+
+function saveTtsRecords(records: TtsRecord[]): void {
+  try { fs.writeFileSync(TTS_RECORDS_FILE, JSON.stringify(records, null, 2), 'utf-8'); } catch {}
+}
+
+function deleteRecordAudio(id: number): void {
+  try { fs.unlinkSync(path.join(TTS_RECORDS_DIR, `${id}.wav`)); } catch {}
+}
+
+// GET /api/draw/tts/my-records
+router.get('/my-records', requireAuth, (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  if (!userId) return res.status(401).json({ error: 'unauthorized' });
+  const records = loadTtsRecords().filter(r => r.user_id === userId);
+  res.json({ items: records, total: records.length });
+});
+
+// GET /api/draw/tts/record-download/:id
+router.get('/record-download/:id', requireAuth, (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const id = parseInt(String(req.params.id));
+  const records = loadTtsRecords();
+  const rec = records.find(r => r.id === id && r.user_id === userId);
+  if (!rec) return res.status(404).json({ error: 'record not found' });
+  const filePath = path.join(process.cwd(), rec.outputPath || '');
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'audio file not found' });
+  res.setHeader('Content-Type', 'audio/wav');
+  res.setHeader('Content-Disposition', `attachment; filename="tts_${id}.wav"`);
+  fs.createReadStream(filePath).pipe(res);
+});
+
+// DELETE /api/draw/tts/my-record/:id
+router.delete('/my-record/:id', requireAuth, (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const id = parseInt(String(req.params.id));
+  const records = loadTtsRecords();
+  const idx = records.findIndex(r => r.id === id && r.user_id === userId);
+  if (idx === -1) return res.status(404).json({ error: 'record not found' });
+  records.splice(idx, 1);
+  saveTtsRecords(records);
+  deleteRecordAudio(id);
+  res.json({ ok: true });
+});
+
+export { router as ttsRouter, TTS_RECORDS_FILE, loadTtsRecords, saveTtsRecords, deleteRecordAudio };

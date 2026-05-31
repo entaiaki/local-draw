@@ -5,7 +5,7 @@ import { Limits } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
 import { loadPointsConfig as loadPointsCfg, creatorUserIds } from './wallet.js';
-import { TTS_RECORDS_FILE } from './tts.js';
+import { TTS_RECORDS_FILE, loadTtsRecords, saveTtsRecords, deleteRecordAudio } from './tts.js';
 
 interface BanEntry {
   user_id: number;
@@ -830,6 +830,27 @@ router.get('/tts-records', requireAdmin, (req, res) => {
   } catch {
     res.json({ items: [] });
   }
+});
+
+// GET /api/draw/admin/tts-download/:id
+router.get('/tts-download/:id', requireAdmin, (req, res) => {
+  const filePath = path.join(process.cwd(), 'tts_temp', 'records', `${req.params.id}.wav`);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'audio not found' });
+  res.setHeader('Content-Type', 'audio/wav');
+  res.setHeader('Content-Disposition', `attachment; filename="tts_${req.params.id}.wav"`);
+  fs.createReadStream(filePath).pipe(res);
+});
+
+// DELETE /api/draw/admin/tts-record/:id
+router.delete('/tts-record/:id', requireAdmin, (req, res) => {
+  const id = parseInt(String(req.params.id));
+  const records = loadTtsRecords();
+  const idx = records.findIndex(r => r.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'record not found' });
+  records.splice(idx, 1);
+  saveTtsRecords(records);
+  deleteRecordAudio(id);
+  res.json({ ok: true });
 });
 
 export { router as adminRouter };
