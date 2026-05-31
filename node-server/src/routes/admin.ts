@@ -5,6 +5,7 @@ import { Limits } from '../types/index.js';
 import fs from 'fs';
 import path from 'path';
 import { loadPointsConfig as loadPointsCfg, creatorUserIds } from './wallet.js';
+import { TTS_RECORDS_FILE } from './tts.js';
 
 interface BanEntry {
   user_id: number;
@@ -819,6 +820,16 @@ router.delete('/plans/:id', requireAdmin, (req, res) => {
   if (idx >= 0) plans.splice(idx, 1);
   saveJson(pf, plans);
   res.json({ ok: true, plans });
+});
+
+// GET /api/draw/admin/tts-records
+router.get('/tts-records', requireAdmin, (req, res) => {
+  try {
+    const records = loadJson<Array<Record<string, any>>>(TTS_RECORDS_FILE, []);
+    res.json({ items: records });
+  } catch {
+    res.json({ items: [] });
+  }
 });
 
 export { router as adminRouter };

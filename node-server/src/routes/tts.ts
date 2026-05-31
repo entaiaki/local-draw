@@ -10,7 +10,10 @@ const TTS_TEMP_DIR = path.join(process.cwd(), 'tts_temp');
 const TTS_INPUT_DIR = path.join(TTS_TEMP_DIR, 'input');
 const TTS_OUTPUT_DIR = path.join(TTS_TEMP_DIR, 'output');
 const TTS_STATE_FILE = path.join(TTS_TEMP_DIR, 'tts_queue_state.json');
+const TTS_RECORDS_FILE = path.join(TTS_TEMP_DIR, 'tts_records.json');
 [TTS_INPUT_DIR, TTS_OUTPUT_DIR].forEach(d => fs.mkdirSync(d, { recursive: true }));
+
+export { TTS_RECORDS_FILE };
 
 interface TtsQueueItem {
   id: number;
@@ -95,6 +98,7 @@ async function processTtsQueue(): Promise<void> {
         });
         item.outputPath = result.output_path;
         item.status = 'done';
+        saveTtsRecord(item);
       } catch (e: any) {
         item.status = 'failed';
         item.error = (e.message || String(e)).slice(0, 2000);
@@ -235,4 +239,47 @@ router.get('/result/:id', (req: Request, res: Response) => {
   stream.on('error', () => {});
 });
 
-export { router as ttsRouter };
+interface TtsRecord {
+  id: number;
+  user_id: number;
+  text: string;
+  refText: string | null;
+  xVectorMode: boolean;
+  language: string;
+  audioDuration: number;
+  cost: number;
+  outputPath: string | null;
+  created_at: number;
+  finished_at: number;
+}
+
+function saveTtsRecord(item: TtsQueueItem): void {
+  try {
+    const records: TtsRecord[] = JSON.parse(fs.readFileSync(TTS_RECORDS_FILE, 'utf-8'));
+    records.unshift({
+      id: item.id,
+      user_id: item.user_id,
+      text: item.text,
+      refText: item.refText,
+      xVectorMode: item.xVectorMode,
+      language: item.language,
+      audioDuration: item.audioDuration,
+      cost: item.cost,
+      outputPath: item.outputPath,
+      created_at: item.created_at,
+      finished_at: item.finished_at || Date.now() / 1000,
+    });
+    if (records.length > 500) records.length = 500;
+    fs.writeFileSync(TTS_RECORDS_FILE, JSON.stringify(records, null, 2), 'utf-8');
+  } catch (e: any) {
+    const records: TtsRecord[] = [{
+      id: item.id, user_id: item.user_id, text: item.text, refText: item.refText,
+      xVectorMode: item.xVectorMode, language: item.language, audioDuration: item.audioDuration,
+      cost: item.cost, outputPath: item.outputPath, created_at: item.created_at,
+      finished_at: item.finished_at || Date.now() / 1000,
+    }];
+    fs.writeFileSync(TTS_RECORDS_FILE, JSON.stringify(records, null, 2), 'utf-8');
+  }
+}
+
+export { router as ttsRouter, TTS_RECORDS_FILE };
