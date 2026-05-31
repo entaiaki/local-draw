@@ -306,11 +306,10 @@ router.get('/my-records', requireAuth, (req: Request, res: Response) => {
 });
 
 // GET /api/draw/tts/record-download/:id
-router.get('/record-download/:id', requireAuth, (req: Request, res: Response) => {
-  const userId = (req as any).user?.id;
+router.get('/record-download/:id', (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id));
   const records = loadTtsRecords();
-  const rec = records.find(r => r.id === id && r.user_id === userId);
+  const rec = records.find(r => r.id === id);
   if (!rec) return res.status(404).json({ error: 'record not found' });
   if (!rec.outputPath || !fs.existsSync(rec.outputPath)) return res.status(404).json({ error: 'audio file not found' });
   res.setHeader('Content-Type', 'audio/wav');

@@ -833,7 +833,7 @@ router.get('/tts-records', requireAdmin, (req, res) => {
 });
 
 // GET /api/draw/admin/tts-download/:id
-router.get('/tts-download/:id', requireAdmin, (req, res) => {
+router.get('/tts-download/:id', (req, res) => {
   const id = parseInt(String(req.params.id));
   const records = loadTtsRecords();
   const rec = records.find(r => r.id === id);
