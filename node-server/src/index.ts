@@ -73,6 +73,7 @@ app.use('/api/draw/admin', walletRouter);
 app.use('/api', presetRouter);
 app.use('/api/draw', hot('./routes/agreement.js', 'agreementRouter'));
 app.use('/api/draw', hot('./routes/chat.js', 'chatRouter'));
+app.use('/api/draw/tts', requireAuth, hot('./routes/tts.js', 'ttsRouter'));
 app.get('/health', (_req, res) => res.set('Cache-Control', 'no-store, no-cache, must-revalidate').status(200).json({ status: 'ok' }));
 
 // Health check
@@ -217,6 +218,34 @@ app.delete('/api/draw/my-images', (req, res) => {
     fs.writeFileSync(df, JSON.stringify(deleted, null, 2), 'utf-8');
   } catch {}
   res.json({ ok: true });
+});
+
+// DELETE /api/draw/my-images/all — clear all images for current user
+app.delete('/api/draw/my-images/all', (req, res) => {
+  const jwt = require('jsonwebtoken');
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  let user: any = null;
+  try { user = jwt.verify(token, Buffer.from(config.jwt_secret, 'utf-8')); } catch {}
+  if (!user?.id) return res.status(401).json({ detail: 'unauthorized' });
+
+  const cmap: Record<string, number> = {};
+  try { if (fs.existsSync(config.creator_map_file)) { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) { const parts = ln.split('\t'); if (parts.length === 2 && /^\d+$/.test(parts[1].trim())) cmap[parts[0].trim()] = parseInt(parts[1].trim()); } } } catch {}
+  const userImages = Object.entries(cmap)
+    .filter(([_, uid]) => Number(uid) === user.id)
+    .map(([imgPath]) => imgPath);
+
+  try {
+    const df = path.join(path.dirname(config.creator_map_file), 'deleted_images.json');
+    let deleted: string[] = [];
+    try { deleted = JSON.parse(fs.readFileSync(df, 'utf-8')); } catch {}
+    let count = 0;
+    for (const imgPath of userImages) {
+      if (!deleted.includes(imgPath)) { deleted.push(imgPath); count++; }
+    }
+    fs.writeFileSync(df, JSON.stringify(deleted, null, 2), 'utf-8');
+    res.json({ ok: true, deleted: count });
+  } catch { res.status(500).json({ error: 'failed to clear images' }); }
 });
 
 // 全局图片压缩（低CPU，sharp/libvips）

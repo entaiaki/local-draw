@@ -19,6 +19,7 @@ web/lora_links
 web/uploads/
 node-server/node_modules/
 node-server/recommendations.json
+node-server/tts_temp/
 .playwright-mcp/
 aifadian-api-docs.md
 page-snapshot.yml
