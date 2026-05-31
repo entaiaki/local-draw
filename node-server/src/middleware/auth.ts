@@ -54,7 +54,8 @@ function loadSecret(): string {
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  let token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) token = (req.query.token as string) || '';
   const secret = loadSecret();
   const user = verifyToken(token, secret);
   if (!user || user.role !== 'admin') {
