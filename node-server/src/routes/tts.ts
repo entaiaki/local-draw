@@ -102,6 +102,12 @@ router.post('/generate', (req: Request, res: Response) => {
       try { fs.unlinkSync(file.path); } catch {}
       return res.status(400).json({ error: 'need text' });
     }
+    const xVectorMode = req.body?.x_vector_mode === 'true';
+    const refText = (req.body?.ref_text as string) || '';
+    if (!xVectorMode && !refText) {
+      try { fs.unlinkSync(file.path); } catch {}
+      return res.status(400).json({ error: '非 X-Vector 模式下参考文本为必填项' });
+    }
     try {
       const { deductPoints, loadPointsCfg } = await import('./wallet.js');
       const cfg = loadPointsCfg();
@@ -123,8 +129,8 @@ router.post('/generate', (req: Request, res: Response) => {
         inputPath: file.path,
         inputMime: file.mimetype,
         text,
-        refText: (req.body?.ref_text as string) || null,
-        xVectorMode: req.body?.x_vector_mode === 'true',
+        refText: refText || null,
+        xVectorMode,
         language: (req.body?.language as string) || 'auto',
         audioDuration,
         cost,
