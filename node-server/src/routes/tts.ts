@@ -21,6 +21,7 @@ interface TtsQueueItem {
   refText: string | null;
   xVectorMode: boolean;
   language: string;
+  audioDuration: number;
   cost: number;
   created_at: number;
   started_at: number | null;
@@ -103,7 +104,9 @@ router.post('/generate', (req: Request, res: Response) => {
     }
     try {
       const { deductPoints, loadPointsCfg } = await import('./wallet.js');
-      const cost = loadPointsCfg().tts_generate || 0;
+      const cfg = loadPointsCfg();
+      const audioDuration = parseFloat(req.body?.audio_duration as string) || 0;
+      const cost = Math.max(1, Math.ceil(text.length * (cfg.tts_per_char || 0.01)) + Math.ceil(audioDuration * (cfg.tts_per_sec || 0.033)));
       if (cost > 0) {
         const user = (req as any).user;
         const ptResult = await deductPoints(user?.id, cost);
@@ -123,6 +126,7 @@ router.post('/generate', (req: Request, res: Response) => {
         refText: (req.body?.ref_text as string) || null,
         xVectorMode: req.body?.x_vector_mode === 'true',
         language: (req.body?.language as string) || 'auto',
+        audioDuration,
         cost,
         created_at: Date.now() / 1000,
         started_at: null,
