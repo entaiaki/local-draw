@@ -1,6 +1,7 @@
 import express, { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
+import multer from 'multer';
 
 const router = Router();
 router.use(express.json({ limit: '50mb' }));
@@ -83,11 +84,11 @@ function queueNext(): void {
   processTtsQueue().catch(() => {});
 }
 
+const ttsUpload = multer({ dest: TTS_INPUT_DIR }).single('audio');
+
 // POST /api/draw/tts/generate
 router.post('/generate', (req: Request, res: Response) => {
-  const multer = require('multer');
-  const upload = multer({ dest: TTS_INPUT_DIR }).single('audio');
-  upload(req, res, (err: any) => {
+  ttsUpload(req, res, (err: any) => {
     if (err) return res.status(400).json({ error: 'upload failed: ' + (err.message || String(err)) });
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: 'no audio file' });
