@@ -1,8 +1,0 @@
-fastapi
-uvicorn[standard]
-httpx
-websockets
-pydantic
-pillow
-python-jose[cryptography]
-python-dotenv
