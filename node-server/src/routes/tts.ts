@@ -21,6 +21,7 @@ interface TtsQueueItem {
   refText: string | null;
   xVectorMode: boolean;
   language: string;
+  cost: number;
   created_at: number;
   started_at: number | null;
   finished_at: number | null;
@@ -69,6 +70,9 @@ async function processTtsQueue(): Promise<void> {
       } catch (e: any) {
         item.status = 'failed';
         item.error = (e.message || String(e)).slice(0, 2000);
+        if (item.cost > 0) {
+          try { const { refundPoints } = await import('./wallet.js'); await refundPoints(item.user_id, item.cost); } catch {}
+        }
       } finally {
         item.finished_at = Date.now() / 1000;
         ttsActiveCount--;
@@ -88,7 +92,7 @@ const ttsUpload = multer({ dest: TTS_INPUT_DIR }).single('audio');
 
 // POST /api/draw/tts/generate
 router.post('/generate', (req: Request, res: Response) => {
-  ttsUpload(req, res, (err: any) => {
+  ttsUpload(req, res, async (err: any) => {
     if (err) return res.status(400).json({ error: 'upload failed: ' + (err.message || String(err)) });
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: 'no audio file' });
@@ -97,26 +101,42 @@ router.post('/generate', (req: Request, res: Response) => {
       try { fs.unlinkSync(file.path); } catch {}
       return res.status(400).json({ error: 'need text' });
     }
-    ttsIdCounter++;
-    const item: TtsQueueItem = {
-      id: ttsIdCounter,
-      user_id: (req as any).user?.id || 0,
-      status: 'pending',
-      inputPath: file.path,
-      inputMime: file.mimetype,
-      text,
-      refText: (req.body?.ref_text as string) || null,
-      xVectorMode: req.body?.x_vector_mode === 'true',
-      language: (req.body?.language as string) || 'auto',
-      created_at: Date.now() / 1000,
-      started_at: null,
-      finished_at: null,
-      outputPath: null,
-      error: null,
-    };
-    ttsQueue.push(item);
-    queueNext();
-    res.json({ queued: true, item_id: item.id, position: ttsQueuePosition(item.id) });
+    try {
+      const { deductPoints, loadPointsCfg } = await import('./wallet.js');
+      const cost = loadPointsCfg().tts_generate || 0;
+      if (cost > 0) {
+        const user = (req as any).user;
+        const ptResult = await deductPoints(user?.id, cost);
+        if (!ptResult.ok) {
+          try { fs.unlinkSync(file.path); } catch {}
+          return res.status(402).json({ error: '点数不足', need: cost, balance: ptResult.balance || 0 });
+        }
+      }
+      ttsIdCounter++;
+      const item: TtsQueueItem = {
+        id: ttsIdCounter,
+        user_id: (req as any).user?.id || 0,
+        status: 'pending',
+        inputPath: file.path,
+        inputMime: file.mimetype,
+        text,
+        refText: (req.body?.ref_text as string) || null,
+        xVectorMode: req.body?.x_vector_mode === 'true',
+        language: (req.body?.language as string) || 'auto',
+        cost,
+        created_at: Date.now() / 1000,
+        started_at: null,
+        finished_at: null,
+        outputPath: null,
+        error: null,
+      };
+      ttsQueue.push(item);
+      queueNext();
+      res.json({ queued: true, item_id: item.id, position: ttsQueuePosition(item.id) });
+    } catch (e: any) {
+      try { fs.unlinkSync(file.path); } catch {}
+      res.status(500).json({ error: e.message || '提交失败' });
+    }
   });
 });
 

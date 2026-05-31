@@ -712,13 +712,14 @@ router.get('/points-config', requireAdmin, (req, res) => {
 });
 
 router.post('/points-config', requireAdmin, (req, res) => {
-  const { text_to_image, image_to_image, llm_translate, signup_bonus, text_to_image_anima } = req.body || {};
+  const { text_to_image, image_to_image, llm_translate, signup_bonus, text_to_image_anima, tts_generate } = req.body || {};
   const cfg: any = {};
   if (typeof text_to_image === 'number') cfg.text_to_image = text_to_image;
   if (typeof image_to_image === 'number') cfg.image_to_image = image_to_image;
   if (typeof llm_translate === 'number') cfg.llm_translate = llm_translate;
   if (typeof signup_bonus === 'number') cfg.signup_bonus = signup_bonus;
   if (typeof text_to_image_anima === 'number') cfg.text_to_image_anima = text_to_image_anima;
+  if (typeof tts_generate === 'number') cfg.tts_generate = tts_generate;
   if (Object.keys(cfg).length === 0) return res.status(400).json({ error: 'no valid fields' });
   const pf = path.join(path.dirname(config.creator_map_file), 'points_config.json');
   const current = loadJson<Record<string, any>>(pf, {});
