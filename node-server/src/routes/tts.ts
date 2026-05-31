@@ -9,6 +9,7 @@ router.use(express.json({ limit: '50mb' }));
 const TTS_TEMP_DIR = path.join(process.cwd(), 'tts_temp');
 const TTS_INPUT_DIR = path.join(TTS_TEMP_DIR, 'input');
 const TTS_OUTPUT_DIR = path.join(TTS_TEMP_DIR, 'output');
+const TTS_STATE_FILE = path.join(TTS_TEMP_DIR, 'tts_queue_state.json');
 [TTS_INPUT_DIR, TTS_OUTPUT_DIR].forEach(d => fs.mkdirSync(d, { recursive: true }));
 
 interface TtsQueueItem {
@@ -36,6 +37,31 @@ const MAX_TTS_CONCURRENT = 1;
 let ttsActiveCount = 0;
 let ttsProcessing = false;
 
+function saveTtsState(): void {
+  try {
+    fs.writeFileSync(TTS_STATE_FILE, JSON.stringify({ idCounter: ttsIdCounter, items: ttsQueue }, null, 2), 'utf-8');
+  } catch {}
+}
+
+function loadTtsState(): void {
+  try {
+    if (fs.existsSync(TTS_STATE_FILE)) {
+      const d = JSON.parse(fs.readFileSync(TTS_STATE_FILE, 'utf-8'));
+      ttsIdCounter = d.idCounter || 0;
+      ttsQueue.length = 0;
+      for (const i of d.items || []) {
+        if (i.status === 'running') {
+          i.status = 'failed';
+          i.error = '服务重启，任务终止';
+          i.finished_at = Date.now() / 1000;
+        }
+        ttsQueue.push(i);
+      }
+    }
+  } catch {}
+}
+loadTtsState();
+
 function ttsQueuePosition(id: number): number {
   let pos = 1;
   for (const qi of ttsQueue) {
@@ -57,6 +83,7 @@ async function processTtsQueue(): Promise<void> {
       ttsActiveCount++;
       item.status = 'running';
       item.started_at = Date.now() / 1000;
+      saveTtsState();
       try {
         const { callTtsGenerate } = await import('../services/tts_client.js');
         const result = await callTtsGenerate({
@@ -77,6 +104,7 @@ async function processTtsQueue(): Promise<void> {
       } finally {
         item.finished_at = Date.now() / 1000;
         ttsActiveCount--;
+        saveTtsState();
         try { fs.unlinkSync(item.inputPath); } catch {}
       }
     }
@@ -141,6 +169,7 @@ router.post('/generate', (req: Request, res: Response) => {
         error: null,
       };
       ttsQueue.push(item);
+      saveTtsState();
       queueNext();
       res.json({ queued: true, item_id: item.id, position: ttsQueuePosition(item.id) });
     } catch (e: any) {
@@ -148,6 +177,25 @@ router.post('/generate', (req: Request, res: Response) => {
       res.status(500).json({ error: e.message || '提交失败' });
     }
   });
+});
+
+// GET /api/draw/tts/my-queue
+router.get('/my-queue', (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  if (!userId) return res.status(401).json({ error: 'unauthorized' });
+  const now = Date.now() / 1000;
+  const items = ttsQueue
+    .filter(qi => qi.user_id === userId && (now - qi.created_at) < 7200)
+    .map(qi => ({
+      id: qi.id,
+      status: qi.status,
+      created_at: qi.created_at,
+      started_at: qi.started_at,
+      finished_at: qi.finished_at,
+      error: qi.error,
+      position: qi.status === 'pending' ? ttsQueuePosition(qi.id) : null,
+    }));
+  res.json({ items });
 });
 
 // GET /api/draw/tts/status/:id
