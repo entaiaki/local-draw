@@ -330,4 +330,66 @@ router.delete('/my-record/:id', requireAuth, (req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
+// --- Custom Voice (Preset) ---
+
+import { callTtsCustomVoice, fetchSpeakers } from '../services/tts_client.js';
+
+// GET /api/draw/tts/speakers
+router.get('/speakers', async (_req: Request, res: Response) => {
+  try {
+    const data = await fetchSpeakers();
+    res.json(data);
+  } catch {
+    res.status(503).json({ error: 'TTS server unavailable' });
+  }
+});
+
+// POST /api/draw/tts/custom-voice
+router.post('/custom-voice', async (req: Request, res: Response) => {
+  const { text, speaker, language, instruct } = req.body;
+  if (!text) return res.status(400).json({ error: 'need text' });
+  if (!speaker) return res.status(400).json({ error: 'need speaker' });
+  try {
+    const { deductPoints, loadPointsCfg } = await import('./wallet.js');
+    const cfg = loadPointsCfg();
+    const cost = Math.max(cfg.tts_generate || 1, Math.ceil(text.length * (cfg.tts_per_char || 0.01)));
+    const user = (req as any).user;
+    if (cost > 0) {
+      const pt = await deductPoints(user?.id, cost);
+      if (!pt.ok) return res.status(402).json({ error: '点数不足', need: cost, balance: pt.balance || 0 });
+    }
+    const result = await callTtsCustomVoice({ text, speaker, language, instruct });
+    ttsIdCounter++;
+    const item: TtsQueueItem = {
+      id: ttsIdCounter, user_id: user?.id || 0, status: 'done',
+      inputPath: '', inputMime: '', text, refText: null, xVectorMode: false,
+      language: language || 'auto', audioDuration: 0, cost,
+      created_at: Date.now() / 1000, started_at: Date.now() / 1000, finished_at: Date.now() / 1000,
+      outputPath: result.output_path, error: null,
+    };
+    ttsQueue.push(item);
+    saveTtsRecord(item);
+    saveTtsState();
+    res.json({ ok: true, item_id: item.id, output_path: result.output_path });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message || '生成失败' });
+  }
+});
+
+// POST /v1/audio/speech — OpenAI-compatible endpoint for SillyTavern
+router.post('/v1/audio/speech', async (req: Request, res: Response) => {
+  const { input, voice, model } = req.body;
+  if (!input) return res.status(400).json({ error: 'need input text' });
+  const speaker = voice || 'Vivian';
+  try {
+    const result = await callTtsCustomVoice({ text: input, speaker, language: 'auto' });
+    if (!result.ok || !result.output_path || !fs.existsSync(result.output_path))
+      return res.status(500).json({ error: 'generation failed' });
+    res.setHeader('Content-Type', 'audio/wav');
+    fs.createReadStream(result.output_path).pipe(res);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message || '生成失败' });
+  }
+});
+
 export { router as ttsRouter, TTS_RECORDS_FILE, loadTtsRecords, saveTtsRecords, deleteRecordAudio };

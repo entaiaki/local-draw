@@ -18,6 +18,13 @@ export interface TtsGenerateResult {
   sample_rate: number;
 }
 
+export interface TtsCustomVoiceParams {
+  text: string;
+  speaker: string;
+  language?: string;
+  instruct?: string;
+}
+
 export async function callTtsGenerate(params: TtsGenerateParams): Promise<TtsGenerateResult> {
   const fd = new FormData();
   fd.append('file', fs.createReadStream(params.audioPath));
@@ -30,5 +37,24 @@ export async function callTtsGenerate(params: TtsGenerateParams): Promise<TtsGen
     headers: fd.getHeaders(),
     timeout: 120000,
   });
+  return resp.data;
+}
+
+export async function callTtsCustomVoice(params: TtsCustomVoiceParams): Promise<TtsGenerateResult> {
+  const fd = new FormData();
+  fd.append('text', params.text);
+  fd.append('speaker', params.speaker);
+  fd.append('language', params.language || 'auto');
+  if (params.instruct) fd.append('instruct', params.instruct);
+
+  const resp = await axios.post<TtsGenerateResult>(`${TTS_SERVER}/generate_custom_voice`, fd, {
+    headers: fd.getHeaders(),
+    timeout: 120000,
+  });
+  return resp.data;
+}
+
+export async function fetchSpeakers(): Promise<{ speakers: Array<{ id: string; description: string }> }> {
+  const resp = await axios.get(`${TTS_SERVER}/speakers`, { timeout: 5000 });
   return resp.data;
 }
