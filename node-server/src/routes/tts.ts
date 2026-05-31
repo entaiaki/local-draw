@@ -112,7 +112,7 @@ router.post('/generate', (req: Request, res: Response) => {
       const { deductPoints, loadPointsCfg } = await import('./wallet.js');
       const cfg = loadPointsCfg();
       const audioDuration = parseFloat(req.body?.audio_duration as string) || 0;
-      const cost = Math.max(1, Math.ceil(text.length * (cfg.tts_per_char || 0.01)) + Math.ceil(audioDuration * (cfg.tts_per_sec || 0.033)));
+      const cost = Math.max(cfg.tts_generate || 1, Math.ceil(text.length * (cfg.tts_per_char || 0.01)) + Math.ceil(audioDuration * (cfg.tts_per_sec || 0.033)));
       if (cost > 0) {
         const user = (req as any).user;
         const ptResult = await deductPoints(user?.id, cost);
