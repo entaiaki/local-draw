@@ -32,6 +32,8 @@ interface TtsQueueItem {
   finished_at: number | null;
   outputPath: string | null;
   error: string | null;
+  speaker?: string;
+  instruct?: string;
 }
 
 let ttsIdCounter = 0;
@@ -88,15 +90,20 @@ async function processTtsQueue(): Promise<void> {
       item.started_at = Date.now() / 1000;
       saveTtsState();
       try {
-        const { callTtsGenerate } = await import('../services/tts_client.js');
-        const result = await callTtsGenerate({
-          audioPath: item.inputPath,
-          text: item.text,
-          refText: item.refText || undefined,
-          xVectorMode: item.xVectorMode,
-          language: item.language,
-        });
-        item.outputPath = result.output_path;
+        if (item.speaker) {
+          const { callTtsCustomVoice } = await import('../services/tts_client.js');
+          const result = await callTtsCustomVoice({
+            text: item.text, speaker: item.speaker, language: item.language, instruct: item.instruct,
+          });
+          item.outputPath = result.output_path;
+        } else {
+          const { callTtsGenerate } = await import('../services/tts_client.js');
+          const result = await callTtsGenerate({
+            audioPath: item.inputPath, text: item.text, refText: item.refText || undefined,
+            xVectorMode: item.xVectorMode, language: item.language,
+          });
+          item.outputPath = result.output_path;
+        }
         item.status = 'done';
         saveTtsRecord(item);
       } catch (e: any) {
@@ -109,7 +116,7 @@ async function processTtsQueue(): Promise<void> {
         item.finished_at = Date.now() / 1000;
         ttsActiveCount--;
         saveTtsState();
-        try { fs.unlinkSync(item.inputPath); } catch {}
+        try { if (item.inputPath) fs.unlinkSync(item.inputPath); } catch {}
       }
     }
   } finally {
@@ -332,11 +339,10 @@ router.delete('/my-record/:id', requireAuth, (req: Request, res: Response) => {
 
 // --- Custom Voice (Preset) ---
 
-import { callTtsCustomVoice, fetchSpeakers } from '../services/tts_client.js';
-
 // GET /api/draw/tts/speakers
 router.get('/speakers', async (_req: Request, res: Response) => {
   try {
+    const { fetchSpeakers } = await import('../services/tts_client.js');
     const data = await fetchSpeakers();
     res.json(data);
   } catch {
@@ -345,7 +351,7 @@ router.get('/speakers', async (_req: Request, res: Response) => {
 });
 
 // POST /api/draw/tts/custom-voice
-router.post('/custom-voice', async (req: Request, res: Response) => {
+router.post('/custom-voice', requireAuth, async (req: Request, res: Response) => {
   const { text, speaker, language, instruct } = req.body;
   if (!text) return res.status(400).json({ error: 'need text' });
   if (!speaker) return res.status(400).json({ error: 'need speaker' });
@@ -358,21 +364,20 @@ router.post('/custom-voice', async (req: Request, res: Response) => {
       const pt = await deductPoints(user?.id, cost);
       if (!pt.ok) return res.status(402).json({ error: '点数不足', need: cost, balance: pt.balance || 0 });
     }
-    const result = await callTtsCustomVoice({ text, speaker, language, instruct });
     ttsIdCounter++;
     const item: TtsQueueItem = {
-      id: ttsIdCounter, user_id: user?.id || 0, status: 'done',
+      id: ttsIdCounter, user_id: user?.id || 0, status: 'pending',
       inputPath: '', inputMime: '', text, refText: null, xVectorMode: false,
       language: language || 'auto', audioDuration: 0, cost,
-      created_at: Date.now() / 1000, started_at: Date.now() / 1000, finished_at: Date.now() / 1000,
-      outputPath: result.output_path, error: null,
+      created_at: Date.now() / 1000, started_at: null, finished_at: null,
+      outputPath: null, error: null, speaker, instruct,
     };
     ttsQueue.push(item);
-    saveTtsRecord(item);
     saveTtsState();
-    res.json({ ok: true, item_id: item.id, output_path: result.output_path });
+    queueNext();
+    res.json({ queued: true, item_id: item.id, position: ttsQueuePosition(item.id) });
   } catch (e: any) {
-    res.status(500).json({ error: e.message || '生成失败' });
+    res.status(500).json({ error: e.message || '提交失败' });
   }
 });
 
@@ -382,6 +387,7 @@ router.post('/v1/audio/speech', async (req: Request, res: Response) => {
   if (!input) return res.status(400).json({ error: 'need input text' });
   const speaker = voice || 'Vivian';
   try {
+    const { callTtsCustomVoice } = await import('../services/tts_client.js');
     const result = await callTtsCustomVoice({ text: input, speaker, language: 'auto' });
     if (!result.ok || !result.output_path || !fs.existsSync(result.output_path))
       return res.status(500).json({ error: 'generation failed' });
