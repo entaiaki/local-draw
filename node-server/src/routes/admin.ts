@@ -834,11 +834,13 @@ router.get('/tts-records', requireAdmin, (req, res) => {
 
 // GET /api/draw/admin/tts-download/:id
 router.get('/tts-download/:id', requireAdmin, (req, res) => {
-  const filePath = path.join(process.cwd(), 'tts_temp', 'records', `${req.params.id}.wav`);
-  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'audio not found' });
+  const id = parseInt(String(req.params.id));
+  const records = loadTtsRecords();
+  const rec = records.find(r => r.id === id);
+  if (!rec || !rec.outputPath || !fs.existsSync(rec.outputPath)) return res.status(404).json({ error: 'audio not found' });
   res.setHeader('Content-Type', 'audio/wav');
-  res.setHeader('Content-Disposition', `attachment; filename="tts_${req.params.id}.wav"`);
-  fs.createReadStream(filePath).pipe(res);
+  res.setHeader('Content-Disposition', `attachment; filename="tts_${id}.wav"`);
+  fs.createReadStream(rec.outputPath).pipe(res);
 });
 
 // DELETE /api/draw/admin/tts-record/:id

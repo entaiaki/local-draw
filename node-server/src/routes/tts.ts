@@ -254,10 +254,7 @@ interface TtsRecord {
 }
 
 function saveTtsRecord(item: TtsQueueItem): void {
-  const recordOutput = path.join(TTS_RECORDS_DIR, `${item.id}.wav`);
-  if (item.outputPath && fs.existsSync(item.outputPath)) {
-    try { fs.copyFileSync(item.outputPath, recordOutput); } catch {}
-  }
+  // Store the original output path from Python server for later download
   try {
     const records: TtsRecord[] = JSON.parse(fs.readFileSync(TTS_RECORDS_FILE, 'utf-8'));
     records.unshift({
@@ -269,7 +266,7 @@ function saveTtsRecord(item: TtsQueueItem): void {
       language: item.language,
       audioDuration: item.audioDuration,
       cost: item.cost,
-      outputPath: `tts_temp/records/${item.id}.wav`,
+      outputPath: item.outputPath,
       created_at: item.created_at,
       finished_at: item.finished_at || Date.now() / 1000,
     });
@@ -279,7 +276,7 @@ function saveTtsRecord(item: TtsQueueItem): void {
     const records: TtsRecord[] = [{
       id: item.id, user_id: item.user_id, text: item.text, refText: item.refText,
       xVectorMode: item.xVectorMode, language: item.language, audioDuration: item.audioDuration,
-      cost: item.cost, outputPath: `tts_temp/records/${item.id}.wav`, created_at: item.created_at,
+      cost: item.cost, outputPath: item.outputPath, created_at: item.created_at,
       finished_at: item.finished_at || Date.now() / 1000,
     }];
     fs.writeFileSync(TTS_RECORDS_FILE, JSON.stringify(records, null, 2), 'utf-8');
@@ -295,7 +292,9 @@ function saveTtsRecords(records: TtsRecord[]): void {
 }
 
 function deleteRecordAudio(id: number): void {
-  try { fs.unlinkSync(path.join(TTS_RECORDS_DIR, `${id}.wav`)); } catch {}
+  const records = loadTtsRecords();
+  const rec = records.find(r => r.id === id);
+  if (rec && rec.outputPath) { try { fs.unlinkSync(rec.outputPath); } catch {} }
 }
 
 // GET /api/draw/tts/my-records
@@ -313,11 +312,10 @@ router.get('/record-download/:id', requireAuth, (req: Request, res: Response) =>
   const records = loadTtsRecords();
   const rec = records.find(r => r.id === id && r.user_id === userId);
   if (!rec) return res.status(404).json({ error: 'record not found' });
-  const filePath = path.join(process.cwd(), rec.outputPath || '');
-  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'audio file not found' });
+  if (!rec.outputPath || !fs.existsSync(rec.outputPath)) return res.status(404).json({ error: 'audio file not found' });
   res.setHeader('Content-Type', 'audio/wav');
   res.setHeader('Content-Disposition', `attachment; filename="tts_${id}.wav"`);
-  fs.createReadStream(filePath).pipe(res);
+  fs.createReadStream(rec.outputPath).pipe(res);
 });
 
 // DELETE /api/draw/tts/my-record/:id
