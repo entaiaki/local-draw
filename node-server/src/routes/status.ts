@@ -107,18 +107,18 @@ router.get('/debug', async (req: Request, res: Response) => {
   const stuck = queueItems.filter(qi => (qi.status === 'pending' && now - qi.created_at > 1800) || (qi.status === 'running' && qi.started_at != null && now - qi.started_at > 1800));
   // Recent items
   const _recentItems = [...queueItems].reverse().slice(0, 20).map(qi => {
-	    const files: string[] = (qi.params as any)?._output_files || [];
-	    let mw: any = null;
-	    if (files.length > 0) { const _pm2 = JSON.parse(fs.readFileSync(path.join(path.dirname(cfg.creator_map_file), 'prompt_meta.json'), 'utf-8')); const m = _pm2[files[0]]; if (m) mw = { prompt: m.prompt ? '成功' : '未写入', negative: m.negative_prompt ? '成功' : '未写入', image1: m.image1 ? '成功' : (m.image1 === '' ? '未传入' : '未写入'), image2: m.image2 ? '成功' : (m.image2 === '' ? '未传入' : '未写入') }; }
-	    return { id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error, type: (qi.params as any)?.image1_name ? 'img2img' : 'txt2img', workflow_path: (qi.params as any)?.workflow_path || '', meta_write: mw };
-	  });
-	  res.json({
+      const files: string[] = (qi.params as any)?._output_files || [];
+      let mw: any = null;
+      if (files.length > 0) { const _pm2 = JSON.parse(fs.readFileSync(path.join(path.dirname(cfg.creator_map_file), 'prompt_meta.json'), 'utf-8')); const m = _pm2[files[0]]; if (m) mw = { prompt: m.prompt ? '成功' : '未写入', negative: m.negative_prompt ? '成功' : '未写入', image1: m.image1 ? '成功' : (m.image1 === '' ? '未传入' : '未写入'), image2: m.image2 ? '成功' : (m.image2 === '' ? '未传入' : '未写入') }; }
+      return { id: qi.id, user_id: qi.user_id, status: qi.status, created_ago: Math.round(now - qi.created_at), started_ago: qi.started_at ? Math.round(now - qi.started_at) : null, error: qi.error, type: (qi.params as any)?.image1_name ? 'img2img' : 'txt2img', workflow_path: (qi.params as any)?.workflow_path || '', meta_write: mw };
+    });
+    res.json({
     active: { count: activeCount, status: activeStatus, semaphore_locked: activeCount > 0, subscribers: wss?.clients?.size || 0 },
     queue_stats: stats,
     queue_users: Object.entries(queuedUserIds).map(([uid, c]) => [parseInt(uid), c]),
     stuck: stuck.map(qi => ({ id: qi.id, user_id: qi.user_id, status: qi.status })),
     recent_items_full: _recentItems,
-	    meta_stats: { output_total: fs.readdirSync(cfg.output_dir).filter((f: string) => f.endsWith('.png') || f.endsWith('.jpg')).length },
+      meta_stats: { output_total: fs.readdirSync(cfg.output_dir).filter((f: string) => f.endsWith('.png') || f.endsWith('.jpg')).length },
   });
 });
 

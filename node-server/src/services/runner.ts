@@ -104,11 +104,18 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
   const SEED_WIDGETS = new Set(['seed', 'noise_seed']);
   const NON_EXEC = new Set(['MarkdownNote', 'Note', 'Reroute', 'PrimitiveNode']);
 
+  const WIDGET_ONLY_NAMES: Record<string, string[]> = {
+    EmptyLatentImage: ['width', 'height', 'batch_size'],
+    EmptySD3LatentImage: ['width', 'height', 'batch_size'],
+    EmptyFluxLatentImage: ['width', 'height', 'batch_size'],
+  };
+
   function extractInputs(node: any, lmap: Record<number, [string, number]>): Record<string, any> {
     const result: Record<string, any> = {};
     const widgets = node.widgets_values || [];
     let wi = 0;
-    for (const inp of node.inputs || []) {
+    const inpList = node.inputs || [];
+    for (const inp of inpList) {
       const name = inp.name;
       if (!name) continue;
       const linkId = inp.link;
@@ -131,6 +138,22 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
         if (SEED_WIDGETS.has(name) && wi < widgets.length) {
           const v = widgets[wi];
           if (typeof v === 'string' && ['fixed', 'increment', 'decrement', 'randomize'].includes(v)) wi++;
+        }
+      }
+    }
+    // Fallback for newer ComfyUI nodes that store widgets in widgets_values only (no inputs entries)
+    if (inpList.length === 0 && widgets.length > 0 && wi < widgets.length) {
+      const known = WIDGET_ONLY_NAMES[node.type] || [];
+      if (known.length > 0) {
+        for (let i = 0; i < known.length && wi < widgets.length; i++) {
+          result[known[i]] = widgets[wi];
+          wi++;
+        }
+      } else {
+        // Unknown node type: assign positional names
+        for (let i = 0; wi < widgets.length; i++) {
+          result[`widget_${i}`] = widgets[wi];
+          wi++;
         }
       }
     }
@@ -321,43 +344,59 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       workflowData = await loadWorkflow(`Flux/${wfName}`);
     }
     else if (!req.workflowData) throw new Error('未指定工作流');
-	    let prompt_dict: any;
-	    let positive_ref: [string, string] | null = null;
-	    let negative_ref: [string, string] | null = null;
-	    const result = workflowToPromptApi(workflowData);
-	    prompt_dict = result.prompt_dict;
-	    positive_ref = result.positive_ref;
-	    negative_ref = result.negative_ref;
+      let prompt_dict: any;
+      let positive_ref: [string, string] | null = null;
+      let negative_ref: [string, string] | null = null;
+      const result = workflowToPromptApi(workflowData);
+      prompt_dict = result.prompt_dict;
+      positive_ref = result.positive_ref;
+      negative_ref = result.negative_ref;
     const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
 
     if (!positive_ref) throw new Error('未找到正向 CLIPTextEncode 节点');
-	    // Inject prompt
-	    prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
-	    if (negative_ref && req.negative_prompt) {
-	      prompt_dict[negative_ref[0]].inputs[negative_ref[1]] = req.negative_prompt;
-	    }
+      // Inject prompt
+      prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
+      if (negative_ref && req.negative_prompt) {
+        prompt_dict[negative_ref[0]].inputs[negative_ref[1]] = req.negative_prompt;
+      }
 
     // 每次生成随机种子
-	    const KSAMPLER_TYPES = new Set(['KSampler', 'KSamplerAdvanced', 'SamplerCustom', 'SamplerCustomAdvanced']);
-	    for (const [, nd] of Object.entries(prompt_dict)) {
-	      const node = nd as any;
-	      if (KSAMPLER_TYPES.has(node.class_type) && node.inputs) {
-	        node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
-	      }
-	    }
+      const KSAMPLER_TYPES = new Set(['KSampler', 'KSamplerAdvanced', 'SamplerCustom', 'SamplerCustomAdvanced']);
+      for (const [, nd] of Object.entries(prompt_dict)) {
+        const node = nd as any;
+        if (KSAMPLER_TYPES.has(node.class_type) && node.inputs) {
+          node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
+        }
+      }
 
-	    // 注入分辨率
-	    if (req.width && req.height) {
-	      for (const [, nd] of Object.entries(prompt_dict)) {
-	        const node = nd as any;
-	        if (node.class_type === 'EmptyLatentImage' && node.inputs) {
-	          node.inputs.width = req.width;
-	          node.inputs.height = req.height;
-	        }
-	      }
-	    }
+      // 修复 KSamplerAdvanced 参数冲突（end_at_step > steps 会导致 OSError）
+      for (const [, nd] of Object.entries(prompt_dict)) {
+        const node = nd as any;
+        if (node.class_type === 'KSamplerAdvanced' && node.inputs) {
+          const steps = node.inputs.steps;
+          if (typeof steps === 'number' && steps > 0) {
+            if (typeof node.inputs.end_at_step === 'number' && node.inputs.end_at_step > steps) {
+              node.inputs.end_at_step = steps;
+            }
+            if (typeof node.inputs.start_at_step === 'number' && node.inputs.start_at_step >= steps) {
+              node.inputs.start_at_step = 0;
+            }
+          }
+        }
+      }
 
-	    // Inject images for img2img
+      // 注入分辨率
+      if (req.width && req.height) {
+        for (const [, nd] of Object.entries(prompt_dict)) {
+          const node = nd as any;
+          if ((node.class_type === 'EmptyLatentImage' || node.class_type === 'EmptySD3LatentImage' || node.class_type === 'EmptyFluxLatentImage') && node.inputs) {
+            node.inputs.width = req.width;
+            node.inputs.height = req.height;
+          }
+        }
+      }
+
+      // Inject images for img2img
     if (req.image1_name) {
       const loadImages = Object.entries(prompt_dict).filter(([, nd]: any) => nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages');
       if (loadImages.length > 0) (loadImages[0][1] as any).inputs.image = req.image1_name;
@@ -410,8 +449,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     }
 
     // 记录输出文件，用于调试元数据写入状态
-	    try { (item.params as any)._output_files = images.map(i => i.subfolder ? `${i.subfolder}/${i.filename}` : i.filename); } catch {}
-	    // Write to creator_map + prompt metadata
+      try { (item.params as any)._output_files = images.map(i => i.subfolder ? `${i.subfolder}/${i.filename}` : i.filename); } catch {}
+      // Write to creator_map + prompt metadata
     const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
     let promptMeta: Record<string, any> = {};
     try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
@@ -425,13 +464,13 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         
         negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         workflow_path: req.workflow_path || '',
-	      image1: req.image1_name || '',
-	      image2: req.image2_name || '',
+        image1: req.image1_name || '',
+        image2: req.image2_name || '',
       };
     }
     
     try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
-	    item.status = 'done';
+      item.status = 'done';
   } catch (e: any) {
     item.status = 'failed';
     item.error = ((e.response?.data ? `${e.message}: ${JSON.stringify(e.response.data)}` : e.message) || String(e)).slice(0,2000);

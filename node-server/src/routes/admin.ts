@@ -326,10 +326,10 @@ router.get('/recent', requireAdmin, (req, res) => {
   const cmap: Record<string, string> = {};
   try { for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) { const p = ln.split('\t'); if (p.length === 2) cmap[p[0].trim()] = p[1].trim(); } } catch {}
   // Load deleted images list
-	  const deletedFile = path.join(path.dirname(config.creator_map_file), 'deleted_images.json');
-	  let deletedList: string[] = [];
-	  try { deletedList = JSON.parse(fs.readFileSync(deletedFile, 'utf-8')); } catch {}
-	  // Load queue state for prompt/original image info
+    const deletedFile = path.join(path.dirname(config.creator_map_file), 'deleted_images.json');
+    let deletedList: string[] = [];
+    try { deletedList = JSON.parse(fs.readFileSync(deletedFile, 'utf-8')); } catch {}
+    // Load queue state for prompt/original image info
   // 加载 prompt 元数据
   const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
   let promptMeta: Record<string, any> = {};
@@ -713,13 +713,15 @@ router.get('/points-config', requireAdmin, (req, res) => {
 });
 
 router.post('/points-config', requireAdmin, (req, res) => {
-  const { text_to_image, image_to_image, llm_translate, signup_bonus, text_to_image_anima, tts_generate, tts_per_char, tts_per_sec } = req.body || {};
+  const { text_to_image, image_to_image, llm_translate, llm_token_per_point, signup_bonus, text_to_image_anima, text_to_image_real, tts_generate, tts_per_char, tts_per_sec } = req.body || {};
   const cfg: any = {};
   if (typeof text_to_image === 'number') cfg.text_to_image = text_to_image;
   if (typeof image_to_image === 'number') cfg.image_to_image = image_to_image;
   if (typeof llm_translate === 'number') cfg.llm_translate = llm_translate;
+  if (typeof llm_token_per_point === 'number') cfg.llm_token_per_point = llm_token_per_point;
   if (typeof signup_bonus === 'number') cfg.signup_bonus = signup_bonus;
   if (typeof text_to_image_anima === 'number') cfg.text_to_image_anima = text_to_image_anima;
+  if (typeof text_to_image_real === 'number') cfg.text_to_image_real = text_to_image_real;
   if (typeof tts_generate === 'number') cfg.tts_generate = tts_generate;
   if (typeof tts_per_char === 'number') cfg.tts_per_char = tts_per_char;
   if (typeof tts_per_sec === 'number') cfg.tts_per_sec = tts_per_sec;

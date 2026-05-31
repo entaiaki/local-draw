@@ -334,15 +334,15 @@ app.post('/api/img2img/upload', async (req, res) => {
     const image1 = files?.image1?.[0];
     const image2 = files?.image2?.[0];
     if (!image1) return res.status(400).json({ error: 'need image1' });
-	  if ((image1?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
-	  if (image2 && (image2?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
+    if ((image1?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
+    if (image2 && (image2?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
 
     const uuid = require('uuid');
     let ext1 = (image1.originalname?.split('.').pop()?.toLowerCase()) || '';
-	    const mimeExt = image1.mimetype?.split('/').pop() || '';
-	    if (!ext1 || ext1 === 'blob' || !['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext1)) {
-	      ext1 = (mimeExt === 'jpeg' ? 'jpg' : mimeExt) || 'png';
-	    }
+      const mimeExt = image1.mimetype?.split('/').pop() || '';
+      if (!ext1 || ext1 === 'blob' || !['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext1)) {
+        ext1 = (mimeExt === 'jpeg' ? 'jpg' : mimeExt) || 'png';
+      }
     const safeName1 = `img2img_${uuid.v4().replace(/-/g, '').slice(0, 12)}_${Math.floor(Date.now() / 1000)}.${ext1}`;
     // 保存原图到永久目录
     const upDir = path.join(process.cwd(), '..', 'web', 'uploads');
@@ -426,9 +426,9 @@ app.post('/api/translate', requireAuth, async (req, res) => {
     const activeProfile = llmCfg.profiles?.[llmCfg.active ?? 0];
     console.log(`[LLM] translate, mode: ${mode || 'wai'}, rewrite: ${!!rewrite}`);
     const { translatePrompt, estimateTokens } = await import('./services/llm.js');
-    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, undefined, mode === 'anima', !!rewrite);
+    const result = await translatePrompt(prompt, original_prompt || undefined, negative_prompt || undefined, freshConfig, undefined, mode === 'anima' || mode === 'real', !!rewrite);
     // Token-based billing
-    const systemPrompt = mode === 'anima'
+    const systemPrompt = mode === 'anima' || mode === 'real'
       ? 'Translate the user Chinese description into natural English...'
       : 'Convert the user Chinese description into English Danbooru tags...';
     const inputTokens = estimateTokens(systemPrompt) + estimateTokens(prompt + (rewrite ? ' ' + (original_prompt || '') + ' ' + (negative_prompt || '') : ''));

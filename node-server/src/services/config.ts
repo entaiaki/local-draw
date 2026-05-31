@@ -21,13 +21,13 @@ export interface AppConfig {
   limits_file: string;
   llm_config_file: string;
   state_file: string;
-	  turnstile_secret_key: string;
+    turnstile_secret_key: string;
 }
 
 const here = path.join(process.cwd(), '..', 'web');
 
 // ComfyUI 基础路径，所有派生路径由此拼接
-const COMFYUI_BASE = process.env.COMFYUI_BASE || 'C:\\Users\\acofo\\Documents\\ComfyUI';
+const COMFYUI_BASE = process.env.COMFYUI_BASE || 'C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI';
 
 export function loadConfig(): AppConfig {
   let jwtSecret = process.env.JWT_SECRET || '';
@@ -49,7 +49,7 @@ export function loadConfig(): AppConfig {
     web_port: parseInt(process.env.WEB_PORT || '8080'),
     jwt_secret: jwtSecret,
     comfyui_host: process.env.COMFYUI_HOST || '127.0.0.1',
-    comfyui_port: parseInt(process.env.COMFYUI_PORT || '8000'),
+    comfyui_port: parseInt(process.env.COMFYUI_PORT || '8188'),
     get comfyui_api() { return `http://${this.comfyui_host}:${this.comfyui_port}`; },
     get comfyui_ws() { return `ws://${this.comfyui_host}:${this.comfyui_port}`; },
     lms_host: process.env.LMS_HOST || '127.0.0.1',
@@ -67,10 +67,11 @@ export function loadConfig(): AppConfig {
   };
 }
 
-export function loadJson<T>(filePath: string, defaults: T): T {
+export function loadJson<T extends Record<string, any>>(filePath: string, defaults: T): T {
   try {
     if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      return { ...defaults, ...data };
     }
   } catch {}
   return defaults;
