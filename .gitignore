@@ -18,6 +18,7 @@ web/style_thumbnails
 web/lora_links
 web/uploads/
 node-server/node_modules/
+node-server/recommendations.json
 .playwright-mcp/
 aifadian-api-docs.md
 page-snapshot.yml
