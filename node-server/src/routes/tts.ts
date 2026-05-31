@@ -13,8 +13,6 @@ const TTS_STATE_FILE = path.join(TTS_TEMP_DIR, 'tts_queue_state.json');
 const TTS_RECORDS_FILE = path.join(TTS_TEMP_DIR, 'tts_records.json');
 [TTS_INPUT_DIR, TTS_OUTPUT_DIR].forEach(d => fs.mkdirSync(d, { recursive: true }));
 
-export { TTS_RECORDS_FILE };
-
 interface TtsQueueItem {
   id: number;
   user_id: number;
