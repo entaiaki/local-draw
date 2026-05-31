@@ -67,11 +67,12 @@ export function loadConfig(): AppConfig {
   };
 }
 
-export function loadJson<T extends Record<string, any>>(filePath: string, defaults: T): T {
+export function loadJson<T>(filePath: string, defaults: T): T {
   try {
     if (fs.existsSync(filePath)) {
       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      return { ...defaults, ...data };
+      if (Array.isArray(defaults) || Array.isArray(data)) return data;
+      return { ...defaults as any, ...data as any };
     }
   } catch {}
   return defaults;
