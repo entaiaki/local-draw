@@ -72,12 +72,21 @@ router.get('/my-images', (req: Request, res: Response) => {
   const deletedFile = path.join(path.dirname(cfg.creator_map_file), 'deleted_images.json');
   let deletedList: string[] = [];
   try { deletedList = JSON.parse(fs.readFileSync(deletedFile, 'utf-8')); } catch {}
+  // Exclude featured images from "我的" list
+  const featuredFile = path.join(path.dirname(cfg.creator_map_file), 'featured.txt');
+  let featuredSet = new Set<string>();
+  try {
+    const raw = fs.readFileSync(featuredFile, 'utf-8').trim();
+    if (raw.startsWith('[')) featuredSet = new Set(JSON.parse(raw));
+    else featuredSet = new Set(raw.split('\n').map(l => l.trim()).filter(Boolean));
+  } catch {}
   const items: { path: string; mtime: number }[] = [];
   const exts = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 
   for (const [relPath, uid] of Object.entries(cmap)) {
     if (uid !== user.id) continue;
     if (deletedList.includes(relPath)) continue;
+    if (featuredSet.has(relPath)) continue;
     const relNorm = relPath.replace(/\\/g, '/').replace(/^\//, '');
     if (relNorm.includes('..')) continue;
     for (const baseDir of [cfg.output_dir, cfg.archive_dir]) {
