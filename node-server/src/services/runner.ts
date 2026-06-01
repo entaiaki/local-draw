@@ -385,17 +385,6 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         }
       }
 
-      // 注入分辨率
-      if (req.width && req.height) {
-        for (const [, nd] of Object.entries(prompt_dict)) {
-          const node = nd as any;
-          if ((node.class_type === 'EmptyLatentImage' || node.class_type === 'EmptySD3LatentImage' || node.class_type === 'EmptyFluxLatentImage') && node.inputs) {
-            node.inputs.width = req.width;
-            node.inputs.height = req.height;
-          }
-        }
-      }
-
       // Inject images for img2img
     if (req.image1_name) {
       const loadImages = Object.entries(prompt_dict).filter(([, nd]: any) => nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages');
