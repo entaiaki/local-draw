@@ -349,7 +349,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     if (req.workflow_path && req.workflow_path !== 'fork') workflowData = await loadWorkflow(req.workflow_path);
     else if (req.image1_name) {
       const wfName = req.image2_name ? 'Flux2-Klein-图片编辑 (多图).json' : 'Flux2-Klein-图片编辑 (单图).json';
-      workflowData = await loadWorkflow(`Flux/${wfName}`);
+      req.workflow_path = `Flux/${wfName}`;
+      workflowData = await loadWorkflow(req.workflow_path);
     }
     else if (!req.workflowData) throw new Error('未指定工作流');
       let prompt_dict: any;
