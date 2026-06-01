@@ -481,11 +481,18 @@ export async function runGc(): Promise<Record<string, number>> {
   fs.writeFileSync(deletedInfo.deletedFile, '[]', 'utf-8');
   cleaned.deleted_image_files = deletedFileCount;
 
-  // 2. Remove orphaned creator_map entries
+  // 2. Remove orphaned creator_map entries (keep if in archive or featured)
   const cmap = gcLoadCreatorMap();
+  const gcFeaturedSet = new Set(gcLoadFeaturedList());
   const validLines: string[] = [];
+  const searchDirs = [outputDir];
+  if (fs.existsSync(archiveDir)) searchDirs.push(archiveDir);
   for (const [f, uid] of Object.entries(cmap)) {
-    if (fs.existsSync(path.join(outputDir, f))) validLines.push(`${f}\t${uid}`);
+    let found = false;
+    for (const dir of searchDirs) {
+      if (fs.existsSync(path.join(dir, f))) { found = true; break; }
+    }
+    if (found || gcFeaturedSet.has(f)) validLines.push(`${f}\t${uid}`);
   }
   cleaned.orphaned_mappings = Object.keys(cmap).length - validLines.length;
   if (validLines.length > 0) {
