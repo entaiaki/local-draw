@@ -867,4 +867,56 @@ router.delete('/tts-record/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+// GET /api/draw/admin/stats — 多维统计
+router.get('/stats', requireAdmin, (req: Request, res: Response) => {
+  const items = loadJson<Array<Record<string, any>>>(path.join(WEB_DIR, 'queue_state.json'), { items: [] });
+  const queueItems = (items as any).items || items;
+  const now = Date.now() / 1000;
+  const daySec = 86400;
+  const ranges = [
+    { key: 'today', start: now - daySec },
+    { key: '7d', start: now - 7 * daySec },
+    { key: '30d', start: now - 30 * daySec },
+  ];
+
+  function getCost(wfPath: string): number {
+    const cfg = loadPointsCfg();
+    if (wfPath.startsWith('ANIMA/')) return cfg.text_to_image_anima || 20;
+    if (wfPath.startsWith('Ernie/')) return cfg.text_to_image_ernie || 15;
+    if (wfPath.startsWith('ZImage/')) return cfg.text_to_image_real || 15;
+    if (wfPath.startsWith('Qwen/')) return cfg.image_to_image_qwen || 20;
+    if (wfPath.startsWith('Flux/')) return cfg.image_to_image || 100;
+    return cfg.text_to_image || 10; // WAI default
+  }
+
+  const stats: Record<string, any> = {};
+  for (const range of ranges) {
+    const inRange = queueItems.filter((i: any) => i.created_at >= range.start);
+    const done = inRange.filter((i: any) => i.status === 'done');
+    const failed = inRange.filter((i: any) => i.status === 'failed');
+    const byModel: Record<string, number> = {};
+    let totalCalls = 0, totalCost = 0;
+    for (const item of done) {
+      totalCalls++;
+      const wf = (item.params as any)?.workflow_path || '';
+      const cost = getCost(wf);
+      totalCost += cost;
+      const model = wf.startsWith('ANIMA/') ? 'Anima' : wf.startsWith('Ernie/') ? 'Ernie' : wf.startsWith('ZImage/') ? 'RedZI' : wf.startsWith('Qwen/') ? 'Qwen' : wf.startsWith('Flux/') ? 'Flux' : 'WAI';
+      byModel[model] = (byModel[model] || 0) + 1;
+    }
+    stats[range.key] = { calls: totalCalls, cost: totalCost, failed: failed.length, byModel };
+  }
+
+  // 收入（已支付订单）
+  const orders = loadJson<Array<Record<string, any>>>(path.join(WEB_DIR, 'orders.json'), []);
+  const income: Record<string, number> = {};
+  for (const range of ranges) {
+    income[range.key] = orders
+      .filter((o: any) => o.status === 'paid' && o.paid_at >= range.start)
+      .reduce((sum: number, o: any) => sum + (o.amount || 0), 0);
+  }
+
+  res.json({ stats, income });
+});
+
 export { router as adminRouter };
