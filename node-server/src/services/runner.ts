@@ -401,6 +401,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       const loadImages = Object.entries(prompt_dict).filter(([, nd]: any) => nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages');
       if (loadImages.length > 0) (loadImages[0][1] as any).inputs.image = req.image1_name;
       if (loadImages.length > 1 && req.image2_name) (loadImages[1][1] as any).inputs.image = req.image2_name;
+      if (loadImages.length > 2 && req.image3_name) (loadImages[2][1] as any).inputs.image = req.image3_name;
     }
 
     // 等待 ComfyUI 空闲后再提交

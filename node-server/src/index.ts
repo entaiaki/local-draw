@@ -354,7 +354,7 @@ app.post('/api/draw/admin/wf_thumbnail', (req, res) => {
 // POST /api/img2img/upload
 app.post('/api/img2img/upload', async (req, res) => {
   const multer = require('multer');
-  const upload = multer().fields([{ name: 'image1', maxCount: 1 }, { name: 'image2', maxCount: 1 }]);
+  const upload = multer().fields([{ name: 'image1', maxCount: 1 }, { name: 'image2', maxCount: 1 }, { name: 'image3', maxCount: 1 }]);
   upload(req, res, async (err: any) => {
     if (err) return res.status(400).json({ error: 'upload failed' });
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -396,6 +396,19 @@ app.post('/api/img2img/upload', async (req, res) => {
         fd2.append('overwrite', 'true');
         const r2 = await comfyApi.post('/api/upload/image', fd2, { headers: { ...fd2.getHeaders(), 'Comfy-User': '' } });
         result.image2_name = r2.data.name;
+      }
+
+      const image3 = files?.image3?.[0];
+      if (image3) {
+        const ext3 = image3.originalname?.split('.').pop() || 'png';
+        const safeName3 = `img2img_${uuid.v4().replace(/-/g, '').slice(0, 12)}_${Math.floor(Date.now() / 1000)}.${ext3}`;
+        fs.writeFileSync(path.join(upDir, safeName3), image3.buffer);
+        const fd3 = new FormData();
+        fd3.append('image', image3.buffer, { filename: safeName3, contentType: image3.mimetype });
+        fd3.append('type', 'input');
+        fd3.append('overwrite', 'true');
+        const r3 = await comfyApi.post('/api/upload/image', fd3, { headers: { ...fd3.getHeaders(), 'Comfy-User': '' } });
+        result.image3_name = r3.data.name;
       }
 
       res.json(result);
