@@ -58,7 +58,7 @@ async function checkComfyui(): Promise<void> {
   } catch { comfyuiOnline = false; }
 }
 checkComfyui();
-comfyuiCheckInterval = setInterval(checkComfyui, 15000);
+comfyuiCheckInterval = setInterval(checkComfyui, 1000);
 
 // 核心离线中间件：生图相关接口返回 503
 function requireComfyui(req: any, res: any, next: any) {
