@@ -47,6 +47,32 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Config
 const config = loadConfig();
 
+// ComfyUI 核心心跳检测
+let comfyuiOnline = true;
+let comfyuiCheckInterval: ReturnType<typeof setInterval> | null = null;
+
+async function checkComfyui(): Promise<void> {
+  try {
+    const resp = await axios.head(`http://${config.comfyui_host}:${config.comfyui_port}/`, { timeout: 5000 });
+    comfyuiOnline = resp.status < 500;
+  } catch { comfyuiOnline = false; }
+}
+checkComfyui();
+comfyuiCheckInterval = setInterval(checkComfyui, 15000);
+
+// 核心离线中间件：生图相关接口返回 503
+function requireComfyui(req: any, res: any, next: any) {
+  if (!comfyuiOnline) return res.status(503).json({ code: 'CORE_OFFLINE', detail: '生图核心暂时离线，请稍后再试' });
+  next();
+}
+
+// GET /health — 后端健康检查
+app.get('/health', async (req, res) => {
+  // 顺便刷新 ComfyUI 状态
+  await checkComfyui();
+  res.json({ status: 'ok', comfyui: comfyuiOnline, timestamp: Date.now() });
+});
+
 // Auth middleware
 app.use('/api', jwtAuth(config));
 
@@ -61,9 +87,10 @@ app.use('/api/output', requireAuth);
 
 // Routes (dynamic import for hot reload support)
 const hot = (modPath: string, exportName = 'default') => (req: any, res: any, next: any) => { import(modPath).then(m => (m[exportName] || m.default || m)(req, res, next)).catch(next); };
-app.use('/api/draw', hot('./routes/queue.js', 'queueRouter'));
-app.use('/api/output', hot('./routes/images.js', 'imageRouter'));
-app.use('/api/draw/admin', hot('./routes/admin.js', 'adminRouter'));
+// 生图相关路由需要 ComfyUI 在线
+app.use('/api/draw', requireComfyui, hot('./routes/queue.js', 'queueRouter'));
+app.use('/api/output', requireComfyui, hot('./routes/images.js', 'imageRouter'));
+app.use('/api/draw/admin', requireComfyui, hot('./routes/admin.js', 'adminRouter'));
 app.use('/api/draw/admin', hot('./routes/collaborator.js', 'adminCollaboratorRouter'));
 app.use('/api/draw/collaborator', hot('./routes/collaborator.js', 'collaboratorRouter'));
 app.use('/api/draw', hot('./routes/status.js', 'statusRouter'));
