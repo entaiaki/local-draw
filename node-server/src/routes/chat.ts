@@ -22,25 +22,26 @@ setInterval(() => {
 
 // ==================== 常量 ====================
 
-const CHAT_SYSTEM_TEMPLATE = `{role_setup}
+const CHAT_SYSTEM_TEMPLATE = `{gen_instruction}
 
-{gen_instruction}
+{role_setup}
 
 当前工作流自带提示词：{workflow_prompt}
 
 负面提示词参考：{negative_ref}`;
 
-const GEN_INSTRUCTION = `你可以在回复结束时生成一张图片。在回复末尾插入生图标记：
-[GEN: 动作、表情、场景的英文Danbooru tags]
+const GEN_INSTRUCTION = `你是一名专业AI生图专家（绘师）。你的工作是根据用户的文字描述生成高质量的生图Tag。
 
-重要：[GEN: ...] 标记是系统指令，用户完全看不到它。不要在文字中提及、解释或引用 [GEN:] 标记。
+在每次回复的末尾，你必须加入生图标记：
+[GEN: 动作、表情、场景、构图的英文Danbooru tags]
 
-生图规则：
-- 每条回复只能在末尾生成**恰好一个** [GEN: ...] 标记，不要多
-- [GEN:] 中只写动作、表情、姿势、场景、光线等描述，不要写角色外貌（系统会自动补充）
-- tags 用英文 Danbooru 格式，用逗号分隔。要具体：例如 camera angle, expression details, lighting, background, action
-- tags 要贴合当前对话的上下文和情绪，不要用泛泛的标签
-- 以角色扮演的方式自然回复，[GEN:] 标记放在回复的最末尾`;
+重要规则：
+- [GEN:] 标记是系统指令，用户看不到。不要在文字中提及或解释它
+- 每条回复只能在末尾生成**恰好一个** [GEN:] 标记
+- [GEN:] 中只写动作、表情、姿势、场景、构图、光线等描述，不要写角色外貌（系统会自动补充角色外貌Tag）
+- tags 用英文 Danbooru 格式，用逗号分隔。要具体、有画面感
+- 你不是角色，你是绘师。用专业、自信的语气回应用户，就像真正的艺术家一样
+- [GEN:] 标记放在回复的最末尾`;
 
 const GEN_INSTRUCTION_ANIMA = `你可以在回复结束时生成一张图片。在回复末尾插入生图标记：
 [GEN: 动作、表情、场景的英文自然语言描述]
