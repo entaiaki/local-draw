@@ -404,12 +404,31 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         }
       }
 
-      // Inject images for img2img
+      // Inject images for img2img (skip unconnected LoadImage nodes)
     if (req.image1_name) {
-      const loadImages = Object.entries(prompt_dict).filter(([, nd]: any) => nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages');
-      if (loadImages.length > 0) (loadImages[0][1] as any).inputs.image = req.image1_name;
-      if (loadImages.length > 1 && req.image2_name) (loadImages[1][1] as any).inputs.image = req.image2_name;
-      if (loadImages.length > 2 && req.image3_name) (loadImages[2][1] as any).inputs.image = req.image3_name;
+      // Check which LoadImage node IDs are referenced by other nodes
+      const referencedIds = new Set<string>();
+      for (const [, nd] of Object.entries(prompt_dict)) {
+        for (const [, val] of Object.entries((nd as any).inputs || {})) {
+          if (Array.isArray(val) && val.length === 2 && typeof val[0] === 'string') {
+            referencedIds.add(val[0]);
+          }
+        }
+      }
+      // Only keep LoadImage/VHS nodes that are referenced (connected)
+      const loadImages = Object.entries(prompt_dict).filter(([nid, nd]: any) =>
+        (nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages') &&
+        referencedIds.has(nid)
+      );
+      // Fallback: use all load images if none are connected
+      if (loadImages.length === 0) {
+        const allLi = Object.entries(prompt_dict).filter(([, nd]: any) => nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages');
+        loadImages.push(...allLi);
+      }
+      const imgNames = [req.image1_name, req.image2_name, req.image3_name].filter(Boolean);
+      for (let i = 0; i < loadImages.length && i < imgNames.length; i++) {
+        (loadImages[i][1] as any).inputs.image = imgNames[i];
+      }
     }
 
     // 等待 ComfyUI 空闲后再提交
