@@ -221,7 +221,7 @@ router.post('/queue', async (req: Request, res: Response) => {
   const wfPath = (req.body as any)?.workflow_path as string || '';
   const isAnima = wfPath.startsWith('ANIMA/');
   const isReal = wfPath.startsWith('ZImage/');
-  deductedCost = isImg2img ? pointsCfg.image_to_image : (isAnima ? pointsCfg.text_to_image_anima : (isReal ? pointsCfg.text_to_image_real : pointsCfg.text_to_image));
+  deductedCost = isImg2img ? (wfPath.startsWith('Qwen/') ? (pointsCfg.image_to_image_qwen || pointsCfg.image_to_image) : pointsCfg.image_to_image) : (isAnima ? pointsCfg.text_to_image_anima : (isReal ? pointsCfg.text_to_image_real : (wfPath.startsWith('Ernie/') ? (pointsCfg.text_to_image_ernie || pointsCfg.text_to_image) : pointsCfg.text_to_image)));
   if (deductedCost > 0) {
     const ptResult = await deductPoints(user.id, deductedCost);
     if (!ptResult.ok) {

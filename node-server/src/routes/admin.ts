@@ -720,7 +720,7 @@ router.get('/points-config', requireAdmin, (req, res) => {
 });
 
 router.post('/points-config', requireAdmin, (req, res) => {
-  const { text_to_image, image_to_image, llm_translate, llm_token_per_point, signup_bonus, text_to_image_anima, text_to_image_real, tts_generate, tts_per_char, tts_per_sec } = req.body || {};
+  const { text_to_image, image_to_image, llm_translate, llm_token_per_point, signup_bonus, text_to_image_anima, text_to_image_real, text_to_image_ernie, image_to_image_qwen, tts_generate, tts_per_char, tts_per_sec } = req.body || {};
   const cfg: any = {};
   if (typeof text_to_image === 'number') cfg.text_to_image = text_to_image;
   if (typeof image_to_image === 'number') cfg.image_to_image = image_to_image;
@@ -728,6 +728,9 @@ router.post('/points-config', requireAdmin, (req, res) => {
   if (typeof llm_token_per_point === 'number') cfg.llm_token_per_point = llm_token_per_point;
   if (typeof signup_bonus === 'number') cfg.signup_bonus = signup_bonus;
   if (typeof text_to_image_anima === 'number') cfg.text_to_image_anima = text_to_image_anima;
+  if (typeof text_to_image_real === 'number') cfg.text_to_image_real = text_to_image_real;
+  if (typeof text_to_image_ernie === 'number') cfg.text_to_image_ernie = text_to_image_ernie;
+  if (typeof image_to_image_qwen === 'number') cfg.image_to_image_qwen = image_to_image_qwen;
   if (typeof text_to_image_real === 'number') cfg.text_to_image_real = text_to_image_real;
   if (typeof tts_generate === 'number') cfg.tts_generate = tts_generate;
   if (typeof tts_per_char === 'number') cfg.tts_per_char = tts_per_char;
