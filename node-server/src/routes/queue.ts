@@ -255,7 +255,7 @@ router.post('/queue', async (req: Request, res: Response) => {
     return res.status(400).json({ detail: '未指定工作流' });
   }
   // 路径校验，防止任意工作流执行
-  if (wfPath && !wfPath.startsWith('WAI/') && !wfPath.startsWith('tags/')) {
+  if (wfPath && !wfPath.startsWith('WAI/') && !wfPath.startsWith('ANIMA/') && !wfPath.startsWith('Ernie/') && !wfPath.startsWith('tags/')) {
     await refundOnFail();
     return res.status(400).json({ detail: '非法的流程路径' });
   }
