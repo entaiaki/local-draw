@@ -10,7 +10,8 @@ dev
 scripts/
 
 # ── 运行时数据 ──
-web/
+web/*
+!web/creator_users.txt
 
 # ── 运行时图片 & 资源 ──
 web/thumbnails
