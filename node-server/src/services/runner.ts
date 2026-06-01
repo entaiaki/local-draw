@@ -221,14 +221,16 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
 function findClipRefs(prompt: Record<string, any>): { prompt_dict: Record<string, any>; positive_ref: [string, string] | null; negative_ref: [string, string] | null } {
   let positiveRef: [string, string] | null = null;
   let negativeRef: [string, string] | null = null;
+  const TEXT_NODES = ['CLIPTextEncode', 'CLIPTextEncodeSDXL', 'TextEncodeQwenImageEditPlus'];
 
   // First pass: find by title
   for (const [nid, nd] of Object.entries(prompt)) {
     const n = nd as any;
-    if (n.class_type === 'CLIPTextEncode') {
+    if (TEXT_NODES.includes(n.class_type)) {
       const title = (n._meta?.title || '').toLowerCase();
-      if (title.includes('positive') || title.includes('[pos]') || title.includes('[prompt]')) positiveRef = [nid, 'text'];
-      else if (title.includes('negative') || title.includes('[neg]')) negativeRef = [nid, 'text'];
+      const field = n.class_type === 'TextEncodeQwenImageEditPlus' ? 'prompt' : 'text';
+      if (title.includes('positive') || title.includes('[pos]') || title.includes('[prompt]')) positiveRef = [nid, field];
+      else if (title.includes('negative') || title.includes('[neg]')) negativeRef = [nid, field];
     }
   }
 
@@ -241,7 +243,7 @@ function findClipRefs(prompt: Record<string, any>): { prompt_dict: Record<string
           const slot = n.inputs?.[role];
           if (Array.isArray(slot) && slot[0]) {
             const src = prompt[String(slot[0])];
-            if (src && ['CLIPTextEncode', 'CLIPTextEncodeSDXL'].includes(src.class_type)) {
+            if (src && TEXT_NODES.includes(src.class_type)) {
               if (role === 'positive') positiveRef = [String(slot[0]), 'text'];
               else negativeRef = [String(slot[0]), 'text'];
             }
@@ -252,17 +254,23 @@ function findClipRefs(prompt: Record<string, any>): { prompt_dict: Record<string
     }
   }
 
-  // Third pass: any CLIPTextEncode
+  // Third pass: any text encoding node
   if (!positiveRef) {
     for (const [nid, nd] of Object.entries(prompt)) {
       const n = nd as any;
-      if (n.class_type === 'CLIPTextEncode') { positiveRef = [nid, 'text']; break; }
+      if (TEXT_NODES.includes(n.class_type)) {
+        const field = n.class_type === 'TextEncodeQwenImageEditPlus' ? 'prompt' : 'text';
+        positiveRef = [nid, field]; break;
+      }
     }
   }
   if (!negativeRef) {
     for (const [nid, nd] of Object.entries(prompt)) {
       const n = nd as any;
-      if (n.class_type === 'CLIPTextEncode' && nid !== positiveRef?.[0]) { negativeRef = [nid, 'text']; break; }
+      if (TEXT_NODES.includes(n.class_type) && nid !== positiveRef?.[0]) {
+        const field = n.class_type === 'TextEncodeQwenImageEditPlus' ? 'prompt' : 'text';
+        negativeRef = [nid, field]; break;
+      }
     }
   }
 
