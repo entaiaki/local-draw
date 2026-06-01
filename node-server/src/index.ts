@@ -447,8 +447,8 @@ app.post('/api/translate', requireAuth, async (req, res) => {
 // WebSocket status
 setupWsStatus(wss, config);
 
-// Auto GC
-import('./routes/admin.js').then(m => m.startAutoGc());
+// Auto GC (disabled: GC之前错误地删除了creator_map和img2img上传图)
+// import('./routes/admin.js').then(m => m.startAutoGc());
 
 const PORT = parseInt(process.env.PORT || config.web_port || '8080');
 server.listen(PORT, config.web_host || '0.0.0.0', () => {
