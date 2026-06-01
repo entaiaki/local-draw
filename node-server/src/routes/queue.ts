@@ -256,7 +256,7 @@ router.post('/queue', async (req: Request, res: Response) => {
   }
   // 路径校验，防止任意工作流执行
   const wfPath = body.workflow_path as string || '';
-  if (wfPath && !wfPath.startsWith('WAI/') && !wfPath.startsWith('ANIMA/') && !wfPath.startsWith('ZImage/') && !wfPath.startsWith('Flux/') && !wfPath.startsWith('tags/') && !wfPath.startsWith('Qwen/') && !wfPath.startsWith('杂项/') && !wfPath.startsWith('文生图/') && !wfPath.startsWith('图生图/')) {
+  if (wfPath && !wfPath.startsWith('WAI/') && !wfPath.startsWith('tags/')) {
     await refundOnFail();
     return res.status(400).json({ detail: '非法的流程路径' });
   }
