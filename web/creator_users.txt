@@ -5231,3 +5231,13 @@ Anima_01867_.png	1098
 Anima_01868_.png	1098
 Anima_01869_.png	1098
 Anima_01870_.png	228
+Anima_01886_.png	228
+WAI_04146_.png	1
+WAI_04148_.png	1
+Anima_01887_.png	1
+Anima_01888_.png	1
+WAI_04149_.png	1
+WAI_04150_.png	1
+WAI_04151_.png	1
+WAI_04152_.png	1
+WAI_04153_.png	1

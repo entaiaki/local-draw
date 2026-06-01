@@ -254,6 +254,16 @@ router.post('/queue', async (req: Request, res: Response) => {
     await refundOnFail();
     return res.status(400).json({ detail: '未指定工作流' });
   }
+  // 路径校验，防止任意工作流执行
+  const wfPath = body.workflow_path as string || '';
+  if (wfPath && !wfPath.startsWith('WAI/') && !wfPath.startsWith('ANIMA/') && !wfPath.startsWith('ZImage/') && !wfPath.startsWith('Flux/') && !wfPath.startsWith('tags/') && !wfPath.startsWith('Qwen/') && !wfPath.startsWith('杂项/') && !wfPath.startsWith('文生图/') && !wfPath.startsWith('图生图/')) {
+    await refundOnFail();
+    return res.status(400).json({ detail: '非法的流程路径' });
+  }
+  if (wfPath.includes('..') || wfPath.includes('\0') || wfPath.startsWith('/') || wfPath.match(/^[a-zA-Z]:\\/)) {
+    await refundOnFail();
+    return res.status(400).json({ detail: '非法的流程路径' });
+  }
 
   const item: QueueItem = {
     id: itemId,
