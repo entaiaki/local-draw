@@ -35,7 +35,16 @@ let queueIdCounter = 0;
 let queuedUserIds: Record<number, number> = {};  // user_id -> count
 const queueItems: QueueItem[] = [];
 loadQueueState();
-// 启动时：恢复可能已完成的 running 任务，清理卡死的，重启 pending，恢复 _pending_ 元数据
+// 清理卡死的 running 项（超时/崩溃残留）
+for (const qi of queueItems) {
+  if (qi.status === 'running' && qi.started_at && (Date.now() / 1000 - qi.started_at) > 600) {
+    qi.status = 'failed';
+    qi.error = '生成超时或后端重启';
+    qi.finished_at = Date.now() / 1000;
+  }
+}
+saveQueueState();
+// 启动时：恢复可能已完成的 running 任务，重启 pending，恢复 _pending_ 元数据
 (async () => {
   // 恢复 prompt_meta.json 中的 _pending_ 记录（提交了但没来得及取结果的）
   const pmFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
@@ -214,14 +223,28 @@ router.post('/queue', async (req: Request, res: Response) => {
     return res.status(429).json({ detail: `你的队列已满（最多 ${maxQ} 个），请等待后再试` });
   }
 
-  // Points check
+  // Points check — 加新模型只需在下面加一行
   let deductedCost = 0;
   const pointsCfg = loadPointsCfg();
-  const isImg2img = !!(req.body as any)?.image1_name;
   const wfPath = (req.body as any)?.workflow_path as string || '';
-  const isAnima = wfPath.startsWith('ANIMA/');
-  const isReal = wfPath.startsWith('ZImage/');
-  deductedCost = isImg2img ? (wfPath.startsWith('Qwen/') ? (pointsCfg.image_to_image_qwen || pointsCfg.image_to_image) : pointsCfg.image_to_image) : (isAnima ? pointsCfg.text_to_image_anima : (isReal ? pointsCfg.text_to_image_real : (wfPath.startsWith('Ernie/') ? (pointsCfg.text_to_image_ernie || pointsCfg.text_to_image) : pointsCfg.text_to_image)));
+  const isImg2img = !!(req.body as any)?.image1_name;
+  const MODEL_COST: { prefix: string; cfgKey: string }[] = [
+    { prefix: 'WAI/',     cfgKey: 'text_to_image' },
+    { prefix: 'ANIMA/',   cfgKey: 'text_to_image_anima' },
+    { prefix: 'Ernie/',   cfgKey: 'text_to_image_ernie' },
+    { prefix: 'ZImage/',  cfgKey: 'text_to_image_real' },
+    { prefix: 'Flux/',    cfgKey: 'image_to_image' },
+    { prefix: 'Qwen/',    cfgKey: isImg2img ? 'image_to_image_qwen' : 'image_to_image' },
+    { prefix: 'WAN2.2/',  cfgKey: 'text_to_video' },
+    { prefix: 'LTX/',     cfgKey: 'text_to_video' },
+  ];
+  for (const m of MODEL_COST) {
+    if (wfPath.startsWith(m.prefix)) {
+      deductedCost = (pointsCfg as any)[m.cfgKey] || 20;
+      break;
+    }
+  }
+  if (!deductedCost) deductedCost = pointsCfg.text_to_image || 10;
   if (deductedCost > 0) {
     const ptResult = await deductPoints(user.id, deductedCost);
     if (!ptResult.ok) {
@@ -254,14 +277,17 @@ router.post('/queue', async (req: Request, res: Response) => {
     await refundOnFail();
     return res.status(400).json({ detail: '未指定工作流' });
   }
-  // 路径校验，防止任意工作流执行
-  if (wfPath && !wfPath.startsWith('WAI/') && !wfPath.startsWith('ANIMA/') && !wfPath.startsWith('Ernie/') && !wfPath.startsWith('ZImage/') && !wfPath.startsWith('Qwen/') && !wfPath.startsWith('tags/')) {
-    await refundOnFail();
-    return res.status(400).json({ detail: '非法的流程路径' });
-  }
-  if (wfPath.includes('..') || wfPath.includes('\0') || wfPath.startsWith('/') || wfPath.match(/^[a-zA-Z]:\\/)) {
-    await refundOnFail();
-    return res.status(400).json({ detail: '非法的流程路径' });
+  // 路径校验：只允许 workflows/ 目录下的文件
+  if (wfPath) {
+    if (wfPath.includes('..') || wfPath.includes('\0') || wfPath.startsWith('/') || wfPath.match(/^[a-zA-Z]:\\/)) {
+      await refundOnFail();
+      return res.status(400).json({ detail: '非法的流程路径' });
+    }
+    const wfFull = path.resolve(config.workflows_dir, wfPath);
+    if (!wfFull.startsWith(path.resolve(config.workflows_dir)) || !fs.existsSync(wfFull)) {
+      await refundOnFail();
+      return res.status(400).json({ detail: '非法的流程路径' });
+    }
   }
 
   const item: QueueItem = {
@@ -315,6 +341,26 @@ router.get('/my-queue', (req: Request, res: Response) => {
     }));
 
   res.json({ items, total: items.length });
+});
+
+// DELETE /api/draw/my-queue/:id (用户删除自己的队列)
+router.delete('/my-queue/:id', (req: Request, res: Response) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const user = verifyToken(token, config.jwt_secret);
+  if (!user) return res.status(401).json({ detail: '未登录' });
+
+  const id = parseInt(req.params.id);
+  const idx = queueItems.findIndex(qi => qi.id === id && qi.user_id === user.id);
+  if (idx === -1) return res.status(404).json({ error: '队列项不存在' });
+  const item = queueItems[idx];
+  if (item.status === 'running') return res.status(400).json({ error: '正在生成中，无法取消' });
+  if (item.status === 'done') return res.status(400).json({ error: '已完成，无法取消' });
+
+  queueItems.splice(idx, 1);
+  queuedUserIds[user.id] = Math.max(0, (queuedUserIds[user.id] || 1) - 1);
+  saveQueueState();
+  res.json({ ok: true });
 });
 
 // DELETE /api/draw/queue (admin)

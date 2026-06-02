@@ -47,30 +47,9 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Config
 const config = loadConfig();
 
-// ComfyUI 核心心跳检测
-let comfyuiOnline = true;
-let comfyuiCheckInterval: ReturnType<typeof setInterval> | null = null;
-
-async function checkComfyui(): Promise<void> {
-  try {
-    const resp = await axios.head(`http://${config.comfyui_host}:${config.comfyui_port}/`, { timeout: 5000 });
-    comfyuiOnline = resp.status < 500;
-  } catch { comfyuiOnline = false; }
-}
-checkComfyui();
-comfyuiCheckInterval = setInterval(checkComfyui, 1000);
-
-// 核心离线中间件：生图相关接口返回 503
-function requireComfyui(req: any, res: any, next: any) {
-  if (!comfyuiOnline) return res.status(503).json({ code: 'CORE_OFFLINE', detail: '生图核心暂时离线，请稍后再试' });
-  next();
-}
-
 // GET /health — 后端健康检查
-app.get('/health', async (req, res) => {
-  // 顺便刷新 ComfyUI 状态
-  await checkComfyui();
-  res.json({ status: 'ok', comfyui: comfyuiOnline, timestamp: Date.now() });
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: Date.now() });
 });
 
 // Auth middleware
@@ -87,10 +66,9 @@ app.use('/api/output', requireAuth);
 
 // Routes (dynamic import for hot reload support)
 const hot = (modPath: string, exportName = 'default') => (req: any, res: any, next: any) => { import(modPath).then(m => (m[exportName] || m.default || m)(req, res, next)).catch(next); };
-// 生图相关路由需要 ComfyUI 在线
-app.use('/api/draw', requireComfyui, hot('./routes/queue.js', 'queueRouter'));
-app.use('/api/output', requireComfyui, hot('./routes/images.js', 'imageRouter'));
-app.use('/api/draw/admin', requireComfyui, hot('./routes/admin.js', 'adminRouter'));
+app.use('/api/draw', hot('./routes/queue.js', 'queueRouter'));
+app.use('/api/output', hot('./routes/images.js', 'imageRouter'));
+app.use('/api/draw/admin', hot('./routes/admin.js', 'adminRouter'));
 app.use('/api/draw/admin', hot('./routes/collaborator.js', 'adminCollaboratorRouter'));
 app.use('/api/draw/collaborator', hot('./routes/collaborator.js', 'collaboratorRouter'));
 app.use('/api/draw', hot('./routes/status.js', 'statusRouter'));
@@ -310,6 +288,11 @@ app.get('/api/image', async (req, res) => {
   // 先从本地 output 目录找
   const localPath = path.join(config.output_dir, subfolder, filename);
   if (fs.existsSync(localPath)) {
+    const ext = path.extname(localPath).toLowerCase();
+    if (ext === '.mp4' || ext === '.webm') {
+      const mt: Record<string, string> = { '.mp4': 'video/mp4', '.webm': 'video/webm' };
+      return res.type(mt[ext] || 'video/mp4').sendFile(localPath);
+    }
     if (await compressImage(localPath, req, res)) return;
     return res.sendFile(localPath);
   }
@@ -361,8 +344,15 @@ app.post('/api/img2img/upload', async (req, res) => {
     const image1 = files?.image1?.[0];
     const image2 = files?.image2?.[0];
     if (!image1) return res.status(400).json({ error: 'need image1' });
-    if ((image1?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
-    if (image2 && (image2?.buffer?.length || 0) > 500 * 1024) return res.status(413).json({ error: '图片超过500KB限制，请压缩后上传' });
+    if ((image1?.buffer?.length || 0) > 5 * 1024 * 1024) return res.status(413).json({ error: '图片超过5MB限制，请压缩后上传' });
+    if (image2 && (image2?.buffer?.length || 0) > 5 * 1024 * 1024) return res.status(413).json({ error: '图片超过5MB限制，请压缩后上传' });
+    // 分辨率校验：超过 4K 拒绝
+    try {
+      const meta = await (require('sharp'))(image1.buffer).metadata();
+      if ((meta.width || 0) > 4096 || (meta.height || 0) > 4096) {
+        return res.status(413).json({ error: `图片分辨率超出限制（${meta.width}x${meta.height}），最大支持 4096x4096` });
+      }
+    } catch {}
 
     const uuid = require('uuid');
     let ext1 = (image1.originalname?.split('.').pop()?.toLowerCase()) || '';

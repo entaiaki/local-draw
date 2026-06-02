@@ -101,8 +101,37 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
     }
   }
 
+  // 解析 SetNode/GetNode：SetNode 输出=输入，GetNode 找同名 SetNode 的输入
+  const SETGET_TYPES = new Set(['SetNode', 'GetNode']);
+  const setNodeMap: Record<string, number> = {}; // name -> node id
+  const getNodeMap: Record<string, number> = {}; // name -> node id
+  for (const n of topNodes) {
+    if (n.type === 'SetNode') setNodeMap[n.title || ''] = n.id;
+    if (n.type === 'GetNode') getNodeMap[n.title || ''] = n.id;
+  }
+  // 修正 linkMap：把 SetNode/GetNode 的输出指向实际来源
+  for (const [lid, [oid, oslot]] of Object.entries(linkMap)) {
+    const srcId = parseInt(oid);
+    const srcNode = nodeById[srcId];
+    if (!srcNode || !SETGET_TYPES.has(srcNode.type)) continue;
+    // 找到此节点的首个输入（SetNode 的连接输入）
+    const srcInput = (srcNode.inputs || []).find((i: any) => i.link != null && linkMap[i.link]);
+    if (srcInput) {
+      linkMap[parseInt(lid)] = linkMap[srcInput.link];
+    } else if (srcNode.type === 'GetNode') {
+      // GetNode 无输入：找同名 SetNode 的输入
+      const setName = srcNode.title || '';
+      const setNodeId = setNodeMap[setName];
+      if (setNodeId) {
+        const setNode = nodeById[setNodeId];
+        const setInput = (setNode?.inputs || []).find((i: any) => i.link != null && linkMap[i.link]);
+        if (setInput) linkMap[parseInt(lid)] = linkMap[setInput.link];
+      }
+    }
+  }
+
   const SEED_WIDGETS = new Set(['seed', 'noise_seed']);
-  const NON_EXEC = new Set(['MarkdownNote', 'Note', 'Reroute', 'PrimitiveNode']);
+  const NON_EXEC = new Set(['MarkdownNote', 'Note', 'Reroute', 'PrimitiveNode', 'SetNode', 'GetNode']);
 
   const WIDGET_ONLY_NAMES: Record<string, string[]> = {
     EmptyLatentImage: ['width', 'height', 'batch_size'],
@@ -277,10 +306,11 @@ function findClipRefs(prompt: Record<string, any>): { prompt_dict: Record<string
   return { prompt_dict: prompt, positive_ref: positiveRef, negative_ref: negativeRef };
 }
 
-async function waitForCompletion(promptId: string, timeout = 120): Promise<any> {
+async function waitForCompletion(promptId: string, timeout = 600): Promise<{ history: any; videos: string[] }> {
   const wsUrl = `ws://${config.comfyui_host}:${config.comfyui_port}/ws?clientId=${getClientId()}`;
   const start = Date.now();
   const WebSocket = require('ws');
+  let wsVideoFiles: string[] = [];
 
   try {
     await new Promise<void>((resolve, reject) => {
@@ -292,6 +322,19 @@ async function waitForCompletion(promptId: string, timeout = 120): Promise<any> 
           const msg = JSON.parse(raw.toString());
           if (msg.type === 'execution_success' && msg.data?.prompt_id === promptId) { completed = true; clearTimeout(timer); ws.close(); resolve(); }
           if (msg.type === 'execution_error' && msg.data?.prompt_id === promptId) { completed = true; clearTimeout(timer); ws.close(); reject(new Error(msg.data.exception_message || 'ComfyUI 执行错误')); }
+          // 捕获 VHS 节点的输出文件名（WebSocket 消息中有节点的完整输出）
+          if (msg.type === 'executed' && msg.data?.output) {
+            const out = msg.data.output;
+            const crawl = (obj: any) => {
+              if (!obj || typeof obj !== 'object') return;
+              if (Array.isArray(obj)) { obj.forEach(crawl); return; }
+              for (const v of Object.values(obj)) {
+                if (typeof v === 'string' && /\.(png|jpg|jpeg|webp|gif|mp4|webm)$/i.test(v)) wsVideoFiles.push(v);
+                else crawl(v);
+              }
+            };
+            crawl(out);
+          }
         } catch {}
       });
       ws.on('error', () => {});
@@ -299,16 +342,18 @@ async function waitForCompletion(promptId: string, timeout = 120): Promise<any> 
     });
   } catch { /* timeout or ws error */ }
 
-  // Poll history (up to 120s)
-  for (let i = 0; i < 120; i++) {
+  // Poll history (up to timeout)
+  let history: any = null;
+  for (let i = 0; i < timeout; i++) {
     try {
       const r = await comfy.get(`/api/history/${promptId}`);
-      if (r.data?.[promptId]) return r.data[promptId];
+      if (r.data?.[promptId]) { history = r.data[promptId]; break; }
     } catch {}
     if (Date.now() - start > timeout * 1000) break;
     await new Promise(r => setTimeout(r, 1000));
   }
-  throw new Error('无法获取 history');
+  if (!history) throw new Error('无法获取 history');
+  return { history, videos: wsVideoFiles };
 }
 
 let creatorMapLock = Promise.resolve();
@@ -360,54 +405,62 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       prompt_dict = result.prompt_dict;
       positive_ref = result.positive_ref;
       negative_ref = result.negative_ref;
-    const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
 
-    if (!positive_ref) throw new Error('未找到正向 CLIPTextEncode 节点');
-      // Inject prompt
+    const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
+    // 🎬 视频工作流：只改图片路径，什么都不动
+    const isVideoWF = (req.workflow_path || '').startsWith('LTX/') || (req.workflow_path || '').startsWith('WAN2.2/');
+    if (isVideoWF) {
+      if (req.image1_name) {
+        for (const [, nd] of Object.entries(prompt_dict)) {
+          const node = nd as any;
+          if (node.class_type === 'LoadImage' && node.inputs) {
+            node.inputs.image = req.image1_name;
+          }
+        }
+      }
+    } else {
+    // 图片工作流：正常处理
+    if (positive_ref && finalPrompt) {
       prompt_dict[positive_ref[0]].inputs[positive_ref[1]] = finalPrompt;
       if (negative_ref && req.negative_prompt) {
         prompt_dict[negative_ref[0]].inputs[negative_ref[1]] = req.negative_prompt;
       }
-
-    // 每次生成随机种子
-      const KSAMPLER_TYPES = new Set(['KSampler', 'KSamplerAdvanced', 'SamplerCustom', 'SamplerCustomAdvanced']);
-      for (const [, nd] of Object.entries(prompt_dict)) {
-        const node = nd as any;
-        if (KSAMPLER_TYPES.has(node.class_type) && node.inputs) {
-          node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
-        }
+    }
+    // 随机种子
+    const SEED_TYPES = new Set(['KSampler', 'KSamplerAdvanced', 'SamplerCustom', 'SamplerCustomAdvanced']);
+    for (const [, nd] of Object.entries(prompt_dict)) {
+      const node = nd as any;
+      if (SEED_TYPES.has(node.class_type) && node.inputs) {
+        node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
       }
-
-      // 修复 KSamplerAdvanced 参数冲突（end_at_step > steps 会导致 OSError）
-      for (const [, nd] of Object.entries(prompt_dict)) {
-        const node = nd as any;
-        if (node.class_type === 'KSamplerAdvanced' && node.inputs) {
-          const steps = node.inputs.steps;
-          if (typeof steps === 'number' && steps > 0) {
-            if (typeof node.inputs.end_at_step === 'number' && node.inputs.end_at_step > steps) {
-              node.inputs.end_at_step = steps;
-            }
-            if (typeof node.inputs.start_at_step === 'number' && node.inputs.start_at_step >= steps) {
-              node.inputs.start_at_step = 0;
-            }
+    }
+    // KSamplerAdvanced 修复
+    for (const [, nd] of Object.entries(prompt_dict)) {
+      const node = nd as any;
+      if (node.class_type === 'KSamplerAdvanced' && node.inputs) {
+        const steps = node.inputs.steps;
+        if (typeof steps === 'number' && steps > 0) {
+          if (typeof node.inputs.end_at_step === 'number' && node.inputs.end_at_step > steps) {
+            node.inputs.end_at_step = steps;
+          }
+          if (typeof node.inputs.start_at_step === 'number' && node.inputs.start_at_step >= steps) {
+            node.inputs.start_at_step = 0;
           }
         }
       }
-
-      // 注入分辨率
-      if (req.width && req.height) {
-        for (const [, nd] of Object.entries(prompt_dict)) {
-          const node = nd as any;
-          if ((node.class_type === 'EmptyLatentImage' || node.class_type === 'EmptySD3LatentImage' || node.class_type === 'EmptyFluxLatentImage') && node.inputs) {
-            node.inputs.width = req.width;
-            node.inputs.height = req.height;
-          }
+    }
+    // 注入分辨率
+    if (req.width && req.height) {
+      for (const [, nd] of Object.entries(prompt_dict)) {
+        const node = nd as any;
+        if ((node.class_type === 'EmptyLatentImage' || node.class_type === 'EmptySD3LatentImage' || node.class_type === 'EmptyFluxLatentImage') && node.inputs) {
+          node.inputs.width = req.width;
+          node.inputs.height = req.height;
         }
       }
-
-      // Inject images for img2img (skip unconnected LoadImage nodes)
+    }
+    // Inject images for img2img
     if (req.image1_name) {
-      // Check which LoadImage node IDs are referenced by other nodes
       const referencedIds = new Set<string>();
       for (const [, nd] of Object.entries(prompt_dict)) {
         for (const [, val] of Object.entries((nd as any).inputs || {})) {
@@ -416,7 +469,6 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
           }
         }
       }
-      // Only keep LoadImage/VHS nodes that are referenced (connected)
       const loadImages = Object.entries(prompt_dict).filter(([nid, nd]: any) =>
         (nd.class_type === 'LoadImage' || nd.class_type === 'VHS_LoadImages') &&
         referencedIds.has(nid)
@@ -429,6 +481,15 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       const imgNames = [req.image1_name, req.image2_name, req.image3_name].filter(Boolean);
       for (let i = 0; i < loadImages.length && i < imgNames.length; i++) {
         (loadImages[i][1] as any).inputs.image = imgNames[i];
+      }
+    }
+    }
+
+    // 强制视频工作流的 VHS 保存到 output 目录
+    for (const [, nd] of Object.entries(prompt_dict)) {
+      const node = nd as any;
+      if (node.class_type === 'VHS_VideoCombine' && node.inputs) {
+        node.inputs.save_output = true;
       }
     }
 
@@ -444,6 +505,10 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       } catch {}
       await new Promise(r => setTimeout(r, 1000));
     }
+
+    // 记录输出目录当前的 mtime，生成后只认更新的文件
+    const beforeMtime: Record<string, number> = {};
+    try { for (const f of fs.readdirSync(config.output_dir)) beforeMtime[f] = fs.statSync(path.join(config.output_dir, f)).mtimeMs; } catch {}
 
     // Submit to ComfyUI
     const submitRes = await comfy.post('/api/prompt', {
@@ -462,20 +527,56 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     try {
                   
     } catch {}
-    const history = await waitForCompletion(promptId);
-    if (!history) throw new Error('生成无结果');
+    let history: any;
+    let wsVideoFiles: string[] = [];
+    try {
+      const result = await waitForCompletion(promptId);
+      history = result.history;
+      wsVideoFiles = result.videos;
+    } catch (e: any) {
+      console.log('[runner] waitForCompletion failed: ' + e.message + ', will scan output dir');
+    }
+    const foundFiles = new Set<string>();
+    for (const fn of wsVideoFiles) foundFiles.add(fn);
 
-    // Extract images
-    const outputs = history.outputs || {};
-    const images: { filename: string; subfolder: string }[] = [];
-    for (const [, out] of Object.entries(outputs)) {
-      const o = out as any;
-      if (o.images) {
-        for (const img of o.images) {
-          images.push({ filename: img.filename, subfolder: img.subfolder || '' });
+    // 从 history 提取文件名
+    if (history) {
+      const outputs = history.outputs || {};
+      const crawlOutputs = (obj: any, depth = 0): void => {
+        if (depth > 10 || !obj) return;
+        const isMedia = (s: string) => /\.(png|jpg|jpeg|webp|gif|mp4|webm)$/i.test(s);
+        if (typeof obj === 'string' && isMedia(obj)) { foundFiles.add(obj); return; }
+        if (Array.isArray(obj)) { obj.forEach(v => crawlOutputs(v, depth + 1)); return; }
+        if (typeof obj === 'object') {
+          for (const v of Object.values(obj)) crawlOutputs(v, depth + 1);
         }
+      };
+      crawlOutputs(outputs);
+      crawlOutputs((history as any).ui);
+    }
+    // 兜底：扫 output/ 目录取生成后新增的视频文件
+    const images: { filename: string; subfolder: string }[] = [];
+    if (foundFiles.size === 0) {
+      for (const f of fs.readdirSync(config.output_dir)) {
+        if (!/\.(mp4|webm)$/i.test(f)) continue;
+        try {
+          const mtime = fs.statSync(path.join(config.output_dir, f)).mtimeMs;
+          if (!(f in beforeMtime) || mtime > beforeMtime[f] + 1000) {
+            foundFiles.add(f);
+          }
+        } catch {}
       }
     }
+    // 过滤掉绝对路径和 png 缩略图
+    const hasVideo = [...foundFiles].some(f => /\.(mp4|webm)$/i.test(f));
+    for (const fn of foundFiles) {
+      if (hasVideo && /\.png$/i.test(fn)) continue;
+      if (fn.includes(':\\') || fn.startsWith('/')) continue; // 绝对路径
+      images.push({ filename: fn, subfolder: '' });
+    }
+    // 超时但找到新文件 = 仍然算成功
+    if (!history && images.length === 0) throw new Error('生成超时且未找到输出文件');
+    if (images.length === 0) throw new Error('未找到输出文件');
 
     // 记录输出文件，用于调试元数据写入状态
       try { (item.params as any)._output_files = images.map(i => i.subfolder ? `${i.subfolder}/${i.filename}` : i.filename); } catch {}

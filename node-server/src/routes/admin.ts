@@ -720,7 +720,7 @@ router.get('/points-config', requireAdmin, (req, res) => {
 });
 
 router.post('/points-config', requireAdmin, (req, res) => {
-  const { text_to_image, image_to_image, llm_translate, llm_token_per_point, signup_bonus, text_to_image_anima, text_to_image_real, text_to_image_ernie, image_to_image_qwen, tts_generate, tts_per_char, tts_per_sec } = req.body || {};
+  const { text_to_image, image_to_image, llm_translate, llm_token_per_point, signup_bonus, text_to_image_anima, text_to_image_real, text_to_image_ernie, image_to_image_qwen, text_to_video, tts_generate, tts_per_char, tts_per_sec } = req.body || {};
   const cfg: any = {};
   if (typeof text_to_image === 'number') cfg.text_to_image = text_to_image;
   if (typeof image_to_image === 'number') cfg.image_to_image = image_to_image;
@@ -732,6 +732,7 @@ router.post('/points-config', requireAdmin, (req, res) => {
   if (typeof text_to_image_ernie === 'number') cfg.text_to_image_ernie = text_to_image_ernie;
   if (typeof image_to_image_qwen === 'number') cfg.image_to_image_qwen = image_to_image_qwen;
   if (typeof text_to_image_real === 'number') cfg.text_to_image_real = text_to_image_real;
+  if (typeof text_to_video === 'number') cfg.text_to_video = text_to_video;
   if (typeof tts_generate === 'number') cfg.tts_generate = tts_generate;
   if (typeof tts_per_char === 'number') cfg.tts_per_char = tts_per_char;
   if (typeof tts_per_sec === 'number') cfg.tts_per_sec = tts_per_sec;
@@ -879,32 +880,48 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
     { key: '30d', start: now - 30 * daySec },
   ];
 
-  function getCost(wfPath: string): number {
+  // 模型映射表：加新模型只需在这里加一行
+  const MODEL_MAP: { prefix: string; cfgKey: string; label: string }[] = [
+    { prefix: 'WAI/',     cfgKey: 'text_to_image',       label: 'WAI' },
+    { prefix: 'ANIMA/',   cfgKey: 'text_to_image_anima',  label: 'Anima' },
+    { prefix: 'Ernie/',   cfgKey: 'text_to_image_ernie',  label: 'Ernie' },
+    { prefix: 'ZImage/',  cfgKey: 'text_to_image_real',   label: 'RedZI' },
+    { prefix: 'Flux/',    cfgKey: 'image_to_image',       label: 'Flux2' },
+    { prefix: 'Qwen/',    cfgKey: 'image_to_image_qwen',  label: 'Qwen' },
+    { prefix: 'WAN2.2/',  cfgKey: 'text_to_video',        label: '视频' },
+    { prefix: 'LTX/',     cfgKey: 'text_to_video',        label: '视频' },
+  ];
+
+  function getModelInfo(wfPath: string): { label: string; cost: number } {
     const cfg = loadPointsCfg();
-    if (wfPath.startsWith('ANIMA/')) return cfg.text_to_image_anima || 20;
-    if (wfPath.startsWith('Ernie/')) return cfg.text_to_image_ernie || 15;
-    if (wfPath.startsWith('ZImage/')) return cfg.text_to_image_real || 15;
-    if (wfPath.startsWith('Qwen/')) return cfg.image_to_image_qwen || 20;
-    if (wfPath.startsWith('Flux/')) return cfg.image_to_image || 100;
-    return cfg.text_to_image || 10; // WAI default
+    for (const m of MODEL_MAP) {
+      if (wfPath.startsWith(m.prefix)) {
+        return { label: m.label, cost: (cfg as any)[m.cfgKey] || 20 };
+      }
+    }
+    return { label: 'WAI', cost: cfg.text_to_image || 10 };
   }
 
   const stats: Record<string, any> = {};
   for (const range of ranges) {
     const inRange = queueItems.filter((i: any) => i.created_at >= range.start);
-    const done = inRange.filter((i: any) => i.status === 'done');
-    const failed = inRange.filter((i: any) => i.status === 'failed');
-    const byModel: Record<string, number> = {};
-    let totalCalls = 0, totalCost = 0;
-    for (const item of done) {
-      totalCalls++;
+    const byModel: Record<string, { calls: number; failed: number }> = {};
+    let totalCalls = 0, totalCost = 0, totalFailed = 0;
+    for (const item of inRange) {
       const wf = (item.params as any)?.workflow_path || '';
-      const cost = getCost(wf);
-      totalCost += cost;
-      const model = wf.startsWith('ANIMA/') ? 'Anima' : wf.startsWith('Ernie/') ? 'Ernie' : wf.startsWith('ZImage/') ? 'RedZI' : wf.startsWith('Qwen/') ? 'Qwen' : wf.startsWith('Flux/') ? 'Flux' : 'WAI';
-      byModel[model] = (byModel[model] || 0) + 1;
+      const info = getModelInfo(wf);
+      if (item.status === 'done') {
+        totalCalls++;
+        totalCost += info.cost;
+        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0 };
+        byModel[info.label].calls++;
+      } else if (item.status === 'failed') {
+        totalFailed++;
+        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0 };
+        byModel[info.label].failed++;
+      }
     }
-    stats[range.key] = { calls: totalCalls, cost: totalCost, failed: failed.length, byModel };
+    stats[range.key] = { calls: totalCalls, cost: totalCost, failed: totalFailed, byModel };
   }
 
   // 收入（已支付订单）

@@ -1,0 +1,642 @@
+{
+  "6": {
+    "inputs": {
+      "clip_name1": "LTX\\gemma_3_12B_it_fp8_scaled.safetensors",
+      "clip_name2": "LTX\\ltx-2.3_text_projection_bf16.safetensors",
+      "type": "ltxv",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "双CLIP加载器"
+    }
+  },
+  "7": {
+    "inputs": {
+      "vae_name": "LTX-Kijai\\LTX23_audio_vae_bf16.safetensors",
+      "device": "main_device",
+      "weight_dtype": "bf16"
+    },
+    "class_type": "VAELoaderKJ",
+    "_meta": {
+      "title": "VAELoader KJ"
+    }
+  },
+  "8": {
+    "inputs": {
+      "vae_name": "LTX-Kijai\\LTX23_video_vae_bf16.safetensors",
+      "device": "main_device",
+      "weight_dtype": "bf16"
+    },
+    "class_type": "VAELoaderKJ",
+    "_meta": {
+      "title": "VAELoader KJ"
+    }
+  },
+  "9": {
+    "inputs": {
+      "vae_name": "LTX\\taeltx2_3.safetensors",
+      "device": "main_device",
+      "weight_dtype": "bf16"
+    },
+    "class_type": "VAELoaderKJ",
+    "_meta": {
+      "title": "VAELoader KJ"
+    }
+  },
+  "10": {
+    "inputs": {
+      "unet_name": "LTX\\ltx-2.3-22b-dev-Q6_K.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "16": {
+    "inputs": {
+      "value": 50
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "FPS"
+    }
+  },
+  "17": {
+    "inputs": {
+      "value": 5
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Length (seconds)"
+    }
+  },
+  "448": {
+    "inputs": {
+      "value": "l1v3w4llp4p3r"
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "Positive Prompt"
+    }
+  },
+  "484": {
+    "inputs": {
+      "frame_rate": [
+        "2161",
+        0
+      ],
+      "loop_count": 0,
+      "filename_prefix": "livewallpaper",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 8,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "446:2175",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "488": {
+    "inputs": {
+      "image": "img2img_12f1b7872710_1780407379.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Reference Image"
+    }
+  },
+  "508": {
+    "inputs": {
+      "lora_name": "LTX\\livewallpaper_ltx23_r64_6250.safetensors",
+      "strength_model": 1,
+      "model": [
+        "513",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoRA加载器（仅模型）"
+    }
+  },
+  "513": {
+    "inputs": {
+      "lora_name": "LTX\\ltx-2.3-22b-distilled-lora-384-1.1.safetensors",
+      "strength_model": 0.6,
+      "model": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoRA加载器（仅模型）"
+    }
+  },
+  "2156": {
+    "inputs": {
+      "width": [
+        "2388",
+        0
+      ],
+      "height": [
+        "2388",
+        1
+      ],
+      "length": [
+        "2188",
+        1
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLTXVLatentVideo",
+    "_meta": {
+      "title": "空Latent视频（LTXV）"
+    }
+  },
+  "2157": {
+    "inputs": {
+      "text": [
+        "2379",
+        0
+      ],
+      "clip": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "2158": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "2161": {
+    "inputs": {
+      "value": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "ComfyNumberConvert",
+    "_meta": {
+      "title": "数字转换"
+    }
+  },
+  "2169": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "Resolution"
+    }
+  },
+  "2184": {
+    "inputs": {
+      "expression": "a*b",
+      "variables.a": [
+        "17",
+        0
+      ],
+      "variables.b": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "SimpleCalculatorKJ",
+    "_meta": {
+      "title": "SimpleCalculatorKJ"
+    }
+  },
+  "2187": {
+    "inputs": {
+      "value": 24
+    },
+    "class_type": "easy int",
+    "_meta": {
+      "title": "Overlap"
+    }
+  },
+  "2188": {
+    "inputs": {
+      "expression": "a*b",
+      "variables.a": [
+        "17",
+        0
+      ],
+      "variables.b": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "SimpleCalculatorKJ",
+    "_meta": {
+      "title": "SimpleCalculatorKJ"
+    }
+  },
+  "2327": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "scale_by": 1,
+      "image": [
+        "2383",
+        0
+      ]
+    },
+    "class_type": "ImageScaleBy",
+    "_meta": {
+      "title": "缩放图像（比例）"
+    }
+  },
+  "2332": {
+    "inputs": {
+      "empty_cache": true,
+      "gc_collect": true,
+      "unload_all_models": true,
+      "any_input": [
+        "508",
+        0
+      ]
+    },
+    "class_type": "VRAM_Debug",
+    "_meta": {
+      "title": "VRAM Debug"
+    }
+  },
+  "2379": {
+    "inputs": {
+      "prompt": "You are an expert cinematic motion prompt writer for AI-generated live wallpapers and seamless animated loops.\n\nAnalyze the first frame carefully and generate one single caption describing how the image should be animated into a smooth, cinematic, high-quality seamless loop.\n\nThe caption must follow this style:\n\n* Start exactly with: l1v3w4llp4p3r\n* Write one rich paragraph only.\n* Use elegant cinematic language.\n* Describe only elements that are visible in the first frame.\n* Do not invent characters, objects, effects, powers, weather, particles, animals, weapons, or background elements that are not clearly present.\n* Focus on subtle, fluid, loopable motion.\n* Avoid sudden movement, teleportation, scene transitions, camera cuts, pose changes, or major transformations.\n* Keep the character’s main pose, anatomy, facial structure, body position, and rigid objects stable.\n* Mention what moves naturally based on the first frame: hair, loose strands, eyes, fabric, ribbons, capes, wings, petals, leaves, smoke, fog, clouds, water, sparks, dust, glowing particles, magical energy, light beams, reflections, aura, floating objects, or background atmosphere, but only if they are visible.\n* Mention that rigid elements remain still when relevant: armor plates, weapons, buildings, furniture, mechanical parts, horns, frames, walls, rocks, fixed props, or stable background structures.\n* Add a final sound section at the end of the caption starting exactly with: sound:\n* The sound must be a subtle background live wallpaper ambience that matches only the visible scene.\n* Do not invent loud music, vocals, dialogue, lyrics, dramatic impacts, or sound effects from objects that are not visible.\n* The sound should feel soft, atmospheric, loopable, and non-distracting, such as gentle wind, faint magical hum, soft particle shimmer, distant water, quiet forest ambience, subtle fire crackle, low sci-fi drone, or airy cinematic texture, but only when appropriate to the visible first frame.\n* The animation and sound must feel seamless, cinematic, high-quality, and suitable for a looping live wallpaper.\n\nOutput only the caption. No markdown, no lists, no explanations.\n\nCaption structure to follow:\nl1v3w4llp4p3r [Describe the visible character or main subject’s subtle motion, especially hair, eyes, fabric, wings, or flexible parts if present.] [Describe visible particles, petals, sparks, dust, mist, smoke, energy, light effects, or atmosphere moving in a smooth loop if present.] [Describe visible background ambient motion such as clouds, water, fog, light shimmer, reflections, or parallax if present.] [State that rigid objects and the main pose remain static.] [End the visual animation description by reinforcing that the motion is fluid, cinematic, high-quality, and seamless.] sound: [Describe a subtle, loopable background ambience that matches the visible scene, staying soft, atmospheric, and non-distracting.]\n",
+      "max_length": 768,
+      "sampling_mode": "on",
+      "sampling_mode.temperature": 0.7,
+      "sampling_mode.top_k": 64,
+      "sampling_mode.top_p": 0.95,
+      "sampling_mode.min_p": 0.05,
+      "sampling_mode.repetition_penalty": 1.05,
+      "sampling_mode.seed": 0,
+      "sampling_mode.presence_penalty": 0,
+      "thinking": false,
+      "use_default_template": true,
+      "clip": [
+        "6",
+        0
+      ],
+      "image": [
+        "2385",
+        0
+      ]
+    },
+    "class_type": "TextGenerate",
+    "_meta": {
+      "title": "TextGenerate"
+    }
+  },
+  "2383": {
+    "inputs": {
+      "width": [
+        "2169",
+        0
+      ],
+      "height": [
+        "2169",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "keep_proportion": "resize",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 32,
+      "device": "cpu",
+      "image": [
+        "488",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "图像缩放KJ v2"
+    }
+  },
+  "2385": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "scale_by": 0.5,
+      "image": [
+        "2383",
+        0
+      ]
+    },
+    "class_type": "ImageScaleBy",
+    "_meta": {
+      "title": "缩放图像（比例）"
+    }
+  },
+  "2386": {
+    "inputs": {
+      "source": [
+        "2379",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "预览任意"
+    }
+  },
+  "2388": {
+    "inputs": {
+      "image": [
+        "2383",
+        0
+      ]
+    },
+    "class_type": "GetImageSize",
+    "_meta": {
+      "title": "获取图像尺寸"
+    }
+  },
+  "446:2175": {
+    "inputs": {
+      "samples": [
+        "446:184",
+        2
+      ],
+      "vae": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "446:157": {
+    "inputs": {
+      "sampler_name": "res_2s"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "K采样器选择"
+    }
+  },
+  "446:2376": {
+    "inputs": {
+      "image": [
+        "2327",
+        0
+      ]
+    },
+    "class_type": "GetImageSize",
+    "_meta": {
+      "title": "获取图像尺寸"
+    }
+  },
+  "446:2349": {
+    "inputs": {
+      "video_latent": [
+        "446:2374",
+        2
+      ],
+      "audio_latent": [
+        "446:2348",
+        0
+      ]
+    },
+    "class_type": "LTXVConcatAVLatent",
+    "_meta": {
+      "title": "LTXVConcatAVLatent"
+    }
+  },
+  "446:2339": {
+    "inputs": {
+      "noise": [
+        "446:161",
+        0
+      ],
+      "guider": [
+        "446:158",
+        0
+      ],
+      "sampler": [
+        "446:157",
+        0
+      ],
+      "sigmas": [
+        "446:477",
+        0
+      ],
+      "latent_image": [
+        "446:2349",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "自定义采样器（高级）"
+    }
+  },
+  "446:2350": {
+    "inputs": {
+      "av_latent": [
+        "446:2339",
+        0
+      ]
+    },
+    "class_type": "LTXVSeparateAVLatent",
+    "_meta": {
+      "title": "LTXV分离音视频潜空间"
+    }
+  },
+  "446:184": {
+    "inputs": {
+      "positive": [
+        "446:2374",
+        0
+      ],
+      "negative": [
+        "446:2374",
+        1
+      ],
+      "latent": [
+        "446:2350",
+        0
+      ]
+    },
+    "class_type": "LTXVCropGuides",
+    "_meta": {
+      "title": "LTXV裁剪指导"
+    }
+  },
+  "446:2394": {
+    "inputs": {
+      "value": [
+        "2188",
+        1
+      ]
+    },
+    "class_type": "ComfyNumberConvert",
+    "_meta": {
+      "title": "数字转换"
+    }
+  },
+  "446:2348": {
+    "inputs": {
+      "frames_number": [
+        "446:2394",
+        1
+      ],
+      "frame_rate": [
+        "16",
+        0
+      ],
+      "batch_size": 1,
+      "audio_vae": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "LTXVEmptyLatentAudio",
+    "_meta": {
+      "title": "LTXV 空音频潜空间"
+    }
+  },
+  "446:2374": {
+    "inputs": {
+      "width": [
+        "446:2376",
+        0
+      ],
+      "height": [
+        "446:2376",
+        1
+      ],
+      "length": [
+        "2188",
+        1
+      ],
+      "batch_size": 1,
+      "strength": 1,
+      "positive": [
+        "2157",
+        0
+      ],
+      "negative": [
+        "2158",
+        0
+      ],
+      "vae": [
+        "8",
+        0
+      ],
+      "image": [
+        "2327",
+        0
+      ]
+    },
+    "class_type": "LTXVImgToVideo",
+    "_meta": {
+      "title": "图像到视频（LTXV）"
+    }
+  },
+  "446:477": {
+    "inputs": {
+      "scheduler": "beta",
+      "steps": 4,
+      "denoise": 1,
+      "model": [
+        "446:376",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "基本调度器"
+    }
+  },
+  "446:158": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "446:376",
+        0
+      ],
+      "positive": [
+        "446:2374",
+        0
+      ],
+      "negative": [
+        "446:2374",
+        1
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFG引导器"
+    }
+  },
+  "446:161": {
+    "inputs": {
+      "noise_seed": 42
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "随机噪波"
+    }
+  },
+  "446:376": {
+    "inputs": {
+      "preview_rate": 8,
+      "model": [
+        "2332",
+        0
+      ],
+      "vae": [
+        "9",
+        0
+      ]
+    },
+    "class_type": "LTX2SamplingPreviewOverride",
+    "_meta": {
+      "title": "LTX2 Sampling Preview Override"
+    }
+  },
+  "446:2351": {
+    "inputs": {
+      "samples": [
+        "446:2350",
+        1
+      ],
+      "audio_vae": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "LTXVAudioVAEDecode",
+    "_meta": {
+      "title": "LTXV音频VAE解码"
+    }
+  }
+}
