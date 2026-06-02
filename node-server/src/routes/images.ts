@@ -42,14 +42,10 @@ router.get('/file', async (req: Request, res: Response) => {
   if (!OUTPUT_IMAGE_EXTS.includes(ext)) return res.status(400).json({ error: 'not an image' });
   // raw=1: 跳过压缩，直接下载原图
   if (req.query.raw === '1') {
-    const filename = path.basename(fp);
     const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm' };
+    res.attachment(path.basename(fp));
     return res.sendFile(fp, {
-      headers: {
-        'Content-Type': mt[ext] || 'image/png',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'no-cache'
-      }
+      headers: { 'Content-Type': mt[ext] || 'image/png', 'Cache-Control': 'no-cache' }
     });
   }
   // 视频文件直接返回，跳过压缩
