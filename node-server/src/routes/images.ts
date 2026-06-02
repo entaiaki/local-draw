@@ -7,7 +7,7 @@ import sharp from 'sharp';
 const router = Router();
 router.use(express.json({ limit: "50mb" }));
 const config = loadConfig();
-const OUTPUT_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
+const OUTPUT_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm'];
 const THUMB_DIR = path.join(process.cwd(), 'thumbnails');
 
 function resolveOutputPath(rel: string): string | null {
@@ -43,7 +43,7 @@ router.get('/file', async (req: Request, res: Response) => {
   // raw=1: 跳过压缩，直接下载原图
   if (req.query.raw === '1') {
     const filename = path.basename(fp);
-    const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
+    const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm' };
     return res.sendFile(fp, {
       headers: {
         'Content-Type': mt[ext] || 'image/png',
@@ -51,6 +51,11 @@ router.get('/file', async (req: Request, res: Response) => {
         'Cache-Control': 'no-cache'
       }
     });
+  }
+  // 视频文件直接返回，跳过压缩
+  if (ext === '.mp4' || ext === '.webm') {
+    const mtVid: Record<string, string> = { '.mp4': 'video/mp4', '.webm': 'video/webm' };
+    return res.sendFile(fp, { headers: { 'Content-Type': mtVid[ext] || 'video/mp4' } });
   }
   // 自动压缩（WebP 优先）
   try {
@@ -68,7 +73,7 @@ router.get('/file', async (req: Request, res: Response) => {
       }
     }
   } catch {}
-  const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
+  const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm' };
   res.sendFile(fp, { headers: { 'Content-Type': mt[ext] || 'image/png' } });
 });
 
