@@ -433,7 +433,8 @@ app.post('/api/tts/upload-ref', (req, res) => {
       fd.append('image', file.buffer, { filename: safeName, contentType: file.mimetype });
       fd.append('type', 'input');
       fd.append('overwrite', 'true');
-      const comfyApi = axios.create({ baseURL: `http://${require('./services/config.js').loadConfig().comfyui_api}`, timeout: 30000 });
+      const cfg = require('./services/config.js').loadConfig();
+      const comfyApi = axios.create({ baseURL: cfg.comfyui_api, timeout: 30000 });
       const r = await comfyApi.post('/api/upload/image', fd, { headers: { ...fd.getHeaders(), 'Comfy-User': '' } });
       safeName = r.data.name;
     } catch {}
