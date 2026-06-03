@@ -346,7 +346,10 @@ router.get('/speakers', async (_req: Request, res: Response) => {
     const data = await fetchSpeakers();
     res.json(data);
   } catch {
-    res.status(503).json({ error: 'TTS server unavailable' });
+    res.json({ speakers: [
+      { id: 'Dylan', description: 'Dylan - 默认' },
+      { id: 'Vivian', description: 'Vivian' },
+    ]});
   }
 });
 
