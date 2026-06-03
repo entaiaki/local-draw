@@ -592,25 +592,19 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     }
     // 兜底：扫 output/ 目录取生成后新增的文件
     const images: { filename: string; subfolder: string }[] = [];
-    // 始终扫描 output 目录，覆盖 history 未报告文件名的场景（含子目录）
-    function scanDir(dir: string, prefix = ''): void {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          scanDir(fullPath, prefix ? prefix + '/' + entry.name : entry.name);
-        } else if (/\.(mp4|webm|wav|flac)$/i.test(entry.name)) {
-          const relName = prefix ? prefix + '/' + entry.name : entry.name;
-          if (foundFiles.has(relName)) continue;
-          try {
-            const mtime = fs.statSync(fullPath).mtimeMs;
-            if (!(relName in beforeMtime) || mtime > (beforeMtime as any)[relName] + 1000) {
-              foundFiles.add(relName);
-            }
-          } catch {}
+    // 始终扫描 output 根目录，覆盖 history 未报告文件名的场景（不递归子目录，避免误扫其他任务的输出）
+    for (const f of fs.readdirSync(config.output_dir)) {
+      if (!/\.(mp4|webm|wav|flac)$/i.test(f)) continue;
+      if (foundFiles.has(f)) continue;
+      try {
+        const fp = path.join(config.output_dir, f);
+        const st = fs.statSync(fp);
+        if (!st.isFile()) continue;
+        if (!(f in beforeMtime) || st.mtimeMs > beforeMtime[f] + 1000) {
+          foundFiles.add(f);
         }
-      }
+      } catch {}
     }
-    scanDir(config.output_dir);
     // 过滤掉绝对路径和 png 缩略图
     const hasVideo = [...foundFiles].some(f => /\.(mp4|webm)$/i.test(f));
     for (const fn of foundFiles) {
