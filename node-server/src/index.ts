@@ -415,7 +415,7 @@ app.post('/api/tts/upload-ref', (req, res) => {
     if (err) return res.status(400).json({ error: 'upload failed: ' + (err.message || String(err)) });
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: 'no audio file' });
-    if ((file.buffer?.length || 0) > 20 * 1024 * 1024) return res.status(413).json({ error: '音频超过20MB限制' });
+    if ((file.buffer?.length || 0) > 5 * 1024 * 1024) return res.status(413).json({ error: '音频超过5MB限制' });
     const uuid = require('uuid');
     let ext = (file.originalname?.split('.').pop()?.toLowerCase()) || '';
     const mimeExt = file.mimetype?.split('/').pop() || '';

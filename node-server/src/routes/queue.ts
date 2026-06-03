@@ -275,6 +275,14 @@ router.post('/queue', async (req: Request, res: Response) => {
     } catch { await refundOnFail(); return res.status(503).json({ detail: '人机验证服务不可用' }); }
   }
 
+  // Validate TTS text length
+  if (wfPath.startsWith('TTS/')) {
+    const ttsText = String(req.body?.direct_prompt || '');
+    if (ttsText.length > 100) {
+      await refundOnFail();
+      return res.status(400).json({ detail: 'TTS 文字长度不能超过 100 字' });
+    }
+  }
   const body = req.body as Record<string, unknown>;
   queueIdCounter++;
   const itemId = queueIdCounter;
