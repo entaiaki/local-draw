@@ -1,1 +1,1119 @@
-{"id":"61f1ae93-8b9a-4e3d-9ddf-ab6f3b66fbfa","revision":0,"last_node_id":554,"last_link_id":847,"nodes":[{"id":78,"type":"WanVideoEmptyEmbeds","pos":[-2230,980],"size":[230,130],"flags":{},"order":59,"mode":0,"inputs":[{"label":"控制嵌入","localized_name":"控制嵌入","name":"control_embeds","shape":7,"type":"WANVIDIMAGE_EMBEDS","link":null},{"label":"额外潜空间","localized_name":"额外潜空间","name":"extra_latents","shape":7,"type":"LATENT","link":213},{"label":"宽","localized_name":"宽","name":"width","type":"INT","widget":{"name":"width"},"link":424},{"label":"高","localized_name":"高","name":"height","type":"INT","widget":{"name":"height"},"link":425},{"label":"帧数","localized_name":"帧数","name":"num_frames","type":"INT","widget":{"name":"num_frames"},"link":495}],"outputs":[{"label":"图像嵌入","localized_name":"图像嵌入","name":"image_embeds","type":"WANVIDIMAGE_EMBEDS","links":[324]}],"title":"Encode First + Batch Shape","properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"6bc53b771d5d2af316801cb69e2ee10dbf7d18b1","Node name for S&R":"WanVideoEmptyEmbeds","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"width":true,"height":true,"num_frames":true}}},"widgets_values":[832,480,61],"color":"rgba(0,0,0,.8)","bgcolor":"rgba(24,24,27,.9)"},{"id":70,"type":"WanVideoEncode","pos":[-2460,1020],"size":[210,250],"flags":{},"order":53,"mode":0,"inputs":[{"label":"vae","localized_name":"vae","name":"vae","type":"WANVAE","link":513},{"label":"图像","localized_name":"图像","name":"image","type":"IMAGE","link":411},{"label":"遮罩","localized_name":"遮罩","name":"mask","shape":7,"type":"MASK","link":null},{"label":"启用VAE分块","localized_name":"启用VAE分块","name":"enable_vae_tiling","type":"BOOLEAN","widget":{"name":"enable_vae_tiling"},"link":515},{"label":"分块宽度","localized_name":"分块宽度","name":"tile_x","type":"INT","widget":{"name":"tile_x"},"link":null},{"label":"分块高度","localized_name":"分块高度","name":"tile_y","type":"INT","widget":{"name":"tile_y"},"link":null},{"label":"分块步进X","localized_name":"分块步进X","name":"tile_stride_x","type":"INT","widget":{"name":"tile_stride_x"},"link":null},{"label":"分块步进Y","localized_name":"分块步进Y","name":"tile_stride_y","type":"INT","widget":{"name":"tile_stride_y"},"link":null},{"label":"噪声增强强度","localized_name":"噪声增强强度","name":"noise_aug_strength","shape":7,"type":"FLOAT","widget":{"name":"noise_aug_strength"},"link":null},{"label":"额外潜空间乘数","localized_name":"额外潜空间乘数","name":"latent_strength","shape":7,"type":"FLOAT","widget":{"name":"latent_strength"},"link":null}],"outputs":[{"label":"样本","localized_name":"样本","name":"samples","type":"LATENT","links":[213,323]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"17d48e3e450c7e75f60566e787404cb3d917f48e","Node name for S&R":"WanVideoEncode","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"enable_vae_tiling":true,"tile_x":true,"tile_y":true,"tile_stride_x":true,"tile_stride_y":true,"noise_aug_strength":true,"latent_strength":true}}},"widgets_values":[false,272,272,144,128,0,1]},{"id":90,"type":"WanVideoExperimentalArgs","pos":[-1960,1160],"size":[350,370],"flags":{},"order":0,"mode":0,"inputs":[{"label":"使用多个提示时分割自注意力的步数","localized_name":"使用多个提示时分割自注意力的步数","name":"video_attention_split_steps","type":"STRING","widget":{"name":"video_attention_split_steps"},"link":null},{"label":"cfg_zero_star","localized_name":"cfg_zero_star","name":"cfg_zero_star","type":"BOOLEAN","widget":{"name":"cfg_zero_star"},"link":null},{"label":"使用零初始化","localized_name":"使用零初始化","name":"use_zero_init","type":"BOOLEAN","widget":{"name":"use_zero_init"},"link":null},{"label":"使用多个提示时分割自注意力的步数","localized_name":"使用多个提示时分割自注意力的步数","name":"zero_star_steps","type":"INT","widget":{"name":"zero_star_steps"},"link":null},{"label":"使用_fresca","localized_name":"使用_fresca","name":"use_fresca","type":"BOOLEAN","widget":{"name":"use_fresca"},"link":null},{"label":"FreSca低缩放","localized_name":"FreSca低缩放","name":"fresca_scale_low","type":"FLOAT","widget":{"name":"fresca_scale_low"},"link":null},{"label":"FreSca高缩放","localized_name":"FreSca高缩放","name":"fresca_scale_high","type":"FLOAT","widget":{"name":"fresca_scale_high"},"link":null},{"label":"FreSca频率截止","localized_name":"FreSca频率截止","name":"fresca_freq_cutoff","type":"INT","widget":{"name":"fresca_freq_cutoff"},"link":null},{"label":"使用_tcfg","localized_name":"使用_tcfg","name":"use_tcfg","type":"BOOLEAN","widget":{"name":"use_tcfg"},"link":null},{"label":"RAAG的Alpha值，1.0为默认值，0.0为禁用。","localized_name":"RAAG的Alpha值，1.0为默认值，0.0为禁用。","name":"raag_alpha","type":"FLOAT","widget":{"name":"raag_alpha"},"link":null},{"label":"双向采样","localized_name":"双向采样","name":"bidirectional_sampling","type":"BOOLEAN","widget":{"name":"bidirectional_sampling"},"link":null},{"label":"时间分数缩放","localized_name":"时间分数缩放","name":"temporal_score_rescaling","type":"BOOLEAN","widget":{"name":"temporal_score_rescaling"},"link":null},{"label":"采样温度","localized_name":"采样温度","name":"tsr_k","type":"FLOAT","widget":{"name":"tsr_k"},"link":null},{"label":"TSR如何早期引导采样过程","localized_name":"TSR如何早期引导采样过程","name":"tsr_sigma","type":"FLOAT","widget":{"name":"tsr_sigma"},"link":null}],"outputs":[{"label":"实验参数","localized_name":"实验参数","name":"exp_args","type":"EXPERIMENTALARGS","links":[139]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"3f4e8433bdc7adeba7166b40e10ffcb36670f15d","Node name for S&R":"WanVideoExperimentalArgs","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"video_attention_split_steps":true,"cfg_zero_star":true,"use_zero_init":true,"zero_star_steps":true,"use_fresca":true,"fresca_scale_low":true,"fresca_scale_high":true,"fresca_freq_cutoff":true,"use_tcfg":true,"raag_alpha":true}}},"widgets_values":["",true,false,0,false,1,1.25,20,true,0,false,false,0.95,1]},{"id":91,"type":"WanVideoSLG","pos":[-1960,1520],"size":[320,110],"flags":{},"order":1,"mode":0,"inputs":[{"label":"跳过无条件块，逗号分隔，索引从0开始","localized_name":"跳过无条件块，逗号分隔，索引从0开始","name":"blocks","type":"STRING","widget":{"name":"blocks"},"link":null},{"label":"控制信号开始百分比","localized_name":"控制信号开始百分比","name":"start_percent","type":"FLOAT","widget":{"name":"start_percent"},"link":null},{"label":"控制信号结束百分比","localized_name":"控制信号结束百分比","name":"end_percent","type":"FLOAT","widget":{"name":"end_percent"},"link":null}],"outputs":[{"label":"slg参数","localized_name":"slg参数","name":"slg_args","type":"SLGARGS","links":[140]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"3f4e8433bdc7adeba7166b40e10ffcb36670f15d","Node name for S&R":"WanVideoSLG","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"blocks":true,"start_percent":true,"end_percent":true}}},"widgets_values":["7,8,9",0.1,0.7]},{"id":94,"type":"WanVideoEasyCache","pos":[-1960,970],"size":[370,130],"flags":{},"order":2,"mode":0,"inputs":[{"label":"如何强烈缓存扩散模型的输出。此值必须为非负数","localized_name":"如何强烈缓存扩散模型的输出。此值必须为非负数","name":"easycache_thresh","type":"FLOAT","widget":{"name":"easycache_thresh"},"link":null},{"label":"开始应用 EasyCache 的步骤","localized_name":"开始应用 EasyCache 的步骤","name":"start_step","type":"INT","widget":{"name":"start_step"},"link":null},{"label":"结束应用 EasyCache 的步骤","localized_name":"结束应用 EasyCache 的步骤","name":"end_step","type":"INT","widget":{"name":"end_step"},"link":null},{"label":"缓存设备","localized_name":"缓存设备","name":"cache_device","type":"COMBO","widget":{"name":"cache_device"},"link":null}],"outputs":[{"label":"缓存参数","localized_name":"缓存参数","name":"cache_args","type":"CACHEARGS","links":[141]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"3f4e8433bdc7adeba7166b40e10ffcb36670f15d","Node name for S&R":"WanVideoEasyCache","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"easycache_thresh":true,"start_step":true,"end_step":true,"cache_device":true}}},"widgets_values":[0.015,8,-1,"offload_device"]},{"id":187,"type":"WanVideoAddExtraLatent","pos":[-2230,1230],"size":[220,80],"flags":{},"order":62,"mode":0,"inputs":[{"label":"嵌入","localized_name":"嵌入","name":"embeds","type":"WANVIDIMAGE_EMBEDS","link":324},{"label":"额外潜空间","localized_name":"额外潜空间","name":"extra_latents","type":"LATENT","link":323},{"label":"潜空间索引","localized_name":"潜空间索引","name":"latent_index","type":"INT","widget":{"name":"latent_index"},"link":329}],"outputs":[{"label":"图像嵌入","localized_name":"图像嵌入","name":"image_embeds","type":"WANVIDIMAGE_EMBEDS","links":[517,518]}],"title":"Encode Last Frame","properties":{"cnr_id":"comfyui-wanvideowrapper","ver":"1.2.8","Node name for S&R":"WanVideoAddExtraLatent","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"latent_index":true}}},"widgets_values":[0]},{"id":22,"type":"WanVideoModelLoader","pos":[-3030,-810],"size":[320,340],"flags":{"pinned":true},"order":43,"mode":0,"inputs":[{"label":"编译参数","localized_name":"编译参数","name":"compile_args","shape":7,"type":"WANCOMPILEARGS","link":121},{"label":"块交换参数","localized_name":"块交换参数","name":"block_swap_args","shape":7,"type":"BLOCKSWAPARGS","link":null},{"label":"lora","localized_name":"lora","name":"lora","shape":7,"type":"WANVIDLORA","link":146},{"label":"显存管理参数","localized_name":"显存管理参数","name":"vram_management_args","shape":7,"type":"VRAM_MANAGEMENTARGS","link":null},{"label":"额外模型","localized_name":"额外模型","name":"extra_model","shape":7,"type":"VACEPATH","link":null},{"label":"FantasyTalking模型","localized_name":"FantasyTalking模型","name":"fantasytalking_model","shape":7,"type":"FANTASYTALKINGMODEL","link":null},{"label":"Multitalk模型","localized_name":"Multitalk模型","name":"multitalk_model","shape":7,"type":"MULTITALKMODEL","link":null},{"label":"FantasyPortrait模型","localized_name":"FantasyPortrait模型","name":"fantasyportrait_model","shape":7,"type":"FANTASYPORTRAITMODEL","link":null},{"label":"模型","localized_name":"模型","name":"model","type":"COMBO","widget":{"name":"model"},"link":null},{"label":"基础精度","localized_name":"基础精度","name":"base_precision","type":"COMBO","widget":{"name":"base_precision"},"link":null},{"label":"量化","localized_name":"量化","name":"quantization","type":"COMBO","widget":{"name":"quantization"},"link":null},{"label":"加载设备","localized_name":"加载设备","name":"load_device","type":"COMBO","widget":{"name":"load_device"},"link":null},{"label":"注意力模式","localized_name":"注意力模式","name":"attention_mode","shape":7,"type":"COMBO","widget":{"name":"attention_mode"},"link":null},{"label":"RMS归一化函数","localized_name":"RMS归一化函数","name":"rms_norm_function","shape":7,"type":"COMBO","widget":{"name":"rms_norm_function"},"link":null},{"name":"vace_model","shape":7,"type":"VACEPATH","link":null}],"outputs":[{"label":"模型","localized_name":"模型","name":"model","type":"WANVIDEOMODEL","slot_index":0,"links":[505,506,510]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"d9b1f4d1a5aea91d101ae97a54714a5861af3f50","Node name for S&R":"WanVideoModelLoader","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"model":true,"base_precision":true,"quantization":true,"load_device":true,"attention_mode":true}}},"widgets_values":["WAN2.2\\Wan2_2-TI2V-5B_fp8_e5m2_scaled_KJ.safetensors","fp16","disabled","offload_device","sageattn","default"],"color":"#223","bgcolor":"#335","shape":1},{"id":38,"type":"WanVideoVAELoader","pos":[-3030,250],"size":[320,130],"flags":{"pinned":true},"order":3,"mode":0,"inputs":[{"label":"编译参数","localized_name":"编译参数","name":"compile_args","shape":7,"type":"WANCOMPILEARGS","link":null},{"label":"模型名称","localized_name":"模型名称","name":"model_name","type":"COMBO","widget":{"name":"model_name"},"link":null},{"label":"精度","localized_name":"精度","name":"precision","shape":7,"type":"COMBO","widget":{"name":"precision"},"link":null},{"label":"使用CPU缓存","localized_name":"使用CPU缓存","name":"use_cpu_cache","shape":7,"type":"BOOLEAN","widget":{"name":"use_cpu_cache"},"link":null},{"localized_name":"verbose","name":"verbose","shape":7,"type":"BOOLEAN","widget":{"name":"verbose"},"link":null}],"outputs":[{"label":"vae","localized_name":"vae","name":"vae","type":"WANVAE","slot_index":0,"links":[504,513,523]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"d9b1f4d1a5aea91d101ae97a54714a5861af3f50","Node name for S&R":"WanVideoVAELoader","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"model_name":true,"precision":true}}},"widgets_values":["WAN2.2\\wan2.2_vae.safetensors","fp32",false,false],"color":"#322","bgcolor":"#533","shape":1},{"id":169,"type":"StringConcatenate","pos":[-2000,-700],"size":[210,170],"flags":{"collapsed":true},"order":51,"mode":0,"inputs":[{"localized_name":"字符串A","name":"string_a","type":"STRING","widget":{"name":"string_a"},"link":292},{"localized_name":"字符串B","name":"string_b","type":"STRING","widget":{"name":"string_b"},"link":290},{"label":"分隔符","localized_name":"分隔符","name":"delimiter","type":"STRING","widget":{"name":"delimiter"},"link":null}],"outputs":[{"localized_name":"字符串","name":"STRING","type":"STRING","links":[499,500]}],"title":"Concat Pos Prompt","properties":{"cnr_id":"comfy-core","ver":"0.3.50","Node name for S&R":"StringConcatenate","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"string_a":true,"string_b":true,"delimiter":true}}},"widgets_values":["",""," "]},{"id":170,"type":"PrimitiveStringMultiline","pos":[-2210,-830],"size":[600,90],"flags":{"pinned":true},"order":4,"mode":0,"inputs":[{"localized_name":"值","name":"value","type":"STRING","widget":{"name":"value"},"link":null}],"outputs":[{"localized_name":"字符串","name":"STRING","type":"STRING","links":[292]}],"title":"LoRA Activation Word(s)","properties":{"cnr_id":"comfy-core","ver":"0.3.46","Node name for S&R":"PrimitiveStringMultiline","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"value":true}}},"widgets_values":["l1v3w4llp4p3r"],"color":"#c09430","bgcolor":"rgba(24,24,27,.9)","shape":1},{"id":16,"type":"WanVideoTextEncode","pos":[-2930,1100],"size":[210,240],"flags":{"collapsed":false},"order":55,"mode":0,"inputs":[{"label":"t5","localized_name":"t5","name":"t5","shape":7,"type":"WANTEXTENCODER","link":507},{"label":"模型卸载","localized_name":"模型卸载","name":"model_to_offload","shape":7,"type":"WANVIDEOMODEL","link":506},{"label":"正面提示","localized_name":"正面提示","name":"positive_prompt","type":"STRING","widget":{"name":"positive_prompt"},"link":500},{"label":"负面提示","localized_name":"负面提示","name":"negative_prompt","type":"STRING","widget":{"name":"negative_prompt"},"link":502},{"label":"强制卸载","localized_name":"强制卸载","name":"force_offload","shape":7,"type":"BOOLEAN","widget":{"name":"force_offload"},"link":null},{"label":"使用磁盘缓存","localized_name":"使用磁盘缓存","name":"use_disk_cache","shape":7,"type":"BOOLEAN","widget":{"name":"use_disk_cache"},"link":null},{"label":"设备","localized_name":"设备","name":"device","shape":7,"type":"COMBO","widget":{"name":"device"},"link":null}],"outputs":[{"label":"文本嵌入","localized_name":"文本嵌入","name":"text_embeds","type":"WANVIDEOTEXTEMBEDS","slot_index":0,"links":[532,533]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"d9b1f4d1a5aea91d101ae97a54714a5861af3f50","Node name for S&R":"WanVideoTextEncode","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"positive_prompt":true,"negative_prompt":true,"force_offload":true,"use_disk_cache":true,"device":true}}},"widgets_values":["l1v3w4llp4p3r","",true,false,"gpu"],"color":"rgba(0,0,0,.8)","bgcolor":"rgba(24,24,27,.9)"},{"id":189,"type":"MathExpression|pysssss","pos":[-2230,1170],"size":[400,200],"flags":{"collapsed":true},"order":54,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":494},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":[329]},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":null}],"title":"Calculate last frame","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["(a - 1) / 4"]},{"id":58,"type":"LoadImage","pos":[-2680,-830],"size":[460,570],"flags":{"pinned":true},"order":5,"mode":0,"inputs":[{"localized_name":"图像","name":"image","type":"COMBO","widget":{"name":"image"},"link":null},{"localized_name":"选择文件上传","name":"upload","type":"IMAGEUPLOAD","widget":{"name":"upload"},"link":null}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[508,509]},{"localized_name":"遮罩","name":"MASK","type":"MASK","links":null}],"properties":{"cnr_id":"comfy-core","ver":"0.3.26","Node name for S&R":"LoadImage","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"image":true,"upload":true},"input_ue_unconnectable":{}}},"widgets_values":["Image_1779440796494_391.png","image"],"color":"#422342","bgcolor":"rgba(24,24,27,.9)","shape":1},{"id":402,"type":"MathExpression|pysssss","pos":[-1940,3790],"size":[400,200],"flags":{"collapsed":true},"order":52,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":617},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":[619,620,626,683]},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":null}],"title":"send_mult_framerate","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"]},{"id":401,"type":"MathExpression|pysssss","pos":[-1010,3320],"size":[230,130],"flags":{"collapsed":true},"order":45,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":615},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":[621,622]},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":null}],"title":"Send Framerate Preference","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"]},{"id":407,"type":"MathExpression|pysssss","pos":[-1560,-630],"size":[400,200],"flags":{"collapsed":true,"pinned":true},"order":60,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":624},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[625]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"]},{"id":399,"type":"Any Switch (rgthree)","pos":[-1560,-670],"size":[260,110],"flags":{"collapsed":true,"pinned":true},"order":56,"mode":0,"inputs":[{"dir":3,"label":"输入_01","localized_name":"输入_01","name":"any_01","type":"INT","link":622},{"dir":3,"label":"输入_02","localized_name":"输入_02","name":"any_02","type":"INT","link":620},{"dir":3,"label":"输入_03","localized_name":"输入_03","name":"any_03","type":"INT","link":613},{"dir":3,"label":"输入_04","localized_name":"输入_04","name":"any_04","type":"INT","link":null},{"label":"输入_05","localized_name":"输入_05","name":"any_05","type":"INT","link":null}],"outputs":[{"dir":4,"label":"INT","name":"*","shape":3,"type":"INT","links":[624]}],"title":"Decide Framerate","properties":{"cnr_id":"rgthree-comfy","ver":"1.0.2508192121","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":343,"type":"ColorMatch","pos":[-2710,1950],"size":[230,130],"flags":{},"order":69,"mode":4,"inputs":[{"label":"参考图像","localized_name":"参考图像","name":"image_ref","type":"IMAGE","link":542},{"label":"目标图像","localized_name":"目标图像","name":"image_target","type":"IMAGE","link":715},{"label":"方法","localized_name":"方法","name":"method","type":"COMBO","widget":{"name":"method"},"link":null},{"label":"强度","localized_name":"强度","name":"strength","shape":7,"type":"FLOAT","widget":{"name":"strength"},"link":null},{"label":"多线程","localized_name":"多线程","name":"multithread","shape":7,"type":"BOOLEAN","widget":{"name":"multithread"},"link":null}],"outputs":[{"label":"图像","localized_name":"图像","name":"image","type":"IMAGE","links":[553]}],"title":"Color Match to Input Image","properties":{"cnr_id":"comfyui-kjnodes","ver":"1.1.4","Node name for S&R":"ColorMatch","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"method":true,"strength":true,"multithread":true}}},"widgets_values":["mkl",1,true]},{"id":331,"type":"MathExpression|pysssss","pos":[-1160,3360],"size":[210,130],"flags":{"collapsed":true},"order":44,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":526},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[741]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a + 0"]},{"id":358,"type":"Any Switch (rgthree)","pos":[-1400,3220],"size":[260,110],"flags":{"collapsed":true},"order":95,"mode":0,"inputs":[{"dir":3,"label":"输入_01","localized_name":"输入_01","name":"any_01","type":"IMAGE","link":562},{"dir":3,"label":"输入_02","localized_name":"输入_02","name":"any_02","type":"IMAGE","link":570},{"dir":3,"label":"输入_03","localized_name":"输入_03","name":"any_03","type":"IMAGE","link":null},{"dir":3,"label":"输入_04","localized_name":"输入_04","name":"any_04","type":"IMAGE","link":null},{"label":"输入_05","localized_name":"输入_05","name":"any_05","type":"IMAGE","link":null}],"outputs":[{"dir":4,"label":"IMAGE","name":"*","shape":3,"type":"IMAGE","links":[565,739]}],"title":"if_roll_clip","properties":{"cnr_id":"rgthree-comfy","ver":"1.0.2508192121","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":447,"type":"MathExpression|pysssss","pos":[-510,-410],"size":[400,200],"flags":{"collapsed":true,"pinned":true},"order":40,"mode":4,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":685},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[686]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"],"shape":1},{"id":449,"type":"MathExpression|pysssss","pos":[-840,-400],"size":[400,200],"flags":{"collapsed":true,"pinned":true},"order":41,"mode":4,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":687},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[688]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"],"shape":1},{"id":445,"type":"MathExpression|pysssss","pos":[150,-400],"size":[400,200],"flags":{"collapsed":true,"pinned":true},"order":58,"mode":4,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":683},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[684]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"],"shape":1},{"id":245,"type":"BatchResizeWithLanczos","pos":[-2690,1020],"size":[210,310],"flags":{},"order":49,"mode":0,"inputs":[{"localized_name":"image","name":"image","type":"IMAGE","link":509},{"localized_name":"mask","name":"mask","shape":7,"type":"MASK","link":null},{"localized_name":"width","name":"width","type":"INT","widget":{"name":"width"},"link":497},{"localized_name":"height","name":"height","type":"INT","widget":{"name":"height"},"link":498},{"localized_name":"resize_mode","name":"resize_mode","type":"COMBO","widget":{"name":"resize_mode"},"link":null},{"localized_name":"divisible_by","name":"divisible_by","type":"INT","widget":{"name":"divisible_by"},"link":null},{"localized_name":"max_batch_size","name":"max_batch_size","type":"INT","widget":{"name":"max_batch_size"},"link":null},{"localized_name":"sinc_window","name":"sinc_window","type":"INT","widget":{"name":"sinc_window"},"link":null},{"localized_name":"pad_color","name":"pad_color","type":"STRING","widget":{"name":"pad_color"},"link":null},{"localized_name":"crop_position","name":"crop_position","type":"COMBO","widget":{"name":"crop_position"},"link":null},{"localized_name":"precision","name":"precision","type":"COMBO","widget":{"name":"precision"},"link":null}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[411,511,512,542]},{"localized_name":"width","name":"width","type":"INT","links":[424]},{"localized_name":"height","name":"height","type":"INT","links":[425]},{"localized_name":"mask","name":"mask","type":"MASK","links":[]}],"title":"Scale Input to Size","properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"BatchResizeWithLanczos","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"width":true,"height":true,"resize_mode":true,"divisible_by":true,"max_batch_size":true,"sinc_window":true,"pad_color":true,"crop_position":true,"precision":true}}},"widgets_values":[512,512,"AR Scale + Divisible Crop",32,25,3,"0, 0, 0","center","fp32"]},{"id":345,"type":"AssembleLoopFrames","pos":[-2160,2330],"size":[220,50],"flags":{},"order":77,"mode":4,"inputs":[{"localized_name":"original_images","name":"original_images","type":"IMAGE","link":546},{"localized_name":"interpolated_frames","name":"interpolated_frames","type":"IMAGE","link":735}],"outputs":[{"localized_name":"images","name":"images","type":"IMAGE","links":[555,789,768]}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"AssembleLoopFrames","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":279,"type":"UnrollFrames","pos":[-1710,3710],"size":[210,90],"flags":{},"order":94,"mode":0,"inputs":[{"localized_name":"images","name":"images","type":"IMAGE","link":745},{"localized_name":"base_offset","name":"base_offset","type":"INT","widget":{"name":"base_offset"},"link":474},{"localized_name":"m","name":"m","type":"INT","widget":{"name":"m"},"link":632}],"outputs":[{"localized_name":"images","name":"images","type":"IMAGE","links":[562,678,792,682]}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"UnrollFrames","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"base_offset":true,"m":true}}},"widgets_values":[1,2]},{"id":372,"type":"MathExpression|pysssss","pos":[-1940,3750],"size":[400,200],"flags":{"collapsed":true},"order":46,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":576},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":633},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":[617]},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":null}],"title":"Get New Framerate","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a * b"]},{"id":278,"type":"RollFrames","pos":[-1760,3330],"size":[210,80],"flags":{},"order":92,"mode":0,"inputs":[{"localized_name":"images","name":"images","type":"IMAGE","link":569},{"localized_name":"offset","name":"offset","type":"INT","widget":{"name":"offset"},"link":472}],"outputs":[{"localized_name":"images","name":"images","type":"IMAGE","links":[744]},{"localized_name":"offset_out","name":"offset_out","type":"INT","links":null}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"RollFrames","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"offset":true}}},"widgets_values":[1]},{"id":276,"type":"BatchCount+","pos":[-2130,3380],"size":[150,30],"flags":{"collapsed":true},"order":90,"mode":0,"inputs":[{"label":"批次","localized_name":"批次","name":"batch","type":"*","link":568}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":[470]}],"title":"Get Framecount","properties":{"cnr_id":"comfyui_essentials","ver":"9d9f4bedfc9f0321c19faf71855e228c93bd0dc9","Node name for S&R":"BatchCount+","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":277,"type":"MathExpression|pysssss","pos":[-1980,3380],"size":[210,130],"flags":{"collapsed":true},"order":91,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":470},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":[472,474]},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":null}],"title":"Get Num to Roll","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["(a / 2)"]},{"id":478,"type":"MathExpression|pysssss","pos":[-1920,10],"size":[460,270],"flags":{"collapsed":true,"pinned":true},"order":48,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":758},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[759,760]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"]},{"id":369,"type":"mxSlider","pos":[-3280,-640],"size":[220,30],"flags":{"pinned":true},"order":6,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","links":[573,572,613,685,687,576,627,780]}],"title":"Model Framerate","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"0.9.92","Node name for S&R":"mxSlider","value":24,"min":0,"max":24,"step":12,"decimals":0,"snap":true,"ue_properties":{"version":"7.0.1","widget_ue_connectable":{"Xi":true,"Xf":true,"isfloatX":true}}},"widgets_values":[24,24,0],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":270,"type":"ColorMatch","pos":[-2700,2610],"size":[230,130],"flags":{},"order":70,"mode":0,"inputs":[{"label":"参考图像","localized_name":"参考图像","name":"image_ref","type":"IMAGE","link":512},{"label":"目标图像","localized_name":"目标图像","name":"image_target","type":"IMAGE","link":717},{"label":"方法","localized_name":"方法","name":"method","type":"COMBO","widget":{"name":"method"},"link":null},{"label":"强度","localized_name":"强度","name":"strength","shape":7,"type":"FLOAT","widget":{"name":"strength"},"link":null},{"label":"多线程","localized_name":"多线程","name":"multithread","shape":7,"type":"BOOLEAN","widget":{"name":"multithread"},"link":null}],"outputs":[{"label":"图像","localized_name":"图像","name":"image","type":"IMAGE","links":[720]}],"title":"Color Match to Input Image","properties":{"cnr_id":"comfyui-kjnodes","ver":"1.1.4","Node name for S&R":"ColorMatch","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"method":true,"strength":true,"multithread":true}}},"widgets_values":["mkl",1,true]},{"id":35,"type":"WanVideoTorchCompileSettings","pos":[-3030,-200],"size":[320,250],"flags":{"pinned":true},"order":7,"mode":0,"inputs":[{"label":"后端","localized_name":"后端","name":"backend","type":"COMBO","widget":{"name":"backend"},"link":null},{"label":"全图模式","localized_name":"全图模式","name":"fullgraph","type":"BOOLEAN","widget":{"name":"fullgraph"},"link":null},{"label":"模式","localized_name":"模式","name":"mode","type":"COMBO","widget":{"name":"mode"},"link":null},{"label":"动态模式","localized_name":"动态模式","name":"dynamic","type":"BOOLEAN","widget":{"name":"dynamic"},"link":null},{"label":"dynamo缓存大小限制","localized_name":"dynamo缓存大小限制","name":"dynamo_cache_size_limit","type":"INT","widget":{"name":"dynamo_cache_size_limit"},"link":null},{"label":"仅编译Transformer块","localized_name":"仅编译Transformer块","name":"compile_transformer_blocks_only","type":"BOOLEAN","widget":{"name":"compile_transformer_blocks_only"},"link":null},{"label":"dynamo重新编译限制","localized_name":"dynamo重新编译限制","name":"dynamo_recompile_limit","shape":7,"type":"INT","widget":{"name":"dynamo_recompile_limit"},"link":null},{"label":"强制参数静态形状","localized_name":"强制参数静态形状","name":"force_parameter_static_shapes","shape":7,"type":"BOOLEAN","widget":{"name":"force_parameter_static_shapes"},"link":null},{"label":"允许未合并的LoRA编译","localized_name":"允许未合并的LoRA编译","name":"allow_unmerged_lora_compile","shape":7,"type":"BOOLEAN","widget":{"name":"allow_unmerged_lora_compile"},"link":null}],"outputs":[{"label":"Torch编译参数","localized_name":"Torch编译参数","name":"torch_compile_args","type":"WANCOMPILEARGS","slot_index":0,"links":[121]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"d9b1f4d1a5aea91d101ae97a54714a5861af3f50","Node name for S&R":"WanVideoTorchCompileSettings","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"backend":true,"fullgraph":true,"mode":true,"dynamic":true,"dynamo_cache_size_limit":true,"compile_transformer_blocks_only":true,"dynamo_recompile_limit":true}}},"widgets_values":["inductor",false,"default",false,64,true,128,false,false],"color":"#223","bgcolor":"#335","shape":1},{"id":11,"type":"LoadWanVideoT5TextEncoder","pos":[-3030,60],"size":[320,130],"flags":{"pinned":true},"order":8,"mode":0,"inputs":[{"label":"模型名称","localized_name":"模型名称","name":"model_name","type":"COMBO","widget":{"name":"model_name"},"link":null},{"label":"精度","localized_name":"精度","name":"precision","type":"COMBO","widget":{"name":"precision"},"link":null},{"label":"加载设备","localized_name":"加载设备","name":"load_device","shape":7,"type":"COMBO","widget":{"name":"load_device"},"link":null},{"label":"量化","localized_name":"量化","name":"quantization","shape":7,"type":"COMBO","widget":{"name":"quantization"},"link":null}],"outputs":[{"label":"wan_t5模型","localized_name":"wan_t5模型","name":"wan_t5_model","type":"WANTEXTENCODER","slot_index":0,"links":[503,507]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"d9b1f4d1a5aea91d101ae97a54714a5861af3f50","Node name for S&R":"LoadWanVideoT5TextEncoder","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"model_name":true,"precision":true,"load_device":true,"quantization":true}}},"widgets_values":["WAN2.2\\umt5_xxl_fp16.safetensors","bf16","offload_device","disabled"],"color":"#332922","bgcolor":"#593930","shape":1},{"id":98,"type":"WanVideoLoraSelect","pos":[-3030,-460],"size":[320,200],"flags":{"pinned":true},"order":9,"mode":0,"inputs":[{"label":"先前LoRA","localized_name":"先前LoRA","name":"prev_lora","shape":7,"type":"WANVIDLORA","link":null},{"label":"块","localized_name":"块","name":"blocks","shape":7,"type":"SELECTEDBLOCKS","link":null},{"label":"lora","localized_name":"lora","name":"lora","type":"COMBO","widget":{"name":"lora"},"link":null},{"label":"强度","localized_name":"强度","name":"strength","type":"FLOAT","widget":{"name":"strength"},"link":null},{"label":"低内存加载","localized_name":"低内存加载","name":"low_mem_load","shape":7,"type":"BOOLEAN","widget":{"name":"low_mem_load"},"link":null},{"label":"合并LoRAs","localized_name":"合并LoRAs","name":"merge_loras","shape":7,"type":"BOOLEAN","widget":{"name":"merge_loras"},"link":null}],"outputs":[{"label":"lora","localized_name":"lora","name":"lora","type":"WANVIDLORA","links":[146]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"945700d56ea1e54370e479c78be0b59ee20b8925","Node name for S&R":"WanVideoLoraSelect","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"lora":true,"strength":true,"low_mem_load":true,"merge_loras":true},"input_ue_unconnectable":{}}},"widgets_values":["WAN2.2\\livewallpaper_wan22_5b_TI2V_000005000.safetensors",0.9,true,false],"color":"#223","bgcolor":"#335","shape":1},{"id":412,"type":"Any Switch (rgthree)","pos":[-1190,3480],"size":[260,110],"flags":{"collapsed":true},"order":57,"mode":0,"inputs":[{"dir":3,"label":"输入_01","localized_name":"输入_01","name":"any_01","type":"INT","link":626},{"dir":3,"label":"输入_02","localized_name":"输入_02","name":"any_02","type":"INT","link":627},{"dir":3,"label":"输入_03","localized_name":"输入_03","name":"any_03","type":"INT","link":null},{"dir":3,"label":"输入_04","localized_name":"输入_04","name":"any_04","type":"INT","link":null},{"label":"输入_05","localized_name":"输入_05","name":"any_05","type":"INT","link":null}],"outputs":[{"dir":4,"label":"INT","name":"*","shape":3,"type":"INT","links":[628]}],"title":"decide fps_in","properties":{"cnr_id":"rgthree-comfy","ver":"1.0.2508192121","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":424,"type":"VHS_VideoCombine","pos":[-590,-520],"size":[320,334],"flags":{"collapsed":false,"pinned":true},"order":85,"mode":4,"inputs":[{"label":"图像","localized_name":"图像","name":"images","type":"IMAGE","link":681},{"label":"音频","localized_name":"音频","name":"audio","shape":7,"type":"AUDIO","link":null},{"label":"批次管理","localized_name":"批次管理","name":"meta_batch","shape":7,"type":"VHS_BatchManager","link":null},{"localized_name":"vae","name":"vae","shape":7,"type":"VAE","link":null},{"label":"帧率","localized_name":"帧率","name":"frame_rate","type":"FLOAT","widget":{"name":"frame_rate"},"link":686},{"label":"循环次数","localized_name":"循环次数","name":"loop_count","type":"INT","widget":{"name":"loop_count"},"link":null},{"label":"文件名前缀","localized_name":"文件名前缀","name":"filename_prefix","type":"STRING","widget":{"name":"filename_prefix"},"link":null},{"label":"格式","localized_name":"格式","name":"format","type":"COMBO","widget":{"name":"format"},"link":null},{"label":"Ping-Pong","localized_name":"Ping-Pong","name":"pingpong","type":"BOOLEAN","widget":{"name":"pingpong"},"link":null},{"label":"保存到输出文件夹","localized_name":"保存到输出文件夹","name":"save_output","type":"BOOLEAN","widget":{"name":"save_output"},"link":null},{"name":"pix_fmt","type":["yuv420p","yuv420p10le"],"widget":{"name":"pix_fmt"},"link":null},{"name":"crf","type":"INT","widget":{"name":"crf"},"link":null},{"label":"保存元数据","localized_name":"保存元数据","name":"save_metadata","type":"BOOLEAN","widget":{"name":"save_metadata"},"link":null},{"label":"修剪音频","localized_name":"修剪音频","name":"trim_to_audio","type":"BOOLEAN","widget":{"name":"trim_to_audio"},"link":null}],"outputs":[{"label":"文件名","localized_name":"文件名","name":"Filenames","type":"VHS_FILENAMES","links":null}],"title":"Seam Interp Preview","properties":{"cnr_id":"comfyui-videohelpersuite","ver":"1.7.4","Node name for S&R":"VHS_VideoCombine","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"frame_rate":true,"loop_count":true,"filename_prefix":true,"format":true,"pingpong":true,"save_output":true,"pix_fmt":true,"crf":true,"save_metadata":true,"trim_to_audio":true}}},"widgets_values":{"frame_rate":24,"loop_count":0,"filename_prefix":"seam_interp_prev","format":"video/h264-mp4","pix_fmt":"yuv420p","crf":19,"save_metadata":true,"trim_to_audio":false,"pingpong":false,"save_output":true,"videopreview":{"hidden":false,"paused":false,"params":{"filename":"seam_interp_prev_00010.mp4","subfolder":"","type":"output","format":"video/h264-mp4","frame_rate":24,"workflow":"seam_interp_prev_00010.png","fullpath":"E:\\ComfyUI\\ComfyUI\\output\\seam_interp_prev_00010.mp4"}}},"shape":1},{"id":483,"type":"UpscaleWithModelAdvanced","pos":[-2930,3440],"size":[270,150],"flags":{},"order":84,"mode":4,"inputs":[{"localized_name":"upscale_model","name":"upscale_model","type":"UPSCALE_MODEL","link":764},{"localized_name":"image","name":"image","type":"IMAGE","link":769},{"localized_name":"max_batch_size","name":"max_batch_size","shape":7,"type":"INT","widget":{"name":"max_batch_size"},"link":771},{"localized_name":"tile_size","name":"tile_size","shape":7,"type":"INT","widget":{"name":"tile_size"},"link":777},{"localized_name":"channels_last","name":"channels_last","shape":7,"type":"BOOLEAN","widget":{"name":"channels_last"},"link":null},{"localized_name":"precision","name":"precision","shape":7,"type":"COMBO","widget":{"name":"precision"},"link":null}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[762]}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"UpscaleWithModelAdvanced","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"max_batch_size":true,"tile_size":true,"channels_last":true,"precision":true}}},"widgets_values":[25,1024,false,"fp32"]},{"id":484,"type":"BatchResizeWithLanczos","pos":[-2670,3370],"size":[230,320],"flags":{},"order":86,"mode":4,"inputs":[{"localized_name":"image","name":"image","type":"IMAGE","link":762},{"localized_name":"mask","name":"mask","shape":7,"type":"MASK","link":null},{"localized_name":"width","name":"width","type":"INT","widget":{"name":"width"},"link":774},{"localized_name":"height","name":"height","type":"INT","widget":{"name":"height"},"link":775},{"localized_name":"resize_mode","name":"resize_mode","type":"COMBO","widget":{"name":"resize_mode"},"link":null},{"localized_name":"divisible_by","name":"divisible_by","type":"INT","widget":{"name":"divisible_by"},"link":null},{"localized_name":"max_batch_size","name":"max_batch_size","type":"INT","widget":{"name":"max_batch_size"},"link":772},{"localized_name":"sinc_window","name":"sinc_window","type":"INT","widget":{"name":"sinc_window"},"link":null},{"localized_name":"pad_color","name":"pad_color","type":"STRING","widget":{"name":"pad_color"},"link":null},{"localized_name":"crop_position","name":"crop_position","type":"COMBO","widget":{"name":"crop_position"},"link":null},{"localized_name":"precision","name":"precision","type":"COMBO","widget":{"name":"precision"},"link":null}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[766,778,791,783]},{"localized_name":"width","name":"width","type":"INT","links":null},{"localized_name":"height","name":"height","type":"INT","links":null},{"localized_name":"mask","name":"mask","type":"MASK","links":null}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"BatchResizeWithLanczos","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"width":true,"height":true,"resize_mode":true,"divisible_by":true,"max_batch_size":true,"sinc_window":true,"pad_color":true,"crop_position":true,"precision":true}}},"widgets_values":[1920,1920,"Keep AR",1,25,3,"0, 0, 0","center","fp32"]},{"id":490,"type":"mxSlider","pos":[-1940,440],"size":[330,30],"flags":{"collapsed":false,"pinned":true},"order":10,"mode":2,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","slot_index":0,"links":[770,771,772]}],"title":"Upscale Batch Size","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"3659749ab6b19ab4bc7b2ed144e3bcf92813fbf7","Node name for S&R":"mxSlider","value":10,"min":0,"max":100,"step":1,"decimals":0,"snap":true,"aux_id":"Smirnov75/ComfyUI-mxToolkit","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[10,10,0],"color":"#ba14ba","bgcolor":"#a600a6","shape":1},{"id":495,"type":"mxSlider","pos":[-1940,370],"size":[330,30],"flags":{"collapsed":false,"pinned":true},"order":11,"mode":2,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","slot_index":0,"links":[776,777]}],"title":"Upscale Tile Size","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"3659749ab6b19ab4bc7b2ed144e3bcf92813fbf7","Node name for S&R":"mxSlider","value":512,"min":0,"max":3840,"step":32,"decimals":0,"snap":true,"aux_id":"Smirnov75/ComfyUI-mxToolkit","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[512,512,0],"color":"#ba14ba","bgcolor":"#a600a6","shape":1},{"id":489,"type":"mxSlider","pos":[-1940,300],"size":[330,30],"flags":{"collapsed":false,"pinned":true},"order":12,"mode":2,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","slot_index":0,"links":[773,774,775]}],"title":"Upscale Target","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"3659749ab6b19ab4bc7b2ed144e3bcf92813fbf7","Node name for S&R":"mxSlider","value":1280,"min":0,"max":3840,"step":32,"decimals":0,"snap":true,"aux_id":"Smirnov75/ComfyUI-mxToolkit","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[1280,1280,0],"color":"#ba14ba","bgcolor":"#a600a6","shape":1},{"id":485,"type":"UpscaleModelLoader","pos":[-2310,400],"size":[360,70],"flags":{"pinned":true},"order":13,"mode":2,"inputs":[{"localized_name":"模型名称","name":"model_name","type":"COMBO","widget":{"name":"model_name"},"link":null}],"outputs":[{"localized_name":"放大模型","name":"UPSCALE_MODEL","type":"UPSCALE_MODEL","links":[763,764]}],"title":"Choose Upscale Model","properties":{"cnr_id":"comfy-core","ver":"0.3.51","Node name for S&R":"UpscaleModelLoader","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"model_name":true}}},"widgets_values":["4x-UltraSharpV2_Lite.safetensors"],"color":"#ba14ba","bgcolor":"#a600a6","shape":1},{"id":499,"type":"Fast Groups Bypasser (rgthree)","pos":[-2310,300],"size":[360,60],"flags":{"collapsed":false,"pinned":true},"order":14,"mode":2,"inputs":[],"outputs":[{"label":"可选连接","localized_name":"可选连接","name":"OPT_CONNECTION","type":"*","links":null}],"title":"Enable Upscale","properties":{"matchColors":"yellow","matchTitle":"","showNav":true,"showAllGraphs":true,"sort":"position","customSortAlphabet":"","toggleRestriction":"default","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"color":"#ba14ba","bgcolor":"#a600a6","shape":1},{"id":488,"type":"Any Switch (rgthree)","pos":[-3140,3220],"size":[260,110],"flags":{"collapsed":true},"order":83,"mode":0,"inputs":[{"dir":3,"label":"输入_01","localized_name":"输入_01","name":"any_01","type":"IMAGE","link":765},{"dir":3,"label":"输入_02","localized_name":"输入_02","name":"any_02","type":"IMAGE","link":768},{"dir":3,"label":"输入_03","localized_name":"输入_03","name":"any_03","type":"IMAGE","link":null},{"dir":3,"label":"输入_04","localized_name":"输入_04","name":"any_04","type":"IMAGE","link":null},{"label":"输入_05","localized_name":"输入_05","name":"any_05","type":"IMAGE","link":null}],"outputs":[{"dir":4,"label":"IMAGE","name":"*","shape":3,"type":"IMAGE","links":[767,769,779,681]}],"title":"or_seam_interp","properties":{"cnr_id":"rgthree-comfy","ver":"1.0.2508192121","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":352,"type":"Any Switch (rgthree)","pos":[-2350,3220],"size":[260,110],"flags":{"collapsed":true},"order":87,"mode":0,"inputs":[{"dir":3,"label":"输入_01","localized_name":"输入_01","name":"any_01","type":"IMAGE","link":766},{"dir":3,"label":"输入_02","localized_name":"输入_02","name":"any_02","type":"IMAGE","link":767},{"dir":3,"label":"输入_03","localized_name":"输入_03","name":"any_03","type":"IMAGE","link":null},{"dir":3,"label":"输入_04","localized_name":"输入_04","name":"any_04","type":"IMAGE","link":null},{"label":"输入_05","localized_name":"输入_05","name":"any_05","type":"IMAGE","link":null}],"outputs":[{"dir":4,"label":"IMAGE","name":"*","shape":3,"type":"IMAGE","links":[568,569,570]}],"title":"or_upscale","properties":{"cnr_id":"rgthree-comfy","ver":"1.0.2508192121","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":503,"type":"MathExpression|pysssss","pos":[-160,-380],"size":[400,200],"flags":{"collapsed":true,"pinned":true},"order":42,"mode":4,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":780},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[782]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"],"shape":1},{"id":505,"type":"VHS_VideoCombine","pos":[-260,-520],"size":[320,334],"flags":{"collapsed":false,"pinned":true},"order":89,"mode":4,"inputs":[{"label":"图像","localized_name":"图像","name":"images","type":"IMAGE","link":783},{"label":"音频","localized_name":"音频","name":"audio","shape":7,"type":"AUDIO","link":null},{"label":"批次管理","localized_name":"批次管理","name":"meta_batch","shape":7,"type":"VHS_BatchManager","link":null},{"localized_name":"vae","name":"vae","shape":7,"type":"VAE","link":null},{"label":"帧率","localized_name":"帧率","name":"frame_rate","type":"FLOAT","widget":{"name":"frame_rate"},"link":782},{"label":"循环次数","localized_name":"循环次数","name":"loop_count","type":"INT","widget":{"name":"loop_count"},"link":null},{"label":"文件名前缀","localized_name":"文件名前缀","name":"filename_prefix","type":"STRING","widget":{"name":"filename_prefix"},"link":null},{"label":"格式","localized_name":"格式","name":"format","type":"COMBO","widget":{"name":"format"},"link":null},{"label":"Ping-Pong","localized_name":"Ping-Pong","name":"pingpong","type":"BOOLEAN","widget":{"name":"pingpong"},"link":null},{"label":"保存到输出文件夹","localized_name":"保存到输出文件夹","name":"save_output","type":"BOOLEAN","widget":{"name":"save_output"},"link":null},{"name":"pix_fmt","type":["yuv420p","yuv420p10le"],"widget":{"name":"pix_fmt"},"link":null},{"name":"crf","type":"INT","widget":{"name":"crf"},"link":null},{"label":"保存元数据","localized_name":"保存元数据","name":"save_metadata","type":"BOOLEAN","widget":{"name":"save_metadata"},"link":null},{"label":"修剪音频","localized_name":"修剪音频","name":"trim_to_audio","type":"BOOLEAN","widget":{"name":"trim_to_audio"},"link":null}],"outputs":[{"label":"文件名","localized_name":"文件名","name":"Filenames","type":"VHS_FILENAMES","links":null}],"title":"Upscale Preview","properties":{"cnr_id":"comfyui-videohelpersuite","ver":"1.7.4","Node name for S&R":"VHS_VideoCombine","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"frame_rate":true,"loop_count":true,"filename_prefix":true,"format":true,"pingpong":true,"save_output":true,"pix_fmt":true,"crf":true,"save_metadata":true,"trim_to_audio":true}}},"widgets_values":{"frame_rate":24,"loop_count":0,"filename_prefix":"upscale_prev","format":"video/h264-mp4","pix_fmt":"yuv420p","crf":19,"save_metadata":true,"trim_to_audio":false,"pingpong":false,"save_output":true,"videopreview":{"hidden":false,"paused":false,"params":{"filename":"raw_prev_00013.mp4","subfolder":"","type":"output","format":"video/h264-mp4","frame_rate":24,"workflow":"raw_prev_00013.png","fullpath":"E:\\ComfyUI\\ComfyUI\\output\\raw_prev_00013.mp4"}}},"shape":1},{"id":413,"type":"MathExpression|pysssss","pos":[-1190,3520],"size":[400,200],"flags":{"collapsed":true},"order":61,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":628},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[740]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a"]},{"id":110,"type":"PrimitiveStringMultiline","pos":[-2210,-440],"size":[600,180],"flags":{"pinned":true},"order":15,"mode":0,"inputs":[{"localized_name":"值","name":"value","type":"STRING","widget":{"name":"value"},"link":null}],"outputs":[{"localized_name":"字符串","name":"STRING","type":"STRING","links":[501,502]}],"title":"Negative Prompt","properties":{"cnr_id":"comfy-core","ver":"0.3.46","Node name for S&R":"PrimitiveStringMultiline","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"value":true}}},"widgets_values":["worst quality, low quality, flicker, bright tones, overexposed, aurora, static, blurry, subtitles, static, style, ambient occlusion, 3D, works, paintings, lightning, images, overall gray, JPEG artifacts, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn face, deformed, disfigured, misshapen limbs, fused fingers, still picture, messy background, three legs, walking backwards"],"color":"#c09430","bgcolor":"rgba(24,24,27,.9)","shape":1},{"id":341,"type":"VHS_VideoCombine","pos":[-1590,-860],"size":[600,1145.5],"flags":{"pinned":true},"order":103,"mode":0,"inputs":[{"label":"图像","localized_name":"图像","name":"images","type":"IMAGE","link":536},{"label":"音频","localized_name":"音频","name":"audio","shape":7,"type":"AUDIO","link":null},{"label":"批次管理","localized_name":"批次管理","name":"meta_batch","shape":7,"type":"VHS_BatchManager","link":null},{"localized_name":"vae","name":"vae","shape":7,"type":"VAE","link":null},{"label":"帧率","localized_name":"帧率","name":"frame_rate","type":"FLOAT","widget":{"name":"frame_rate"},"link":625},{"label":"循环次数","localized_name":"循环次数","name":"loop_count","type":"INT","widget":{"name":"loop_count"},"link":null},{"label":"文件名前缀","localized_name":"文件名前缀","name":"filename_prefix","type":"STRING","widget":{"name":"filename_prefix"},"link":null},{"label":"格式","localized_name":"格式","name":"format","type":"COMBO","widget":{"name":"format"},"link":null},{"label":"Ping-Pong","localized_name":"Ping-Pong","name":"pingpong","type":"BOOLEAN","widget":{"name":"pingpong"},"link":null},{"label":"保存到输出文件夹","localized_name":"保存到输出文件夹","name":"save_output","type":"BOOLEAN","widget":{"name":"save_output"},"link":null},{"name":"pix_fmt","type":["yuv420p","yuv420p10le"],"widget":{"name":"pix_fmt"},"link":null},{"name":"crf","type":"INT","widget":{"name":"crf"},"link":null},{"label":"保存元数据","localized_name":"保存元数据","name":"save_metadata","type":"BOOLEAN","widget":{"name":"save_metadata"},"link":null},{"label":"修剪音频","localized_name":"修剪音频","name":"trim_to_audio","type":"BOOLEAN","widget":{"name":"trim_to_audio"},"link":null}],"outputs":[{"label":"文件名","localized_name":"文件名","name":"Filenames","type":"VHS_FILENAMES","links":null}],"title":"Output","properties":{"cnr_id":"comfyui-videohelpersuite","ver":"1.7.4","Node name for S&R":"VHS_VideoCombine","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"frame_rate":true,"loop_count":true,"filename_prefix":true,"format":true,"pingpong":true,"save_output":true,"pix_fmt":true,"bitrate":true,"megabit":true,"save_metadata":true}}},"widgets_values":{"frame_rate":60,"loop_count":0,"filename_prefix":"LoopVid","format":"video/h264-mp4","pix_fmt":"yuv420p","crf":19,"save_metadata":true,"trim_to_audio":true,"pingpong":false,"save_output":true,"videopreview":{"hidden":false,"paused":false,"params":{"filename":"LoopVid_00003.mp4","subfolder":"","type":"output","format":"video/h264-mp4","frame_rate":60,"workflow":"LoopVid_00003.png","fullpath":"C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\output\\LoopVid_00003.mp4"}}},"shape":1},{"id":469,"type":"RIFE_VFI_Advanced","pos":[-2200,1980],"size":[270,300],"flags":{},"order":75,"mode":4,"inputs":[{"localized_name":"frames","name":"frames","type":"IMAGE","link":732},{"localized_name":"optional_interpolation_states","name":"optional_interpolation_states","shape":7,"type":"INTERPOLATION_STATES","link":null},{"localized_name":"ckpt_name","name":"ckpt_name","type":"COMBO","widget":{"name":"ckpt_name"},"link":null},{"localized_name":"multiplier","name":"multiplier","type":"INT","widget":{"name":"multiplier"},"link":837},{"localized_name":"t_mode","name":"t_mode","type":"COMBO","widget":{"name":"t_mode"},"link":null},{"localized_name":"t_gamma","name":"t_gamma","type":"FLOAT","widget":{"name":"t_gamma"},"link":null},{"localized_name":"t_min","name":"t_min","type":"FLOAT","widget":{"name":"t_min"},"link":null},{"localized_name":"t_max","name":"t_max","type":"FLOAT","widget":{"name":"t_max"},"link":null},{"localized_name":"scale_factor","name":"scale_factor","type":"COMBO","widget":{"name":"scale_factor"},"link":null},{"localized_name":"ensemble","name":"ensemble","type":"BOOLEAN","widget":{"name":"ensemble"},"link":null},{"localized_name":"clear_cache_after_n_frames","name":"clear_cache_after_n_frames","type":"INT","widget":{"name":"clear_cache_after_n_frames"},"link":null},{"localized_name":"custom_t_list_csv","name":"custom_t_list_csv","shape":7,"type":"STRING","widget":{"name":"custom_t_list_csv"},"link":836}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[735]}],"title":"Interpolate Over Seam","properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"RIFE_VFI_Advanced","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"ckpt_name":true,"multiplier":true,"t_mode":true,"t_gamma":true,"t_min":true,"t_max":true,"scale_factor":true,"ensemble":true,"clear_cache_after_n_frames":true,"custom_t_list_csv":true}}},"widgets_values":["rife47.pth",10,"custom_list",1,0,1,1,true,10,""]},{"id":176,"type":"mxSlider","pos":[-2310,90],"size":[360,30],"flags":{"collapsed":false},"order":16,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","slot_index":0,"links":[579,526,615]}],"title":"Sample Framerate to Target","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"3659749ab6b19ab4bc7b2ed144e3bcf92813fbf7","Node name for S&R":"mxSlider","value":60,"min":0,"max":120,"step":1,"decimals":0,"snap":true,"aux_id":"Smirnov75/ComfyUI-mxToolkit","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[60,60,0],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":421,"type":"VHS_VideoCombine","pos":[70,-520],"size":[320,334],"flags":{"pinned":true},"order":97,"mode":4,"inputs":[{"label":"图像","localized_name":"图像","name":"images","type":"IMAGE","link":682},{"label":"音频","localized_name":"音频","name":"audio","shape":7,"type":"AUDIO","link":null},{"label":"批次管理","localized_name":"批次管理","name":"meta_batch","shape":7,"type":"VHS_BatchManager","link":null},{"localized_name":"vae","name":"vae","shape":7,"type":"VAE","link":null},{"label":"帧率","localized_name":"帧率","name":"frame_rate","type":"FLOAT","widget":{"name":"frame_rate"},"link":684},{"label":"循环次数","localized_name":"循环次数","name":"loop_count","type":"INT","widget":{"name":"loop_count"},"link":null},{"label":"文件名前缀","localized_name":"文件名前缀","name":"filename_prefix","type":"STRING","widget":{"name":"filename_prefix"},"link":null},{"label":"格式","localized_name":"格式","name":"format","type":"COMBO","widget":{"name":"format"},"link":null},{"label":"Ping-Pong","localized_name":"Ping-Pong","name":"pingpong","type":"BOOLEAN","widget":{"name":"pingpong"},"link":null},{"label":"保存到输出文件夹","localized_name":"保存到输出文件夹","name":"save_output","type":"BOOLEAN","widget":{"name":"save_output"},"link":null},{"name":"pix_fmt","type":["yuv420p","yuv420p10le"],"widget":{"name":"pix_fmt"},"link":null},{"name":"crf","type":"INT","widget":{"name":"crf"},"link":null},{"label":"保存元数据","localized_name":"保存元数据","name":"save_metadata","type":"BOOLEAN","widget":{"name":"save_metadata"},"link":null},{"label":"修剪音频","localized_name":"修剪音频","name":"trim_to_audio","type":"BOOLEAN","widget":{"name":"trim_to_audio"},"link":null}],"outputs":[{"label":"文件名","localized_name":"文件名","name":"Filenames","type":"VHS_FILENAMES","links":null}],"title":"Multiply Preview","properties":{"cnr_id":"comfyui-videohelpersuite","ver":"1.7.4","Node name for S&R":"VHS_VideoCombine","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"frame_rate":true,"loop_count":true,"filename_prefix":true,"format":true,"pingpong":true,"save_output":true,"pix_fmt":true,"crf":true,"save_metadata":true,"trim_to_audio":true}}},"widgets_values":{"frame_rate":72,"loop_count":0,"filename_prefix":"multiply_prev","format":"video/h264-mp4","pix_fmt":"yuv420p","crf":19,"save_metadata":true,"trim_to_audio":false,"pingpong":false,"save_output":true,"videopreview":{"hidden":false,"paused":false,"params":{"filename":"multiply_prev_00010.mp4","subfolder":"","type":"output","format":"video/h264-mp4","frame_rate":72,"workflow":"multiply_prev_00010.png","fullpath":"E:\\ComfyUI\\ComfyUI\\output\\multiply_prev_00010.mp4"}}},"shape":1},{"id":519,"type":"easy cleanGpuUsed","pos":[-1400,2360],"size":[160,30],"flags":{"collapsed":true},"order":79,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":789}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy cleanGpuUsed","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":521,"type":"easy cleanGpuUsed","pos":[-2350,3910],"size":[160,30],"flags":{"collapsed":true},"order":88,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":791}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy cleanGpuUsed","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":522,"type":"easy cleanGpuUsed","pos":[-1530,3930],"size":[160,30],"flags":{"collapsed":true},"order":96,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":792}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy cleanGpuUsed","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":523,"type":"easy cleanGpuUsed","pos":[-660,3960],"size":[160,30],"flags":{"collapsed":true},"order":100,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":793}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy cleanGpuUsed","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":520,"type":"easy cleanGpuUsed","pos":[-1170,2360],"size":[160,30],"flags":{"collapsed":true},"order":82,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":813}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy cleanGpuUsed","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":518,"type":"easy cleanGpuUsed","pos":[-980,1130],"size":[160,30],"flags":{"collapsed":true},"order":65,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":788}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy cleanGpuUsed","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":527,"type":"Fast Groups Bypasser (rgthree)","pos":[-2680,520],"size":[540,210],"flags":{"pinned":true},"order":17,"mode":0,"inputs":[],"outputs":[{"label":"可选连接","localized_name":"可选连接","name":"OPT_CONNECTION","type":"*","links":null}],"title":"Clean VRAM After... (can help with OOM, but can also slow things down)","properties":{"matchColors":"cyan","matchTitle":"","showNav":true,"showAllGraphs":true,"sort":"position","customSortAlphabet":"","toggleRestriction":"default","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"color":"#233","bgcolor":"#355","shape":1},{"id":500,"type":"Fast Groups Bypasser (rgthree)","pos":[-930,-690],"size":[390,80],"flags":{"collapsed":false,"pinned":true},"order":18,"mode":0,"inputs":[],"outputs":[{"label":"可选连接","localized_name":"可选连接","name":"OPT_CONNECTION","type":"*","links":null}],"title":"Enable Previews (adds significant processing time)","properties":{"matchColors":"brown","matchTitle":"","showNav":true,"showAllGraphs":true,"sort":"position","customSortAlphabet":"","toggleRestriction":"default","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":528,"type":"easy cleanGpuUsed","pos":[-240,4000],"size":[160,30],"flags":{"collapsed":true},"order":101,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":799}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy cleanGpuUsed","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":188,"type":"MathExpression|pysssss","pos":[-2220,1560],"size":[210,130],"flags":{"collapsed":true},"order":50,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":492},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":572},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":[488,494,495]},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":null}],"title":"Calculate Frames","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"expression":true}}},"widgets_values":["a * b"]},{"id":471,"type":"RIFE_FPS_Resample","pos":[-1170,3570],"size":[300,450],"flags":{},"order":98,"mode":0,"inputs":[{"localized_name":"frames","name":"frames","type":"IMAGE","link":739},{"localized_name":"ckpt_name","name":"ckpt_name","type":"COMBO","widget":{"name":"ckpt_name"},"link":null},{"localized_name":"fps_in","name":"fps_in","type":"FLOAT","widget":{"name":"fps_in"},"link":740},{"localized_name":"fps_out","name":"fps_out","type":"FLOAT","widget":{"name":"fps_out"},"link":741},{"localized_name":"scale_factor","name":"scale_factor","type":"COMBO","widget":{"name":"scale_factor"},"link":null},{"localized_name":"ensemble","name":"ensemble","type":"BOOLEAN","widget":{"name":"ensemble"},"link":null},{"localized_name":"linearize","name":"linearize","type":"BOOLEAN","widget":{"name":"linearize"},"link":null},{"localized_name":"lf_guardrail","name":"lf_guardrail","type":"BOOLEAN","widget":{"name":"lf_guardrail"},"link":null},{"localized_name":"lf_sigma","name":"lf_sigma","type":"FLOAT","widget":{"name":"lf_sigma"},"link":null},{"localized_name":"source_pair_match","name":"source_pair_match","type":"BOOLEAN","widget":{"name":"source_pair_match"},"link":null},{"localized_name":"match_a_cap","name":"match_a_cap","type":"FLOAT","widget":{"name":"match_a_cap"},"link":null},{"localized_name":"match_b_cap","name":"match_b_cap","type":"FLOAT","widget":{"name":"match_b_cap"},"link":null},{"localized_name":"edge_band_lock","name":"edge_band_lock","type":"BOOLEAN","widget":{"name":"edge_band_lock"},"link":null},{"localized_name":"tau_low","name":"tau_low","type":"FLOAT","widget":{"name":"tau_low"},"link":null},{"localized_name":"tau_high","name":"tau_high","type":"FLOAT","widget":{"name":"tau_high"},"link":null},{"localized_name":"band_radius","name":"band_radius","type":"INT","widget":{"name":"band_radius"},"link":null},{"localized_name":"band_soft_sigma","name":"band_soft_sigma","type":"FLOAT","widget":{"name":"band_soft_sigma"},"link":null},{"localized_name":"clear_cache_after_n_frames","name":"clear_cache_after_n_frames","type":"INT","widget":{"name":"clear_cache_after_n_frames"},"link":null}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[742,793]}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"RIFE_FPS_Resample","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"ckpt_name":true,"fps_in":true,"fps_out":true,"scale_factor":true,"ensemble":true,"linearize":true,"lf_guardrail":true,"lf_sigma":true,"source_pair_match":true,"match_a_cap":true,"match_b_cap":true,"edge_band_lock":true,"tau_low":true,"tau_high":true,"band_radius":true,"band_soft_sigma":true,"clear_cache_after_n_frames":true}}},"widgets_values":["rife47.pth",24,60,1,true,true,true,13.5,true,0.02,0.00784313725490196,true,0.0058823529411764705,0.023529411764705882,4,2,5]},{"id":472,"type":"RIFE_VFI_Opt","pos":[-1760,3470],"size":[270,180],"flags":{"collapsed":false},"order":93,"mode":0,"inputs":[{"localized_name":"frames","name":"frames","type":"IMAGE","link":744},{"localized_name":"optional_interpolation_states","name":"optional_interpolation_states","shape":7,"type":"INTERPOLATION_STATES","link":null},{"localized_name":"ckpt_name","name":"ckpt_name","type":"COMBO","widget":{"name":"ckpt_name"},"link":null},{"localized_name":"multiplier","name":"multiplier","type":"INT","widget":{"name":"multiplier"},"link":743},{"localized_name":"scale_factor","name":"scale_factor","type":"COMBO","widget":{"name":"scale_factor"},"link":null},{"localized_name":"ensemble","name":"ensemble","type":"BOOLEAN","widget":{"name":"ensemble"},"link":null},{"localized_name":"clear_cache_after_n_frames","name":"clear_cache_after_n_frames","type":"INT","widget":{"name":"clear_cache_after_n_frames"},"link":null}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[745]}],"title":"Interpolate Rolled Clip","properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"RIFE_VFI_Opt","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"ckpt_name":true,"multiplier":true,"scale_factor":true,"ensemble":true,"clear_cache_after_n_frames":true}}},"widgets_values":["rife47.pth",2,1,true,5]},{"id":219,"type":"PrimitiveBoolean","pos":[-2310,160],"size":[360,60],"flags":{"pinned":true},"order":19,"mode":0,"inputs":[{"localized_name":"值","name":"value","type":"BOOLEAN","widget":{"name":"value"},"link":null}],"outputs":[{"localized_name":"布尔","name":"BOOLEAN","type":"BOOLEAN","links":[514,515]}],"title":"Use Tiled Encoder","properties":{"cnr_id":"comfy-core","ver":"0.3.50","Node name for S&R":"PrimitiveBoolean","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"value":true}}},"widgets_values":[false],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":414,"type":"mxSlider","pos":[-2310,20],"size":[360,30],"flags":{"pinned":true},"order":20,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","links":[630,632,633,743]}],"title":"Interpolation Multiplier","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"0.9.92","Node name for S&R":"mxSlider","value":3,"min":1,"max":10,"step":1,"decimals":0,"snap":true,"ue_properties":{"version":"7.0.1","widget_ue_connectable":{"Xi":true,"Xf":true,"isfloatX":true}}},"widgets_values":[3,3,0],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":363,"type":"Fast Groups Bypasser (rgthree)","pos":[-2310,-100],"size":[360,90],"flags":{"pinned":true},"order":21,"mode":0,"inputs":[],"outputs":[{"label":"可选连接","localized_name":"可选连接","name":"OPT_CONNECTION","type":"*","links":[]}],"title":"Full Clip Interpolation","properties":{"matchColors":"red","matchTitle":"","showNav":true,"showAllGraphs":true,"sort":"position","customSortAlphabet":"","toggleRestriction":"default","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":512,"type":"Seed (rgthree)","pos":[-1940,130],"size":[330,130],"flags":{},"order":22,"mode":0,"inputs":[],"outputs":[{"dir":4,"label":"随机种","localized_name":"随机种","name":"SEED","shape":3,"type":"INT","links":[784,785]}],"title":"Seed","properties":{"cnr_id":"rgthree-comfy","ver":"1.0.2508192121","randomMax":1125899906842624,"randomMin":0,"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[-1,"","",""],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":533,"type":"MathExpression|pysssss","pos":[-1890,80],"size":[400,200],"flags":{"collapsed":true},"order":47,"mode":0,"inputs":[{"label":"a","localized_name":"a","name":"a","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":802},{"label":"b","localized_name":"b","name":"b","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"c","localized_name":"c","name":"c","shape":7,"type":"INT,FLOAT,IMAGE,LATENT","link":null},{"label":"表达式","localized_name":"表达式","name":"expression","type":"INT,FLOAT,IMAGE,LATENT","widget":{"name":"expression"},"link":null}],"outputs":[{"label":"整数","localized_name":"整数","name":"INT","type":"INT","links":null},{"label":"浮点","localized_name":"浮点","name":"FLOAT","type":"FLOAT","links":[803,847]}],"title":"coerce to float","properties":{"cnr_id":"comfyui-custom-scripts","ver":"1.2.5","Node name for S&R":"MathExpression|pysssss","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":["a"]},{"id":515,"type":"mxSlider","pos":[-1940,60],"size":[330,30],"flags":{"collapsed":false,"pinned":true},"order":23,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","slot_index":0,"links":[802]}],"title":"Schedule Shift","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"3659749ab6b19ab4bc7b2ed144e3bcf92813fbf7","Node name for S&R":"mxSlider","value":10,"min":0,"max":16,"step":1,"decimals":0,"snap":true,"aux_id":"Smirnov75/ComfyUI-mxToolkit","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[10,10,0],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":221,"type":"mxSlider","pos":[-1940,-10],"size":[330,30],"flags":{"pinned":true},"order":24,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"FLOAT","links":[758]}],"title":"CFG","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"0.9.92","Node name for S&R":"mxSlider","value":9.5,"min":0,"max":20,"step":0.1,"decimals":1,"snap":true,"ue_properties":{"version":"7.0.1","widget_ue_connectable":{"Xi":true,"Xf":true,"isfloatX":true}}},"widgets_values":[9,9.5,1],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":217,"type":"mxSlider","pos":[-1940,-80],"size":[330,30],"flags":{"pinned":true},"order":25,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","links":[519,520]}],"title":"Steps","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"0.9.92","Node name for S&R":"mxSlider","value":30,"min":0,"max":75,"step":1,"decimals":0,"snap":true,"ue_properties":{"version":"7.0.1","widget_ue_connectable":{"Xi":true,"Xf":true,"isfloatX":true}}},"widgets_values":[30,30,0],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":168,"type":"mxSlider","pos":[-1940,-150],"size":[330,30],"flags":{"pinned":true},"order":26,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"INT","links":[496,497,498]}],"title":"Working Size (longest side)","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"0.9.92","Node name for S&R":"mxSlider","value":704,"min":0,"max":4096,"step":4,"decimals":0,"snap":true,"ue_properties":{"version":"7.0.1","widget_ue_connectable":{"Xi":true,"Xf":true,"isfloatX":true}}},"widgets_values":[704,704,0],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":118,"type":"mxSlider","pos":[-1940,-220],"size":[330,30],"flags":{"pinned":true},"order":27,"mode":0,"inputs":[{"localized_name":"Xi","name":"Xi","type":"INT","widget":{"name":"Xi"},"link":null},{"localized_name":"Xf","name":"Xf","type":"FLOAT","widget":{"name":"Xf"},"link":null},{"localized_name":"isfloatX","name":"isfloatX","type":"INT","widget":{"name":"isfloatX"},"link":null}],"outputs":[{"localized_name":"","name":"","type":"FLOAT","slot_index":0,"links":[491,492]}],"title":"Duration Hint (Seconds)","properties":{"cnr_id":"comfyui-mxtoolkit","ver":"3659749ab6b19ab4bc7b2ed144e3bcf92813fbf7","Node name for S&R":"mxSlider","value":3,"min":0,"max":10,"step":0.5,"decimals":1,"snap":true,"aux_id":"Smirnov75/ComfyUI-mxToolkit","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[3,3,1],"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":359,"type":"Any Switch (rgthree)","pos":[-760,3220],"size":[260,110],"flags":{"collapsed":true},"order":99,"mode":0,"inputs":[{"dir":3,"label":"输入_01","localized_name":"输入_01","name":"any_01","type":"IMAGE","link":742},{"dir":3,"label":"输入_02","localized_name":"输入_02","name":"any_02","type":"IMAGE","link":565},{"dir":3,"label":"输入_03","localized_name":"输入_03","name":"any_03","type":"IMAGE","link":null},{"dir":3,"label":"输入_04","localized_name":"输入_04","name":"any_04","type":"IMAGE","link":null},{"label":"输入_05","localized_name":"输入_05","name":"any_05","type":"IMAGE","link":null}],"outputs":[{"dir":4,"label":"IMAGE","name":"*","shape":3,"type":"IMAGE","links":[794,799,805,536]}],"title":"if_target_framerate","properties":{"cnr_id":"rgthree-comfy","ver":"1.0.2508192121","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":537,"type":"easy clearCacheAll","pos":[190,4020],"size":[140,30],"flags":{"collapsed":true},"order":102,"mode":0,"inputs":[{"label":"输入任何","localized_name":"输入任何","name":"anything","type":"*","link":805}],"outputs":[{"label":"输出","localized_name":"输出","name":"output","type":"*","links":null}],"properties":{"cnr_id":"comfyui-easy-use","ver":"1.3.3","Node name for S&R":"easy clearCacheAll","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":[]},{"id":347,"type":"PrepareLoopFrames","pos":[-2460,1950],"size":[210,50],"flags":{},"order":71,"mode":4,"inputs":[{"localized_name":"images","name":"images","type":"IMAGE","link":553}],"outputs":[{"localized_name":"interp_batch","name":"interp_batch","type":"IMAGE","links":[732]},{"localized_name":"original_images","name":"original_images","type":"IMAGE","links":[546,835]}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"PrepareLoopFrames","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":465,"type":"AutocropToLoop","pos":[-2430,2570],"size":[270,530],"flags":{},"order":72,"mode":0,"inputs":[{"localized_name":"clip_frames","name":"clip_frames","type":"IMAGE","link":720},{"localized_name":"max_end_crop_frames","name":"max_end_crop_frames","type":"INT","widget":{"name":"max_end_crop_frames"},"link":null},{"localized_name":"include_first_step","name":"include_first_step","type":"BOOLEAN","widget":{"name":"include_first_step"},"link":null},{"localized_name":"include_last_step","name":"include_last_step","type":"BOOLEAN","widget":{"name":"include_last_step"},"link":null},{"localized_name":"include_global_median_step","name":"include_global_median_step","type":"BOOLEAN","widget":{"name":"include_global_median_step"},"link":null},{"localized_name":"seam_window_frames","name":"seam_window_frames","type":"INT","widget":{"name":"seam_window_frames"},"link":null},{"localized_name":"distance_metric","name":"distance_metric","type":"COMBO","widget":{"name":"distance_metric"},"link":null},{"localized_name":"score_in_8bit","name":"score_in_8bit","type":"BOOLEAN","widget":{"name":"score_in_8bit"},"link":null},{"localized_name":"use_ssim_similarity","name":"use_ssim_similarity","type":"BOOLEAN","widget":{"name":"use_ssim_similarity"},"link":null},{"localized_name":"use_exposure_guard","name":"use_exposure_guard","type":"BOOLEAN","widget":{"name":"use_exposure_guard"},"link":null},{"localized_name":"use_flow_guard","name":"use_flow_guard","type":"BOOLEAN","widget":{"name":"use_flow_guard"},"link":null},{"localized_name":"weight_step_size","name":"weight_step_size","type":"FLOAT","widget":{"name":"weight_step_size"},"link":null},{"localized_name":"weight_similarity","name":"weight_similarity","type":"FLOAT","widget":{"name":"weight_similarity"},"link":null},{"localized_name":"weight_exposure","name":"weight_exposure","type":"FLOAT","widget":{"name":"weight_exposure"},"link":null},{"localized_name":"weight_flow","name":"weight_flow","type":"FLOAT","widget":{"name":"weight_flow"},"link":null},{"localized_name":"ssim_downsample_scales","name":"ssim_downsample_scales","type":"STRING","widget":{"name":"ssim_downsample_scales"},"link":null},{"localized_name":"accelerate_with_gpu","name":"accelerate_with_gpu","type":"BOOLEAN","widget":{"name":"accelerate_with_gpu"},"link":null},{"localized_name":"use_mixed_precision","name":"use_mixed_precision","type":"BOOLEAN","widget":{"name":"use_mixed_precision"},"link":null}],"outputs":[{"localized_name":"cropped_clip","name":"cropped_clip","type":"IMAGE","links":[845]},{"localized_name":"end_crop_frames","name":"end_crop_frames","type":"INT","links":[]},{"localized_name":"cropped_length","name":"cropped_length","type":"INT","links":null},{"localized_name":"score","name":"score","type":"FLOAT","links":null},{"localized_name":"diagnostics_csv","name":"diagnostics_csv","type":"STRING","links":null}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"AutocropToLoop","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"max_end_crop_frames":true,"include_first_step":true,"include_last_step":true,"include_global_median_step":true,"seam_window_frames":true,"distance_metric":true,"score_in_8bit":true,"use_ssim_similarity":true,"use_exposure_guard":true,"use_flow_guard":true,"weight_step_size":true,"weight_similarity":true,"weight_exposure":true,"weight_flow":true,"ssim_downsample_scales":true,"accelerate_with_gpu":true,"use_mixed_precision":true}}},"widgets_values":[12,true,true,true,6,"L1",false,true,true,true,0.55,0.3,0.1,0.05,"1,2",true,true]},{"id":510,"type":"MarkdownNote","pos":[-2040,-1000],"size":[440,90],"flags":{},"order":28,"mode":0,"inputs":[],"outputs":[],"title":"Prompt Credit","properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["The “Suggested Prompt for Vision Models” was adapted from a workflow by [NRDX (“AIMaster”)](https://www.patreon.com/AIMasterAA). He's also the creator of Live Wallpaper LoRA! See the [original workflow](https://www.patreon.com/posts/135689184) and connect on [Patreon](https://www.patreon.com/AIMasterAA) or [CivitAI](https://civitai.com/user/NRDX).\n"],"color":"#006691","bgcolor":"rgba(24,24,27,.9)"},{"id":517,"type":"MarkdownNote","pos":[-2750,2130],"size":[280,250],"flags":{},"order":29,"mode":4,"inputs":[],"outputs":[],"title":"Thoughts on Interpolate Over Seam","properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["While it was not the first time I'd had the idea, what convinced me to actually try forcing a loop through seam interpolation was a workflow by [AmazingSeek](https://civitai.com/user/AmazingSeek).\n\nIn [their workflow](https://civitai.com/models/1720535/wan-21-image-to-video-loop-or-workflow?modelVersionId=1948904), there is a section called \"magic stuff\" that interpolates over just the last and first frame. They programmed it using existing nodes within the comfy graph itself, I can only imagine how tedious that was.\n\nThat's what made me decide to code custom nodes to take care of the complicated parts. Now, getting a nice, clean interpolation over the first and last frames is simple!\n\nThe original workflow can be found here: [WAN 2.1 Image to Video — Loop/Workflow](https://civitai.com/models/1720535/wan-21-image-to-video-loop-or-workflow?modelVersionId=1948904)\n\nFind AmazingSeek on CivitAI: [AmazingSeek](https://civitai.com/user/AmazingSeek)\n"],"color":"#006691","bgcolor":"rgba(24,24,27,.9)"},{"id":545,"type":"RIFE_SeamTimingAnalyzer","pos":[-2460,2050],"size":[250,370],"flags":{},"order":73,"mode":4,"inputs":[{"localized_name":"full_clip","name":"full_clip","type":"IMAGE","link":835},{"localized_name":"ckpt_name","name":"ckpt_name","type":"COMBO","widget":{"name":"ckpt_name"},"link":null},{"localized_name":"scale_factor","name":"scale_factor","type":"COMBO","widget":{"name":"scale_factor"},"link":null},{"localized_name":"ensemble","name":"ensemble","type":"BOOLEAN","widget":{"name":"ensemble"},"link":null},{"localized_name":"multiplier","name":"multiplier","type":"INT","widget":{"name":"multiplier"},"link":null},{"localized_name":"use_first_two","name":"use_first_two","type":"BOOLEAN","widget":{"name":"use_first_two"},"link":null},{"localized_name":"use_last_two","name":"use_last_two","type":"BOOLEAN","widget":{"name":"use_last_two"},"link":null},{"localized_name":"use_global_median","name":"use_global_median","type":"BOOLEAN","widget":{"name":"use_global_median"},"link":null},{"localized_name":"calibrate_metric","name":"calibrate_metric","type":"COMBO","widget":{"name":"calibrate_metric"},"link":null},{"localized_name":"calibrate_iters","name":"calibrate_iters","type":"INT","widget":{"name":"calibrate_iters"},"link":null},{"localized_name":"t_min","name":"t_min","type":"FLOAT","widget":{"name":"t_min"},"link":null},{"localized_name":"t_max","name":"t_max","type":"FLOAT","widget":{"name":"t_max"},"link":null},{"localized_name":"auto_tmax","name":"auto_tmax","shape":7,"type":"BOOLEAN","widget":{"name":"auto_tmax"},"link":null},{"localized_name":"t_cap","name":"t_cap","shape":7,"type":"FLOAT","widget":{"name":"t_cap"},"link":null}],"outputs":[{"localized_name":"t_list_csv","name":"t_list_csv","type":"STRING","links":[836]},{"localized_name":"multiplier","name":"multiplier","type":"INT","links":[837]}],"properties":{"cnr_id":"whiterabbit","ver":"38cf35453ea4319d9aff0169d5710439a89eb643","Node name for S&R":"RIFE_SeamTimingAnalyzer","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":["rife47.pth",1,true,4,true,true,true,"MSE",12,0,0.995,true,0.995]},{"id":365,"type":"Fast Groups Bypasser (rgthree)","pos":[-2310,-220],"size":[370,90],"flags":{},"order":30,"mode":0,"inputs":[],"outputs":[{"label":"可选连接","localized_name":"可选连接","name":"OPT_CONNECTION","type":"*","links":null}],"title":"Seam Interpolation Style (see notes) (never both)","properties":{"matchColors":"purple","matchTitle":"","showNav":true,"showAllGraphs":true,"sort":"position","customSortAlphabet":"","toggleRestriction":"always one","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"color":"#bd4c74","bgcolor":"#a93860","shape":1},{"id":463,"type":"TrimBatchEnds","pos":[-2930,2650],"size":[210,90],"flags":{},"order":68,"mode":0,"inputs":[{"localized_name":"clip_frames","name":"clip_frames","type":"IMAGE","link":716},{"localized_name":"trim_start_frames","name":"trim_start_frames","type":"INT","widget":{"name":"trim_start_frames"},"link":null},{"localized_name":"trim_end_frames","name":"trim_end_frames","type":"INT","widget":{"name":"trim_end_frames"},"link":null}],"outputs":[{"localized_name":"images","name":"images","type":"IMAGE","links":[717]}],"title":"Cut Dirty Frames","properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"TrimBatchEnds","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"trim_start_frames":true,"trim_end_frames":true}}},"widgets_values":[0,4]},{"id":462,"type":"TrimBatchEnds","pos":[-2940,2000],"size":[210,90],"flags":{},"order":66,"mode":4,"inputs":[{"localized_name":"clip_frames","name":"clip_frames","type":"IMAGE","link":714},{"localized_name":"trim_start_frames","name":"trim_start_frames","type":"INT","widget":{"name":"trim_start_frames"},"link":null},{"localized_name":"trim_end_frames","name":"trim_end_frames","type":"INT","widget":{"name":"trim_end_frames"},"link":null}],"outputs":[{"localized_name":"images","name":"images","type":"IMAGE","links":[715]}],"title":"Cut Dirty Frames","properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"TrimBatchEnds","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"trim_start_frames":true,"trim_end_frames":true}}},"widgets_values":[0,4]},{"id":548,"type":"TrimBatchEnds","pos":[-2160,2570],"size":[210,90],"flags":{},"order":74,"mode":0,"inputs":[{"localized_name":"clip_frames","name":"clip_frames","type":"IMAGE","link":845},{"localized_name":"trim_start_frames","name":"trim_start_frames","type":"INT","widget":{"name":"trim_start_frames"},"link":null},{"localized_name":"trim_end_frames","name":"trim_end_frames","type":"INT","widget":{"name":"trim_end_frames"},"link":null}],"outputs":[{"localized_name":"images","name":"images","type":"IMAGE","links":[846]}],"title":"Round Off Autocrop","properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"TrimBatchEnds","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"trim_start_frames":true,"trim_end_frames":true}}},"widgets_values":[0,2]},{"id":269,"type":"PrepareLoopFrames","pos":[-1940,2570],"size":[210,50],"flags":{},"order":76,"mode":0,"inputs":[{"localized_name":"images","name":"images","type":"IMAGE","link":846}],"outputs":[{"localized_name":"interp_batch","name":"interp_batch","type":"IMAGE","links":[746]},{"localized_name":"original_images","name":"original_images","type":"IMAGE","links":[476,839]}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"PrepareLoopFrames","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":546,"type":"RIFE_SeamTimingAnalyzer","pos":[-1940,2670],"size":[250,370],"flags":{},"order":78,"mode":0,"inputs":[{"localized_name":"full_clip","name":"full_clip","type":"IMAGE","link":839},{"localized_name":"ckpt_name","name":"ckpt_name","type":"COMBO","widget":{"name":"ckpt_name"},"link":null},{"localized_name":"scale_factor","name":"scale_factor","type":"COMBO","widget":{"name":"scale_factor"},"link":null},{"localized_name":"ensemble","name":"ensemble","type":"BOOLEAN","widget":{"name":"ensemble"},"link":null},{"localized_name":"multiplier","name":"multiplier","type":"INT","widget":{"name":"multiplier"},"link":null},{"localized_name":"use_first_two","name":"use_first_two","type":"BOOLEAN","widget":{"name":"use_first_two"},"link":null},{"localized_name":"use_last_two","name":"use_last_two","type":"BOOLEAN","widget":{"name":"use_last_two"},"link":null},{"localized_name":"use_global_median","name":"use_global_median","type":"BOOLEAN","widget":{"name":"use_global_median"},"link":null},{"localized_name":"calibrate_metric","name":"calibrate_metric","type":"COMBO","widget":{"name":"calibrate_metric"},"link":null},{"localized_name":"calibrate_iters","name":"calibrate_iters","type":"INT","widget":{"name":"calibrate_iters"},"link":null},{"localized_name":"t_min","name":"t_min","type":"FLOAT","widget":{"name":"t_min"},"link":null},{"localized_name":"t_max","name":"t_max","type":"FLOAT","widget":{"name":"t_max"},"link":null},{"localized_name":"auto_tmax","name":"auto_tmax","shape":7,"type":"BOOLEAN","widget":{"name":"auto_tmax"},"link":null},{"localized_name":"t_cap","name":"t_cap","shape":7,"type":"FLOAT","widget":{"name":"t_cap"},"link":null}],"outputs":[{"localized_name":"t_list_csv","name":"t_list_csv","type":"STRING","links":[841]},{"localized_name":"multiplier","name":"multiplier","type":"INT","links":[840]}],"properties":{"cnr_id":"whiterabbit","ver":"38cf35453ea4319d9aff0169d5710439a89eb643","Node name for S&R":"RIFE_SeamTimingAnalyzer","ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":["rife47.pth",1,true,2,true,true,true,"MSE",12,0,0.995,true,0.995]},{"id":473,"type":"RIFE_VFI_Advanced","pos":[-1680,2570],"size":[270,300],"flags":{},"order":80,"mode":0,"inputs":[{"localized_name":"frames","name":"frames","type":"IMAGE","link":746},{"localized_name":"optional_interpolation_states","name":"optional_interpolation_states","shape":7,"type":"INTERPOLATION_STATES","link":null},{"localized_name":"ckpt_name","name":"ckpt_name","type":"COMBO","widget":{"name":"ckpt_name"},"link":null},{"localized_name":"multiplier","name":"multiplier","type":"INT","widget":{"name":"multiplier"},"link":840},{"localized_name":"t_mode","name":"t_mode","type":"COMBO","widget":{"name":"t_mode"},"link":null},{"localized_name":"t_gamma","name":"t_gamma","type":"FLOAT","widget":{"name":"t_gamma"},"link":null},{"localized_name":"t_min","name":"t_min","type":"FLOAT","widget":{"name":"t_min"},"link":null},{"localized_name":"t_max","name":"t_max","type":"FLOAT","widget":{"name":"t_max"},"link":null},{"localized_name":"scale_factor","name":"scale_factor","type":"COMBO","widget":{"name":"scale_factor"},"link":null},{"localized_name":"ensemble","name":"ensemble","type":"BOOLEAN","widget":{"name":"ensemble"},"link":null},{"localized_name":"clear_cache_after_n_frames","name":"clear_cache_after_n_frames","type":"INT","widget":{"name":"clear_cache_after_n_frames"},"link":null},{"localized_name":"custom_t_list_csv","name":"custom_t_list_csv","shape":7,"type":"STRING","widget":{"name":"custom_t_list_csv"},"link":841}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[749]}],"title":"Interpolate Over Seam","properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"RIFE_VFI_Advanced","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"ckpt_name":true,"multiplier":true,"t_mode":true,"t_gamma":true,"t_min":true,"t_max":true,"scale_factor":true,"ensemble":true,"clear_cache_after_n_frames":true,"custom_t_list_csv":true}}},"widgets_values":["rife47.pth",10,"custom_list",1,0,1,1,true,10,""]},{"id":281,"type":"AssembleLoopFrames","pos":[-1630,2920],"size":[220,50],"flags":{},"order":81,"mode":0,"inputs":[{"localized_name":"original_images","name":"original_images","type":"IMAGE","link":476},{"localized_name":"interpolated_frames","name":"interpolated_frames","type":"IMAGE","link":749}],"outputs":[{"localized_name":"images","name":"images","type":"IMAGE","links":[812,813,765]}],"properties":{"cnr_id":"whiterabbit","ver":"1.0.0","Node name for S&R":"AssembleLoopFrames","ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":[]},{"id":481,"type":"MarkdownNote","pos":[-2680,-220],"size":[360,690],"flags":{},"order":31,"mode":0,"inputs":[],"outputs":[],"title":"Settings","properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["# Table of Contents\n1. SEAM INTERPOLATION STYLE\n2. FULL CLIP INTERPOLATION\n3. INTERPOLATION MULTIPLIER\n4. SAMPLE FRAMERATE TO TARGET\n5. DURATION HINT\n6. WORKING SIZE\n7. DURATION\n8. STEPS\n9. CFG\n10. USE TILED ENCODER\n11. ENABLE UPSCALE\n12. CHOOSE UPSCALE MODEL\n13. UPSCALE TARGET\n14. UPSCALE TILE SIZE\n15. UPSCALE BATCH SIZE\n\n---\n\nDefault settings are tuned towards a \"pessimistic VRAM situation\" to try and get the workflow to work on as many systems as possible. You need to tune it to your specific system to get the most out of the workflow through a little trial and error! This documentation is to help make that process as painless as possible.\n\n---\n\n## 1. SEAM INTERPOLATION STYLE\n\n`WAN 2.2 5b` does not fully support injection of last frame; last 4 frames will come out \"dirty\". Therefor, we must crop them off and create new frames to replace them. This is what **Seam Interpolation** does.\n\n**Choose between Simple or Fancy.**\n- **Simple:** Crop off last 4 frames, interpolate the difference between last and first frame. This is pretty good and is a little faster.\n- **Fancy:** Trim last 4 frames. Use an algorithm to calculate best loop candidate between last 12 remaining frames. Trim 2 frames from the resulting clip, then interpolate over the gap we created. In my tests, this often yielded better results but YMMV.\n\nThe reality is, if you want a perfect loop with interpolation, it's better to save the raw clip and then doctor the clip yourself by tuning different interpolation parameters. That's out of scope for this workflow, though - you get everything automatic.\n\n---\n\n## 2. FULL CLIP INTERPOLATION\n\n`WAN 2.2 5b` generates clips at **24fps**. If you want to increase the framerate, you need to interpolate between each frames. You have two ways to do this and there is an advantage to stacking them.\n\n- **Roll Clip & Multiply:** This offsets the location of each frame in your batch so that the seam between the first and last frame is now in the middle of the batch. Then, it multiplies your framrate by the `INTERPOLATION MULTIPLIER`. So if your multiplier is 3, you'll end up with a framerate of 72 assuming the default model framerate. Of course, then we set the clip back so that frame 1 = first in batch again.\n- **Sample Framerate to Target:** This is a straight conversion from any arbitrary framereate to any other framerate. You could turn off Multiply and just do this if you want, but I think by over-shooting our frame target and then downsampling, we give ourselves an opportunity to smooth out issues at the clip seam.\n\n---\n\n## 3. INTERPOLATION MULTIPLIER\n\nNumber to multiply framerate by with **Roll Clip & Multiply**. If that is disabled, this does nothing.\n\n---\n\n## 4. SAMPLE FRAMERATE TO TARGET\n\nTarget framerate to interpolate down or up to. If you have this option disabled in **Full Clip Interpolation**, it does nothing.\n\n---\n\n## 5. DURATION HINT\n\nLength of your video. Anything longer than 3 seconds seems to have a high cost, though `WAN 2.2 5b` is optimized for up to 5 seconds.\n\n- Because we are doing some frame cropping and interpolation to get a loop, the final duration of your clip will not be exact, especially if you use \"Fancy\".\n\n---\n\n## 6. WORKING SIZE\n\nSize of your video on the longest edge. The shape of the video is determined by your input image.\n\n---\n\n## 7. DURATION\n\nLength of your video. Anything longer than 3 seconds seems to have exponential cost. `WAN 2.2 5b` is optimized for up to 5 seconds.\n\n> **Please note:** Because we are doing some frame cropping and interpolation to get a loop, the final duration of your clip will not be exact.\n\n---\n\n## 8. STEPS\n\nThis is the number of times the sampler denoises the clip. Each step moves along a fixed schedule that decides how much noise to remove.\n\n`WAN 2.2 5b` prefers **30 steps**. Going higher can slightly reduce artifacts, but cost (time/VRAM) climbs quickly and returns diminish past ~30.\n\n---\n\n## 9. CFG\n\nCFG, or \"Guidance Scale\" can be understood as \"the rate at which the model follows your prompt\". Higher values should adhere more to what you've written, lower values allow the model to \"improvise\".\n\nIn the context of WAN, higher CFG seems to translate into more motion, but can also cause strange things to appear. Of course, this is highly dependent on your prompt.\n\n**5** is a good place to start.\n\n---\n\n## 10. SCHEDULE SHIFT\n\nOversimplified: Think of this as a \"motion vs stability\" dial. Higher values push toward more motion and variation; lower values keep things steadier and has less of a risk of introducing artifacts.\n\nTechnical: Transforms the sampler’s noise schedule by remapping each per-step noise level by a non-linear offset that preserves start and end points. Higher values bias sampling toward earlier/noisier timesteps which will focus the sampler on developing low frequency details while lower values biases toward later/cleaner timesteps, trending instead towards high frequency details.\n\n---\n\n## 11. SEED\n\nThe number used by the noising algorithm to produce the noise we inject into our latents at the start. This is where \"randomness\" is introduced in the system, so if you lock the seed and change nothing else, you'll get the same result over and over.\n\nIf you get a result you really like but with small problems, you might be able to lock the seed and make small changes to some other value to bring it in line with your vision. For example, try locking the seed and tweaking your prompt, or CFG, or Shift.\n\n---\n\n## 12. USE TILED ENCODER\n\nThis is a technique to avoid out of memory errors when encoding the image into latent space. It's slower to have it turned on, but you may need to if you try to push the limits of the resolution you can do.\n\n---\n\n## 13. ENABLE UPSCALE\n\nTurns the post-process upscaler **on/off**. When enabled, frames are upscaled **after** generation and initial loop interpolation, but **before** full clip interpolation (multiply, framerate to target) using the model you pick below. Leave it off to save at your **Working Size** (faster export, lower VRAM).\n\n- If you’re troubleshooting quality, disable this first so you can judge the raw clip.\n- Upscaling increases render time and VRAM use in proportion to your **Upscale Target**.\n\n---\n\n## 14. CHOOSE UPSCALE MODEL\n\nSelect which **upscale model** to use. The dropdown mirrors whatever you have in `models/upscale_models/`.\n\nNeed more options? Browse and download from [OpenModelDB](https://openmodeldb.info/), drop the files into that folder, then reload for the options to show up here.\n\n---\n\n## 15. UPSCALE TARGET\n\nSets the **longest edge** (in pixels) the upscaler should aim for.\n\n- **1280** ≈ 720p long edge  \n- **1920** ≈ 1080p long edge  \n- **3840** ≈ 4K long edge\n\nHigher targets cost more VRAM/time. If you want the working resolution, either disable **Enable Upscale** or set the target near your **Working Size**.\n\n---\n\n## 16. UPSCALE TILE SIZE\n\nControls how large each tile is when the upscaler runs.\n\n- **Larger tiles** → faster and fewer tile boundaries, but **more VRAM**.\n- **Smaller tiles** → safer on VRAM, but slower; can increase the chance of subtle tile transitions.\n\nIf you hit out-of-memory, lower **Tile Size** before changing anything else here.\n\n> **Note:** This is separate from **Use Tiled Encoder** above. That one tiles the **VAE encode/decode**; this one tiles the **upscaler** pass.\n\n---\n\n## 17. UPSCALE BATCH SIZE\n\nHow many tiles the upscaler processes **at once**.\n\n- **Higher batch** → better throughput, **higher peak VRAM**.\n- **Lower batch** → slower, but more stable on limited GPUs.\n\nIf you’re tight on memory, reduce **Batch Size** first; if OOM persists, then reduce **Tile Size**.\n"],"color":"#346434","bgcolor":"rgba(24,24,27,.9)","shape":1},{"id":28,"type":"WanVideoDecode","pos":[-1350,970],"size":[240,200],"flags":{},"order":64,"mode":0,"inputs":[{"label":"vae","localized_name":"vae","name":"vae","type":"WANVAE","link":523},{"label":"样本","localized_name":"样本","name":"samples","type":"LATENT","link":197},{"label":"启用VAE分块","localized_name":"启用VAE分块","name":"enable_vae_tiling","type":"BOOLEAN","widget":{"name":"enable_vae_tiling"},"link":null},{"label":"分块宽度","localized_name":"分块宽度","name":"tile_x","type":"INT","widget":{"name":"tile_x"},"link":null},{"label":"分块高度","localized_name":"分块高度","name":"tile_y","type":"INT","widget":{"name":"tile_y"},"link":null},{"label":"分块步进X","localized_name":"分块步进X","name":"tile_stride_x","type":"INT","widget":{"name":"tile_stride_x"},"link":null},{"label":"分块步进Y","localized_name":"分块步进Y","name":"tile_stride_y","type":"INT","widget":{"name":"tile_stride_y"},"link":null},{"label":"归一化","localized_name":"归一化","name":"normalization","shape":7,"type":"COMBO","widget":{"name":"normalization"},"link":null}],"outputs":[{"label":"图像","localized_name":"图像","name":"images","type":"IMAGE","slot_index":0,"links":[534,788,714,680,716]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"d9b1f4d1a5aea91d101ae97a54714a5861af3f50","Node name for S&R":"WanVideoDecode","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"enable_vae_tiling":true,"tile_x":true,"tile_y":true,"tile_stride_x":true,"tile_stride_y":true,"normalization":true}}},"widgets_values":[true,256,256,32,128,"default"],"color":"rgba(0,0,0,.8)","bgcolor":"rgba(24,24,27,.9)"},{"id":549,"type":"Note","pos":[-1440,3700],"size":[230,110],"flags":{},"order":32,"mode":0,"inputs":[],"outputs":[],"title":"clear_cache_after_n_frames","properties":{"ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":["In both interpolation nodes here, you can raise clear_cache_after_n_frames if your GPU can handle it. \"5\" is an extremely pessimistic default intended to hopefully avoid running out of memory on destitute cards."],"color":"#223","bgcolor":"#335","shape":4},{"id":507,"type":"MarkdownNote","pos":[-3350,-480],"size":[300,640],"flags":{},"order":33,"mode":0,"inputs":[],"outputs":[],"title":"Model Notes","properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["## Diffusion Model\n\n*Install into models/diffusion_models/*\n\n**FP16:** [wan2.2_ti2v_5B_fp16.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/blob/main/split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors)\n\n**FP8:** [Wan2_2-TI2V-5B_fp8_e5m2_scaled_KJ.safetensors](https://huggingface.co/Kijai/WanVideo_comfy_fp8_scaled/blob/main/TI2V/Wan2_2-TI2V-5B_fp8_e5m2_scaled_KJ.safetensors)\n\n## Recommended LoRA\n\n*Install into models/lora/*\n\n[Live Wallpaper Style](https://civitai.com/models/1264662)\n\n>**LoRA Tip:** If you're using Live Wallpaper Style, try changing *strength* in the **WanVideo Lora Select** between 1 & 0.75 to see how your results change. Higher LoRA strengths skew results towards the style bias it was trained for!\n\n## Text Encoder\n\n*Install into models/text_encoders/*\n\n**FP16:** [umt5_xxl_fp16.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/blob/main/split_files/text_encoders/umt5_xxl_fp16.safetensors)\n\n**FP8:** [umt5_xxl_fp8_e4m3fn_scaled.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/blob/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors)\n\n\n## VAE\n\n*Install into models/vae/*\n\n[wan2.2_vae.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/blob/main/split_files/vae/wan2.2_vae.safetensors)\n\n### Which versions should I get?\n\nLower precision (FP8) runs faster and uses less VRAM, but you’ll take a hit on detail/temporal stability and are more likely to see artifacts. FP16 is heavier but gives the best quality.\n\n### Install Tip\n\nTo stay organized, it helps to create subfolders inside of the target models/ folder. It will save you from getting confused later as your collection grows.\n\nSo, for example, you can put your WAN 2.2 models into subfolders \"wan2.2/\" eg \"comfyui/models/vae/wan2.2/"],"color":"#346434","bgcolor":"rgba(24,24,27,.9)","shape":1},{"id":370,"type":"Note","pos":[-3280,-530],"size":[210,90],"flags":{"collapsed":true},"order":34,"mode":0,"inputs":[],"outputs":[],"title":"Note:Model Framerate","properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["Set to 12 if you're using WAN 2.1 for some reason"],"color":"#346434","bgcolor":"rgba(24,24,27,.9)"},{"id":508,"type":"MarkdownNote","pos":[-2040,-1530],"size":[440,170],"flags":{},"order":35,"mode":0,"inputs":[],"outputs":[],"title":"About Gemma-3","properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["Gemma-3 is popular among WAN users for getting good starting points for prompts. If you want to run one locally, check out **[the list of available Gemma models](https://huggingface.co/collections/google/gemma-3-release-67c6c6f89c4f76621268bb6d)**. You’ll need to research which model is most appropriate for your machine.\n\nYou can also run Gemma in the cloud. I trust [Featherless.ai](https://featherless.ai) for cloud compute; they have a strict no-logging policy, they’re the most privacy-focused provider I’m aware of, and they charge one upfront monthly cost, which keeps my costs predictable.\n\nIt helps me out if you use my **[referral link](https://featherless.ai/register?referrer=4Z0BCRPO)** — or you can **[register normally](https://featherless.ai/register)**.\n\nI wrote a program for using cloud vision models over API you might find useful: see [CloudInterrogator](https://github.com/Artificial-Sweetener/CloudInterrogator) on GitHub.\n"],"color":"#006691","bgcolor":"rgba(24,24,27,.9)"},{"id":509,"type":"MarkdownNote","pos":[-2480,-1530],"size":[430,620],"flags":{},"order":36,"mode":0,"inputs":[],"outputs":[],"properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["# WAN Vision Prompt — Quickstart Tutorial\n\nYou *can* write a prompt by hand, but many people feel intimidated by crafting detailed natural-language prompts for **WAN**—or at least want to see examples first. This guide shows a fast, low-friction way to generate a strong **starting prompt** from an image using a vision model.\n\n---\n\n## What you’ll do\n\n1. **Pick a vision model** (hosted or local).\n2. **Upload your input image** to the model.\n3. **Paste the “Suggested Prompt for Vision Model”** into the chat with that model.\n4. **Copy the model’s description of movement** and use it as your WAN seed prompt.\n\n---\n\n## Option A — Use a hosted vision model (fastest)\n\n- **[Gemini](https://gemini.google.com/)** or **[ChatGPT](https://chat.openai.com/)** both work well.\n- Upload your input image and **paste** the “Suggested Prompt for Vision Model.”\n- Copy the output description and use it in WAN.\n\n> **Note on privacy:** Hosted services process your data on their servers. If privacy is critical, review the provider’s data policy or use the local option below.\n\n---\n\n## Option B — Keep the image private (local vision model)\n\nIf your image is lewd or you simply want complete local control, run a **local vision model**.\n\n- Many people report good results with **Gemma-3**. Browse available models here: **[Gemma-3 models](https://huggingface.co/collections/google/gemma-3-release-67c6c6f89c4f76621268bb6d)**\n- You can run models locally with **[Ollama](https://ollama.com/)**, or choose a privacy-focused cloud you control.\n\n> **Tip:** Choose the **smallest** model that fits your hardware and latency needs, then scale up if you need more detail or coherence.\n"],"color":"#006691","bgcolor":"rgba(24,24,27,.9)"},{"id":551,"type":"MarkdownNote","pos":[-2130,520],"size":[500,240],"flags":{"pinned":true},"order":37,"mode":0,"inputs":[],"outputs":[],"title":"P.S.~","properties":{"ue_properties":{"widget_ue_connectable":{},"version":"7.8","input_ue_unconnectable":{}}},"widgets_values":["## From the Developer ❤️\n\nI hope this workflow is useful to you! I put a lot of hard work into making it, including designing custom nodes to bring it all together and trying to document as much as possible so it is maximally useful to you.\n\n### Links\n- Have a look at the **[WhiteRabbit repository](https://github.com/Artificial-Sweetener/comfyui-WhiteRabbit)** for node documentation and atomic workflows if you want a better idea of how to build with the custom nodes here or tweak this workflow.\n- **My Website & Socials**: See my art, poetry, and other dev updates at [artificialsweetener.ai](https://artificialsweetener.ai).\n- **Buy Me a Coffee**: You can help fuel more projects like this at my [Ko-fi page](https://ko-fi.com/artificial_sweetener).\n\n### This workflow is dedicated to my beloved **Cubby**.\n- Find her artwork [all over the internet](https://linktr.ee/cubbyai).\n- She has many excellent LoRA on [CivitAI](https://civitai.com/user/cubby_ai) for you to explore :3"],"color":"#ff3556","bgcolor":"#fe2142","shape":1},{"id":425,"type":"VHS_VideoCombine","pos":[-920,-520],"size":[320,334],"flags":{"collapsed":false},"order":67,"mode":4,"inputs":[{"label":"图像","localized_name":"图像","name":"images","type":"IMAGE","link":680},{"label":"音频","localized_name":"音频","name":"audio","shape":7,"type":"AUDIO","link":null},{"label":"批次管理","localized_name":"批次管理","name":"meta_batch","shape":7,"type":"VHS_BatchManager","link":null},{"localized_name":"vae","name":"vae","shape":7,"type":"VAE","link":null},{"label":"帧率","localized_name":"帧率","name":"frame_rate","type":"FLOAT","widget":{"name":"frame_rate"},"link":688},{"label":"循环次数","localized_name":"循环次数","name":"loop_count","type":"INT","widget":{"name":"loop_count"},"link":null},{"label":"文件名前缀","localized_name":"文件名前缀","name":"filename_prefix","type":"STRING","widget":{"name":"filename_prefix"},"link":null},{"label":"格式","localized_name":"格式","name":"format","type":"COMBO","widget":{"name":"format"},"link":null},{"label":"Ping-Pong","localized_name":"Ping-Pong","name":"pingpong","type":"BOOLEAN","widget":{"name":"pingpong"},"link":null},{"label":"保存到输出文件夹","localized_name":"保存到输出文件夹","name":"save_output","type":"BOOLEAN","widget":{"name":"save_output"},"link":null},{"name":"pix_fmt","type":["yuv420p","yuv420p10le"],"widget":{"name":"pix_fmt"},"link":null},{"name":"crf","type":"INT","widget":{"name":"crf"},"link":null},{"label":"保存元数据","localized_name":"保存元数据","name":"save_metadata","type":"BOOLEAN","widget":{"name":"save_metadata"},"link":null},{"label":"修剪音频","localized_name":"修剪音频","name":"trim_to_audio","type":"BOOLEAN","widget":{"name":"trim_to_audio"},"link":null}],"outputs":[{"label":"文件名","localized_name":"文件名","name":"Filenames","type":"VHS_FILENAMES","links":null}],"title":"Raw Preview","properties":{"cnr_id":"comfyui-videohelpersuite","ver":"1.7.4","Node name for S&R":"VHS_VideoCombine","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"frame_rate":true,"loop_count":true,"filename_prefix":true,"format":true,"pingpong":true,"save_output":true,"pix_fmt":true,"crf":true,"save_metadata":true,"trim_to_audio":true}}},"widgets_values":{"frame_rate":24,"loop_count":0,"filename_prefix":"raw_prev","format":"video/h264-mp4","pix_fmt":"yuv420p","crf":19,"save_metadata":true,"trim_to_audio":false,"pingpong":false,"save_output":true,"videopreview":{"hidden":false,"paused":false,"params":{"filename":"raw_prev_00005.mp4","subfolder":"","type":"output","format":"video/h264-mp4","frame_rate":24,"workflow":"raw_prev_00005.png","fullpath":"E:\\ComfyUI\\output\\raw_prev_00005.mp4"}}},"shape":1},{"id":27,"type":"WanVideoSampler","pos":[-1630,1130],"size":[310,910],"flags":{},"order":63,"mode":0,"inputs":[{"label":"模型","localized_name":"模型","name":"model","type":"WANVIDEOMODEL","link":510},{"label":"图像嵌入","localized_name":"图像嵌入","name":"image_embeds","type":"WANVIDIMAGE_EMBEDS","link":518},{"label":"文本嵌入","localized_name":"文本嵌入","name":"text_embeds","shape":7,"type":"WANVIDEOTEXTEMBEDS","link":533},{"label":"样本","localized_name":"样本","name":"samples","shape":7,"type":"LATENT","link":null},{"label":"feta参数","localized_name":"feta参数","name":"feta_args","shape":7,"type":"FETAARGS","link":null},{"label":"上下文选项","localized_name":"上下文选项","name":"context_options","shape":7,"type":"WANVIDCONTEXT","link":null},{"label":"缓存参数","localized_name":"缓存参数","name":"cache_args","shape":7,"type":"CACHEARGS","link":141},{"label":"flowedit参数","localized_name":"flowedit参数","name":"flowedit_args","shape":7,"type":"FLOWEDITARGS","link":null},{"label":"slg参数","localized_name":"slg参数","name":"slg_args","shape":7,"type":"SLGARGS","link":140},{"label":"循环参数","localized_name":"循环参数","name":"loop_args","shape":7,"type":"LOOPARGS","link":null},{"label":"实验参数","localized_name":"实验参数","name":"experimental_args","shape":7,"type":"EXPERIMENTALARGS","link":139},{"label":"sigma值","localized_name":"sigma值","name":"sigmas","shape":7,"type":"SIGMAS","link":null},{"label":"unianimate姿势","localized_name":"unianimate姿势","name":"unianimate_poses","shape":7,"type":"UNIANIMATE_POSE","link":null},{"label":"fantasytalking嵌入","localized_name":"fantasytalking嵌入","name":"fantasytalking_embeds","shape":7,"type":"FANTASYTALKING_EMBEDS","link":null},{"label":"uni3c嵌入","localized_name":"uni3c嵌入","name":"uni3c_embeds","shape":7,"type":"UNI3C_EMBEDS","link":null},{"label":"multitalk嵌入","localized_name":"multitalk嵌入","name":"multitalk_embeds","shape":7,"type":"MULTITALK_EMBEDS","link":null},{"label":"freeinit参数","localized_name":"freeinit参数","name":"freeinit_args","shape":7,"type":"FREEINITARGS","link":null},{"label":"步数","localized_name":"步数","name":"steps","type":"INT","widget":{"name":"steps"},"link":520},{"label":"引导系数","localized_name":"引导系数","name":"cfg","type":"FLOAT","widget":{"name":"cfg"},"link":760},{"label":"偏移","localized_name":"偏移","name":"shift","type":"FLOAT","widget":{"name":"shift"},"link":847},{"label":"随机种子","localized_name":"随机种子","name":"seed","type":"INT","widget":{"name":"seed"},"link":785},{"label":"强制卸载","localized_name":"强制卸载","name":"force_offload","type":"BOOLEAN","widget":{"name":"force_offload"},"link":null},{"label":"调度器","localized_name":"调度器","name":"scheduler","type":"COMBO","widget":{"name":"scheduler"},"link":null},{"label":"riflex频率索引","localized_name":"riflex频率索引","name":"riflex_freq_index","type":"INT","widget":{"name":"riflex_freq_index"},"link":null},{"label":"降噪强度","localized_name":"降噪强度","name":"denoise_strength","shape":7,"type":"FLOAT","widget":{"name":"denoise_strength"},"link":null},{"label":"批次引导系数","localized_name":"批次引导系数","name":"batched_cfg","shape":7,"type":"BOOLEAN","widget":{"name":"batched_cfg"},"link":null},{"label":"rope函数","localized_name":"rope函数","name":"rope_function","shape":7,"type":"COMBO","widget":{"name":"rope_function"},"link":null},{"label":"开始步","localized_name":"开始步","name":"start_step","shape":7,"type":"INT","widget":{"name":"start_step"},"link":null},{"label":"结束步","localized_name":"结束步","name":"end_step","shape":7,"type":"INT","widget":{"name":"end_step"},"link":null},{"label":"为样本添加噪声","localized_name":"为样本添加噪声","name":"add_noise_to_samples","shape":7,"type":"BOOLEAN","widget":{"name":"add_noise_to_samples"},"link":null}],"outputs":[{"label":"样本","localized_name":"样本","name":"samples","type":"LATENT","slot_index":0,"links":[197]},{"label":"降噪样本","localized_name":"降噪样本","name":"denoised_samples","type":"LATENT","links":[]}],"properties":{"cnr_id":"ComfyUI-WanVideoWrapper","ver":"d9b1f4d1a5aea91d101ae97a54714a5861af3f50","Node name for S&R":"WanVideoSampler","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"steps":true,"cfg":true,"shift":true,"seed":true,"force_offload":true,"scheduler":true,"riflex_freq_index":true,"denoise_strength":true,"batched_cfg":true,"rope_function":true,"start_step":true,"end_step":true,"add_noise_to_samples":true},"input_ue_unconnectable":{}}},"widgets_values":[30,5,10.000000000000002,508359172309881,"randomize",true,"flowmatch_pusa",0,1,"","comfy",0,-1,false]},{"id":99,"type":"PrimitiveStringMultiline","pos":[-2210,-700],"size":[600,220],"flags":{"pinned":true},"order":38,"mode":0,"inputs":[{"localized_name":"值","name":"value","type":"STRING","widget":{"name":"value"},"link":null}],"outputs":[{"localized_name":"字符串","name":"STRING","type":"STRING","links":[290]}],"title":"Positive Prompt","properties":{"cnr_id":"comfy-core","ver":"0.3.46","Node name for S&R":"PrimitiveStringMultiline","ue_properties":{"version":"7.0.1","widget_ue_connectable":{"value":true},"input_ue_unconnectable":{}}},"widgets_values":["anime live wallpaper, soft blinking, natural breathing, delicate hair movement, subtle background motion, camera almost still, preserve original composition, preserve original color palette, preserve original lighting, stable facial features, stable hands, no pose change, no hand movement, no finger movement, no color shift, no scene change,gentle idle motion, subtle body sway, tiny natural weight shift"],"color":"#c09430","bgcolor":"rgba(24,24,27,.9)","shape":1},{"id":234,"type":"Note","pos":[-2040,-1320],"size":[440,280],"flags":{},"order":39,"mode":0,"inputs":[],"outputs":[],"title":"Suggested Prompt for Vision Model","properties":{"ue_properties":{"version":"7.0.1","widget_ue_connectable":{}}},"widgets_values":["Analyze the content of this video frame and write a concise, single-paragraph description of your predictions around what movement takes place throughout the video sequence that follows.\n\nYour description should include the details of the character and scene as a whole but only as they related to the movement that occurs in the scene. In addition, make note of the movements of the particles, blinking of the eyes if any, movement of the hair... this is a moment captured in time, and you are describing these few seconds encompassed by the image. Everything that can move, does move - even minute details of the scene.\n\nDo not describe \"pauses\". Don't minimize the motion with words like \"slight\" or \"subtle\". Do not use metaphorical language. Your description must be direct and deceisive. Use simple, common language. Be specific, and describe how each detail in the scene moves, but do not be verbose; each word in your description must have purpose. Use the present tense, as if your predictions are coming true as you type them.\n\nYou will deliver one paragraph without any additional information and without any special characters that format this response, avoid \"The image sequence depicts the character\" and describe what happens, without saying \"the video ....\"."],"color":"#346434","bgcolor":"rgba(24,24,27,.9)"}],"links":[[121,35,0,22,0,"WANCOMPILEARGS"],[139,90,0,27,10,"EXPERIMENTALARGS"],[140,91,0,27,8,"SLGARGS"],[141,94,0,27,6,"CACHEARGS"],[146,98,0,22,2,"WANVIDLORA"],[197,27,0,28,1,"LATENT"],[213,70,0,78,1,"LATENT"],[290,99,0,169,1,"STRING"],[292,170,0,169,0,"STRING"],[323,70,0,187,1,"LATENT"],[324,78,0,187,0,"WANVIDIMAGE_EMBEDS"],[329,189,0,187,2,"INT"],[411,245,0,70,1,"IMAGE"],[424,245,1,78,2,"INT"],[425,245,2,78,3,"INT"],[470,276,0,277,0,"INT,FLOAT,IMAGE,LATENT"],[472,277,0,278,1,"INT"],[474,277,0,279,1,"INT"],[476,269,1,281,0,"IMAGE"],[492,118,0,188,0,"*"],[494,188,0,189,0,"*"],[495,188,0,78,4,"*"],[497,168,0,245,2,"*"],[498,168,0,245,3,"*"],[500,169,0,16,2,"*"],[502,110,0,16,3,"*"],[506,22,0,16,1,"*"],[507,11,0,16,0,"*"],[509,58,0,245,0,"*"],[510,22,0,27,0,"*"],[512,245,0,270,0,"*"],[513,38,0,70,0,"*"],[515,219,0,70,3,"*"],[518,187,0,27,1,"*"],[520,217,0,27,17,"*"],[523,38,0,28,0,"*"],[526,176,0,331,0,"*"],[533,16,0,27,2,"*"],[536,359,0,341,0,"*"],[542,245,0,343,0,"*"],[546,347,1,345,0,"IMAGE"],[553,343,0,347,0,"IMAGE"],[562,279,0,358,0,"*"],[565,358,0,359,1,"*"],[568,352,0,276,0,"*"],[569,352,0,278,0,"IMAGE"],[570,352,0,358,1,"IMAGE"],[572,369,0,188,1,"*"],[576,369,0,372,0,"*"],[613,369,0,399,2,"*"],[615,176,0,401,0,"*"],[617,372,0,402,0,"INT,FLOAT,IMAGE,LATENT"],[620,402,0,399,1,"*"],[622,401,0,399,0,"*"],[624,399,0,407,0,"INT,FLOAT,IMAGE,LATENT"],[625,407,1,341,4,"FLOAT"],[626,402,0,412,0,"*"],[627,369,0,412,1,"*"],[628,412,0,413,0,"INT,FLOAT,IMAGE,LATENT"],[632,414,0,279,2,"*"],[633,414,0,372,1,"*"],[680,28,0,425,0,"*"],[681,488,0,424,0,"*"],[682,279,0,421,0,"*"],[683,402,0,445,0,"*"],[684,445,1,421,4,"FLOAT"],[685,369,0,447,0,"*"],[686,447,1,424,4,"FLOAT"],[687,369,0,449,0,"*"],[688,449,1,425,4,"FLOAT"],[714,28,0,462,0,"*"],[715,462,0,343,1,"IMAGE"],[716,28,0,463,0,"*"],[717,463,0,270,1,"IMAGE"],[720,270,0,465,0,"IMAGE"],[732,347,0,469,0,"IMAGE"],[735,469,0,345,1,"IMAGE"],[739,358,0,471,0,"IMAGE"],[740,413,1,471,2,"FLOAT"],[741,331,1,471,3,"FLOAT"],[742,471,0,359,0,"IMAGE"],[743,414,0,472,3,"*"],[744,278,0,472,0,"IMAGE"],[745,472,0,279,0,"IMAGE"],[746,269,0,473,0,"IMAGE"],[749,473,0,281,1,"IMAGE"],[758,221,0,478,0,"INT,FLOAT,IMAGE,LATENT"],[760,478,1,27,18,"*"],[762,483,0,484,0,"IMAGE"],[764,485,0,483,0,"*"],[765,281,0,488,0,"IMAGE"],[766,484,0,352,0,"IMAGE"],[767,488,0,352,1,"IMAGE"],[768,345,0,488,1,"*"],[769,488,0,483,1,"IMAGE"],[771,490,0,483,2,"*"],[772,490,0,484,6,"*"],[774,489,0,484,2,"*"],[775,489,0,484,3,"*"],[777,495,0,483,3,"*"],[780,369,0,503,0,"*"],[782,503,1,505,4,"FLOAT"],[783,484,0,505,0,"*"],[785,512,0,27,20,"*"],[788,28,0,518,0,"*"],[789,345,0,519,0,"*"],[791,484,0,521,0,"*"],[792,279,0,522,0,"*"],[793,471,0,523,0,"*"],[799,359,0,528,0,"*"],[802,515,0,533,0,"INT,FLOAT,IMAGE,LATENT"],[805,359,0,537,0,"*"],[813,281,0,520,0,"*"],[835,347,1,545,0,"IMAGE"],[836,545,0,469,11,"STRING"],[837,545,1,469,3,"INT"],[839,269,1,546,0,"IMAGE"],[840,546,1,473,3,"INT"],[841,546,0,473,11,"STRING"],[845,465,0,548,0,"IMAGE"],[846,548,0,269,0,"IMAGE"],[847,533,1,27,19,"*"]],"groups":[{"id":1,"title":"Load Networks","bounding":[-3040,-900,340,1240],"color":"#3f789e","flags":{}},{"id":2,"title":"Input","bounding":[-2690,-900,1090,1380],"color":"#3f789e","flags":{}},{"id":4,"title":"Simple Interpolate Over Seam","bounding":[-2950,1840,1020,580],"color":"#a1309b","flags":{"pinned":true}},{"id":6,"title":"Pre-Process & Encode Image/s","bounding":[-2700,840,710,540],"color":"#3f789e","flags":{}},{"id":7,"title":"Encode Prompt","bounding":[-2940,840,230,540],"color":"#3f789e","flags":{}},{"id":9,"title":"Model Sampling","bounding":[-1980,840,890,980],"color":"#3f789e","flags":{}},{"id":10,"title":"Sampler Settings","bounding":[-1970,880,270,750],"color":"#3f789e","flags":{}},{"id":11,"title":"Drop Dirty Frames & Color Match","bounding":[-2940,2480,490,280],"color":"#3f789e","flags":{}},{"id":13,"title":"Autocrop to Nearest Loop Candidate & Interpolate Seam","bounding":[-2440,2480,1030,620],"color":"#3f789e","flags":{}},{"id":15,"title":"Roll Clip & Multiply","bounding":[-2140,3240,650,560],"color":"#A88","flags":{"pinned":true}},{"id":16,"title":"5. Downsample to Target Framerate","bounding":[7160,1200,400,360],"color":"#3f789e","flags":{}},{"id":17,"title":"Calculate Frames","bounding":[-2310,1390,320,220],"color":"#3f789e","flags":{}},{"id":18,"title":"Sample Framerate to Target","bounding":[-1240,3240,430,830],"color":"#A88","flags":{"pinned":true}},{"id":19,"title":"Generate Video from Image(s)","bounding":[-2950,800,1870,1030],"color":"#8A8","flags":{"pinned":true}},{"id":20,"title":"Fancy Interpolate Over Seam","bounding":[-2950,2430,1550,680],"color":"#a1309b","flags":{}},{"id":21,"title":"Model Framerate","bounding":[-3290,-730,240,210],"color":"#3f789e","flags":{"pinned":true}},{"id":22,"title":"Previews","bounding":[-930,-600,1340,1110],"color":"#b06634","flags":{"pinned":true}},{"id":23,"title":"Upscale with Model","bounding":[-2940,3230,500,470],"color":"#b58b2a","flags":{"pinned":true}},{"id":24,"title":"Upscale Controls","bounding":[-2320,230,720,250],"color":"#c100c1","flags":{"pinned":true}},{"id":25,"title":"1. Clean VRAM After Decode","bounding":[-1060,1040,320,100],"color":"#8AA","flags":{}},{"id":26,"title":"5. Clean VRAM After FPS Resample","bounding":[-790,3870,410,110],"color":"#8AA","flags":{}},{"id":27,"title":"4. Clean VRAM After Roll/Multiply","bounding":[-1640,3840,370,110],"color":"#8AA","flags":{}},{"id":28,"title":"3. Clean VRAM After Upscale","bounding":[-2440,3820,340,110],"color":"#8AA","flags":{}},{"id":29,"title":"2. Clean VRAM after Seam Interpolation","bounding":[-1420,2290,440,80],"color":"#8AA","flags":{}},{"id":30,"title":"6. Clean VRAM Before Final Output","bounding":[-360,3910,390,100],"color":"#8AA","flags":{}},{"id":31,"title":"7. Clear Full Cache Before Final Output","bounding":[40,3930,440,100],"color":"#8AA","flags":{}}],"config":{},"extra":{"ds":{"scale":0.6588450000000039,"offset":[3393.7147211174038,1330.5903405899398]},"frontendVersion":"1.24.4","reroutes":[{"id":1,"pos":[-2140,3300],"linkIds":[569]},{"id":2,"parentId":1,"pos":[-1820,3310],"linkIds":[569]}],"node_versions":{"ComfyUI-WanVideoWrapper":"5a2383621a05825d0d0437781afcb8552d9590fd","comfy-core":"0.3.26","ComfyUI-KJNodes":"a5bd3c86c8ed6b83c55c2d0e7a59515b15a0137f","ComfyUI-VideoHelperSuite":"0a75c7958fe320efcb052f1d9f8451fd20c730a8"},"VHS_latentpreview":false,"VHS_latentpreviewrate":0,"VHS_MetadataImage":true,"VHS_KeepIntermediate":true,"controller_panel":{"controllers":{},"hidden":true,"highlight":true,"version":2,"default_order":[91,94,11,90,176,170,182,38,110,99,28,169,27,16,78,188,118,187,70,189,22,168,199,35,58,190,71,204,196,207,195,194,206,205,98,181,92,209,210,211]},"ue_links":[],"links_added_by_ue":[],"__hardline_rewire":{"rewired_count":53,"skipped_gets":[],"conflicts":[]},"linkExtensions":[{"id":569,"parentId":2}]},"version":0.4}
+{
+  "11": {
+    "inputs": {
+      "model_name": "WAN2.2\\umt5_xxl_fp16.safetensors",
+      "precision": "bf16",
+      "load_device": "offload_device",
+      "quantization": "disabled"
+    },
+    "class_type": "LoadWanVideoT5TextEncoder",
+    "_meta": {
+      "title": "WanVideo T5 Text Encoder Loader"
+    }
+  },
+  "16": {
+    "inputs": {
+      "positive_prompt": [
+        "169",
+        0
+      ],
+      "negative_prompt": [
+        "110",
+        0
+      ],
+      "force_offload": true,
+      "use_disk_cache": false,
+      "device": "gpu",
+      "t5": [
+        "11",
+        0
+      ],
+      "model_to_offload": [
+        "22",
+        0
+      ]
+    },
+    "class_type": "WanVideoTextEncode",
+    "_meta": {
+      "title": "WanVideo TextEncode"
+    }
+  },
+  "22": {
+    "inputs": {
+      "model": "WAN2.2\\Wan2_2-TI2V-5B_fp8_e5m2_scaled_KJ.safetensors",
+      "base_precision": "fp16",
+      "quantization": "disabled",
+      "load_device": "offload_device",
+      "attention_mode": "sageattn",
+      "rms_norm_function": "default",
+      "compile_args": [
+        "35",
+        0
+      ],
+      "lora": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "WanVideoModelLoader",
+    "_meta": {
+      "title": "WanVideo Model Loader"
+    }
+  },
+  "27": {
+    "inputs": {
+      "steps": [
+        "217",
+        0
+      ],
+      "cfg": [
+        "478",
+        1
+      ],
+      "shift": [
+        "533",
+        1
+      ],
+      "seed": [
+        "512",
+        0
+      ],
+      "force_offload": true,
+      "scheduler": "flowmatch_pusa",
+      "riflex_freq_index": 0,
+      "denoise_strength": 1,
+      "batched_cfg": "",
+      "rope_function": "comfy",
+      "start_step": 0,
+      "end_step": -1,
+      "add_noise_to_samples": false,
+      "model": [
+        "22",
+        0
+      ],
+      "image_embeds": [
+        "187",
+        0
+      ],
+      "text_embeds": [
+        "16",
+        0
+      ],
+      "cache_args": [
+        "94",
+        0
+      ],
+      "slg_args": [
+        "91",
+        0
+      ],
+      "experimental_args": [
+        "90",
+        0
+      ]
+    },
+    "class_type": "WanVideoSampler",
+    "_meta": {
+      "title": "WanVideo Sampler"
+    }
+  },
+  "28": {
+    "inputs": {
+      "enable_vae_tiling": true,
+      "tile_x": 256,
+      "tile_y": 256,
+      "tile_stride_x": 32,
+      "tile_stride_y": 128,
+      "normalization": "default",
+      "vae": [
+        "38",
+        0
+      ],
+      "samples": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "WanVideoDecode",
+    "_meta": {
+      "title": "WanVideo Decode"
+    }
+  },
+  "35": {
+    "inputs": {
+      "backend": "inductor",
+      "fullgraph": false,
+      "mode": "default",
+      "dynamic": false,
+      "dynamo_cache_size_limit": 64,
+      "compile_transformer_blocks_only": true,
+      "dynamo_recompile_limit": 128,
+      "force_parameter_static_shapes": false,
+      "allow_unmerged_lora_compile": false
+    },
+    "class_type": "WanVideoTorchCompileSettings",
+    "_meta": {
+      "title": "WanVideo Torch Compile Settings"
+    }
+  },
+  "38": {
+    "inputs": {
+      "model_name": "WAN2.2\\wan2.2_vae.safetensors",
+      "precision": "fp32",
+      "use_cpu_cache": false,
+      "verbose": false
+    },
+    "class_type": "WanVideoVAELoader",
+    "_meta": {
+      "title": "WanVideo VAE Loader"
+    }
+  },
+  "58": {
+    "inputs": {
+      "image": "Image_1779440796494_391.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "加载图像"
+    }
+  },
+  "70": {
+    "inputs": {
+      "enable_vae_tiling": [
+        "219",
+        0
+      ],
+      "tile_x": 272,
+      "tile_y": 272,
+      "tile_stride_x": 144,
+      "tile_stride_y": 128,
+      "noise_aug_strength": 0,
+      "latent_strength": 1,
+      "vae": [
+        "38",
+        0
+      ],
+      "image": [
+        "245",
+        0
+      ]
+    },
+    "class_type": "WanVideoEncode",
+    "_meta": {
+      "title": "WanVideo Encode"
+    }
+  },
+  "78": {
+    "inputs": {
+      "width": [
+        "245",
+        1
+      ],
+      "height": [
+        "245",
+        2
+      ],
+      "num_frames": [
+        "188",
+        0
+      ],
+      "extra_latents": [
+        "70",
+        0
+      ]
+    },
+    "class_type": "WanVideoEmptyEmbeds",
+    "_meta": {
+      "title": "Encode First + Batch Shape"
+    }
+  },
+  "90": {
+    "inputs": {
+      "video_attention_split_steps": "",
+      "cfg_zero_star": true,
+      "use_zero_init": false,
+      "zero_star_steps": 0,
+      "use_fresca": false,
+      "fresca_scale_low": 1,
+      "fresca_scale_high": 1.25,
+      "fresca_freq_cutoff": 20,
+      "use_tcfg": true,
+      "raag_alpha": 0,
+      "bidirectional_sampling": false,
+      "temporal_score_rescaling": false,
+      "tsr_k": 0.95,
+      "tsr_sigma": 1
+    },
+    "class_type": "WanVideoExperimentalArgs",
+    "_meta": {
+      "title": "WanVideo Experimental Args"
+    }
+  },
+  "91": {
+    "inputs": {
+      "blocks": "7,8,9",
+      "start_percent": 0.1,
+      "end_percent": 0.7
+    },
+    "class_type": "WanVideoSLG",
+    "_meta": {
+      "title": "WanVideo SLG"
+    }
+  },
+  "94": {
+    "inputs": {
+      "easycache_thresh": 0.015,
+      "start_step": 8,
+      "end_step": -1,
+      "cache_device": "offload_device"
+    },
+    "class_type": "WanVideoEasyCache",
+    "_meta": {
+      "title": "WanVideo EasyCache"
+    }
+  },
+  "98": {
+    "inputs": {
+      "lora": "WAN2.2\\livewallpaper_wan22_5b_TI2V_000005000.safetensors",
+      "strength": 0.9,
+      "low_mem_load": true,
+      "merge_loras": false
+    },
+    "class_type": "WanVideoLoraSelect",
+    "_meta": {
+      "title": "WanVideo Lora Select"
+    }
+  },
+  "99": {
+    "inputs": {
+      "value": "anime live wallpaper, ultra subtle full-body idle animation, realistic breathing cycle clearly visible through chest, shoulders, collarbone and hair response, natural breathing-driven motion propagation, hair softly reacts to breathing and body movement, delicate secondary hair physics, gentle strand sway, subtle bangs movement, loose hair tips drifting naturally, tiny body sway synchronized with breathing, natural weight transfer, slight shoulder rise and fall, subtle torso expansion and contraction, soft clothing movement caused by breathing, micro posture adjustments, tiny head stabilization motion, living character presence, soft blinking at natural intervals, subtle eye focus changes, gentle expression micro-movements, delicate background ambient motion, camera locked, camera almost completely still, preserve original composition, preserve original framing, preserve original color palette, preserve original lighting, preserve original character design, preserve original anatomy, stable facial features, stable identity, stable eyes, stable mouth, stable hands, stable fingers, no pose change, no gesture change, no hand movement independent of breathing, no finger movement, no limb movement, no color shift, no scene change, no camera movement, no perspective drift, no morphing, no deformation, no flickering, no temporal inconsistency, high temporal coherence, breathing-focused animation, natural idle loop, subtle but clearly visible life-like motion"
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "Positive Prompt"
+    }
+  },
+  "110": {
+    "inputs": {
+      "value": "worst quality, low quality, flicker, bright tones, overexposed, aurora, static, blurry, subtitles, static, style, ambient occlusion, 3D, works, paintings, lightning, images, overall gray, JPEG artifacts, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn face, deformed, disfigured, misshapen limbs, fused fingers, still picture, messy background, three legs, walking backwards"
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "Negative Prompt"
+    }
+  },
+  "118": {
+    "inputs": {
+      "Xi": 3,
+      "Xf": 3,
+      "isfloatX": 1
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "Duration Hint (Seconds)"
+    }
+  },
+  "168": {
+    "inputs": {
+      "Xi": 704,
+      "Xf": 704,
+      "isfloatX": 0
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "Working Size (longest side)"
+    }
+  },
+  "169": {
+    "inputs": {
+      "string_a": [
+        "170",
+        0
+      ],
+      "string_b": [
+        "99",
+        0
+      ],
+      "delimiter": " "
+    },
+    "class_type": "StringConcatenate",
+    "_meta": {
+      "title": "Concat Pos Prompt"
+    }
+  },
+  "170": {
+    "inputs": {
+      "value": "l1v3w4llp4p3r"
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "LoRA Activation Word(s)"
+    }
+  },
+  "176": {
+    "inputs": {
+      "Xi": 60,
+      "Xf": 60,
+      "isfloatX": 0
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "Sample Framerate to Target"
+    }
+  },
+  "187": {
+    "inputs": {
+      "latent_index": [
+        "189",
+        0
+      ],
+      "embeds": [
+        "78",
+        0
+      ],
+      "extra_latents": [
+        "70",
+        0
+      ]
+    },
+    "class_type": "WanVideoAddExtraLatent",
+    "_meta": {
+      "title": "Encode Last Frame"
+    }
+  },
+  "188": {
+    "inputs": {
+      "expression": "a * b",
+      "a": [
+        "118",
+        0
+      ],
+      "b": [
+        "369",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Calculate Frames"
+    }
+  },
+  "189": {
+    "inputs": {
+      "expression": "(a - 1) / 4",
+      "a": [
+        "188",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Calculate last frame"
+    }
+  },
+  "217": {
+    "inputs": {
+      "Xi": 30,
+      "Xf": 30,
+      "isfloatX": 0
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "Steps"
+    }
+  },
+  "219": {
+    "inputs": {
+      "value": false
+    },
+    "class_type": "PrimitiveBoolean",
+    "_meta": {
+      "title": "Use Tiled Encoder"
+    }
+  },
+  "221": {
+    "inputs": {
+      "Xi": 9,
+      "Xf": 9.5,
+      "isfloatX": 1
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "CFG"
+    }
+  },
+  "245": {
+    "inputs": {
+      "width": [
+        "168",
+        0
+      ],
+      "height": [
+        "168",
+        0
+      ],
+      "resize_mode": "AR Scale + Divisible Crop",
+      "divisible_by": 32,
+      "max_batch_size": 25,
+      "sinc_window": 3,
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "precision": "fp32",
+      "image": [
+        "58",
+        0
+      ]
+    },
+    "class_type": "BatchResizeWithLanczos",
+    "_meta": {
+      "title": "Scale Input to Size"
+    }
+  },
+  "269": {
+    "inputs": {
+      "images": [
+        "548",
+        0
+      ]
+    },
+    "class_type": "PrepareLoopFrames",
+    "_meta": {
+      "title": "🐇 Prepare Loop Frames"
+    }
+  },
+  "270": {
+    "inputs": {
+      "method": "mkl",
+      "strength": 1,
+      "multithread": true,
+      "image_ref": [
+        "245",
+        0
+      ],
+      "image_target": [
+        "463",
+        0
+      ]
+    },
+    "class_type": "ColorMatch",
+    "_meta": {
+      "title": "Color Match to Input Image"
+    }
+  },
+  "276": {
+    "inputs": {
+      "batch": [
+        "352",
+        0
+      ]
+    },
+    "class_type": "BatchCount+",
+    "_meta": {
+      "title": "Get Framecount"
+    }
+  },
+  "277": {
+    "inputs": {
+      "expression": "(a / 2)",
+      "a": [
+        "276",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Get Num to Roll"
+    }
+  },
+  "278": {
+    "inputs": {
+      "offset": [
+        "277",
+        0
+      ],
+      "images": [
+        "352",
+        0
+      ]
+    },
+    "class_type": "RollFrames",
+    "_meta": {
+      "title": "🐇 Roll Frames"
+    }
+  },
+  "279": {
+    "inputs": {
+      "base_offset": [
+        "277",
+        0
+      ],
+      "m": [
+        "414",
+        0
+      ],
+      "images": [
+        "472",
+        0
+      ]
+    },
+    "class_type": "UnrollFrames",
+    "_meta": {
+      "title": "🐇 Unroll Frames"
+    }
+  },
+  "281": {
+    "inputs": {
+      "original_images": [
+        "269",
+        1
+      ],
+      "interpolated_frames": [
+        "473",
+        0
+      ]
+    },
+    "class_type": "AssembleLoopFrames",
+    "_meta": {
+      "title": "🐇 Assemble Loop Frames"
+    }
+  },
+  "331": {
+    "inputs": {
+      "expression": "a + 0",
+      "a": [
+        "176",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "coerce to float"
+    }
+  },
+  "341": {
+    "inputs": {
+      "frame_rate": [
+        "407",
+        1
+      ],
+      "loop_count": 0,
+      "filename_prefix": "LoopVid",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "trim_to_audio": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "359",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Output"
+    }
+  },
+  "352": {
+    "inputs": {
+      "any_01": [
+        "488",
+        0
+      ],
+      "any_02": [
+        "488",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "or_upscale"
+    }
+  },
+  "358": {
+    "inputs": {
+      "any_01": [
+        "279",
+        0
+      ],
+      "any_02": [
+        "352",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "if_roll_clip"
+    }
+  },
+  "359": {
+    "inputs": {
+      "any_01": [
+        "471",
+        0
+      ],
+      "any_02": [
+        "358",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "if_target_framerate"
+    }
+  },
+  "369": {
+    "inputs": {
+      "Xi": 24,
+      "Xf": 24,
+      "isfloatX": 0
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "Model Framerate"
+    }
+  },
+  "372": {
+    "inputs": {
+      "expression": "a * b",
+      "a": [
+        "369",
+        0
+      ],
+      "b": [
+        "414",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Get New Framerate"
+    }
+  },
+  "399": {
+    "inputs": {
+      "any_01": [
+        "401",
+        0
+      ],
+      "any_02": [
+        "402",
+        0
+      ],
+      "any_03": [
+        "369",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "Decide Framerate"
+    }
+  },
+  "401": {
+    "inputs": {
+      "expression": "a",
+      "a": [
+        "176",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Send Framerate Preference"
+    }
+  },
+  "402": {
+    "inputs": {
+      "expression": "a",
+      "a": [
+        "372",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "send_mult_framerate"
+    }
+  },
+  "407": {
+    "inputs": {
+      "expression": "a",
+      "a": [
+        "399",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "coerce to float"
+    }
+  },
+  "412": {
+    "inputs": {
+      "any_01": [
+        "402",
+        0
+      ],
+      "any_02": [
+        "369",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "decide fps_in"
+    }
+  },
+  "413": {
+    "inputs": {
+      "expression": "a",
+      "a": [
+        "412",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "coerce to float"
+    }
+  },
+  "414": {
+    "inputs": {
+      "Xi": 3,
+      "Xf": 3,
+      "isfloatX": 0
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "Interpolation Multiplier"
+    }
+  },
+  "463": {
+    "inputs": {
+      "trim_start_frames": 0,
+      "trim_end_frames": 4,
+      "clip_frames": [
+        "28",
+        0
+      ]
+    },
+    "class_type": "TrimBatchEnds",
+    "_meta": {
+      "title": "Cut Dirty Frames"
+    }
+  },
+  "465": {
+    "inputs": {
+      "max_end_crop_frames": 12,
+      "include_first_step": true,
+      "include_last_step": true,
+      "include_global_median_step": true,
+      "seam_window_frames": 6,
+      "distance_metric": "L1",
+      "score_in_8bit": false,
+      "use_ssim_similarity": true,
+      "use_exposure_guard": true,
+      "use_flow_guard": true,
+      "weight_step_size": 0.55,
+      "weight_similarity": 0.3,
+      "weight_exposure": 0.1,
+      "weight_flow": 0.05,
+      "ssim_downsample_scales": "1,2",
+      "accelerate_with_gpu": true,
+      "use_mixed_precision": true,
+      "clip_frames": [
+        "270",
+        0
+      ]
+    },
+    "class_type": "AutocropToLoop",
+    "_meta": {
+      "title": "🐇 Autocrop to Loop"
+    }
+  },
+  "471": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "fps_in": [
+        "413",
+        1
+      ],
+      "fps_out": [
+        "331",
+        1
+      ],
+      "scale_factor": 1,
+      "ensemble": true,
+      "linearize": true,
+      "lf_guardrail": true,
+      "lf_sigma": 13.5,
+      "source_pair_match": true,
+      "match_a_cap": 0.02,
+      "match_b_cap": 0.00784313725490196,
+      "edge_band_lock": true,
+      "tau_low": 0.0058823529411764705,
+      "tau_high": 0.023529411764705882,
+      "band_radius": 4,
+      "band_soft_sigma": 2,
+      "clear_cache_after_n_frames": 5,
+      "frames": [
+        "358",
+        0
+      ]
+    },
+    "class_type": "RIFE_FPS_Resample",
+    "_meta": {
+      "title": "🐇 RIFE VFI FPS Resample"
+    }
+  },
+  "472": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "multiplier": [
+        "414",
+        0
+      ],
+      "scale_factor": 1,
+      "ensemble": true,
+      "clear_cache_after_n_frames": 5,
+      "frames": [
+        "278",
+        0
+      ]
+    },
+    "class_type": "RIFE_VFI_Opt",
+    "_meta": {
+      "title": "Interpolate Rolled Clip"
+    }
+  },
+  "473": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "multiplier": [
+        "546",
+        1
+      ],
+      "t_mode": "custom_list",
+      "t_gamma": 1,
+      "t_min": 0,
+      "t_max": 1,
+      "scale_factor": 1,
+      "ensemble": true,
+      "clear_cache_after_n_frames": 10,
+      "custom_t_list_csv": [
+        "546",
+        0
+      ],
+      "frames": [
+        "269",
+        0
+      ]
+    },
+    "class_type": "RIFE_VFI_Advanced",
+    "_meta": {
+      "title": "Interpolate Over Seam"
+    }
+  },
+  "478": {
+    "inputs": {
+      "expression": "a",
+      "a": [
+        "221",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "coerce to float"
+    }
+  },
+  "488": {
+    "inputs": {
+      "any_01": [
+        "281",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "or_seam_interp"
+    }
+  },
+  "512": {
+    "inputs": {
+      "seed": -1
+    },
+    "class_type": "Seed (rgthree)",
+    "_meta": {
+      "title": "Seed"
+    }
+  },
+  "515": {
+    "inputs": {
+      "Xi": 10,
+      "Xf": 10,
+      "isfloatX": 0
+    },
+    "class_type": "mxSlider",
+    "_meta": {
+      "title": "Schedule Shift"
+    }
+  },
+  "518": {
+    "inputs": {
+      "anything": [
+        "28",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "清理显存占用"
+    }
+  },
+  "519": {
+    "inputs": {},
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "清理显存占用"
+    }
+  },
+  "520": {
+    "inputs": {
+      "anything": [
+        "281",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "清理显存占用"
+    }
+  },
+  "521": {
+    "inputs": {
+      "anything": [
+        "488",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "清理显存占用"
+    }
+  },
+  "522": {
+    "inputs": {
+      "anything": [
+        "279",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "清理显存占用"
+    }
+  },
+  "523": {
+    "inputs": {
+      "anything": [
+        "471",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "清理显存占用"
+    }
+  },
+  "528": {
+    "inputs": {
+      "anything": [
+        "359",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "清理显存占用"
+    }
+  },
+  "533": {
+    "inputs": {
+      "expression": "a",
+      "a": [
+        "515",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "coerce to float"
+    }
+  },
+  "537": {
+    "inputs": {
+      "anything": [
+        "359",
+        0
+      ]
+    },
+    "class_type": "easy clearCacheAll",
+    "_meta": {
+      "title": "清除全部缓存"
+    }
+  },
+  "546": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "scale_factor": 1,
+      "ensemble": true,
+      "multiplier": 2,
+      "use_first_two": true,
+      "use_last_two": true,
+      "use_global_median": true,
+      "calibrate_metric": "MSE",
+      "calibrate_iters": 12,
+      "t_min": 0,
+      "t_max": 0.995,
+      "auto_tmax": true,
+      "t_cap": 0.995,
+      "full_clip": [
+        "269",
+        1
+      ]
+    },
+    "class_type": "RIFE_SeamTimingAnalyzer",
+    "_meta": {
+      "title": "🐇 RIFE Seam Timing Analyzer"
+    }
+  },
+  "548": {
+    "inputs": {
+      "trim_start_frames": 0,
+      "trim_end_frames": 2,
+      "clip_frames": [
+        "465",
+        0
+      ]
+    },
+    "class_type": "TrimBatchEnds",
+    "_meta": {
+      "title": "Round Off Autocrop"
+    }
+  },
+  "560": {
+    "inputs": {
+      "source": [
+        "341",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "预览任意"
+    }
+  }
+}
