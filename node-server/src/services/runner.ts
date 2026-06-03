@@ -442,7 +442,16 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
           if (req.speaker) node.inputs.speaker = req.speaker;
           node.inputs.language = langVal;
           if (req.instruct) node.inputs.instruct = req.instruct;
-          if (req.ref_text) node.inputs.ref_text = req.ref_text;
+          if (node.class_type === 'Qwen3VoiceClone') {
+            // 有参考音频但没填 ref_text 时，用提示词原文作为代替
+            if (req.ref_audio_name && !req.ref_text) {
+              node.inputs.ref_text = node.inputs.text;
+            } else if (req.ref_text) {
+              node.inputs.ref_text = req.ref_text;
+            }
+          } else if (req.ref_text) {
+            node.inputs.ref_text = req.ref_text;
+          }
           node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
         }
       }
