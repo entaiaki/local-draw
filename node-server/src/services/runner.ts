@@ -594,7 +594,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     const images: { filename: string; subfolder: string }[] = [];
     // 始终扫描 output 根目录，覆盖 history 未报告文件名的场景（不递归子目录，避免误扫其他任务的输出）
     for (const f of fs.readdirSync(config.output_dir)) {
-      if (!/\.(png|jpg|jpeg|webp|gif|mp4|webm|wav|flac)$/i.test(f)) continue;
+      if (f.startsWith('.')) continue; // 跳过隐藏文件
       if (foundFiles.has(f)) continue;
       try {
         const fp = path.join(config.output_dir, f);
