@@ -49,6 +49,7 @@ const config = loadConfig();
 
 // GET /health — 后端健康检查
 app.get('/health', (_req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.json({ status: 'ok', timestamp: Date.now() });
 });
 
