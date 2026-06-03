@@ -241,7 +241,13 @@ router.post('/queue', async (req: Request, res: Response) => {
   ];
   for (const m of MODEL_COST) {
     if (wfPath.startsWith(m.prefix)) {
-      deductedCost = (pointsCfg as any)[m.cfgKey] || 20;
+      if (m.prefix === 'TTS/') {
+        // TTS 动态计费：按字符数
+        const text = String((req.body as any)?.direct_prompt || '');
+        deductedCost = Math.max(pointsCfg.tts_generate || 1, Math.ceil(text.length * (pointsCfg.tts_per_char || 0.01)));
+      } else {
+        deductedCost = (pointsCfg as any)[m.cfgKey] || 20;
+      }
       break;
     }
   }
