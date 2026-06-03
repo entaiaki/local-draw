@@ -137,6 +137,10 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
     EmptyLatentImage: ['width', 'height', 'batch_size'],
     EmptySD3LatentImage: ['width', 'height', 'batch_size'],
     EmptyFluxLatentImage: ['width', 'height', 'batch_size'],
+    Qwen3Loader: ['repo_id', 'source', 'precision', 'attention'],
+    Qwen3VoiceDesign: ['text', 'instruct', 'language', 'seed'],
+    Qwen3CustomVoice: ['text', 'language', 'speaker', 'ref_text', 'ref_audio_path'],
+    Qwen3VoiceClone: ['text', 'language', 'ref_text'],
   };
 
   function extractInputs(node: any, lmap: Record<number, [string, number]>): Record<string, any> {
@@ -170,20 +174,19 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
         }
       }
     }
-    // Fallback for newer ComfyUI nodes that store widgets in widgets_values only (no inputs entries)
-    if (inpList.length === 0 && widgets.length > 0 && wi < widgets.length) {
-      const known = WIDGET_ONLY_NAMES[node.type] || [];
-      if (known.length > 0) {
-        for (let i = 0; i < known.length && wi < widgets.length; i++) {
-          result[known[i]] = widgets[wi];
-          wi++;
-        }
-      } else {
-        // Unknown node type: assign positional names
-        for (let i = 0; wi < widgets.length; i++) {
-          result[`widget_${i}`] = widgets[wi];
-          wi++;
-        }
+    // 已知 widgets-only 类型的节点：widgets 映射到指定字段
+    const known = WIDGET_ONLY_NAMES[node.type] || [];
+    if (known.length > 0) {
+      for (let i = 0; i < known.length; i++) {
+        if (result[known[i]] !== undefined) continue; // 已通过 inputs 设置
+        result[known[i]] = wi < widgets.length ? widgets[wi] : (known[i] === 'seed' ? Math.floor(Math.random() * 2147483647) + 1 : 0);
+        wi++;
+      }
+    } else if (inpList.length === 0 && widgets.length > 0 && wi < widgets.length) {
+      // Unknown node type: assign positional names
+      for (let i = 0; wi < widgets.length; i++) {
+        result[`widget_${i}`] = widgets[wi];
+        wi++;
       }
     }
     return result;
