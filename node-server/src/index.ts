@@ -407,6 +407,40 @@ app.post('/api/img2img/upload', async (req, res) => {
   });
 });
 
+// POST /api/tts/upload-ref — TTS 声音克隆上传参考音频
+app.post('/api/tts/upload-ref', (req, res) => {
+  const multer = require('multer');
+  const upload = multer().single('audio');
+  upload(req, res, async (err: any) => {
+    if (err) return res.status(400).json({ error: 'upload failed: ' + (err.message || String(err)) });
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: 'no audio file' });
+    if ((file.buffer?.length || 0) > 20 * 1024 * 1024) return res.status(413).json({ error: '音频超过20MB限制' });
+    const uuid = require('uuid');
+    let ext = (file.originalname?.split('.').pop()?.toLowerCase()) || '';
+    const mimeExt = file.mimetype?.split('/').pop() || '';
+    if (!ext || !['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext)) {
+      ext = (mimeExt === 'x-wav' || mimeExt === 'wav' ? 'wav' : mimeExt === 'mpeg' ? 'mp3' : mimeExt) || 'wav';
+    }
+    let safeName = `tts_ref_${uuid.v4().replace(/-/g, '').slice(0, 12)}_${Math.floor(Date.now() / 1000)}.${ext}`;
+    const upDir = path.join(process.cwd(), '..', 'web', 'uploads');
+    fs.mkdirSync(upDir, { recursive: true });
+    fs.writeFileSync(path.join(upDir, safeName), file.buffer);
+    // 上传到 ComfyUI input 目录
+    try {
+      const FormData = require('form-data');
+      const fd = new FormData();
+      fd.append('image', file.buffer, { filename: safeName, contentType: file.mimetype });
+      fd.append('type', 'input');
+      fd.append('overwrite', 'true');
+      const comfyApi = axios.create({ baseURL: `http://${require('./services/config.js').loadConfig().comfyui_api}`, timeout: 30000 });
+      const r = await comfyApi.post('/api/upload/image', fd, { headers: { ...fd.getHeaders(), 'Comfy-User': '' } });
+      safeName = r.data.name;
+    } catch {}
+    res.json({ filename: safeName });
+  });
+});
+
 // POST /api/_reset
 app.post('/api/_reset', (req, res) => {
   const { setActive, resetActive } = require('./routes/status.js');

@@ -420,6 +420,18 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     // 🔊 TTS 工作流：注入参数到 Qwen3CustomVoice
     const isTtsWF = (req.workflow_path || '').startsWith('TTS/');
     if (isTtsWF) {
+      // 声音克隆：如有参考音频，动态注入 LoadAudio 节点
+      const cloneNodeId = Object.entries(prompt_dict).find(([, nd]: any) => nd.class_type === 'Qwen3VoiceClone')?.[0];
+      if (cloneNodeId && req.ref_audio_name) {
+        // 找一个不冲突的节点 ID（所有现有节点 ID 取最大值 +1）
+        const ids = Object.keys(prompt_dict).map(Number).filter(n => !isNaN(n));
+        const loadAudioId = String((ids.length ? Math.max(...ids) : 0) + 1);
+        prompt_dict[loadAudioId] = {
+          inputs: { audio: req.ref_audio_name },
+          class_type: 'LoadAudio',
+        };
+        prompt_dict[cloneNodeId].inputs.ref_audio = [loadAudioId, 0];
+      }
       // 映射语言值到 ComfyUI 节点期望的格式（首字母大写）
       const langMap: Record<string, string> = { auto: 'Auto', zh: 'Chinese', cn: 'Chinese', en: 'English', ja: 'Japanese', jp: 'Japanese', ko: 'Korean', kr: 'Korean' };
       const langVal = (req.language && langMap[req.language.toLowerCase()]) || req.language || 'Auto';
