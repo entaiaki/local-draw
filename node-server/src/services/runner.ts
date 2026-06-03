@@ -443,12 +443,11 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
           node.inputs.language = langVal;
           if (req.instruct) node.inputs.instruct = req.instruct;
           if (node.class_type === 'Qwen3VoiceClone') {
-            // 有参考音频但没填 ref_text 时，用提示词原文作为代替
+            // 声音克隆：有参考音频就必须有参考文本，否则拒绝
             if (req.ref_audio_name && !req.ref_text) {
-              node.inputs.ref_text = node.inputs.text;
-            } else if (req.ref_text) {
-              node.inputs.ref_text = req.ref_text;
+              throw new Error('声音克隆模式下参考文本（ref_text）为必填项');
             }
+            if (req.ref_text) node.inputs.ref_text = req.ref_text;
           } else if (req.ref_text) {
             node.inputs.ref_text = req.ref_text;
           }
