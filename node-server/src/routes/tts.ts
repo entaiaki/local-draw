@@ -347,8 +347,15 @@ router.get('/speakers', async (_req: Request, res: Response) => {
     res.json(data);
   } catch {
     res.json({ speakers: [
-      { id: 'Dylan', description: 'Dylan - 默认' },
       { id: 'Vivian', description: 'Vivian' },
+      { id: 'Serena', description: 'Serena' },
+      { id: 'Uncle_Fu', description: 'Uncle_Fu' },
+      { id: 'Dylan', description: 'Dylan' },
+      { id: 'Eric', description: 'Eric' },
+      { id: 'Ryan', description: 'Ryan' },
+      { id: 'Aiden', description: 'Aiden' },
+      { id: 'Ono_Anna', description: 'Ono_Anna' },
+      { id: 'Sohee', description: 'Sohee' },
     ]});
   }
 });
