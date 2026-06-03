@@ -1,552 +1,156 @@
 {
-  "id": "290d487a-00a1-4157-8ed7-2e50c859d0db",
-  "revision": 0,
-  "last_node_id": 45,
-  "last_link_id": 33,
-  "nodes": [
-    {
-      "id": 39,
-      "type": "PreviewAudio",
-      "pos": [
-        1663.8321674569477,
-        -200.095077090902
-      ],
-      "size": [
-        270,
-        88
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "audio",
-          "type": "AUDIO",
-          "link": 30
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.10.0",
-        "Node name for S&R": "PreviewAudio",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.2",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 40,
-      "type": "PreviewAudio",
-      "pos": [
-        541.4691081646672,
-        -247.42941029156628
-      ],
-      "size": [
-        270,
-        88
-      ],
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "audio",
-          "type": "AUDIO",
-          "link": 31
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.10.0",
-        "Node name for S&R": "PreviewAudio",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.2",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 42,
-      "type": "Qwen3Loader",
-      "pos": [
-        840.4199737864682,
-        -241.482166705809
-      ],
-      "size": [
-        354.63355280728,
-        154
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "model",
-          "type": "QWEN3_MODEL",
-          "links": [
-            29
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-qwen3-tts",
-        "ver": "3751cf3eada5b17f6f1bc82b0c8c318407181c68",
-        "Node name for S&R": "Qwen3Loader",
-        "aux_id": "DarioFT/ComfyUI-Qwen3-TTS",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.2",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
-        "ModelScope",
-        "bf16",
-        "auto",
-        "C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\models\\Qwen3-TTS\\Qwen3\\Qwen3-TTS-12Hz-1.7B-VoiceDesign"
+  "36": {
+    "inputs": {
+      "audioUI": "",
+      "audio": [
+        "45",
+        0
       ]
     },
-    {
-      "id": 43,
-      "type": "Qwen3Loader",
-      "pos": [
-        -263.1908581114563,
-        -249.59808292737065
-      ],
-      "size": [
-        354.63355280728,
-        154
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "model",
-          "type": "QWEN3_MODEL",
-          "links": [
-            28
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-qwen3-tts",
-        "ver": "3751cf3eada5b17f6f1bc82b0c8c318407181c68",
-        "Node name for S&R": "Qwen3Loader",
-        "aux_id": "DarioFT/ComfyUI-Qwen3-TTS",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.2",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
-        "ModelScope",
-        "bf16",
-        "auto",
-        "C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\models\\Qwen3-TTS\\Qwen3\\Qwen3-TTS-12Hz-1.7B-CustomVoice"
-      ]
-    },
-    {
-      "id": 41,
-      "type": "Qwen3Loader",
-      "pos": [
-        844.1128289806817,
-        94.95579808942439
-      ],
-      "size": [
-        354.63355280728,
-        154
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "model",
-          "type": "QWEN3_MODEL",
-          "links": [
-            32
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-qwen3-tts",
-        "ver": "3751cf3eada5b17f6f1bc82b0c8c318407181c68",
-        "Node name for S&R": "Qwen3Loader",
-        "aux_id": "DarioFT/ComfyUI-Qwen3-TTS",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.2",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
-        "ModelScope",
-        "bf16",
-        "auto",
-        "C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\models\\Qwen3-TTS\\Qwen3\\Qwen3-TTS-12Hz-1.7B-base"
-      ]
-    },
-    {
-      "id": 44,
-      "type": "LoadAudio",
-      "pos": [
-        901.9561385784293,
-        295.30419335960016
-      ],
-      "size": [
-        298.2731745581656,
-        136
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "AUDIO",
-          "type": "AUDIO",
-          "links": [
-            33
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.10.0",
-        "Node name for S&R": "LoadAudio",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.2"
-        }
-      },
-      "widgets_values": [
-        "何广智.mp3",
-        null,
-        null
-      ]
-    },
-    {
-      "id": 36,
-      "type": "PreviewAudio",
-      "pos": [
-        1686.6332577822807,
-        110.03672364900754
-      ],
-      "size": [
-        270,
-        88
-      ],
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "audio",
-          "type": "AUDIO",
-          "link": 27
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.10.0",
-        "Node name for S&R": "PreviewAudio",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.2",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 37,
-      "type": "Qwen3CustomVoice",
-      "pos": [
-        126.74211143933563,
-        -249.3046843795342
-      ],
-      "size": [
-        395.1242404205476,
-        381.373228200831
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "QWEN3_MODEL",
-          "link": 28
-        }
-      ],
-      "outputs": [
-        {
-          "name": "AUDIO",
-          "type": "AUDIO",
-          "links": [
-            31
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-qwen3-tts",
-        "ver": "3751cf3eada5b17f6f1bc82b0c8c318407181c68",
-        "Node name for S&R": "Qwen3CustomVoice",
-        "aux_id": "DarioFT/ComfyUI-Qwen3-TTS",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.2",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "先把每一个分镜头准备好，然后让AI根据对话自动生成一整段视频。\n\n没错，LTX2支持多图参考视频生成，并且可以生成适配的语音，真正的一键完成视频制作，而且本地！开源！免费！下面我们来看一些效果演示。\n\n今天这期视频主要分为三部分。\n第一部分效果演示。\n第二部分工作流详细分析。\n第三部分本地以及云端使用教程。\n\n如果你想做的不只是一个“动起来的画面”，而是有镜头、有节奏、有对话的完整场景，那这一期内容，你一定要看完。\n\n想要深入学习ComfyUI的同学欢迎加入小黄瓜的知识星球。",
-        "Auto",
-        "Dylan",
-        "口播，正经口播，片头解说，自媒体，",
-        ""
-      ]
-    },
-    {
-      "id": 38,
-      "type": "Qwen3VoiceDesign",
-      "pos": [
-        1232.5229977161887,
-        -207.6364937463427
-      ],
-      "size": [
-        400,
-        200
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "QWEN3_MODEL",
-          "link": 29
-        }
-      ],
-      "outputs": [
-        {
-          "name": "AUDIO",
-          "type": "AUDIO",
-          "links": [
-            30
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-qwen3-tts",
-        "ver": "3751cf3eada5b17f6f1bc82b0c8c318407181c68",
-        "Node name for S&R": "Qwen3VoiceDesign",
-        "aux_id": "DarioFT/ComfyUI-Qwen3-TTS",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.2"
-        }
-      },
-      "widgets_values": [
-        "嗯~~今天陪我一起嘛，人家就想跟你一起玩，玩什么不重要的，只要跟你在一起就可以",
-        "女人，萝莉音，难过，甜美，撒娇，",
-        "Auto"
-      ]
-    },
-    {
-      "id": 45,
-      "type": "Qwen3VoiceClone",
-      "pos": [
-        1236.3655853963724,
-        107.81456866658361
-      ],
-      "size": [
-        426.55964882736794,
-        311.38183244407185
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "QWEN3_MODEL",
-          "link": 32
-        },
-        {
-          "name": "ref_audio",
-          "shape": 7,
-          "type": "AUDIO",
-          "link": 33
-        },
-        {
-          "name": "prompt",
-          "shape": 7,
-          "type": "QWEN3_PROMPT",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "AUDIO",
-          "type": "AUDIO",
-          "links": [
-            27
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-qwen3-tts",
-        "ver": "3751cf3eada5b17f6f1bc82b0c8c318407181c68",
-        "Node name for S&R": "Qwen3VoiceClone",
-        "aux_id": "DarioFT/ComfyUI-Qwen3-TTS",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.2"
-        }
-      },
-      "widgets_values": [
-        "极简，未来主义，光效应艺术风格，纯克莱因蓝色背景，幻觉+重复+致幻，弥散，色彩半调，丝网印，半调图案，颗粒感，复古。 随机模糊，随机构图，随机蝴蝶，随机植物，花从下面是绿色的草地开始生长并最终组成灯塔的形状，繁花，鲜花簇拥，动态角度+大张力角度，视觉错觉，艺术感加强，超现实主义，投影+荧光+柔光+虚化+色散，氛围感加强，反光+珠光，超清晰，画面左上方有极细无衬线字体“BENTHAM .26”、画面右上方有极细无衬线字体“Dreamina.AI”艺术，高级的氛围感",
-        "Auto",
-        "好像越美的东西，对这个世界来讲就越残忍，当我想到这里的时候，我就突然意识到，我可真是一朵带刺的玫瑰啊，"
-      ]
+    "class_type": "PreviewAudio",
+    "_meta": {
+      "title": "预览音频"
     }
-  ],
-  "links": [
-    [
-      27,
-      45,
-      0,
-      36,
-      0,
-      "AUDIO"
-    ],
-    [
-      28,
-      43,
-      0,
-      37,
-      0,
-      "QWEN3_MODEL"
-    ],
-    [
-      29,
-      42,
-      0,
-      38,
-      0,
-      "QWEN3_MODEL"
-    ],
-    [
-      30,
-      38,
-      0,
-      39,
-      0,
-      "AUDIO"
-    ],
-    [
-      31,
-      37,
-      0,
-      40,
-      0,
-      "AUDIO"
-    ],
-    [
-      32,
-      41,
-      0,
-      45,
-      0,
-      "QWEN3_MODEL"
-    ],
-    [
-      33,
-      44,
-      0,
-      45,
-      1,
-      "AUDIO"
-    ]
-  ],
-  "groups": [
-    {
-      "id": 1,
-      "title": "预设角色",
-      "bounding": [
-        -273.1908581114563,
-        -323.1980829273707,
-        1094.6599662761234,
-        465.2666267486675
-      ],
-      "color": "#3f789e",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "id": 2,
-      "title": "自定义音色",
-      "bounding": [
-        830.4199737864682,
-        -315.0821667058089,
-        1113.4121936704842,
-        317.44567295946626
-      ],
-      "color": "#3f789e",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
-      "id": 3,
-      "title": "音色克隆",
-      "bounding": [
-        834.1128289806817,
-        21.355798089424553,
-        1132.5204288016034,
-        419.94839527017587
-      ],
-      "color": "#3f789e",
-      "font_size": 24,
-      "flags": {}
-    }
-  ],
-  "config": {},
-  "extra": {
-    "workflowRendererVersion": "LG",
-    "ue_links": [],
-    "ds": {
-      "scale": 1.0610764609500016,
-      "offset": [
-        360.63779401636066,
-        557.7403314943791
-      ]
-    },
-    "frontendVersion": "1.36.14",
-    "links_added_by_ue": [],
-    "VHS_latentpreview": false,
-    "VHS_latentpreviewrate": 0,
-    "VHS_MetadataImage": true,
-    "VHS_KeepIntermediate": true
   },
-  "version": 0.4
+  "37": {
+    "inputs": {
+      "text": "先把每一个分镜头准备好，然后让AI根据对话自动生成一整段视频。\n\n没错，LTX2支持多图参考视频生成，并且可以生成适配的语音，真正的一键完成视频制作，而且本地！开源！免费！下面我们来看一些效果演示。\n\n今天这期视频主要分为三部分。\n第一部分效果演示。\n第二部分工作流详细分析。\n第三部分本地以及云端使用教程。\n\n如果你想做的不只是一个“动起来的画面”，而是有镜头、有节奏、有对话的完整场景，那这一期内容，你一定要看完。\n\n想要深入学习ComfyUI的同学欢迎加入小黄瓜的知识星球。",
+      "language": "Auto",
+      "speaker": "Dylan",
+      "seed": "口播，正经口播，片头解说，自媒体，",
+      "instruct": "",
+      "custom_speaker_name": "",
+      "max_new_tokens": 2048,
+      "model": [
+        "43",
+        0
+      ]
+    },
+    "class_type": "Qwen3CustomVoice",
+    "_meta": {
+      "title": "Qwen3-TTS Custom Voice"
+    }
+  },
+  "38": {
+    "inputs": {
+      "text": "嗯~~今天陪我一起嘛，人家就想跟你一起玩，玩什么不重要的，只要跟你在一起就可以",
+      "instruct": "女人，萝莉音，难过，甜美，撒娇，",
+      "language": "Auto",
+      "seed": 42,
+      "model": [
+        "42",
+        0
+      ]
+    },
+    "class_type": "Qwen3VoiceDesign",
+    "_meta": {
+      "title": "Qwen3-TTS Voice Design"
+    }
+  },
+  "39": {
+    "inputs": {
+      "audioUI": "",
+      "audio": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "PreviewAudio",
+    "_meta": {
+      "title": "预览音频"
+    }
+  },
+  "40": {
+    "inputs": {
+      "audioUI": "",
+      "audio": [
+        "37",
+        0
+      ]
+    },
+    "class_type": "PreviewAudio",
+    "_meta": {
+      "title": "预览音频"
+    }
+  },
+  "41": {
+    "inputs": {
+      "repo_id": "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+      "source": "ModelScope",
+      "precision": "bf16",
+      "attention": "auto",
+      "local_model_path": "E:\\ComfyUI_windows_portable\\ComfyUI\\models\\Qwen3\\Qwen3-TTS-12Hz-1.7B-base"
+    },
+    "class_type": "Qwen3Loader",
+    "_meta": {
+      "title": "Qwen3-TTS Loader"
+    }
+  },
+  "42": {
+    "inputs": {
+      "repo_id": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+      "source": "ModelScope",
+      "precision": "bf16",
+      "attention": "auto",
+      "local_model_path": "E:\\ComfyUI_windows_portable\\ComfyUI\\models\\Qwen3\\Qwen3-TTS-12Hz-1.7B-VoiceDesign"
+    },
+    "class_type": "Qwen3Loader",
+    "_meta": {
+      "title": "Qwen3-TTS Loader"
+    }
+  },
+  "43": {
+    "inputs": {
+      "repo_id": "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
+      "source": "ModelScope",
+      "precision": "bf16",
+      "attention": "auto",
+      "local_model_path": "E:\\ComfyUI_windows_portable\\ComfyUI\\models\\Qwen3\\Qwen3-TTS-12Hz-1.7B-base"
+    },
+    "class_type": "Qwen3Loader",
+    "_meta": {
+      "title": "Qwen3-TTS Loader"
+    }
+  },
+  "44": {
+    "inputs": {
+      "audio": "何广智.mp3",
+      "audioUI": "/api/view?filename=%E4%BD%95%E5%B9%BF%E6%99%BA.mp3&type=input&subfolder=&rand=0.039585086283670745"
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "加载音频"
+    }
+  },
+  "45": {
+    "inputs": {
+      "text": "极简，未来主义，光效应艺术风格，纯克莱因蓝色背景，幻觉+重复+致幻，弥散，色彩半调，丝网印，半调图案，颗粒感，复古。 随机模糊，随机构图，随机蝴蝶，随机植物，花从下面是绿色的草地开始生长并最终组成灯塔的形状，繁花，鲜花簇拥，动态角度+大张力角度，视觉错觉，艺术感加强，超现实主义，投影+荧光+柔光+虚化+色散，氛围感加强，反光+珠光，超清晰，画面左上方有极细无衬线字体“BENTHAM .26”、画面右上方有极细无衬线字体“Dreamina.AI”艺术，高级的氛围感",
+      "seed": "Auto",
+      "language": "Auto",
+      "ref_text": "",
+      "max_new_tokens": 2048,
+      "ref_audio_max_seconds": 30,
+      "model": [
+        "41",
+        0
+      ],
+      "ref_audio": [
+        "44",
+        0
+      ]
+    },
+    "class_type": "Qwen3VoiceClone",
+    "_meta": {
+      "title": "Qwen3-TTS Voice Clone"
+    }
+  },
+  "46": {
+    "inputs": {
+      "ckpt_name": "waiIllustriousSDXL_v170.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Checkpoint加载器（简易）"
+    }
+  }
 }

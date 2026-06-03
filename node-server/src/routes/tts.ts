@@ -91,8 +91,8 @@ async function processTtsQueue(): Promise<void> {
       saveTtsState();
       try {
         if (item.speaker) {
-          const { callTtsCustomVoice } = await import('../services/tts_client.js');
-          const result = await callTtsCustomVoice({
+          const { callTtsViaComfy } = await import('../services/tts_client.js');
+          const result = await callTtsViaComfy({
             text: item.text, speaker: item.speaker, language: item.language, instruct: item.instruct,
           });
           item.outputPath = result.output_path;
