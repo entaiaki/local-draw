@@ -7,7 +7,7 @@ import sharp from 'sharp';
 const router = Router();
 router.use(express.json({ limit: "50mb" }));
 const config = loadConfig();
-const OUTPUT_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm'];
+const OUTPUT_IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm', '.wav', '.flac'];
 const THUMB_DIR = path.join(process.cwd(), 'thumbnails');
 
 function resolveOutputPath(rel: string): string | null {
@@ -39,7 +39,7 @@ router.get('/file', async (req: Request, res: Response) => {
   const fp = resolveOutputPath(req.query.path as string);
   if (!fp) return res.status(404).json({ error: 'not found' });
   const ext = path.extname(fp).toLowerCase();
-  if (!OUTPUT_IMAGE_EXTS.includes(ext)) return res.status(400).json({ error: 'not an image' });
+  if (!OUTPUT_IMAGE_EXTS.includes(ext)) return res.status(400).json({ error: 'not a supported file' });
   // raw=1: 跳过压缩，直接下载原图
   if (req.query.raw === '1') {
     const mt: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm' };
@@ -49,6 +49,10 @@ router.get('/file', async (req: Request, res: Response) => {
     });
   }
   // 视频文件直接返回，跳过压缩
+  if (ext === '.wav' || ext === '.flac') {
+    const mtAudio: Record<string, string> = { '.wav': 'audio/wav', '.flac': 'audio/flac' };
+    return res.sendFile(fp, { headers: { 'Content-Type': mtAudio[ext] || 'audio/wav' } });
+  }
   if (ext === '.mp4' || ext === '.webm') {
     const mtVid: Record<string, string> = { '.mp4': 'video/mp4', '.webm': 'video/webm' };
     return res.sendFile(fp, { headers: { 'Content-Type': mtVid[ext] || 'video/mp4' } });
@@ -122,6 +126,27 @@ router.get('/thumbnail', (req: Request, res: Response) => {
   res.status(404).json({ error: 'not found' });
 });
 
+
+// GET /api/output/meta — 获取文件的 prompt 元数据
+router.get('/meta', (req: Request, res: Response) => {
+  const p = req.query.path as string;
+  if (!p) return res.status(400).json({ error: 'need path' });
+  const basename = p.split('/').pop()?.split('\\').pop() || p;
+  const pmFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+  try {
+    const pm = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
+    const meta = pm[basename];
+    if (meta) return res.json(meta);
+  } catch {}
+  // 尝试模糊匹配
+  try {
+    const pm = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
+    for (const [k, v] of Object.entries(pm)) {
+      if (k.endsWith(basename)) return res.json(v);
+    }
+  } catch {}
+  res.json({ prompt: '', workflow_path: '' });
+});
 
 // POST /api/output/fork — fork
 router.post('/fork', async (req, res) => {

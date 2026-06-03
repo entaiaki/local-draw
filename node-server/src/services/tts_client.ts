@@ -93,31 +93,76 @@ export async function callTtsViaComfy(params: TtsCustomVoiceParams): Promise<Tts
     try {
       const r = await axios.get(`${comfyUrl}/api/history/${promptId}`, { timeout: 10000 });
       const h = r.data[promptId];
-      if (h) {
-        // 提取音频文件
-        const outs = h.outputs || {};
-        for (const [, out] of Object.entries(outs)) {
-          const o = out as any;
-          for (const key of ['audio', 'audios']) {
-            const list = o[key];
-            if (list) {
-              for (const item of (Array.isArray(list) ? list : [list])) {
-                const fn = item.filename || item;
-                if (typeof fn === 'string') {
-                  const outPath = path.join(config.output_dir, fn);
-                  if (fs.existsSync(outPath)) {
-                    return { ok: true, output_path: outPath, sample_rate: 24000 };
-                  }
-                }
-              }
-            }
-          }
-        }
-        // 没有找到音频文件也返回成功（文件可能在子目录）
-        return { ok: true, output_path: '', sample_rate: 24000 };
+      if (!h) { await sleep(1000); continue; }
+
+      // 检查 ComfyUI 执行错误
+      if (h.error) {
+        throw new Error(`ComfyUI 生成失败: ${h.error.details || h.error.message || JSON.stringify(h.error)}`);
       }
-    } catch {}
-    await new Promise(r => setTimeout(r, 1000));
+
+      // 提取音频文件
+      const audioPath = findAudioFromHistory(h.outputs, config.output_dir);
+      if (audioPath) {
+        return { ok: true, output_path: audioPath, sample_rate: 24000 };
+      }
+
+      throw new Error('ComfyUI 生成完成但未找到音频输出文件');
+    } catch (e: any) {
+      if (e.message && (e.message.includes('ComfyUI') || e.message.includes('音频输出'))) throw e;
+      // axios 错误或 history 未就绪，继续轮询
+    }
+    await sleep(1000);
   }
   throw new Error('TTS 生成超时');
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function findAudioFromHistory(outputs: any, outputDir: string): string | null {
+  const comfyBase = path.dirname(outputDir); // ComfyUI 根目录
+  const tempDir = path.join(comfyBase, 'temp');
+
+  for (const [, out] of Object.entries(outputs || {})) {
+    const o = out as any;
+    for (const key of ['audio', 'audios']) {
+      const list = o[key];
+      if (!list) continue;
+      const items = Array.isArray(list) ? list : [list];
+      for (const item of items) {
+        // item 可能是字符串 "filename.wav" 或对象 {filename, subfolder, type}
+        const fn = typeof item === 'string' ? item : item?.filename;
+        if (!fn || typeof fn !== 'string') continue;
+
+        const subfolder = typeof item === 'object' ? (item.subfolder || '') : '';
+        const type = typeof item === 'object' ? (item.type || 'output') : 'output';
+
+        // 根据 type 选择基础目录
+        const baseDir = type === 'temp' ? tempDir : outputDir;
+
+        // 优先尝试纯文件名（无子目录情况）
+        const candidates: string[] = [path.join(baseDir, subfolder, fn)];
+        // 如果 subfolder 非空，也试一下直接根目录
+        if (subfolder) candidates.push(path.join(baseDir, fn));
+        // 如果文件不存在且扩展名不是 .wav，尝试 .wav
+        if (!fn.toLowerCase().endsWith('.wav')) {
+          const baseName = fn.replace(/\.[^.]+$/, '');
+          candidates.push(path.join(baseDir, subfolder, `${baseName}.wav`));
+          if (subfolder) candidates.push(path.join(baseDir, `${baseName}.wav`));
+        }
+        // 如果文件不存在且扩展名不是 .flac，尝试 .flac
+        if (!fn.toLowerCase().endsWith('.flac')) {
+          const baseName = fn.replace(/\.[^.]+$/, '');
+          candidates.push(path.join(baseDir, subfolder, `${baseName}.flac`));
+          if (subfolder) candidates.push(path.join(baseDir, `${baseName}.flac`));
+        }
+
+        for (const p of candidates) {
+          if (fs.existsSync(p)) return p;
+        }
+      }
+    }
+  }
+  return null;
 }

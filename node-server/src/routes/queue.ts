@@ -237,6 +237,7 @@ router.post('/queue', async (req: Request, res: Response) => {
     { prefix: 'Qwen/',    cfgKey: isImg2img ? 'image_to_image_qwen' : 'image_to_image' },
     { prefix: 'WAN2.2/',  cfgKey: 'text_to_video' },
     { prefix: 'LTX/',     cfgKey: 'text_to_video' },
+    { prefix: 'TTS/',     cfgKey: 'tts_generate' },
   ];
   for (const m of MODEL_COST) {
     if (wfPath.startsWith(m.prefix)) {
@@ -284,7 +285,14 @@ router.post('/queue', async (req: Request, res: Response) => {
       return res.status(400).json({ detail: '非法的流程路径' });
     }
     const wfFull = path.resolve(config.workflows_dir, wfPath);
-    if (!wfFull.startsWith(path.resolve(config.workflows_dir)) || !fs.existsSync(wfFull)) {
+    let wfExists = wfFull.startsWith(path.resolve(config.workflows_dir)) && fs.existsSync(wfFull);
+    // TTS 工作流放在后端本地 node-server/workflows/TTS/ 目录
+    if (!wfExists && wfPath.startsWith('TTS/')) {
+      const localWfDir = path.resolve(process.cwd(), 'workflows');
+      const wfLocal = path.resolve(localWfDir, wfPath);
+      wfExists = wfLocal.startsWith(localWfDir) && fs.existsSync(wfLocal);
+    }
+    if (!wfExists) {
       await refundOnFail();
       return res.status(400).json({ detail: '非法的流程路径' });
     }

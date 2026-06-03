@@ -394,7 +394,14 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 
     // Load workflow
     let workflowData: any;
-    if (req.workflow_path && req.workflow_path !== 'fork') workflowData = await loadWorkflow(req.workflow_path);
+    if (req.workflow_path && req.workflow_path !== 'fork' && req.workflow_path.startsWith('TTS/')) {
+      const localPath = path.resolve(process.cwd(), 'workflows', req.workflow_path);
+      if (fs.existsSync(localPath)) {
+        workflowData = JSON.parse(fs.readFileSync(localPath, 'utf-8'));
+      } else {
+        throw new Error('TTS 工作流文件未找到: ' + req.workflow_path);
+      }
+    } else if (req.workflow_path && req.workflow_path !== 'fork') workflowData = await loadWorkflow(req.workflow_path);
     else if (req.image1_name) {
       const wfName = req.image2_name ? 'Flux2-Klein-图片编辑 (多图).json' : 'Flux2-Klein-图片编辑 (单图).json';
       req.workflow_path = `Flux/${wfName}`;
@@ -410,9 +417,29 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       negative_ref = result.negative_ref;
 
     const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
-    // 🎬 视频工作流：只改图片路径，什么都不动
+    // 🔊 TTS 工作流：注入参数到 Qwen3CustomVoice
+    const isTtsWF = (req.workflow_path || '').startsWith('TTS/');
+    if (isTtsWF) {
+      // 映射语言值到 ComfyUI 节点期望的格式（首字母大写）
+      const langMap: Record<string, string> = { auto: 'Auto', zh: 'Chinese', cn: 'Chinese', en: 'English', ja: 'Japanese', jp: 'Japanese', ko: 'Korean', kr: 'Korean' };
+      const langVal = (req.language && langMap[req.language.toLowerCase()]) || req.language || 'Auto';
+      for (const [, nd] of Object.entries(prompt_dict)) {
+        const node = nd as any;
+        if (node.class_type === 'Qwen3CustomVoice' || node.class_type === 'Qwen3VoiceDesign' || node.class_type === 'Qwen3VoiceClone') {
+          node.inputs.text = finalPrompt || req.direct_prompt;
+          if (req.speaker) node.inputs.speaker = req.speaker;
+          node.inputs.language = langVal;
+          if (req.instruct) node.inputs.instruct = req.instruct;
+          if (req.ref_text) node.inputs.ref_text = req.ref_text;
+          node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
+        }
+      }
+    }
+    // 视频工作流：只改图片路径，什么都不动
     const isVideoWF = (req.workflow_path || '').startsWith('LTX/') || (req.workflow_path || '').startsWith('WAN2.2/');
-    if (isVideoWF) {
+    if (isTtsWF) {
+      // TTS 无需处理图片/视频相关逻辑
+    } else if (isVideoWF) {
       if (req.image1_name) {
         for (const [, nd] of Object.entries(prompt_dict)) {
           const node = nd as any;
@@ -544,10 +571,16 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
 
     // 从 history 提取文件名
     if (history) {
+      // 检查 ComfyUI 执行错误
+      const statusInfo = history.status || {};
+      if (statusInfo.status_str === 'error' || history.error) {
+        const errMsg = history.error?.details || history.error?.message || (statusInfo.messages ? JSON.stringify(statusInfo.messages) : '') || 'ComfyUI 执行失败';
+        throw new Error(errMsg);
+      }
       const outputs = history.outputs || {};
       const crawlOutputs = (obj: any, depth = 0): void => {
         if (depth > 10 || !obj) return;
-        const isMedia = (s: string) => /\.(png|jpg|jpeg|webp|gif|mp4|webm)$/i.test(s);
+        const isMedia = (s: string) => /\.(png|jpg|jpeg|webp|gif|mp4|webm|wav|flac)$/i.test(s);
         if (typeof obj === 'string' && isMedia(obj)) { foundFiles.add(obj); return; }
         if (Array.isArray(obj)) { obj.forEach(v => crawlOutputs(v, depth + 1)); return; }
         if (typeof obj === 'object') {
@@ -557,19 +590,27 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       crawlOutputs(outputs);
       crawlOutputs((history as any).ui);
     }
-    // 兜底：扫 output/ 目录取生成后新增的视频文件
+    // 兜底：扫 output/ 目录取生成后新增的文件
     const images: { filename: string; subfolder: string }[] = [];
-    if (foundFiles.size === 0) {
-      for (const f of fs.readdirSync(config.output_dir)) {
-        if (!/\.(mp4|webm)$/i.test(f)) continue;
-        try {
-          const mtime = fs.statSync(path.join(config.output_dir, f)).mtimeMs;
-          if (!(f in beforeMtime) || mtime > beforeMtime[f] + 1000) {
-            foundFiles.add(f);
-          }
-        } catch {}
+    // 始终扫描 output 目录，覆盖 history 未报告文件名的场景（含子目录）
+    function scanDir(dir: string, prefix = ''): void {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          scanDir(fullPath, prefix ? prefix + '/' + entry.name : entry.name);
+        } else if (/\.(mp4|webm|wav|flac)$/i.test(entry.name)) {
+          const relName = prefix ? prefix + '/' + entry.name : entry.name;
+          if (foundFiles.has(relName)) continue;
+          try {
+            const mtime = fs.statSync(fullPath).mtimeMs;
+            if (!(relName in beforeMtime) || mtime > (beforeMtime as any)[relName] + 1000) {
+              foundFiles.add(relName);
+            }
+          } catch {}
+        }
       }
     }
+    scanDir(config.output_dir);
     // 过滤掉绝对路径和 png 缩略图
     const hasVideo = [...foundFiles].some(f => /\.(mp4|webm)$/i.test(f));
     for (const fn of foundFiles) {
@@ -594,11 +635,12 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       await setCreatorMap(relPath, userId);
       promptMeta[relPath] = {
         prompt: finalPrompt || req.direct_prompt || '',
-        
         negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         workflow_path: req.workflow_path || '',
         image1: req.image1_name || '',
         image2: req.image2_name || '',
+        speaker: req.speaker || undefined,
+        language: req.language || undefined,
       };
     }
     
@@ -614,7 +656,8 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       const isImg2img = !!(item.params as any)?.image1_name;
       const wfPath = (item.params as any)?.workflow_path as string || '';
       const isAnima = wfPath.startsWith('ANIMA/');
-      const cost = isImg2img ? cfg.image_to_image : (isAnima ? cfg.text_to_image_anima : cfg.text_to_image);
+      const isTts = wfPath.startsWith('TTS/');
+      const cost = isTts ? cfg.tts_generate : (isImg2img ? cfg.image_to_image : (isAnima ? cfg.text_to_image_anima : cfg.text_to_image));
       await refundPoints(item.user_id, cost);
     } catch {}
   } finally {

@@ -73,7 +73,7 @@ router.get('/my-images', (req: Request, res: Response) => {
   let deletedList: string[] = [];
   try { deletedList = JSON.parse(fs.readFileSync(deletedFile, 'utf-8')); } catch {}
   const items: { path: string; mtime: number }[] = [];
-  const exts = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm'];
+  const exts = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm', '.wav', '.flac'];
 
   for (const [relPath, uid] of Object.entries(cmap)) {
     if (uid !== user.id) continue;

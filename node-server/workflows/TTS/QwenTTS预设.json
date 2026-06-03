@@ -1,0 +1,48 @@
+{
+  "1": {
+    "inputs": {
+      "repo_id": "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
+      "source": "ModelScope",
+      "precision": "bf16",
+      "attention": "auto",
+      "local_model_path": "C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\models\\Qwen3-TTS\\Qwen3\\Qwen3-TTS-12Hz-1.7B-CustomVoice"
+    },
+    "class_type": "Qwen3Loader",
+    "_meta": {
+      "title": "Qwen3-TTS Loader"
+    }
+  },
+  "2": {
+    "inputs": {
+      "text": "你好",
+      "language": "Auto",
+      "speaker": "Dylan",
+      "seed": 1,
+      "instruct": "",
+      "custom_speaker_name": "",
+      "max_new_tokens": 2048,
+      "model": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "Qwen3CustomVoice",
+    "_meta": {
+      "title": "Qwen3-TTS Custom Voice"
+    }
+  },
+  "3": {
+    "inputs": {
+      "filename_prefix": "QwenTTS_Default",
+      "audioUI": "/api/view?filename=QwenTTS_Default_00001_.flac&type=output&subfolder=&rand=0.2299815015454002",
+      "audio": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "SaveAudio",
+    "_meta": {
+      "title": "保存音频"
+    }
+  }
+}
