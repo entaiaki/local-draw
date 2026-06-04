@@ -22,6 +22,7 @@ export interface AppConfig {
   llm_config_file: string;
   state_file: string;
     turnstile_secret_key: string;
+    mimo_api_key: string;
 }
 
 const here = path.join(process.cwd(), '..', 'web');
@@ -64,6 +65,7 @@ export function loadConfig(): AppConfig {
     llm_config_file: path.join(here, 'llm_config.json'),
     state_file: path.join(here, 'state.json'),
     turnstile_secret_key: process.env.TURNSTILE_SECRET_KEY || (() => { for (const dir of [here, path.join(here, '..')]) { try { const e = fs.readFileSync(path.join(dir, '.env'), 'utf-8'); const m = e.match(/^TURNSTILE_SECRET_KEY="(.+?)"\s*$/m); if (m) return m[1].trim(); } catch {} } return ''; })(),
+    mimo_api_key: process.env.MIMO_API_KEY || '',
   };
 }
 

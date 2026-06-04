@@ -1,0 +1,47 @@
+{
+  "1": {
+    "inputs": {
+      "repo_id": "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+      "source": "ModelScope",
+      "precision": "bf16",
+      "attention": "auto",
+      "local_model_path": "C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI\\models\\Qwen3-TTS\\Qwen3\\Qwen3-TTS-12Hz-1.7B-base"
+    },
+    "class_type": "Qwen3Loader",
+    "_meta": {
+      "title": "Qwen3-TTS Loader"
+    }
+  },
+  "2": {
+    "inputs": {
+      "text": "极简，未来主义，光效应艺术风格，纯克莱因蓝色背景，幻觉+重复+致幻，弥散，色彩半调，丝网印，半调图案，颗粒感，复古。 随机模糊，随机构图，随机蝴蝶，随机植物，花从下面是绿色的草地开始生长并最终组成灯塔的形状，繁花，鲜花簇拥，动态角度+大张力角度，视觉错觉，艺术感加强，超现实主义，投影+荧光+柔光+虚化+色散，氛围感加强，反光+珠光，超清晰，画面左上方有极细无衬线字体“BENTHAM .26”、画面右上方有极细无衬线字体“Dreamina.AI”艺术，高级的氛围感",
+      "seed": "Auto",
+      "language": "Auto",
+      "ref_text": "",
+      "max_new_tokens": 2048,
+      "ref_audio_max_seconds": 30,
+      "model": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "Qwen3VoiceClone",
+    "_meta": {
+      "title": "Qwen3-TTS Voice Clone"
+    }
+  },
+  "3": {
+    "inputs": {
+      "filename_prefix": "QwenTTS_Clone",
+      "audioUI": "",
+      "audio": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "SaveAudio",
+    "_meta": {
+      "title": "保存音频"
+    }
+  }
+}

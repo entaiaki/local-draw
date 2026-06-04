@@ -342,13 +342,20 @@ router.delete('/my-record/:id', requireAuth, (req: Request, res: Response) => {
 // GET /api/draw/tts/speakers
 router.get('/speakers', async (_req: Request, res: Response) => {
   try {
-    const { getPresetVoices } = await import('../services/xiaomimimo.js');
-    res.json({ speakers: getPresetVoices() });
+    const { fetchSpeakers } = await import('../services/tts_client.js');
+    const data = await fetchSpeakers();
+    res.json(data);
   } catch {
     res.json({ speakers: [
-      { id: 'mimo_default', description: 'MiMo-\u9ed8\u8ba4' },
-      { id: '\u7cd6\u620f\u7cd6', description: '\u7cd6\u620f\u7cd6\uff08\u5973\uff09' },
-      { id: 'Mia', description: 'Mia (English Female)' },
+      { id: 'Vivian', description: 'Vivian' },
+      { id: 'Serena', description: 'Serena' },
+      { id: 'Uncle_Fu', description: 'Uncle_Fu' },
+      { id: 'Dylan', description: 'Dylan' },
+      { id: 'Eric', description: 'Eric' },
+      { id: 'Ryan', description: 'Ryan' },
+      { id: 'Aiden', description: 'Aiden' },
+      { id: 'Ono_Anna', description: 'Ono_Anna' },
+      { id: 'Sohee', description: 'Sohee' },
     ]});
   }
 });
@@ -386,18 +393,16 @@ router.post('/custom-voice', requireAuth, async (req: Request, res: Response) =>
 
 // POST /v1/audio/speech — OpenAI-compatible endpoint for SillyTavern
 router.post('/v1/audio/speech', async (req: Request, res: Response) => {
-  const { input, voice } = req.body;
+  const { input, voice, model } = req.body;
   if (!input) return res.status(400).json({ error: 'need input text' });
-  const speaker = voice || 'mimo_default';
+  const speaker = voice || 'Vivian';
   try {
-    const { callTtsApi } = await import('../services/xiaomimimo.js');
-    const result = await callTtsApi({
-      text: input,
-      mode: 'preset',
-      speaker,
-    });
+    const { callTtsCustomVoice } = await import('../services/tts_client.js');
+    const result = await callTtsCustomVoice({ text: input, speaker, language: 'auto' });
+    if (!result.ok || !result.output_path || !fs.existsSync(result.output_path))
+      return res.status(500).json({ error: 'generation failed' });
     res.setHeader('Content-Type', 'audio/wav');
-    res.send(result.wavBuffer);
+    fs.createReadStream(result.output_path).pipe(res);
   } catch (e: any) {
     res.status(500).json({ error: e.message || '生成失败' });
   }
