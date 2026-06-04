@@ -353,6 +353,85 @@ router.get('/speakers', async (_req: Request, res: Response) => {
   }
 });
 
+
+// POST /api/tts/synthesize — 直接调用 MiMo API，不走队列
+router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
+  const { text, mode, speaker, instruct, language, ref_audio_name } = req.body;
+  if (!text) return res.status(400).json({ error: 'need text' });
+  const ttsMode = mode || 'preset';
+
+  try {
+    // 扣分
+    const { deductPoints, loadPointsCfg } = await import('./wallet.js');
+    const cfg = loadPointsCfg();
+    const cost = Math.max(cfg.tts_generate || 1, Math.ceil(text.length * (cfg.tts_per_char || 0.01)));
+    const user = (req as any).user;
+    if (cost > 0) {
+      const pt = await deductPoints(user?.id, cost);
+      if (!pt.ok) return res.status(402).json({ error: '\u70b9\u6570\u4e0d\u8db3', need: cost, balance: pt.balance || 0 });
+    }
+
+    // 调用 MiMo API
+    const { callTtsApi, fileToDataUri, detectMimeFromExt } = await import('../services/xiaomimimo.js');
+    let refAudioDataUri = undefined;
+    if (ttsMode === 'clone' && ref_audio_name) {
+      const upDir = path.join(process.cwd(), '..', 'web', 'uploads');
+      const audioPath = path.join(upDir, ref_audio_name);
+      if (fs.existsSync(audioPath)) {
+        const ext = path.extname(ref_audio_name).replace('.', '');
+        refAudioDataUri = fileToDataUri(audioPath, detectMimeFromExt(ext));
+      }
+    }
+
+    const result = await callTtsApi({
+      text,
+      mode: ttsMode,
+      speaker,
+      instruct,
+      refAudioDataUri,
+    });
+
+    // 保存 WAV 到 output 目录
+    const prefix = ttsMode === 'preset' ? 'TTS_Preset' : ttsMode === 'design' ? 'TTS_Design' : 'TTS_Clone';
+    const outName = prefix + '_' + Date.now() + '.wav';
+    const outPath = path.join(process.cwd(), '..', '..', '..', '..', 'output', outName);
+
+    // 使用 config 中的 output_dir
+    const { loadConfig } = await import('../services/config.js');
+    const config = loadConfig();
+    fs.writeFileSync(path.join(config.output_dir, outName), result.wavBuffer);
+
+    // UID 打标
+    const { setCreatorMap } = await import('../services/runner.js');
+    await setCreatorMap(outName, user?.id || 0);
+
+    // prompt_meta
+    const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
+    let promptMeta = {};
+    try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
+    promptMeta[outName] = {
+      prompt: text,
+      negative_prompt: instruct || '',
+      workflow_path: 'TTS/' + ttsMode,
+      speaker: speaker || undefined,
+      language: language || undefined,
+    };
+    try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
+
+    res.json({ ok: true, filename: outName, cost });
+  } catch (e: any) {
+    // 失败时退款
+    try {
+      const { refundPoints, loadPointsCfg } = await import('./wallet.js');
+      const cfg = loadPointsCfg();
+      const cost = Math.max(cfg.tts_generate || 1, Math.ceil((text || '').length * (cfg.tts_per_char || 0.01)));
+      if (cost > 0) await refundPoints((req as any).user?.id, cost);
+    } catch {}
+    res.status(500).json({ error: e.message || '生成失败' });
+  }
+});
+
+
 // POST /api/draw/tts/custom-voice
 router.post('/custom-voice', requireAuth, async (req: Request, res: Response) => {
   const { text, speaker, language, instruct } = req.body;
