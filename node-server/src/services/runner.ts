@@ -449,6 +449,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       await setCreatorMap(outName, userId);
       promptMeta[outName] = {
         prompt: finalPrompt || req.direct_prompt || '',
+        source: req.source || undefined,
         negative_prompt: req.instruct || '',
         workflow_path: req.workflow_path || '',
         speaker: req.speaker || undefined,
@@ -574,6 +575,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       await setCreatorMap(relPath, userId);
       promptMeta[relPath] = {
         prompt: finalPrompt || req.direct_prompt || '',
+        source: req.source || undefined,
         negative_prompt: req.negative_prompt || String(item.params._llm_negative || ''),
         workflow_path: req.workflow_path || '',
         image1: req.image1_name || '',

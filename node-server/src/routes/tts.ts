@@ -356,7 +356,7 @@ router.get('/speakers', async (_req: Request, res: Response) => {
 
 // POST /api/tts/synthesize — 直接调用 MiMo API，不走队列
 router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
-  const { text, mode, speaker, instruct, tags, language, ref_audio_name } = req.body;
+  const { text, mode, speaker, instruct, tags, language, ref_audio_name, source } = req.body;
   if (!text) return res.status(400).json({ error: 'need text' });
   const ttsMode = mode || 'preset';
 
@@ -415,6 +415,7 @@ router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
     try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
     promptMeta[outName] = {
       prompt: text,
+      source: source || undefined,
       negative_prompt: instruct || '',
       workflow_path: 'TTS/' + ttsMode,
       speaker: speaker || undefined,

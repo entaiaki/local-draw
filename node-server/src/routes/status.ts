@@ -72,7 +72,7 @@ router.get('/my-images', (req: Request, res: Response) => {
   const deletedFile = path.join(path.dirname(cfg.creator_map_file), 'deleted_images.json');
   let deletedList: string[] = [];
   try { deletedList = JSON.parse(fs.readFileSync(deletedFile, 'utf-8')); } catch {}
-  const items: { path: string; mtime: number }[] = [];
+  let items: { path: string; mtime: number }[] = [];
   const exts = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm', '.wav', '.flac'];
 
   for (const [relPath, uid] of Object.entries(cmap)) {
@@ -87,6 +87,14 @@ router.get('/my-images', (req: Request, res: Response) => {
         break;
       }
     }
+  }
+  // 按 source 过滤（酒馆生成的单独展示）
+  const sourceFilter = req.query.source as string | undefined;
+  if (sourceFilter) {
+    const pmFile = path.join(path.dirname(cfg.creator_map_file), 'prompt_meta.json');
+    let promptMeta: Record<string, any> = {};
+    try { promptMeta = JSON.parse(fs.readFileSync(pmFile, 'utf-8')); } catch {}
+    items = items.filter(i => (promptMeta as any)[i.path]?.source === sourceFilter);
   }
   items.sort((a, b) => b.mtime - a.mtime);
   res.json({ items, total: items.length });
