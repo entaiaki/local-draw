@@ -26,17 +26,8 @@ const MODEL_MAP: Record<string, string> = {
   clone: 'mimo-v2.5-tts-voiceclone',
 };
 
-const PRESET_VOICE_MAP: Record<string, string> = {
-  'mimo_default': 'MiMo-默认',
-  '冰糖': '冰糖',
-  '茉莉': '茉莉',
-  '苏打': '苏打',
-  '白桦': '白桦',
-  'Mia': 'Mia',
-  'Chloe': 'Chloe',
-  'Milo': 'Milo',
-  'Dean': 'Dean',
-};
+// 音色列表：前端 ID 与 API 要求的 voice 值一致
+const PRESET_VOICE_IDS = ['mimo_default', '冰糖', '茉莉', '苏打', '白桦', 'Mia', 'Chloe', 'Milo', 'Dean'];
 
 export function getPresetVoices(): Array<{ id: string; description: string }> {
   return [
@@ -90,9 +81,8 @@ export async function callTtsApi(params: TtsApiParams): Promise<TtsApiResult> {
   };
 
   if (params.mode === 'preset' && params.speaker) {
-    // 预设模式：传音色 ID
-    const voiceId = PRESET_VOICE_MAP[params.speaker] || params.speaker;
-    audioParams.voice = voiceId;
+    // 预设模式：传音色 ID（前端 ID 即 API voice 值，直接传）
+    audioParams.voice = params.speaker;
   } else if (params.mode === 'clone' && params.refAudioDataUri) {
     // 克隆模式：传参考音频 base64 data URI
     audioParams.voice = params.refAudioDataUri;
