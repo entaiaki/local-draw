@@ -392,18 +392,21 @@ router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
     });
 
     // 保存 WAV 到 output 目录
-    const prefix = ttsMode === 'preset' ? 'TTS_Preset' : ttsMode === 'design' ? 'TTS_Design' : 'TTS_Clone';
-    const outName = prefix + '_' + Date.now() + '.wav';
-    const outPath = path.join(process.cwd(), '..', '..', '..', '..', 'output', outName);
-
-    // 使用 config 中的 output_dir
     const { loadConfig } = await import('../services/config.js');
     const config = loadConfig();
+    const prefix = ttsMode === 'preset' ? 'TTS_Preset' : ttsMode === 'design' ? 'TTS_Design' : 'TTS_Clone';
+    const outName = prefix + '_' + Date.now() + '.wav';
     fs.writeFileSync(path.join(config.output_dir, outName), result.wavBuffer);
 
-    // UID 打标
-    const { setCreatorMap } = await import('../services/runner.js');
-    await setCreatorMap(outName, user?.id || 0);
+    // UID 打标（直接写入 creator_map，避免循环依赖）
+    const cmapFile = config.creator_map_file;
+    try {
+      let lines = fs.existsSync(cmapFile) ? fs.readFileSync(cmapFile, 'utf-8').split('\n').filter(l => l.trim()) : [];
+      lines = lines.filter(l => l.split('\t')[0] !== outName);
+      lines.push(outName + '\t' + (user?.id || 0));
+      fs.writeFileSync(cmapFile + '.tmp', lines.join('\n') + '\n', 'utf-8');
+      fs.renameSync(cmapFile + '.tmp', cmapFile);
+    } catch {}
 
     // prompt_meta
     const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
