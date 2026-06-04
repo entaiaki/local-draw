@@ -6,6 +6,7 @@ export interface TtsApiParams {
   mode: 'preset' | 'design' | 'clone';
   speaker?: string;
   instruct?: string;
+  tags?: string;
   language?: string;
   /** base64 data URI of reference audio for clone mode */
   refAudioDataUri?: string;
@@ -70,12 +71,18 @@ export async function callTtsApi(params: TtsApiParams): Promise<TtsApiResult> {
     // 自定义音色模式：音色描述是必需的
     messages.push({ role: 'user', content: params.instruct || '自然的说话声' });
   } else if (params.instruct) {
-    // 预设/克隆模式：instruct 作为风格描述
+    // 预设/克隆模式：instruct 作为自然语言风格描述
     messages.push({ role: 'user', content: params.instruct });
   }
 
+  // 音频标签（tags）拼到合成文本开头
+  let finalText = params.text;
+  if (params.tags) {
+    finalText = params.tags + (finalText ? ' ' + finalText : '');
+  }
+
   // assistant message: 要合成的文本
-  messages.push({ role: 'assistant', content: params.text });
+  messages.push({ role: 'assistant', content: finalText });
 
   // 构造 audio 参数
   const audioParams: Record<string, any> = {
@@ -107,7 +114,8 @@ export async function callTtsApi(params: TtsApiParams): Promise<TtsApiResult> {
   });
 
   if (resp.status !== 200) {
-    throw new Error(`TTS API 请求失败: ${resp.status} ${JSON.stringify(resp.data).slice(0, 200)}`);
+    const detail = typeof resp.data === 'object' ? JSON.stringify(resp.data).slice(0, 500) : String(resp.data).slice(0, 500);
+    throw new Error(`TTS API 请求失败: ${resp.status} ${detail}`);
   }
 
   const audioData = resp.data?.choices?.[0]?.message?.audio?.data;
