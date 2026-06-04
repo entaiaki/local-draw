@@ -417,53 +417,49 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       negative_ref = result.negative_ref;
 
     const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
+    // 🔊 TTS 工作流：注入参数到 Qwen3CustomVoice
     const isTtsWF = (req.workflow_path || '').startsWith('TTS/');
-    // TTS 工作流：通过 XiaomiMiMo API 生成，不经过 ComfyUI
     if (isTtsWF) {
-      const { callTtsApi, fileToDataUri, detectMimeFromExt } = await import('./xiaomimimo.js');
-      let ttsMode = 'preset';
-      const wfPath = req.workflow_path || '';
-      if (wfPath.includes('自定义音色')) ttsMode = 'design';
-      else if (wfPath.includes('声音克隆')) ttsMode = 'clone';
-      let refAudioDataUri = undefined;
-      if (ttsMode === 'clone') {
-        if (!req.ref_audio_name) throw new Error('声音克隆需要上传参考音频');
-        const upDir = path.resolve(process.cwd(), '..', 'web', 'uploads');
-        const audioPath = path.join(upDir, req.ref_audio_name);
-        if (!fs.existsSync(audioPath)) throw new Error('参考音频文件不存在');
-        const mime = detectMimeFromExt(path.extname(req.ref_audio_name).replace('.', ''));
-        refAudioDataUri = fileToDataUri(audioPath, mime);
+      // 声音克隆：如有参考音频，动态注入 LoadAudio 节点
+      const cloneNodeId = Object.entries(prompt_dict).find(([, nd]: any) => nd.class_type === 'Qwen3VoiceClone')?.[0];
+      if (cloneNodeId && req.ref_audio_name) {
+        // 找一个不冲突的节点 ID（所有现有节点 ID 取最大值 +1）
+        const ids = Object.keys(prompt_dict).map(Number).filter(n => !isNaN(n));
+        const loadAudioId = String((ids.length ? Math.max(...ids) : 0) + 1);
+        prompt_dict[loadAudioId] = {
+          inputs: { audio: req.ref_audio_name },
+          class_type: 'LoadAudio',
+        };
+        prompt_dict[cloneNodeId].inputs.ref_audio = [loadAudioId, 0];
       }
-      const ttsResult = await callTtsApi({
-        text: finalPrompt || req.direct_prompt,
-        mode: ttsMode,
-        speaker: req.speaker,
-        instruct: req.instruct,
-        refAudioDataUri,
-      });
-      const prefix = ttsMode === 'preset' ? 'TTS_Preset' : ttsMode === 'design' ? 'TTS_Design' : 'TTS_Clone';
-      const outName = prefix + '_' + Date.now() + '.wav';
-      fs.writeFileSync(path.join(config.output_dir, outName), ttsResult.wavBuffer);
-      try { item.params._output_files = [outName]; } catch {}
-      const promptMetaFile = path.join(path.dirname(config.creator_map_file), 'prompt_meta.json');
-      let promptMeta = {};
-      try { promptMeta = JSON.parse(fs.readFileSync(promptMetaFile, 'utf-8')); } catch {}
-      await setCreatorMap(outName, userId);
-      promptMeta[outName] = {
-        prompt: finalPrompt || req.direct_prompt || '',
-        source: req.source || undefined,
-        negative_prompt: req.instruct || '',
-        workflow_path: req.workflow_path || '',
-        speaker: req.speaker || undefined,
-        language: req.language || undefined,
-      };
-      try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
-      item.status = 'done';
-      return;
+      // 映射语言值到 ComfyUI 节点期望的格式（首字母大写）
+      const langMap: Record<string, string> = { auto: 'Auto', zh: 'Chinese', cn: 'Chinese', en: 'English', ja: 'Japanese', jp: 'Japanese', ko: 'Korean', kr: 'Korean' };
+      const langVal = (req.language && langMap[req.language.toLowerCase()]) || req.language || 'Auto';
+      for (const [, nd] of Object.entries(prompt_dict)) {
+        const node = nd as any;
+        if (node.class_type === 'Qwen3CustomVoice' || node.class_type === 'Qwen3VoiceDesign' || node.class_type === 'Qwen3VoiceClone') {
+          node.inputs.text = finalPrompt || req.direct_prompt;
+          if (req.speaker) node.inputs.speaker = req.speaker;
+          node.inputs.language = langVal;
+          if (req.instruct) node.inputs.instruct = req.instruct;
+          if (node.class_type === 'Qwen3VoiceClone') {
+            // 声音克隆：有参考音频就必须有参考文本，否则拒绝
+            if (req.ref_audio_name && !req.ref_text) {
+              throw new Error('声音克隆模式下参考文本（ref_text）为必填项');
+            }
+            if (req.ref_text) node.inputs.ref_text = req.ref_text;
+          } else if (req.ref_text) {
+            node.inputs.ref_text = req.ref_text;
+          }
+          node.inputs.seed = Math.floor(Math.random() * 2147483647) + 1;
+        }
+      }
     }
     // 视频工作流：只改图片路径，什么都不动
     const isVideoWF = (req.workflow_path || '').startsWith('LTX/') || (req.workflow_path || '').startsWith('WAN2.2/');
-    if (isVideoWF) {
+    if (isTtsWF) {
+      // TTS 无需处理图片/视频相关逻辑
+    } else if (isVideoWF) {
       if (req.image1_name) {
         for (const [, nd] of Object.entries(prompt_dict)) {
           const node = nd as any;
