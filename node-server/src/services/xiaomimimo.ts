@@ -111,6 +111,7 @@ export async function callTtsApi(params: TtsApiParams): Promise<TtsApiResult> {
     },
     timeout: 60000,
     responseType: 'json',
+    validateStatus: () => true, // 不抛异常，由我们检查状态码
   });
 
   if (resp.status !== 200) {
