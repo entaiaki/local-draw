@@ -21,6 +21,7 @@ const API_URL = 'https://api.xiaomimimo.com/v1/chat/completions';
 const MODEL_MAP: Record<string, string> = {
   preset: 'mimo-v2.5-tts',
   design: 'mimo-v2.5-tts-voicedesign',
+  custom: 'mimo-v2.5-tts-voicedesign',
   clone: 'mimo-v2.5-tts-voiceclone',
 };
 
