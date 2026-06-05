@@ -407,6 +407,7 @@ app.post('/api/img2img/upload', async (req, res) => {
   });
 });
 
+app.use('/api/tts', requireAuth);
 // POST /api/tts/upload-ref — TTS 声音克隆上传参考音频
 app.post('/api/tts/upload-ref', (req, res) => {
   const multer = require('multer');

@@ -88,7 +88,8 @@ router.get('/speakers', async (_req: Request, res: Response) => {
 
 // POST /api/tts/synthesize — 直接调用 MiMo API
 router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
-  const { text, mode, speaker, instruct, tags, language, ref_audio_name, source } = req.body;
+  const { mode, speaker, instruct, tags, language, ref_audio_name, source } = req.body;
+  const text = String(req.body.text || '').slice(0, 2000);
   if (!text) return res.status(400).json({ error: 'need text' });
   const ttsMode = mode || 'preset';
 
@@ -108,9 +109,10 @@ router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
     let refAudioDataUri = undefined;
     if (ttsMode === 'clone' && ref_audio_name) {
       const upDir = path.join(process.cwd(), '..', 'web', 'uploads');
-      const audioPath = path.join(upDir, ref_audio_name);
+      const safeName = path.basename(ref_audio_name);
+      const audioPath = path.join(upDir, safeName);
       if (fs.existsSync(audioPath)) {
-        const ext = path.extname(ref_audio_name).replace('.', '');
+        const ext = path.extname(safeName).replace('.', '');
         refAudioDataUri = fileToDataUri(audioPath, detectMimeFromExt(ext));
       }
     }
@@ -168,14 +170,14 @@ router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
 });
 
 // POST /v1/audio/speech — OpenAI-compatible endpoint for SillyTavern
-router.post('/v1/audio/speech', async (req: Request, res: Response) => {
-  const { input, voice } = req.body;
-  if (!input) return res.status(400).json({ error: 'need input text' });
-  const speaker = voice || 'mimo_default';
+router.post('/v1/audio/speech', requireAuth, async (req: Request, res: Response) => {
+  const text = String(req.body.input || '').slice(0, 2000);
+  if (!text) return res.status(400).json({ error: 'need input text' });
+  const speaker = req.body.voice || 'mimo_default';
   try {
     const { callTtsApi } = await import('../services/xiaomimimo.js');
     const result = await callTtsApi({
-      text: input,
+      text,
       mode: 'preset',
       speaker,
     });
