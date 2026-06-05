@@ -938,7 +938,8 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
 
 // GET /api/draw/admin/storage — 用户存储用量统计
 router.get('/storage', requireAdmin, (req: Request, res: Response) => {
-  const MEDIA_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm', '.wav', '.flac']);
+  const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm']);
+  const AUDIO_EXTS = new Set(['.wav', '.flac']);
   // 加载 creator_map
   const cmap: Record<string, number> = {};
   try {
@@ -950,28 +951,34 @@ router.get('/storage', requireAdmin, (req: Request, res: Response) => {
     }
   } catch {}
 
-  // 累计每个用户的文件大小
-  const usage: Record<number, { files: number; size: number }> = {};
+  // 按图片/音频分别累计
+  const usage: Record<number, { img_files: number; img_size: number; aud_files: number; aud_size: number }> = {};
   for (const [relPath, uid] of Object.entries(cmap)) {
     const ext = path.extname(relPath).toLowerCase();
-    if (!MEDIA_EXTS.has(ext)) continue;
+    const isImage = IMAGE_EXTS.has(ext);
+    const isAudio = AUDIO_EXTS.has(ext);
+    if (!isImage && !isAudio) continue;
     const fp = path.resolve(config.output_dir, relPath);
     if (!fp.startsWith(path.resolve(config.output_dir))) continue;
     try {
       const stat = fs.statSync(fp);
       if (!stat.isFile()) continue;
-      if (!usage[uid]) usage[uid] = { files: 0, size: 0 };
-      usage[uid].files++;
-      usage[uid].size += stat.size;
+      if (!usage[uid]) usage[uid] = { img_files: 0, img_size: 0, aud_files: 0, aud_size: 0 };
+      if (isImage) { usage[uid].img_files++; usage[uid].img_size += stat.size; }
+      else { usage[uid].aud_files++; usage[uid].aud_size += stat.size; }
     } catch {}
   }
 
-  // 排序
+  // 排序（按总大小降序）
   const items = Object.entries(usage)
-    .map(([uid, data]) => ({ user_id: parseInt(uid), files: data.files, size: data.size }))
-    .sort((a, b) => b.size - a.size);
+    .map(([uid, data]) => ({
+      user_id: parseInt(uid),
+      img_files: data.img_files, img_size: data.img_size,
+      aud_files: data.aud_files, aud_size: data.aud_size,
+    }))
+    .sort((a, b) => (b.img_size + b.aud_size) - (a.img_size + a.aud_size));
 
-  const totalSize = items.reduce((s, i) => s + i.size, 0);
+  const totalSize = items.reduce((s, i) => s + i.img_size + i.aud_size, 0);
   res.json({ items, total_size: totalSize });
 });
 
