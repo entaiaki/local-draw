@@ -1,6 +1,0 @@
-{
-  "display_name": "Qwen3-TTS 语音合成",
-  "version": "1.0.0",
-  "description": "连接本地 Qwen3-TTS 服务器，支持 9 种预制音色和语音克隆",
-  "js": "index.js"
-}
