@@ -890,6 +890,7 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
     { prefix: 'Qwen/',    cfgKey: 'image_to_image_qwen',  label: 'Qwen' },
     { prefix: 'WAN2.2/',  cfgKey: 'text_to_video',        label: '视频' },
     { prefix: 'LTX/',     cfgKey: 'text_to_video',        label: '视频' },
+    { prefix: 'TTS/',     cfgKey: 'tts_generate',          label: 'TTS' },
   ];
 
   function getModelInfo(wfPath: string): { label: string; cost: number } {
@@ -907,6 +908,8 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
     const inRange = queueItems.filter((i: any) => i.created_at >= range.start);
     const byModel: Record<string, { calls: number; failed: number }> = {};
     let totalCalls = 0, totalCost = 0, totalFailed = 0;
+
+    // 队列项目统计
     for (const item of inRange) {
       const wf = (item.params as any)?.workflow_path || '';
       const info = getModelInfo(wf);
@@ -921,6 +924,31 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
         byModel[info.label].failed++;
       }
     }
+
+    // TTS 直接调用统计（从 prompt_meta 中读取）
+    try {
+      const pmFile = path.join(WEB_DIR, 'prompt_meta.json');
+      if (fs.existsSync(pmFile)) {
+        const pm = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
+        const pmCfg = loadPointsCfg();
+        const ttsCost = pmCfg.tts_generate || 1;
+        for (const [name, meta] of Object.entries(pm)) {
+          if (name.startsWith('_')) continue;
+          const m = meta as any;
+          if (!m.workflow_path?.toString().startsWith('TTS/')) continue;
+          // 从文件名解析时间戳: TTS_Preset_1234567890123.wav
+          const tsMatch = name.match(/_(\d{13})\./);
+          if (!tsMatch) continue;
+          const ts = parseInt(tsMatch[1]) / 1000;
+          if (ts < range.start) continue;
+          totalCalls++;
+          totalCost += ttsCost;
+          if (!byModel.TTS) byModel.TTS = { calls: 0, failed: 0 };
+          byModel.TTS.calls++;
+        }
+      }
+    } catch {}
+
     stats[range.key] = { calls: totalCalls, cost: totalCost, failed: totalFailed, byModel };
   }
 
