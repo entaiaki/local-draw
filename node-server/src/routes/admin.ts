@@ -929,7 +929,26 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
       if (item.status === 'failed' && item.created_at >= range.start) totalFailed++;
     }
 
-    stats[range.key] = { calls: totalCalls, cost: totalCost, failed: totalFailed, byModel };
+    // 时序数据：今日按小时、近7天按6小时、近30天按天
+    const bucketSec = range.key === 'today' ? 3600 : range.key === '7d' ? 21600 : 86400;
+    const buckets: { start: number; calls: number; cost: number }[] = [];
+    for (let t = range.start; t < now; t += bucketSec) {
+      buckets.push({ start: t, calls: 0, cost: 0 });
+    }
+    for (const [name, meta] of Object.entries(pm)) {
+      if (name.startsWith('_') || !meta.created_at) continue;
+      const ts = meta.created_at;
+      if (ts < range.start) continue;
+      const idx = Math.floor((ts - range.start) / bucketSec);
+      if (idx >= 0 && idx < buckets.length) {
+        const info = getModelInfo((meta.workflow_path || '') as string);
+        buckets[idx].calls++;
+        buckets[idx].cost += info.cost;
+      }
+    }
+    const series = buckets.map(b => ({ time: b.start, calls: b.calls, cost: b.cost }));
+
+    stats[range.key] = { calls: totalCalls, cost: totalCost, failed: totalFailed, byModel, series };
   }
 
   // 收入（已支付订单）
