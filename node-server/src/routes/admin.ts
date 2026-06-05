@@ -936,4 +936,43 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
   res.json({ stats, income });
 });
 
+// GET /api/draw/admin/storage — 用户存储用量统计
+router.get('/storage', requireAdmin, (req: Request, res: Response) => {
+  const MEDIA_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm', '.wav', '.flac']);
+  // 加载 creator_map
+  const cmap: Record<string, number> = {};
+  try {
+    if (fs.existsSync(config.creator_map_file)) {
+      for (const ln of fs.readFileSync(config.creator_map_file, 'utf-8').split('\n')) {
+        const parts = ln.trim().split('\t');
+        if (parts.length === 2 && /^\d+$/.test(parts[1])) cmap[parts[0]] = parseInt(parts[1]);
+      }
+    }
+  } catch {}
+
+  // 累计每个用户的文件大小
+  const usage: Record<number, { files: number; size: number }> = {};
+  for (const [relPath, uid] of Object.entries(cmap)) {
+    const ext = path.extname(relPath).toLowerCase();
+    if (!MEDIA_EXTS.has(ext)) continue;
+    const fp = path.resolve(config.output_dir, relPath);
+    if (!fp.startsWith(path.resolve(config.output_dir))) continue;
+    try {
+      const stat = fs.statSync(fp);
+      if (!stat.isFile()) continue;
+      if (!usage[uid]) usage[uid] = { files: 0, size: 0 };
+      usage[uid].files++;
+      usage[uid].size += stat.size;
+    } catch {}
+  }
+
+  // 排序
+  const items = Object.entries(usage)
+    .map(([uid, data]) => ({ user_id: parseInt(uid), files: data.files, size: data.size }))
+    .sort((a, b) => b.size - a.size);
+
+  const totalSize = items.reduce((s, i) => s + i.size, 0);
+  res.json({ items, total_size: totalSize });
+});
+
 export { router as adminRouter };
