@@ -938,7 +938,8 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
 
 // GET /api/draw/admin/storage — 用户存储用量统计
 router.get('/storage', requireAdmin, (req: Request, res: Response) => {
-  const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp4', '.webm']);
+  const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif']);
+  const VIDEO_EXTS = new Set(['.mp4', '.webm']);
   const AUDIO_EXTS = new Set(['.wav', '.flac']);
   // 加载 creator_map
   const cmap: Record<string, number> = {};
@@ -951,20 +952,22 @@ router.get('/storage', requireAdmin, (req: Request, res: Response) => {
     }
   } catch {}
 
-  // 按图片/音频分别累计
-  const usage: Record<number, { img_files: number; img_size: number; aud_files: number; aud_size: number }> = {};
+  // 按图片/视频/音频分别累计
+  const usage: Record<number, { img_files: number; img_size: number; vid_files: number; vid_size: number; aud_files: number; aud_size: number }> = {};
   for (const [relPath, uid] of Object.entries(cmap)) {
     const ext = path.extname(relPath).toLowerCase();
     const isImage = IMAGE_EXTS.has(ext);
+    const isVideo = VIDEO_EXTS.has(ext);
     const isAudio = AUDIO_EXTS.has(ext);
-    if (!isImage && !isAudio) continue;
+    if (!isImage && !isVideo && !isAudio) continue;
     const fp = path.resolve(config.output_dir, relPath);
     if (!fp.startsWith(path.resolve(config.output_dir))) continue;
     try {
       const stat = fs.statSync(fp);
       if (!stat.isFile()) continue;
-      if (!usage[uid]) usage[uid] = { img_files: 0, img_size: 0, aud_files: 0, aud_size: 0 };
+      if (!usage[uid]) usage[uid] = { img_files: 0, img_size: 0, vid_files: 0, vid_size: 0, aud_files: 0, aud_size: 0 };
       if (isImage) { usage[uid].img_files++; usage[uid].img_size += stat.size; }
+      else if (isVideo) { usage[uid].vid_files++; usage[uid].vid_size += stat.size; }
       else { usage[uid].aud_files++; usage[uid].aud_size += stat.size; }
     } catch {}
   }
@@ -974,11 +977,12 @@ router.get('/storage', requireAdmin, (req: Request, res: Response) => {
     .map(([uid, data]) => ({
       user_id: parseInt(uid),
       img_files: data.img_files, img_size: data.img_size,
+      vid_files: data.vid_files, vid_size: data.vid_size,
       aud_files: data.aud_files, aud_size: data.aud_size,
     }))
-    .sort((a, b) => (b.img_size + b.aud_size) - (a.img_size + a.aud_size));
+    .sort((a, b) => (b.img_size + b.vid_size + b.aud_size) - (a.img_size + a.vid_size + a.aud_size));
 
-  const totalSize = items.reduce((s, i) => s + i.img_size + i.aud_size, 0);
+  const totalSize = items.reduce((s, i) => s + i.img_size + i.vid_size + i.aud_size, 0);
   res.json({ items, total_size: totalSize });
 });
 
