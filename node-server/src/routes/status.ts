@@ -90,7 +90,13 @@ router.get('/my-images', (req: Request, res: Response) => {
   }
   // 按 source 过滤（酒馆生成的单独展示）
   const sourceFilter = req.query.source as string | undefined;
-  if (sourceFilter) {
+  if (sourceFilter === 'default') {
+    // "默认" = 排除酒馆生成
+    const pmFile = path.join(path.dirname(cfg.creator_map_file), 'prompt_meta.json');
+    let promptMeta: Record<string, any> = {};
+    try { promptMeta = JSON.parse(fs.readFileSync(pmFile, 'utf-8')); } catch {}
+    items = items.filter(i => (promptMeta as any)[i.path]?.source !== 'saloon');
+  } else if (sourceFilter) {
     const pmFile = path.join(path.dirname(cfg.creator_map_file), 'prompt_meta.json');
     let promptMeta: Record<string, any> = {};
     try { promptMeta = JSON.parse(fs.readFileSync(pmFile, 'utf-8')); } catch {}
