@@ -906,7 +906,7 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
   const stats: Record<string, any> = {};
   for (const range of ranges) {
     const inRange = queueItems.filter((i: any) => i.created_at >= range.start);
-    const byModel: Record<string, { calls: number; failed: number }> = {};
+    const byModel: Record<string, { calls: number; failed: number; cost: number }> = {};
     let totalCalls = 0, totalCost = 0, totalFailed = 0;
 
     // 队列项目统计
@@ -916,11 +916,12 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
       if (item.status === 'done') {
         totalCalls++;
         totalCost += info.cost;
-        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0 };
+        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0, cost: 0 };
         byModel[info.label].calls++;
+        byModel[info.label].cost += info.cost;
       } else if (item.status === 'failed') {
         totalFailed++;
-        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0 };
+        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0, cost: 0 };
         byModel[info.label].failed++;
       }
     }
@@ -943,8 +944,9 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
           if (ts < range.start) continue;
           totalCalls++;
           totalCost += ttsCost;
-          if (!byModel.TTS) byModel.TTS = { calls: 0, failed: 0 };
+          if (!byModel.TTS) byModel.TTS = { calls: 0, failed: 0, cost: 0 };
           byModel.TTS.calls++;
+          byModel.TTS.cost += ttsCost;
         }
       }
     } catch {}
