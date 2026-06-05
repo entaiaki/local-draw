@@ -154,6 +154,7 @@ router.post('/synthesize', requireAuth, async (req: Request, res: Response) => {
       workflow_path: 'TTS/' + ttsMode,
       speaker: speaker || undefined,
       language: language || undefined,
+      created_at: Math.floor(Date.now() / 1000),
     };
     try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
 

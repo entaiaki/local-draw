@@ -870,8 +870,6 @@ router.delete('/tts-record/:id', requireAdmin, (req, res) => {
 
 // GET /api/draw/admin/stats — 多维统计
 router.get('/stats', requireAdmin, (req: Request, res: Response) => {
-  const items = loadJson<Array<Record<string, any>>>(path.join(WEB_DIR, 'queue_state.json'), { items: [] });
-  const queueItems = (items as any).items || items;
   const now = Date.now() / 1000;
   const daySec = 86400;
   const ranges = [
@@ -880,7 +878,7 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
     { key: '30d', start: now - 30 * daySec },
   ];
 
-  // 模型映射表：加新模型只需在这里加一行
+  // 模型映射表
   const MODEL_MAP: { prefix: string; cfgKey: string; label: string }[] = [
     { prefix: 'WAI/',     cfgKey: 'text_to_image',       label: 'WAI' },
     { prefix: 'ANIMA/',   cfgKey: 'text_to_image_anima',  label: 'Anima' },
@@ -890,7 +888,7 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
     { prefix: 'Qwen/',    cfgKey: 'image_to_image_qwen',  label: 'Qwen' },
     { prefix: 'WAN2.2/',  cfgKey: 'text_to_video',        label: '视频' },
     { prefix: 'LTX/',     cfgKey: 'text_to_video',        label: '视频' },
-    { prefix: 'TTS/',     cfgKey: 'tts_generate',          label: 'TTS' },
+    { prefix: 'TTS/',     cfgKey: 'tts_generate',         label: 'TTS' },
   ];
 
   function getModelInfo(wfPath: string): { label: string; cost: number } {
@@ -903,53 +901,33 @@ router.get('/stats', requireAdmin, (req: Request, res: Response) => {
     return { label: 'WAI', cost: cfg.text_to_image || 10 };
   }
 
+  // 从 prompt_meta 统计（持久化，清队列也不丢失）
+  const pm: Record<string, any> = loadJson(path.join(WEB_DIR, 'prompt_meta.json'), {});
   const stats: Record<string, any> = {};
   for (const range of ranges) {
-    const inRange = queueItems.filter((i: any) => i.created_at >= range.start);
     const byModel: Record<string, { calls: number; failed: number; cost: number }> = {};
-    let totalCalls = 0, totalCost = 0, totalFailed = 0;
+    let totalCalls = 0, totalCost = 0;
 
-    // 队列项目统计
-    for (const item of inRange) {
-      const wf = (item.params as any)?.workflow_path || '';
+    for (const [name, meta] of Object.entries(pm)) {
+      if (name.startsWith('_') || !meta.created_at) continue;
+      const ts = meta.created_at;
+      if (ts < range.start) continue;
+      const wf = (meta.workflow_path || '') as string;
       const info = getModelInfo(wf);
-      if (item.status === 'done') {
-        totalCalls++;
-        totalCost += info.cost;
-        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0, cost: 0 };
-        byModel[info.label].calls++;
-        byModel[info.label].cost += info.cost;
-      } else if (item.status === 'failed') {
-        totalFailed++;
-        if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0, cost: 0 };
-        byModel[info.label].failed++;
-      }
+      totalCalls++;
+      totalCost += info.cost;
+      if (!byModel[info.label]) byModel[info.label] = { calls: 0, failed: 0, cost: 0 };
+      byModel[info.label].calls++;
+      byModel[info.label].cost += info.cost;
     }
 
-    // TTS 直接调用统计（从 prompt_meta 中读取）
-    try {
-      const pmFile = path.join(WEB_DIR, 'prompt_meta.json');
-      if (fs.existsSync(pmFile)) {
-        const pm = JSON.parse(fs.readFileSync(pmFile, 'utf-8'));
-        const pmCfg = loadPointsCfg();
-        const ttsCost = pmCfg.tts_generate || 1;
-        for (const [name, meta] of Object.entries(pm)) {
-          if (name.startsWith('_')) continue;
-          const m = meta as any;
-          if (!m.workflow_path?.toString().startsWith('TTS/')) continue;
-          // 从文件名解析时间戳: TTS_Preset_1234567890123.wav
-          const tsMatch = name.match(/_(\d{13})\./);
-          if (!tsMatch) continue;
-          const ts = parseInt(tsMatch[1]) / 1000;
-          if (ts < range.start) continue;
-          totalCalls++;
-          totalCost += ttsCost;
-          if (!byModel.TTS) byModel.TTS = { calls: 0, failed: 0, cost: 0 };
-          byModel.TTS.calls++;
-          byModel.TTS.cost += ttsCost;
-        }
-      }
-    } catch {}
+    // 失败统计（仅队列中有记录）
+    const queueData = loadJson<Array<Record<string, any>>>(path.join(WEB_DIR, 'queue_state.json'), { items: [] });
+    const queueItems = (queueData as any).items || queueData;
+    let totalFailed = 0;
+    for (const item of queueItems) {
+      if (item.status === 'failed' && item.created_at >= range.start) totalFailed++;
+    }
 
     stats[range.key] = { calls: totalCalls, cost: totalCost, failed: totalFailed, byModel };
   }

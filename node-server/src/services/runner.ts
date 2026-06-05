@@ -456,6 +456,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         workflow_path: req.workflow_path || '',
         speaker: req.speaker || undefined,
         language: req.language || undefined,
+        created_at: Math.floor(Date.now() / 1000),
       };
       try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
       item.status = 'done';
@@ -560,10 +561,6 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       await new Promise(r => setTimeout(r, 1000));
     }
 
-    // 记录输出目录当前的 mtime，生成后只认更新的文件
-    const beforeMtime: Record<string, number> = {};
-    try { for (const f of fs.readdirSync(config.output_dir)) beforeMtime[f] = fs.statSync(path.join(config.output_dir, f)).mtimeMs; } catch {}
-
     // Submit to ComfyUI
     const submitRes = await comfy.post('/api/prompt', {
       client_id: getClientId(),
@@ -588,7 +585,7 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       history = result.history;
       wsVideoFiles = result.videos;
     } catch (e: any) {
-      console.log('[runner] waitForCompletion failed: ' + e.message + ', will scan output dir');
+      console.log('[runner] waitForCompletion failed: ' + e.message);
     }
     const foundFiles = new Set<string>();
     for (const fn of wsVideoFiles) foundFiles.add(fn);
@@ -614,30 +611,13 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       crawlOutputs(outputs);
       crawlOutputs((history as any).ui);
     }
-    // 兜底：扫 output/ 目录取生成后新增的文件
     const images: { filename: string; subfolder: string }[] = [];
-    // 始终扫描 output 根目录，覆盖 history 未报告文件名的场景（不递归子目录，避免误扫其他任务的输出）
-    for (const f of fs.readdirSync(config.output_dir)) {
-      if (f.startsWith('.')) continue; // 跳过隐藏文件
-      if (foundFiles.has(f)) continue;
-      try {
-        const fp = path.join(config.output_dir, f);
-        const st = fs.statSync(fp);
-        if (!st.isFile()) continue;
-        if (!(f in beforeMtime) || st.mtimeMs > beforeMtime[f] + 1000) {
-          foundFiles.add(f);
-        }
-      } catch {}
-    }
-    // 过滤掉绝对路径和 png 缩略图
     const hasVideo = [...foundFiles].some(f => /\.(mp4|webm)$/i.test(f));
     for (const fn of foundFiles) {
       if (hasVideo && /\.png$/i.test(fn)) continue;
-      if (fn.includes(':\\') || fn.startsWith('/')) continue; // 绝对路径
+      if (fn.includes(':\\') || fn.startsWith('/')) continue;
       images.push({ filename: fn, subfolder: '' });
     }
-    // 超时但找到新文件 = 仍然算成功
-    if (!history && images.length === 0) throw new Error('生成超时且未找到输出文件');
     if (images.length === 0) throw new Error('未找到输出文件');
 
     // 记录输出文件，用于调试元数据写入状态
@@ -659,9 +639,11 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
         image2: req.image2_name || '',
         speaker: req.speaker || undefined,
         language: req.language || undefined,
+        source: req.source || undefined,
+        created_at: Math.floor(Date.now() / 1000),
       };
     }
-    
+
     try { fs.writeFileSync(promptMetaFile, JSON.stringify(promptMeta, null, 2), 'utf-8'); } catch {}
       item.status = 'done';
   } catch (e: any) {
