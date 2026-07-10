@@ -1,0 +1,93 @@
+[
+  {
+    "modelId": 617060,
+    "model": "ComfyUI workflow for Flux (simple + Lora)",
+    "url": "https://civitai.com/models/617060",
+    "zip": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\617060_ComfyUI workflow for Flux (simple + Lora)\\comfyuiWorkflowForFlux_addLora.zip",
+    "extracted": [
+      {
+        "path": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\617060_ComfyUI workflow for Flux (simple + Lora)\\simple flux lora workflow by Lam Panda.json",
+        "source_member": "simple flux lora workflow by Lam Panda.json",
+        "kind": "editor_workflow",
+        "node_count": 13
+      }
+    ]
+  },
+  {
+    "modelId": 2121769,
+    "model": "ComfyUI TXT2IMG – Flux (GGUF) Simple Workflow",
+    "url": "https://civitai.com/models/2121769",
+    "file": "comfyuiTXT2IMGFluxGGUF_v10.zip",
+    "error": "File is not a zip file"
+  },
+  {
+    "modelId": 1031712,
+    "model": "Simple and Versatile ComfyUI Workflow for Flux",
+    "url": "https://civitai.com/models/1031712",
+    "zip": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\1031712_Simple and Versatile ComfyUI Workflow for Flux\\simpleAndVersatile_v10.zip",
+    "extracted": [
+      {
+        "path": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\1031712_Simple and Versatile ComfyUI Workflow for Flux\\FluxAk29_img2img_txt2imd.json",
+        "source_member": "FluxAk29_img2img_txt2imd.json",
+        "kind": "editor_workflow",
+        "node_count": 32
+      }
+    ]
+  },
+  {
+    "modelId": 541709,
+    "model": "ComfyUI Workflow SDXL/Pony - Image Generation, Upscale, Face Detailer with Control Net (Canny, Scribble, Tile, Depth, Openpose) + Batch Upscaling",
+    "url": "https://civitai.com/models/541709",
+    "file": "comfyuiWorkflowSDXLPonyImageGeneration_v20.zip",
+    "error": "File is not a zip file"
+  },
+  {
+    "modelId": 955583,
+    "model": "ComfyUI workflow for COMMIX Pony XL",
+    "url": "https://civitai.com/models/955583",
+    "file": "comfyuiWorkflowFor_v10.zip",
+    "error": "File is not a zip file"
+  },
+  {
+    "modelId": 535146,
+    "model": "Eface's SDXL Pony ComfyUI Workflow with TCD",
+    "url": "https://civitai.com/models/535146",
+    "zip": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\535146_Eface's SDXL Pony ComfyUI Workflow with TCD\\efacesSDXLPonyComfyui_v10.zip",
+    "extracted": [
+      {
+        "path": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\535146_Eface's SDXL Pony ComfyUI Workflow with TCD\\Efaces_Pony_XL_V01.json",
+        "source_member": "Efaces_Pony_XL_V01.json",
+        "kind": "editor_workflow",
+        "node_count": 48
+      }
+    ]
+  },
+  {
+    "modelId": 562659,
+    "model": "Citron's ComfyUI Workflow [Pony & SD1.5]",
+    "url": "https://civitai.com/models/562659",
+    "file": "citronsComfyuiWorkflow_ponyWorkflow.zip",
+    "error": "File is not a zip file"
+  },
+  {
+    "modelId": 2585899,
+    "model": "Ultimate Workflow Super Complete _ ComfyUI _ SDXL ILLU SD1.5 NOOBAI PONY ETC _ Crix _ Txt2Img&Img2Img Base, refiner, detailer, controlnet, remove background, prompt from image,  styler, upscaler, saver for civitai!",
+    "url": "https://civitai.com/models/2585899",
+    "file": "ultimateWorkflowSuperCompleteComfyuiSDXLILLUSD15_v30.zip",
+    "error": "File is not a zip file"
+  },
+  {
+    "modelId": 1863734,
+    "model": "ComfyUI beginner friendly QWEN Image GGUF Inpaint Workflow (With LORAs) by SarcasticTOFU",
+    "url": "https://civitai.com/models/1863734",
+    "file": "comfyuiBeginnerFriendlyQWEN_qwenImageInpaintV10.zip",
+    "error": "File is not a zip file"
+  },
+  {
+    "modelId": 1884390,
+    "model": "ComfyUI beginner friendly QWEN Image Edit GGUF Workflow by SarcasticTOFU",
+    "url": "https://civitai.com/models/1884390",
+    "file": "comfyuiBeginnerFriendly_qwenImageEditGGUFV10.zip",
+    "error": "File is not a zip file"
+  }
+]

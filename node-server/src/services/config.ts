@@ -27,10 +27,34 @@ export interface AppConfig {
 
 const here = path.join(process.cwd(), '..', 'web');
 
-// ComfyUI 基础路径，所有派生路径由此拼接
-const COMFYUI_BASE = process.env.COMFYUI_BASE || 'C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI';
+let envLoaded = false;
+
+function loadDotEnvOnce(): void {
+  if (envLoaded) return;
+  envLoaded = true;
+
+  for (const dir of [process.cwd(), path.join(process.cwd(), '..')]) {
+    try {
+      const envPath = path.join(dir, '.env');
+      if (!fs.existsSync(envPath)) continue;
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      for (const line of envContent.split('\n')) {
+        const m = line.match(/^(\w+)="([^"]*)"\s*$/);
+        if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+      }
+    } catch {}
+  }
+}
+
+function normalizeWinPath(value: string): string {
+  return value.replace(/\\+/g, '\\');
+}
 
 export function loadConfig(): AppConfig {
+  loadDotEnvOnce();
+
+  // ComfyUI 基础路径，所有派生路径由此拼接
+  const COMFYUI_BASE = normalizeWinPath(process.env.COMFYUI_BASE || 'C:\\Users\\acofo\\Desktop\\ComfyUI-WorkFisher-V2\\ComfyUI');
   let jwtSecret = process.env.JWT_SECRET || '';
   if (!jwtSecret) {
     for (const dir of [here, path.join(here, '..')]) {

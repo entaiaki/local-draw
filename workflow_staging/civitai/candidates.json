@@ -1,0 +1,470 @@
+[
+  {
+    "query": "ComfyUI workflow Flux simple",
+    "modelId": 617060,
+    "name": "ComfyUI workflow for Flux (simple + Lora)",
+    "url": "https://civitai.com/models/617060",
+    "files": [
+      {
+        "version": "Add Lora",
+        "file": "comfyuiWorkflowForFlux_addLora.zip",
+        "sizeKB": 1.8623046875,
+        "downloadUrl": "https://civitai.com/api/download/models/819999"
+      },
+      {
+        "version": "Original",
+        "file": "comfyuiWorkflowForFlux_original.zip",
+        "sizeKB": 1.7109375,
+        "downloadUrl": "https://civitai.com/api/download/models/689796"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Flux simple",
+    "modelId": 2121769,
+    "name": "ComfyUI TXT2IMG – Flux (GGUF) Simple Workflow",
+    "url": "https://civitai.com/models/2121769",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "comfyuiTXT2IMGFluxGGUF_v10.zip",
+        "sizeKB": 3.841796875,
+        "downloadUrl": "https://civitai.com/api/download/models/2400183"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Flux simple",
+    "modelId": 2320172,
+    "name": "ComfyUI beginner friendly Flux.2 Klein 4B GGUF Simple Flawless Fast Headswap Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2320172",
+    "files": [
+      {
+        "version": "Flux2k_4B_GGUF_SWAP_v1",
+        "file": "comfyuiBeginnerFriendlyFlux2_flux2k4BGGUFSWAPV1.zip",
+        "sizeKB": 4048.9560546875,
+        "downloadUrl": "https://civitai.com/api/download/models/2610198"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Flux simple",
+    "modelId": 2336342,
+    "name": "ComfyUI beginner friendly Flux.2 Klein 4B GGUF Simple Cloth Swap Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2336342",
+    "files": [
+      {
+        "version": "Flux2k4B_GGUF_CLOTH_v1",
+        "file": "comfyuiBeginnerFriendlyFlux2_flux2k4bGGUFCLOTHV1.zip",
+        "sizeKB": 4944.162109375,
+        "downloadUrl": "https://civitai.com/api/download/models/2628059"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Flux simple",
+    "modelId": 2443347,
+    "name": "ComfyUI beginner friendly Flux.2 Klein 9B GGUF Simple Cloth Swap Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2443347",
+    "files": [
+      {
+        "version": "Flux.2_Klein9B_CLOTH_SWAP",
+        "file": "comfyuiBeginnerFriendlyFlux2_flux2Klein9bCLOTH.zip",
+        "sizeKB": 5007.1669921875,
+        "downloadUrl": "https://civitai.com/api/download/models/2747217"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Flux simple",
+    "modelId": 1031712,
+    "name": "Simple and Versatile ComfyUI Workflow for Flux",
+    "url": "https://civitai.com/models/1031712",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "simpleAndVersatile_v10.zip",
+        "sizeKB": 5.4150390625,
+        "downloadUrl": "https://civitai.com/api/download/models/1157114"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Flux simple",
+    "modelId": 2322343,
+    "name": "ComfyUI beginner friendly Flux.2 Klein 4B GGUF Simple Image Inpainting Outpainting Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2322343",
+    "files": [
+      {
+        "version": "Flux2k4B_GGUF_PAINT_v1",
+        "file": "comfyuiBeginnerFriendlyFlux2_flux2k4bGGUFPAINTV1.zip",
+        "sizeKB": 3803.7568359375,
+        "downloadUrl": "https://civitai.com/api/download/models/2612565"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow SDXL txt2img",
+    "error": "IncompleteRead(209585 bytes read, 3173 more expected)"
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 541709,
+    "name": "ComfyUI Workflow SDXL/Pony - Image Generation, Upscale, Face Detailer with Control Net (Canny, Scribble, Tile, Depth, Openpose) + Batch Upscaling",
+    "url": "https://civitai.com/models/541709",
+    "files": [
+      {
+        "version": "v2.0",
+        "file": "comfyuiWorkflowSDXLPonyImageGeneration_v20.zip",
+        "sizeKB": 16.802734375,
+        "downloadUrl": "https://civitai.com/api/download/models/798654"
+      },
+      {
+        "version": "v1.1 - Prompt Save",
+        "file": "comfyuiWorkflowSDXLPonyImageGeneration_v11PromptSave.zip",
+        "sizeKB": 9.2470703125,
+        "downloadUrl": "https://civitai.com/api/download/models/624512"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 955583,
+    "name": "ComfyUI workflow for COMMIX Pony XL",
+    "url": "https://civitai.com/models/955583",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "comfyuiWorkflowFor_v10.zip",
+        "sizeKB": 3.294921875,
+        "downloadUrl": "https://civitai.com/api/download/models/1069888"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 2381380,
+    "name": "ComfyUI beginner friendly Pony Text-to-Image Workflow with Easy Prompt Saver by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2381380",
+    "files": [
+      {
+        "version": "Pony_Txt2Img_v1.0",
+        "file": "comfyuiBeginnerFriendlyPony_ponyTxt2imgV10.zip",
+        "sizeKB": 2313.142578125,
+        "downloadUrl": "https://civitai.com/api/download/models/2677948"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 535146,
+    "name": "Eface's SDXL Pony ComfyUI Workflow with TCD",
+    "url": "https://civitai.com/models/535146",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "efacesSDXLPonyComfyui_v10.zip",
+        "sizeKB": 6.8310546875,
+        "downloadUrl": "https://civitai.com/api/download/models/594863"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 562659,
+    "name": "Citron's ComfyUI Workflow [Pony & SD1.5]",
+    "url": "https://civitai.com/models/562659",
+    "files": [
+      {
+        "version": "Pony Workflow",
+        "file": "citronsComfyuiWorkflow_ponyWorkflow.zip",
+        "sizeKB": 4.9814453125,
+        "downloadUrl": "https://civitai.com/api/download/models/628505"
+      },
+      {
+        "version": "SD1.5 Workflow",
+        "file": "citronsComfyuiWorkflow_sd15Workflow.zip",
+        "sizeKB": 5.1640625,
+        "downloadUrl": "https://civitai.com/api/download/models/626845"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 849213,
+    "name": "Checkpoint Tester ComfyUI SDXL/Pony Workflow by Electroverted",
+    "url": "https://civitai.com/models/849213",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "checkpointTesterComfyui_v10.zip",
+        "sizeKB": 1874.0634765625,
+        "downloadUrl": "https://civitai.com/api/download/models/950113"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 2585899,
+    "name": "Ultimate Workflow Super Complete _ ComfyUI _ SDXL ILLU SD1.5 NOOBAI PONY ETC _ Crix _ Txt2Img&Img2Img Base, refiner, detailer, controlnet, remove background, prompt from image,  styler, upscaler, saver for civitai!",
+    "url": "https://civitai.com/models/2585899",
+    "files": [
+      {
+        "version": "v3.0",
+        "file": "ultimateWorkflowSuperCompleteComfyuiSDXLILLUSD15_v30.zip",
+        "sizeKB": 25.2001953125,
+        "downloadUrl": "https://civitai.com/api/download/models/2904993"
+      },
+      {
+        "version": "v3.0",
+        "file": "ultimateWorkflowSuperCompleteComfyuiSDXLILLUSD15_v30.json",
+        "sizeKB": 215.595703125,
+        "downloadUrl": "https://civitai.com/api/download/models/2904993?type=Config&format=Other"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Pony WAI anime",
+    "modelId": 855750,
+    "name": "Prompt Grid ComfyUI SDXL/Pony Workflow by Electroverted",
+    "url": "https://civitai.com/models/855750",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "promptGridComfyuiSDXL_v10.zip",
+        "sizeKB": 1571.57421875,
+        "downloadUrl": "https://civitai.com/api/download/models/957472"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 1863734,
+    "name": "ComfyUI beginner friendly QWEN Image GGUF Inpaint Workflow (With LORAs) by SarcasticTOFU",
+    "url": "https://civitai.com/models/1863734",
+    "files": [
+      {
+        "version": "QWEN_Image_Inpaint_v1.0",
+        "file": "comfyuiBeginnerFriendlyQWEN_qwenImageInpaintV10.zip",
+        "sizeKB": 7.3779296875,
+        "downloadUrl": "https://civitai.com/api/download/models/2109381"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 1884390,
+    "name": "ComfyUI beginner friendly QWEN Image Edit GGUF Workflow by SarcasticTOFU",
+    "url": "https://civitai.com/models/1884390",
+    "files": [
+      {
+        "version": "QWEN_Image_Edit_GGUF_v1.0",
+        "file": "comfyuiBeginnerFriendly_qwenImageEditGGUFV10.zip",
+        "sizeKB": 9.4521484375,
+        "downloadUrl": "https://civitai.com/api/download/models/2132911"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 2087676,
+    "name": "ComfyUI beginner friendly QWEN Image Edit Plus (2509) Simple Head Swap GGUF Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2087676",
+    "files": [
+      {
+        "version": "QN_EdtPlus_HeadSwap_v2.0",
+        "file": "comfyuiBeginnerFriendlyQWENImage_qnEdtplusHeadswapV20.zip",
+        "sizeKB": 1213.2353515625,
+        "downloadUrl": "https://civitai.com/api/download/models/2515603"
+      },
+      {
+        "version": "QN_EdtPlus_HeadSwap_v1.0",
+        "file": "comfyuiBeginnerFriendlyQWENImage_qnEdtplusHeadswapV10.zip",
+        "sizeKB": 7.103515625,
+        "downloadUrl": "https://civitai.com/api/download/models/2362071"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 1895746,
+    "name": "ComfyUI beginner friendly QWEN Image Edit GGUF Consistent Character Dataset Builder Workflow by SarcasticTOFU",
+    "url": "https://civitai.com/models/1895746",
+    "files": [
+      {
+        "version": "QWEN_CCDB_v1.0",
+        "file": "comfyuiBeginnerFriendlyQWEN_qwenCCDBV10.zip",
+        "sizeKB": 295.96875,
+        "downloadUrl": "https://civitai.com/api/download/models/2145933"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 2250242,
+    "name": "ComfyUI beginner friendly QWEN Image Edit Plus (2511) GGUF Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2250242",
+    "files": [
+      {
+        "version": "QWEN_ImgEdit2511_GGUF_1.0",
+        "file": "comfyuiBeginnerFriendlyQWEN_qwenImgedit2511GGUF1.zip",
+        "sizeKB": 613.2685546875,
+        "downloadUrl": "https://civitai.com/api/download/models/2533169"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 2079801,
+    "name": "ComfyUI beginner friendly QWEN Image Edit Plus (2509) GGUF Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2079801",
+    "files": [
+      {
+        "version": "QWEN_ImgEditPlusGGUF_v1.0",
+        "file": "comfyuiBeginnerFriendlyQWEN_qwenImgeditplusggufV1.zip",
+        "sizeKB": 8.0791015625,
+        "downloadUrl": "https://civitai.com/api/download/models/2353277"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 2286038,
+    "name": "ComfyUI beginner friendly QWEN Image Edit Plus (2511) GGUF Remove Object(s) Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2286038",
+    "files": [
+      {
+        "version": "QIE_2511_GGUF_Remover_1.0",
+        "file": "comfyuiBeginnerFriendlyQWENImage_qie2511GGUFRemover10.zip",
+        "sizeKB": 1134.373046875,
+        "downloadUrl": "https://civitai.com/api/download/models/2572773"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow Qwen image",
+    "modelId": 2286003,
+    "name": "ComfyUI beginner friendly QWEN Image Edit Plus (2511) GGUF Add Object(s) Workflow by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2286003",
+    "files": [
+      {
+        "version": "QIE_2511_GGUF_Adder_1.0",
+        "file": "comfyuiBeginnerFriendlyQWENImage_qie2511GGUFAdder10.zip",
+        "sizeKB": 678.9853515625,
+        "downloadUrl": "https://civitai.com/api/download/models/2572732"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 1782883,
+    "name": "ComfyUI beginner friendly Text-to-Video WAN 2.1 GGUF Workflow (With LORAs) by SarcasticTOFU",
+    "url": "https://civitai.com/models/1782883",
+    "files": [
+      {
+        "version": "WAN_SimLORA_Txt2IVid_v1.0",
+        "file": "comfyuiBeginnerFriendlyTextTo_wanSimloraTxt2ividV1.zip",
+        "sizeKB": 9.373046875,
+        "downloadUrl": "https://civitai.com/api/download/models/2017776"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 2514812,
+    "name": "Wan 2.1 Workflow in ComfyUI | Premium Text & Image to Video Creation",
+    "url": "https://civitai.com/models/2514812",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "wan21WorkflowInComfyui_v10.zip",
+        "sizeKB": 4.373046875,
+        "downloadUrl": "https://civitai.com/api/download/models/2826648"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 2514782,
+    "name": "Wan 2.2 + Lightx2v V2 ComfyUI Workflow | Fast Image & Text to Video",
+    "url": "https://civitai.com/models/2514782",
+    "files": [
+      {
+        "version": "v1.0",
+        "file": "wan22Lightx2vV2Comfyui_v10.zip",
+        "sizeKB": 6.5283203125,
+        "downloadUrl": "https://civitai.com/api/download/models/2826618"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 1779859,
+    "name": "ComfyUI beginner friendly Text-to-Image WAN 2.1 GGUF Workflow (With LORAs) by SarcasticTOFU",
+    "url": "https://civitai.com/models/1779859",
+    "files": [
+      {
+        "version": "WAN_SimLORA_Txt2Img_v1.0",
+        "file": "comfyuiBeginnerFriendlyTextTo_wanSimloraTxt2imgV10.zip",
+        "sizeKB": 9.142578125,
+        "downloadUrl": "https://civitai.com/api/download/models/2014315"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 2230628,
+    "name": "ComfyUI beginner friendly Magic WAN Image v2 GGUF Text-to-Image Workflow (With LORAs) by Sarcastic TOFU",
+    "url": "https://civitai.com/models/2230628",
+    "files": [
+      {
+        "version": "MagicWanImagev2_T2I_v1.0",
+        "file": "comfyuiBeginnerFriendlyMagicWAN_magicwanimagev2T2IV1.zip",
+        "sizeKB": 6.48046875,
+        "downloadUrl": "https://civitai.com/api/download/models/2511095"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 1825865,
+    "name": "ComfyUI beginner friendly WAN 2.1 GGUF Inpaint Workflow (With LORAs) by SarcasticTOFU",
+    "url": "https://civitai.com/models/1825865",
+    "files": [
+      {
+        "version": "WAN_SimLORA_Inpaint_v1.0",
+        "file": "comfyuiBeginnerFriendlyWAN21_wanSimloraInpaintV10.zip",
+        "sizeKB": 9.4111328125,
+        "downloadUrl": "https://civitai.com/api/download/models/2066250"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 1827390,
+    "name": "ComfyUI beginner friendly WAN 2.1 GGUF Outpaint Workflow (With LORAs) by SarcasticTOFU",
+    "url": "https://civitai.com/models/1827390",
+    "files": [
+      {
+        "version": "WAN_SmLORA_Outpaint_v1.0",
+        "file": "comfyuiBeginnerFriendlyWAN21_wanSmloraOutpaintV10.zip",
+        "sizeKB": 9.51171875,
+        "downloadUrl": "https://civitai.com/api/download/models/2067963"
+      }
+    ]
+  },
+  {
+    "query": "ComfyUI workflow WAN text to video",
+    "modelId": 1890664,
+    "name": "ComfyUI beginner friendly WAN VACE GGUF Cleaner & Tweaker Workflow by SarcasticTOFU",
+    "url": "https://civitai.com/models/1890664",
+    "files": [
+      {
+        "version": "VACE-Edit-GGUF-v1.0",
+        "file": "comfyuiBeginnerFriendlyWAN_vaceEditGGUFV10.zip",
+        "sizeKB": 11.88671875,
+        "downloadUrl": "https://civitai.com/api/download/models/2140030"
+      }
+    ]
+  }
+]

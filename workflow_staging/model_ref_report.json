@@ -1,0 +1,77 @@
+[
+  {
+    "path": "E:\\AI\\ComfyUI-aki-v1.4\\ComfyUI-aki-v1.4\\my_workflows\\flux_kontext_txt2img_api_workflow.json",
+    "model_refs": [
+      "ae.safetensors",
+      "clip_l.safetensors",
+      "flux1-dev-kontext_fp8_scaled.safetensors",
+      "t5xxl_fp16.safetensors"
+    ],
+    "present": [
+      "ae.safetensors",
+      "clip_l.safetensors",
+      "flux1-dev-kontext_fp8_scaled.safetensors",
+      "t5xxl_fp16.safetensors"
+    ],
+    "missing": []
+  },
+  {
+    "path": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\617060_ComfyUI workflow for Flux (simple + Lora)\\simple flux lora workflow by Lam Panda.json",
+    "model_refs": [
+      "ae.safetensors",
+      "clip_l.safetensors",
+      "flux1-dev.safetensors",
+      "lora/Minecraftmovie_by_Lam_f1.safetensors",
+      "t5xxl_fp8_e4m3fn.safetensors"
+    ],
+    "present": [
+      "ae.safetensors",
+      "clip_l.safetensors"
+    ],
+    "missing": [
+      "flux1-dev.safetensors",
+      "lora/Minecraftmovie_by_Lam_f1.safetensors",
+      "t5xxl_fp8_e4m3fn.safetensors"
+    ]
+  },
+  {
+    "path": "E:\\AI\\natureDrawImage\\workflow_staging\\civitai\\535146_Eface's SDXL Pony ComfyUI Workflow with TCD\\Efaces_Pony_XL_V01.json",
+    "model_refs": [
+      "4x-AnimeSharp.pth",
+      "SDXL\\Anime\\aaaautismPonyFinetune_v4.safetensors",
+      "SDXL\\Expressive_H-000001.safetensors",
+      "SDXL\\detailed_notrigger.safetensors",
+      "SDXL\\tcd.safetensors",
+      "sdxl_vae.safetensors"
+    ],
+    "present": [],
+    "missing": [
+      "4x-AnimeSharp.pth",
+      "SDXL\\Anime\\aaaautismPonyFinetune_v4.safetensors",
+      "SDXL\\Expressive_H-000001.safetensors",
+      "SDXL\\detailed_notrigger.safetensors",
+      "SDXL\\tcd.safetensors",
+      "sdxl_vae.safetensors"
+    ]
+  },
+  {
+    "path": "E:\\AI\\ComfyUI-aki-v1.4\\ComfyUI-aki-v1.4\\my_workflows\\Untitled Flow.json",
+    "model_refs": [
+      "v1-5-pruned-emaonly.ckpt"
+    ],
+    "present": [],
+    "missing": [
+      "v1-5-pruned-emaonly.ckpt"
+    ]
+  },
+  {
+    "path": "E:\\AI\\ComfyUI-aki-v1.4\\ComfyUI-aki-v1.4\\my_workflows\\comfyui_edge_character_XL_IL_Pony_workflow_pack\\edge_character_XL_IL_Pony_base_workflow.json",
+    "model_refs": [
+      "pony_or_illustrious_or_sdxl_checkpoint.safetensors"
+    ],
+    "present": [],
+    "missing": [
+      "pony_or_illustrious_or_sdxl_checkpoint.safetensors"
+    ]
+  }
+]
