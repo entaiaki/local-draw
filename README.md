@@ -1,72 +1,60 @@
-# natureDrawImage Local (entaiaki/local-draw)
+# local-draw — 本地自然语言生图全栈项目
 
-> 🎨 本地自然语言生图全栈 — 2x.nz/draw 本地版
+> 🎨 一句中文，出一张图。2x.nz/draw 的本地完整复刻，单仓库全栈。
 
-基于 [afoim/natureDrawImage](https://github.com/afoim/natureDrawImage) 的 **backend 分支**，适配本地 ComfyUI（绘世启动器）部署。
+基于 [afoim/natureDrawImage](https://github.com/afoim/natureDrawImage)（后端）+ [afoim/svaf](https://github.com/afoim/svaf)（前端 /draw 部分），适配本地绘世启动器 ComfyUI。
 
 ## 架构
 
 ```
-┌─────────────────┐     ┌──────────────────────┐     ┌────────────────┐
-│  svaf-draw      │────▶│  local-draw           │────▶│  ComfyUI       │
-│  SvelteKit 前端  │◀───│  Express + TS 后端    │◀───│  (绘世启动器)    │
-│  (/draw 聊天界面) │     │  :8080                │     │  :8186          │
-└─────────────────┘     │  + AI 绘图助手路由     │     └────────────────┘
-                        │  + 队列/画廊/工作流管理 │     NVIDIA RTX 5090
-                        └──────────────────────┘
+用户: "我想画一个原神的胡桃，赛博朋克风格，横屏尺寸"
+  │
+  ▼  frontend/  (SvelteKit :5173)
+  │   AI 绘图助手聊天 · 画廊 · 工作流/角色/画风选择 · img2img
+  ▼  node-server/  (Express + TS :8080)
+  │   /api/assistant/chat → LLM 解析 → 生图卡片
+  │   /api/draw/queue → 队列 → runner.ts 工作流注入
+  ▼  ComfyUI  (绘世启动器 :8186, RTX 5090)
+      Flux Kontext · SDXL/Pony · LoRA
 ```
 
-| 组件 | 仓库 | 本地路径 |
-|------|------|----------|
-| 后端 | [entaiaki/local-draw](https://github.com/entaiaki/local-draw) | `E:\AI\natureDrawImage` |
-| 前端 | [entaiaki/svaf-draw](https://github.com/entaiaki/svaf-draw) | `E:\AI\svaf` (sparse) |
-| ComfyUI | 绘世启动器 | `E:\AI\ComfyUI-aki-v1.4` |
-| 智能体框架 | [entaiaki/comfy-ui-agent](https://github.com/entaiaki/comfy-ui-agent) | 工具库，与主项目解耦 |
+## 目录结构
 
-## 本地开发
+```
+├── node-server/        # Express + TypeScript 后端（队列/画廊/工作流/助手）
+├── frontend/           # SvelteKit 主前端（源自 svaf /draw，完整功能）
+├── web/                # 轻量助手 demo 前端（Svelte 5 + Vite，可独立跑）
+├── tools/
+│   └── civitai_scraper/  # CivitAI 提示词爬虫（角色库建设）
+├── workflow_staging/   # 工作流暂存区（civitai 下载 + 兼容性报告）
+├── reverse_2x_draw/    # 2x.nz/draw 线上版逆向分析材料
+├── start_all_local.bat # 一键启动
+└── LOCAL_DEPLOYMENT.md # 本地部署笔记
+```
 
-### 前提
-- ComfyUI 绘世启动器，端口 8186，cpu_vae
-- Node.js 24+
-- .env 在项目根目录（自动从父目录加载）
-
-### 启动
+## 快速开始
 
 ```bat
-start_all_local.bat
-```
-或分步：
-```bat
-start_comfyui_local.bat      ← 如果绘世未运行
-start_naturedraw_server.bat   ← 启动后端 :8080
-```
-
-前端单独启动：
-```bash
-cd web && npm run dev          ← :5173，自动代理到 :8080
+:: 1. 绘世启动器启动 ComfyUI（端口 8186）
+:: 2. 后端
+start_naturedraw_server.bat        :: :8080
+:: 3. 前端
+cd frontend && pnpm install && pnpm dev   :: :5173
 ```
 
-### 健康检查
-```
-后端:  http://127.0.0.1:8080/health  → 200
-ComfyUI: http://127.0.0.1:8186/system_stats  → 200
-```
+健康检查：`:8080/health` · `:8186/system_stats`
 
-### 本地鉴权
-生产环境需要 JWT，开发时用本地 token：
-```bat
-cd node-server && node scripts/generate_local_token.cjs
-```
+本地 JWT：`cd node-server && node scripts/generate_local_token.cjs`
 
-## 相比原版的本地化改动
-- ComfyUI 端口改为 8186（与绘世启动器一致）
-- config.ts 自动从父目录加载 .env，避免污染 node-server
-- 新增 `/api/assistant/chat` AI 绘图助手路由（无 LLM 依赖，模板 prompt 工程）
-- 新增本地启动脚本 + 逆向分析材料
-- 工作流暂存区（civitai 工作流 > workflow_staging/）
+## 本地化改动（相对 afoim 原版）
+
+- ComfyUI 端口 8186（绘世启动器），config.ts 自动从父目录加载 .env
+- 新增 `/api/assistant/chat` 绘图助手路由（模板 prompt 工程，可升级 LLM）
+- 前后端合并进单仓库（原 svaf 为独立仓库）
+- 工作流暂存区 + 兼容性扫描报告
+- 2x.nz 线上版逆向材料（API 清单 / 助手交互规格）
 
 ## Related
 
-- [svaf-draw](https://github.com/entaiaki/svaf-draw) — 前端仓库
-- [comfy-ui-agent](https://github.com/entaiaki/comfy-ui-agent) — ComfyUI 工作流智能编排框架
+- [comfy-ui-agent](https://github.com/entaiaki/comfy-ui-agent) — ComfyUI 工作流智能编排框架（独立工具库）
 - [ai-image-platform](https://github.com/entaiaki/ai-image-platform) — Spring Boot 企业级生图平台（独立项目）
