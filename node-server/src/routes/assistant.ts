@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import axios from 'axios';
 
 const router = Router();
 
 // ── 配置 ──
-const HERE = path.dirname(new URL(import.meta.url).pathname);
-const WEB_DIR = path.resolve(HERE, '..', '..', 'web');
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const WEB_DIR = path.resolve(HERE, '..', '..', '..', 'web');
 const CHARS_FILE = path.join(WEB_DIR, 'characters.json');
 const STYLES_DIR = path.join(WEB_DIR, 'styles');
 const RES_FILE = path.join(WEB_DIR, 'resolutions.json');
