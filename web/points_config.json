@@ -1,0 +1,13 @@
+{
+  "text_to_image": 0,
+  "image_to_image": 0,
+  "llm_translate": 0,
+  "text_to_image_anima": 0,
+  "text_to_image_real": 0,
+  "text_to_image_ernie": 0,
+  "image_to_image_qwen": 0,
+  "text_to_video": 0,
+  "tts_generate": 0,
+  "signup_bonus": 99999,
+  "llm_token_per_point": 99999
+}

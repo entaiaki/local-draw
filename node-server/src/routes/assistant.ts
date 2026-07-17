@@ -1,139 +1,239 @@
 import { Router, Request, Response } from 'express';
-import type { ChatRequest, ChatResponse, GeneratedCard } from '../types/assistant.js';
+import path from 'path';
+import fs from 'fs';
+import axios from 'axios';
 
 const router = Router();
 
-/**
- * 简易尺寸解析：从用户输入推断横屏/竖屏/方图
- */
-function parseSize(prompt: string): { width: number; height: number } {
-  const lower = prompt.toLowerCase();
-  if (lower.includes('横屏') || lower.includes('横图') || lower.includes('landscape')) {
-    return { width: 1344, height: 768 };
-  }
-  if (lower.includes('竖屏') || lower.includes('竖图') || lower.includes('portrait')) {
-    return { width: 768, height: 1344 };
-  }
-  if (lower.includes('方图') || lower.includes('方形') || lower.includes('square')) {
-    return { width: 1024, height: 1024 };
-  }
-  // 默认横屏
-  return { width: 1344, height: 768 };
+// ── 配置 ──
+const HERE = path.dirname(new URL(import.meta.url).pathname);
+const WEB_DIR = path.resolve(HERE, '..', '..', 'web');
+const CHARS_FILE = path.join(WEB_DIR, 'characters.json');
+const STYLES_DIR = path.join(WEB_DIR, 'styles');
+const RES_FILE = path.join(WEB_DIR, 'resolutions.json');
+const LLM_CONFIG = path.join(WEB_DIR, 'llm_config.json');
+const POINTS_CONFIG = path.join(WEB_DIR, 'points_config.json');
+const WF_DIR = path.resolve(
+  process.env.COMFYUI_BASE || 'E:\\AI\\ComfyUI-aki-v1.4\\ComfyUI-aki-v1.4',
+  'user', 'default', 'workflows'
+);
+
+// ── 工具函数 ──
+function loadJson<T>(fp: string, def: T): T {
+  try { return JSON.parse(fs.readFileSync(fp, 'utf-8')); } catch { return def; }
 }
 
-/**
- * 从用户中文描述生成简易正向/负向 prompt
- */
-function generatePrompts(prompt: string, mode: string): { positive: string; negative: string } {
-  const negative = 'low quality, blurry, bad anatomy, watermark, text, jpeg artifacts, ugly, deformed, distorted';
-
-  if (mode === 'wife') {
-    const positive = `masterpiece, best quality, beautiful girlfriend, warm atmosphere, ${prompt}, soft lighting, detailed face, gentle expression, clean background`;
-    return { positive, negative };
-  }
-
-  // professional mode
-  const positive = `masterpiece, best quality, highly detailed, ${prompt}, professional lighting, sharp focus, high resolution, intricate details, award-winning composition`;
-  return { positive, negative };
+function getCharacters(): any[] {
+  return loadJson<{ characters: any[] }>(CHARS_FILE, { characters: [] }).characters;
 }
 
-/**
- * 简易角色/画风识别
- */
-function parseCharacterStyle(prompt: string): { character: string; style: string } {
-  const chars: Record<string, string> = {
-    '胡桃': '胡桃',
-    '可莉': '可莉',
-    '甘雨': '甘雨',
-    '雷电将军': '雷电将军',
-    '钟离': '钟离',
-    '八重神子': '八重神子',
-    '纳西妲': '纳西妲',
-    '芙宁娜': '芙宁娜',
-    '刻晴': '刻晴',
-    '神里绫华': '神里绫华',
-  };
-  const styles: Record<string, string> = {
-    '赛博朋克': '赛博朋克',
-    '赛博': '赛博朋克',
-    'cyberpunk': '赛博朋克',
-    '古风': '古风',
-    '现代': '现代',
-    '校园': '校园',
-    '水彩': '水彩',
-    '油画': '油画',
-    '像素': '像素',
-    '暗黑': '暗黑',
-    '蒸汽朋克': '蒸汽朋克',
-    '科幻': '科幻',
-    '写实': '写实',
-    '二次元': '二次元',
-    '动漫': '二次元',
-    '日系': '日系',
-    '韩系': '韩系',
+function getResolutions(): Record<string, { width: number; height: number }> {
+  return loadJson<Record<string, any>>(RES_FILE, {});
+}
+
+function getStyles(): string[] {
+  try {
+    if (!fs.existsSync(STYLES_DIR)) return [];
+    return fs.readdirSync(STYLES_DIR)
+      .filter(f => f.endsWith('.txt'))
+      .map(f => f.replace(/\.txt$/, ''));
+  } catch { return []; }
+}
+
+// ── LLM 调用（兼容 LM Studio / DeepSeek / OpenAI） ──
+async function callLLM(system: string, user: string): Promise<string> {
+  const cfg = loadJson<any>(LLM_CONFIG, {});
+  const profile = cfg.profiles?.[cfg.active ?? 0] || {};
+  const provider = profile.provider || 'local';
+  
+  let endpoint = profile.local_endpoint || 'http://127.0.0.1:1234/v1';
+  let apiKey = profile.custom_api_key || '';
+  let model = profile.custom_model || '';
+
+  if (provider === 'custom' && profile.custom_endpoint) {
+    endpoint = profile.custom_endpoint;
+    apiKey = profile.custom_api_key || '';
+    model = profile.custom_model || '';
+  }
+
+  const body = {
+    model: model || 'qwen2.5-7b-instruct',
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user }
+    ],
+    temperature: 0.3,
+    max_tokens: 1024,
   };
 
-  let character = '';
-  let style = '';
-
-  for (const [key, val] of Object.entries(chars)) {
-    if (prompt.includes(key)) { character = val; break; }
+  try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+    
+    const resp = await axios.post(`${endpoint}/chat/completions`, body, {
+      headers, timeout: 30000,
+    });
+    return resp.data?.choices?.[0]?.message?.content || '';
+  } catch (e: any) {
+    console.error('[assistant] LLM error:', e.message);
+    return '';
   }
-  for (const [key, val] of Object.entries(styles)) {
-    if (prompt.includes(key)) { style = val; break; }
-  }
-
-  return { character, style };
 }
 
-function buildCard(prompt: string, mode: string): GeneratedCard {
-  const size = parseSize(prompt);
-  const prompts = generatePrompts(prompt, mode);
-  const cs = parseCharacterStyle(prompt);
+// ── 系统提示词 ──
+function buildSystemPrompt(characters: any[], styles: string[], resolutions: Record<string, any>): string {
+  const charList = characters.map(c => `- ${c.name}（触发词: ${c.trigger_tags?.join(', ') || '无'}）`).join('\n');
+  const styleList = styles.join(', ');
+  const resList = Object.entries(resolutions).map(([k, v]: any) => `- ${k}: ${v.width}x${v.height}`).join('\n');
+
+  return `你是一个 AI 绘图助手，帮助用户选择角色、画风和生图参数。
+
+## 可选角色
+${charList}
+
+## 可选画风
+${styleList}
+
+## 可选分辨率
+${resList}
+
+## 你的输出格式（不要解释，只输出 JSON）
+{
+  "reply": "对用户自然语言需求的简短中文回复",
+  "workflow": "WAI",
+  "character_name": "角色名（无则 null）",
+  "style": "画风名（无则 null）",
+  "resolution": "分辨率名（如横屏 16:9）",
+  "positive": "英文 Danbooru tags，包含角色触发词和画面描述",
+  "negative": "负面提示词英文 tags",
+  "width": 1344,
+  "height": 768
+}`;
+}
+
+// ── POST /api/assistant/chat ──
+router.post('/chat', async (req: Request, res: Response) => {
+  const { message, history } = req.body;
+  if (!message) return res.status(400).json({ error: '消息不能为空' });
+
+  const characters = getCharacters();
+  const styles = getStyles();
+  const resolutions = getResolutions();
+  const systemPrompt = buildSystemPrompt(characters, styles, resolutions);
+
+  const fullUserPrompt = history?.length
+    ? history.map((h: any) => `${h.role}: ${h.content}`).join('\n') + `\nuser: ${message}`
+    : message;
+
+  let llmOutput = '';
+  try {
+    llmOutput = await callLLM(systemPrompt, fullUserPrompt);
+  } catch (e: any) {
+    // LLM 失败时回退到模板
+    llmOutput = JSON.stringify(fallbackCard(message, characters, styles, resolutions));
+  }
+
+  // 尝试解析 LLM 输出 JSON
+  let card: any = null;
+  try {
+    const jsonMatch = llmOutput.match(/\{[\s\S]*\}/);
+    if (jsonMatch) card = JSON.parse(jsonMatch[0]);
+  } catch {}
+
+  if (!card) {
+    card = fallbackCard(message, characters, styles, resolutions);
+  }
+
+  // 补全缺失字段
+  card.reply = card.reply || `好的，我来帮你画「${message}」`;
+  card.workflow = card.workflow || 'WAI';
+  card.style = card.style || null;
+  card.resolution = card.resolution || '横屏 16:9';
+  card.positive = card.positive || message;
+  card.negative = card.negative || 'worst quality, low quality, blurry, bad anatomy, bad hands, watermark, text, jpeg artifacts, ugly, deformed';
+  card.width = card.width || 1344;
+  card.height = card.height || 768;
+
+  res.json({
+    reply: card.reply,
+    card: {
+      workflow_path: card.character_name
+        ? `${card.workflow}/base/${card.character_name}.json`
+        : `${card.workflow}/base/none.json`,
+      positive: card.positive,
+      negative: card.negative,
+      width: card.width,
+      height: card.height,
+      style: card.style,
+      character: card.character_name,
+    }
+  });
+});
+
+// ── LLM 失败时的回退逻辑 ──
+function fallbackCard(message: string, chars: any[], styles: string[], res: Record<string, any>) {
+  const lowerMsg = message.toLowerCase();
+  
+  // 匹配角色
+  let matchedChar = null;
+  for (const c of chars) {
+    if (lowerMsg.includes(c.name.toLowerCase()) || 
+        c.trigger_tags?.some((t: string) => lowerMsg.includes(t.toLowerCase()))) {
+      matchedChar = c;
+      break;
+    }
+  }
+  
+  // 匹配画风
+  let matchedStyle = null;
+  for (const s of styles) {
+    if (lowerMsg.includes(s.toLowerCase())) {
+      matchedStyle = s;
+      break;
+    }
+  }
+  
+  // 匹配分辨率
+  let matchedRes = '横屏 16:9';
+  let w = 1344, h = 768;
+  if (lowerMsg.includes('竖屏') || lowerMsg.includes('竖图') || lowerMsg.includes('portrait')) {
+    matchedRes = '竖屏 9:16'; w = 768; h = 1344;
+  } else if (lowerMsg.includes('方图') || lowerMsg.includes('方形') || lowerMsg.includes('square')) {
+    matchedRes = '方图 1:1'; w = 1024; h = 1024;
+  }
+
+  // 构建正向提示词
+  const posParts: string[] = ['masterpiece, best quality'];
+  if (matchedChar?.trigger_tags) posParts.push(...matchedChar.trigger_tags.slice(0, 5));
+  if (matchedStyle) {
+    const styleFile = path.join(STYLES_DIR, `${matchedStyle}.txt`);
+    try { posParts.push(fs.readFileSync(styleFile, 'utf-8').trim()); } catch {}
+  }
+  posParts.push(message);
 
   return {
-    positivePrompt: prompts.positive,
-    negativePrompt: prompts.negative,
-    originalPrompt: prompt,
-    workflowPath: 'Flux/默认文生图.json',
-    width: size.width,
-    height: size.height,
-    styleTags: cs.style || '默认',
-    mode: mode === 'wife' ? 'Flux' : 'Flux',
-    character: cs.character,
-    style: cs.style,
+    reply: matchedChar
+      ? `我找到了角色「${matchedChar.name}」${matchedStyle ? `，搭配${matchedStyle}画风` : ''}，来看看效果如何？`
+      : `我来试试画「${message}」`,
+    workflow: 'WAI',
+    character_name: matchedChar?.name || null,
+    style: matchedStyle || null,
+    resolution: matchedRes,
+    positive: posParts.join(', '),
+    negative: 'worst quality, low quality, blurry, bad anatomy, bad hands, watermark, text, jpeg artifacts, ugly, deformed',
+    width: w,
+    height: h,
   };
 }
 
-router.post('/chat', (req: Request, res: Response) => {
-  try {
-    const { prompt, mode } = req.body as ChatRequest;
+// ── GET /api/assistant/characters ── 角色列表供前端用
+router.get('/characters', (_req: Request, res: Response) => {
+  res.json({ characters: getCharacters() });
+});
 
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      const resp: ChatResponse = { success: false, message: '', error: '请输入画面描述' };
-      res.status(400).json(resp);
-      return;
-    }
-
-    const validModes: string[] = ['wife', 'professional'];
-    const currentMode = validModes.includes(mode) ? mode : 'professional';
-
-    const card = buildCard(prompt.trim(), currentMode);
-
-    let message: string;
-    if (currentMode === 'wife') {
-      message = `好的老公~ 已经帮你准备好啦！角色${card.character ? '：' + card.character : ''}，画风：${card.style || '默认'}，尺寸：${card.width}x${card.height}`;
-    } else {
-      message = `参数配置完成。模式：${currentMode}，尺寸：${card.width}x${card.height}${card.character ? '，角色：' + card.character : ''}${card.style ? '，画风：' + card.style : ''}`;
-    }
-
-    const resp: ChatResponse = { success: true, message, card };
-    res.json(resp);
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : '未知错误';
-    const resp: ChatResponse = { success: false, message: '', error: msg };
-    res.status(500).json(resp);
-  }
+// ── GET /api/assistant/styles ── 画风列表
+router.get('/styles', (_req: Request, res: Response) => {
+  res.json({ styles: getStyles() });
 });
 
 export default router;

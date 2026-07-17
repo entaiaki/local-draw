@@ -246,12 +246,12 @@ router.post('/queue', async (req: Request, res: Response) => {
         const text = String((req.body as any)?.direct_prompt || '');
         deductedCost = Math.max(pointsCfg.tts_generate || 1, Math.ceil(text.length * (pointsCfg.tts_per_char || 0.01)));
       } else {
-        deductedCost = (pointsCfg as any)[m.cfgKey] || 20;
+        deductedCost = (pointsCfg as any)[m.cfgKey] ?? 20;
       }
       break;
     }
   }
-  if (!deductedCost) deductedCost = pointsCfg.text_to_image || 10;
+  if (deductedCost === undefined || deductedCost === null) deductedCost = pointsCfg.text_to_image ?? 10;
   if (deductedCost > 0) {
     const ptResult = await deductPoints(user.id, deductedCost);
     if (!ptResult.ok) {
