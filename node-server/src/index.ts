@@ -14,6 +14,7 @@ import { statusRouter, setupWsStatus } from './routes/status.js';
 import { loadConfig, loadJson } from './services/config.js';
 import { walletRouter, deductPoints, refundPoints, loadPointsCfg } from './routes/wallet.js';
 import { presetRouter } from './routes/presets.js';
+import assistantRouter from './routes/assistant.js';
 
 // CLI arg parsing: --host HOST --port PORT
 const argv = process.argv.slice(2);
@@ -55,6 +56,9 @@ app.get('/health', (_req, res) => {
 
 // Auth middleware
 app.use('/api', jwtAuth(config));
+
+// Assistant route (public, no auth required for chat)
+app.use('/api/assistant', assistantRouter);
 
 // Global admin guard: all /api/draw/admin/* routes require admin role
 app.use('/api/draw/admin', requireAdmin);
