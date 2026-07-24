@@ -1,1300 +1,450 @@
 {
   "characters": [
     {
-      "name": "0592 female ejaculation",
-      "lora_file": "0592 female ejaculation_v1_pony.safetensors",
-      "trigger_tags": [
-        "ruanyi0592"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "2boutoval zbase",
-      "lora_file": "2boutoval_zbase_v1_000001250.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Purple Hair",
-      "lora_file": "Azusa Hamaoka IL.safetensors",
-      "trigger_tags": [
-        "cleavage",
-        "smile",
-        "purple hair",
-        "finger to mouth",
-        "black hair",
-        "short hair",
-        "off shoulder",
-        "blush"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "White Hair",
-      "lora_file": "BSC-南号尚风白妹.safetensors",
-      "trigger_tags": [
-        "bsc",
-        "white hair",
-        "long hair",
-        "gray blue eyes",
-        "medium chest",
-        "white shirt",
-        "black pleated skirt",
-        "white sneakers"
-      ],
-      "model_target": "sdxl",
-      "alternatives": [
-        "白妤唅-V1.0.safetensors"
-      ]
-    },
-    {
-      "name": "Face Focus",
-      "lora_file": "Black_Widow_Marvel_Rivals_-_PonyXL-000015.safetensors",
-      "trigger_tags": [
-        "blackwidow_rivals",
-        "cropped",
-        "face focus",
-        "red hair",
-        "asymmetrical hair",
-        "headset microphone",
-        "eyeliner",
-        "blue eyes"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Ccubetr",
-      "lora_file": "Ccubetr-15.safetensors",
-      "trigger_tags": [
-        "ccubetr"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Beer Mug",
-      "lora_file": "Cintia.pp.safetensors",
-      "trigger_tags": [
-        "alcohol",
-        "bar",
-        "beer",
-        "beer mug",
-        "blonde hair",
-        "bottle",
-        "bowl",
-        "bread"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Detailed Feet",
-      "lora_file": "Detailed_Soles_Anime_-_Illustrious.safetensors",
-      "trigger_tags": [
-        "detailed feet",
-        "detailed soles",
-        "feet",
-        "soles",
-        "toes",
-        "barefoot",
-        "foot focus",
-        "glasses"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Sitting On A Bed",
-      "lora_file": "Facesitting-XL-V1.1(1).safetensors",
-      "trigger_tags": [
-        "facesitting",
-        "girl",
-        "sitting on a bed",
-        "boy lying on a bed",
-        "eyes closed",
-        "ahegao",
-        "open mouth",
-        "dominant expression"
-      ],
-      "model_target": "sdxl",
-      "alternatives": [
-        "Facesitting-XL-V1.1.safetensors"
-      ]
-    },
-    {
-      "name": "Sitting On Face",
-      "lora_file": "Facesitting_69_Femdom_Pony__Illustrious-000039.safetensors",
-      "trigger_tags": [
-        "facesitting 69",
-        "sitting on face",
-        "sitting on person",
-        "implied cunnilingus",
-        "leg grab",
-        "penis",
-        "testicles",
-        "kanroji mitsuri"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "GoodfitchunliPonyv1",
-      "lora_file": "GoodfitchunliPonyv1.safetensors",
-      "trigger_tags": [],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Grace Ashcroft Resident Evil Requiem ilx",
-      "lora_file": "Grace_Ashcroft_Resident_Evil_Requiem_ilxl_goofy.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Gwen Tennyson (Ben10)   XL IL V1.0",
-      "lora_file": "Gwen Tennyson (Ben10) - XL IL V1.0.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Gwen Tennyson",
-      "lora_file": "Gwen_Tennyson-000005.safetensors",
-      "trigger_tags": [
-        "gwen tennyson",
-        "orange hair",
-        "green eyes",
-        "long hair",
-        "smile",
-        "simple background",
-        "shirt",
-        "white background"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Hood Up",
-      "lora_file": "GwenstacySDXL-10.safetensors",
-      "trigger_tags": [
-        "gwenstacysdxl",
-        "hood",
-        "bodysuit",
-        "mask",
-        "hood up",
-        "superhero",
-        "silk",
-        "spider web"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "八九寺",
-      "lora_file": "Hachik八九寺XL.safetensors",
-      "trigger_tags": [
-        "hachikujimayoi"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Hinata Rtn",
-      "lora_file": "Hinata 日向雏田Alter IL .safetensors",
-      "trigger_tags": [
-        "hinata rtn",
-        "black hair",
-        "long hair",
-        "navel",
-        "cleavage",
-        "smile",
-        "jacket",
-        "fishnets"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Shoulder Carry",
-      "lora_file": "IL_Lesbian_pony_play_riding.safetensors",
-      "trigger_tags": [
-        "2girls",
-        "yuri",
-        "shoulder carry",
-        "femdom",
-        "riding crop",
-        "ass",
-        "tongue",
-        "long hair"
-      ],
-      "model_target": "illustrious",
-      "alternatives": null
-    },
-    {
-      "name": "Long Hair",
-      "lora_file": "fern-s1-v2-ponyxl-lora-nochekaiser.safetensors",
-      "trigger_tags": [
-        "fern",
-        "long hair",
-        "purple hair",
-        "facing away",
-        "brick wall",
-        "simple background",
-        "dress",
-        "pantyhose"
-      ],
-      "model_target": "pony",
-      "alternatives": [
-        "Scarlet甜蜜女友3.safetensors",
-        "fern-s1-v2-ponyxl-lora-nochekaiser.safetensors"
-      ]
-    },
-    {
-      "name": "Lower Body",
-      "lora_file": "Invisible_Woman_Marvel_Rivals_-_PonyXL-000015.safetensors",
-      "trigger_tags": [
-        "invisiblewoman_rivals",
-        "cropped",
-        "lower body",
-        "from front",
-        "front view",
-        "bodysuit",
-        "white bodysuit",
-        "white clothes"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Mai Shiranui Obari",
-      "lora_file": "JN_Mai_Shiranui_Obari_Masami_Illus.safetensors",
-      "trigger_tags": [
-        "mai shiranui obari",
-        "gloves",
-        "holding",
-        "navel",
-        "weapon",
-        "boots",
-        "sky",
-        "pants"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Navel Piercing",
-      "lora_file": "JolynePdxlDwnsty.safetensors",
-      "trigger_tags": [
-        "kjolyne",
-        "stand (jojo)",
-        "navel piercing",
-        "piercing",
-        "navel",
-        "pants",
-        "shirt",
-        "2girls"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Huge Weapon",
-      "lora_file": "Magik_Marvel_Rivals_-_PonyXL-000013.safetensors",
-      "trigger_tags": [
-        "magik_rivals",
-        "huge weapon",
-        "magik sword",
-        "glowing sword",
-        "yellow sword",
-        "weapon",
-        "simple background",
-        "full body"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Manon SF6 Pony  mnon   damocles aaa",
-      "lora_file": "Manon SF6 Pony -mnon - damocles_aaa.safetensors",
-      "trigger_tags": [],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Minase Iori",
-      "lora_file": "Minase_Iori-97.safetensors",
-      "trigger_tags": [
-        "minase iori",
-        "long hair",
-        "smile",
-        "brown hair",
-        "dress",
-        "jewelry",
-        "sitting",
-        "closed eyes"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Mizuki Yukikaze",
-      "lora_file": "Mizuki_Yukikaze_RPGX_outfit_1_epoch_10.safetensors",
-      "trigger_tags": [
-        "mizuki yukikaze",
-        "aoi nagisa (metalder)",
-        "official art",
-        "taimanin rpgx",
-        "taimanin (series)",
-        "curvy",
-        "brown hair",
-        "tan"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Mother Yuigahama",
-      "lora_file": "Mother Yuigahama (結衣の母).safetensors",
-      "trigger_tags": [
-        "mother yuigahama",
-        "smile",
-        "skirt",
-        "long sleeves",
-        "2girls",
-        "closed mouth",
-        "standing",
-        "closed eyes"
-      ],
-      "model_target": "sdxl",
-      "alternatives": [
-        "mother-yuigahama-s2s3-illu結衣の母.safetensors"
-      ]
-    },
-    {
-      "name": "Mature Female",
-      "lora_file": "Mother_Yukinoshita-Yahari_雪乃妈妈.safetensors",
-      "trigger_tags": [
-        "mature female",
-        "open mouth",
-        "blue eyes",
-        "short hair",
-        "single hair bun",
-        "japanese clothes",
-        "kimono",
-        "hair bun"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "High Res Image",
-      "lora_file": "NexBlend 06 Illustrious.safetensors",
-      "trigger_tags": [
-        "high res image",
-        "8k resolution",
-        "highly detailed",
-        "black eyes",
-        "black hair",
-        "korean woman",
-        "nexblend",
-        "photo"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Panamv4K112",
-      "lora_file": "Panamv4K112.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Brown Hair",
-      "lora_file": "PonyShiranui.safetensors",
-      "trigger_tags": [
-        "brown hair",
-        "brown eyes",
-        "hand fan",
-        "folding fan",
-        "ponytail",
-        "high ponytail",
-        "ponyshiranui",
-        "japanese clothes"
-      ],
-      "model_target": "pony",
-      "alternatives": [
-        "伊井野弥子IinoMiko_IlluXL.safetensors"
-      ]
-    },
-    {
-      "name": "Pet Play",
-      "lora_file": "Ponyplay_Illustrious.safetensors",
-      "trigger_tags": [
-        "ponyplay",
-        "pet play",
-        "humiliation",
-        "slave",
-        "sitting on person",
-        "sitting",
-        "horseback riding",
-        "riding"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Renee Graves",
-      "lora_file": "Renee_Graves蕾妮.safetensors",
-      "trigger_tags": [
-        "renee graves",
-        "green eyes",
-        "teeth",
-        "black background",
-        "simple background",
-        "white shirt",
-        "bags under eyes",
-        "outline"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Aqua Eyes",
-      "lora_file": "TohsakaRin-IL远坂凛.safetensors",
-      "trigger_tags": [
-        "chopiotohsakarin",
-        "aqua eyes",
-        "black hair",
-        "brown vest",
-        "buttons",
-        "collared shirt",
-        "expressionless",
-        "hair ribbon"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Tou Xia",
-      "lora_file": "Tou Xia(ponyv1)-田舎と離れと美人姊妹.safetensors",
-      "trigger_tags": [
-        "tou xia",
-        "long hair",
-        "black hair",
-        "jewelry",
-        "flower",
-        "cover",
-        "cover page",
-        "sleeveless"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Black Hair",
-      "lora_file": "Yor Forger (Spy x Family) Illustrious v3.safetensors",
-      "trigger_tags": [
-        "yor forger \\(spy x family\\)",
-        "bangs",
-        "skirt",
-        "shirt",
-        "black hair",
-        "red eyes",
-        "long sleeves",
-        "holding"
-      ],
-      "model_target": "sdxl",
-      "alternatives": [
-        "amornmi.pp.safetensors",
-        "tyq.pm.safetensors"
-      ]
-    },
-    {
-      "name": "Eyewear On Head",
-      "lora_file": "ZH_T3ntacl3Hypn0_v1_IL.safetensors",
-      "trigger_tags": [
-        "zh_t3ntacl3hypn0",
-        "eyewear on head",
-        "shirt",
-        "white shirt",
-        "tentacles",
-        "purple hair",
-        "blush",
-        "short sleeves"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Alicia Edelsia",
+      "name": "三舅妈·時々ボソッと",
+      "name_en": "Alicia Edelsia",
       "lora_file": "alicia-edelsia-s1-illu三舅妈.safetensors",
       "trigger_tags": [
         "alicia edelsia",
-        "short hair",
-        "sitting",
-        "night",
-        "smile",
-        "open mouth",
-        "brown hair",
-        "shirt"
+        "edelsia"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Alisa Mikhailovna Kujou",
-      "lora_file": "alisa-mikhailovna-kujou-s1-ponyxl-艾莉同学.safetensors",
+      "name": "二舅妈·時々ボソッと",
+      "name_en": "Mabel Rayveil",
+      "lora_file": "mabel-rayveil-illu二舅妈.safetensors",
       "trigger_tags": [
-        "alisa mikhailovna kujou",
-        "long hair",
-        "ahoge",
-        "virtual youtuber",
-        "blue background",
-        "bangs",
-        "blue eyes",
-        "brown hair"
+        "mabel rayveil",
+        "rayveil"
       ],
-      "model_target": "pony",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "On Side",
-      "lora_file": "anatomy_helper.safetensors",
+      "name": "亚丝娜·SAO",
+      "name_en": "Asuna",
+      "lora_file": "asuna亚丝娜.safetensors",
       "trigger_tags": [
-        "ass",
-        "lying",
-        "on side",
-        "long hair",
-        "brown hair",
-        "dress",
-        "lips",
-        "long dress"
+        "asuna",
+        "asuna yuuki",
+        "sao"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Anna Yanami",
+      "name": "伊蕾娜·魔女の旅々",
+      "name_en": "Elaina",
+      "lora_file": "elaina_伊蕾娜.safetensors",
+      "trigger_tags": [
+        "elaina",
+        "the journey of elaina",
+        "witch"
+      ],
+      "model_target": "sdxl"
+    },
+    {
+      "name": "八九寺真宵·物語",
+      "name_en": "Hachikuji Mayoi",
+      "lora_file": "Hachik八九寺XL.safetensors",
+      "trigger_tags": [
+        "hachikuji mayoi",
+        "mayoi",
+        "bakemonogatari"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "八奈见杏菜·負けヒロイン",
+      "name_en": "Anna Yanami",
       "lora_file": "anna-yanami-s1-ponyxl-lora-nochekaiser.safetensors",
       "trigger_tags": [
         "anna yanami",
-        "short hair",
-        "black hair",
-        "ahoge",
-        "indoors",
-        "window",
-        "night",
-        "dark"
+        "yanami"
       ],
-      "model_target": "pony",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "Simple Background",
-      "lora_file": "asuna亚丝娜.safetensors",
-      "trigger_tags": [
-        "asuna yuuki (sao)",
-        "smile",
-        "simple background",
-        "white background",
-        "standing",
-        "full body",
-        "zettai ryouiki",
-        "undine outfit"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Yanami Anna",
-      "lora_file": "baiquan_IllXL.safetensors",
-      "trigger_tags": [
-        "2girls",
-        "yanami anna",
-        "bare shoulders",
-        "beach",
-        "bikini",
-        "blue bikini",
-        "blue sky",
-        "commentary"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Bed Invitation",
-      "lora_file": "bed_invitationベッドへの誘い_ilxl_v1.safetensors",
-      "trigger_tags": [
-        "bed invitation",
-        "pointy ears",
-        "elf",
-        "frieren",
-        "jewelry",
-        "earrings",
-        "green eyes",
-        "long hair"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "bigasp",
-      "lora_file": "bigasp_v20-SDXL-fast.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Bubble Tea Challenge",
-      "lora_file": "bubble_tea_challenge.safetensors",
-      "trigger_tags": [
-        "bubble tea challenge",
-        "long hair",
-        "bangs",
-        "simple background",
-        "hair ornament",
-        "white background",
-        "holding",
-        "cleavage"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Chisa Kotegawa",
-      "lora_file": "chisa-kotegawa-s1-illustriousxl-lora-nochekaiser.safetensors",
-      "trigger_tags": [
-        "chisa kotegawa",
-        "short hair",
-        "bangs",
-        "brown hair",
-        "cleavage",
-        "brown eyes",
-        "closed mouth",
-        "collarbone"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "White Shirt",
-      "lora_file": "elaina_伊蕾娜.safetensors",
-      "trigger_tags": [
-        "aaelaina",
-        "elainacasual",
-        "white shirt",
-        "long hair",
-        "outdoors",
-        "ahoge",
-        "hair between eyes",
-        "collared shirt"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "emma frost marvel rivals ilxl goofy",
-      "lora_file": "emma_frost_marvel_rivals_ilxl_goofy.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "feet anime pony",
-      "lora_file": "feet_anime_pony_v2.safetensors",
-      "trigger_tags": [],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Pink Skin",
-      "lora_file": "feethands-ponyxl-v1.1.safetensors",
-      "trigger_tags": [
-        "feethands",
-        "pink skin",
-        "colored skin",
-        "pink hair",
-        "ponytail",
-        "long hair",
-        "simple background",
-        "blush"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "front lighting il 2 d16 soft",
-      "lora_file": "front_lighting_il_2_d16_soft.safetensors",
-      "trigger_tags": [],
-      "model_target": "illustrious",
-      "alternatives": null
-    },
-    {
-      "name": "Sagisawa Fumika",
-      "lora_file": "fumika鹭沢文香.safetensors",
-      "trigger_tags": [
-        "sagisawa fumika",
-        "long hair",
-        "blush",
-        "smile",
-        "open mouth",
-        "blue eyes",
-        "black hair",
-        "hair ornament"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Haruka Morishima",
-      "lora_file": "haruka-morishima-ponyxl-森岛.safetensors",
-      "trigger_tags": [
-        "haruka morishima",
-        "blush",
-        "bra",
-        "brown hair",
-        "cameltoe",
-        "chair",
-        "cleft of venus",
-        "drill hair"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Against Wall",
-      "lora_file": "head_pinned_wall_顔壁押し付けilxl_v1.safetensors",
-      "trigger_tags": [
-        "against wall",
-        "head grab",
-        "underwear",
-        "hair ornament",
-        "bow",
-        "bra",
-        "panties",
-        "shirt"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Hibiki Tsukahara",
+      "name": "冢原响·アマガミSS",
+      "name_en": "Hibiki Tsukahara",
       "lora_file": "hibiki-tsukahara-ponyxl-塚原响.safetensors",
       "trigger_tags": [
         "hibiki tsukahara",
-        "arm support",
-        "barefoot",
-        "black eyes",
-        "black hair",
-        "blush",
-        "cleavage",
-        "competition swimsuit"
+        "tsukahara"
       ],
-      "model_target": "pony",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "Holding Glowing Phone",
-      "lora_file": "holding glowing phone-noob-V1.safetensors",
+      "name": "北原伊织·Grand Blue",
+      "name_en": "Kitahara Iori",
+      "lora_file": "北原伊织.safetensors",
       "trigger_tags": [
-        "glowingphonestyle",
-        "holding glowing phone",
-        "mirror selfie",
-        "reflection focus",
-        "a asian woman",
-        "mirror",
-        "long hair",
-        "black hair"
+        "iori kitahara",
+        "kitahara iori",
+        "北原伊织"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "sdxl"
     },
     {
-      "name": "Empty Eyes",
-      "lora_file": "hypnotized_face_pony.safetensors",
+      "name": "南号尚风白妹",
+      "name_en": "Nangou Shoufuu",
+      "lora_file": "BSC-南号尚风白妹.safetensors",
       "trigger_tags": [
-        "empty eyes",
-        "half-closed eyes",
-        "bangs",
-        "blush",
-        "collarbone",
-        "eyebrows visible through hair",
-        "gradient",
-        "gradient background"
+        "nangou shoufuu"
       ],
-      "model_target": "pony",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Nanasaki Ai",
-      "lora_file": "il-nanasakiai.safetensors",
-      "trigger_tags": [
-        "nanasaki ai",
-        "amagamiai",
-        "short hair",
-        "black hair",
-        "school uniform",
-        "kibito high school uniform",
-        "tree",
-        "chain-link fence"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "juri han from 3d Model Pony   damocles a",
-      "lora_file": "juri han from 3d Model Pony - damocles_aaa.safetensors",
-      "trigger_tags": [],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "juriPonyv1",
-      "lora_file": "juriPonyv1.safetensors",
-      "trigger_tags": [],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Kaju Nukumizu",
-      "lora_file": "kaju-nukumizu-pony佳树.safetensors",
-      "trigger_tags": [
-        "kaju nukumizu",
-        "long hair",
-        "blush",
-        "smile",
-        "open mouth",
-        "bangs",
-        "brown hair",
-        "brown eyes"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Karen Himemiya",
+      "name": "姬宫华恋·負けヒロイン",
+      "name_en": "Karen Himemiya",
       "lora_file": "karen_himemiya姬宫华恋.safetensors",
       "trigger_tags": [
         "karen himemiya",
-        "smile",
-        "simple background",
-        "white background",
-        "closed mouth",
-        "transparent background",
-        "portrait",
-        "2girls"
+        "himemiya"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "Source Anime",
+      "name": "小鞠知花·負けヒロイン",
+      "name_en": "Komari Chika",
       "lora_file": "komari chika_makein_PONY_小鞠.safetensors",
       "trigger_tags": [
-        "chika-default",
-        "score 9",
-        "source anime",
         "komari chika",
-        "school uniform",
-        "white shirt",
-        "bowties",
-        "skirt"
+        "chika komari"
       ],
-      "model_target": "pony",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "Kurumi Tokisaki",
-      "lora_file": "kurumi-tokisaki-s2-illustriousxl-lora-nochekaiser.safetensors",
+      "name": "尤贝尔·葬送のフリーレン",
+      "name_en": "Übel",
+      "lora_file": "ubel_ponyxl_尤贝尔.safetensors",
       "trigger_tags": [
-        "kurumi tokisaki",
-        "long hair",
-        "smile",
-        "shirt",
-        "black hair",
-        "red eyes",
-        "ribbon",
-        "twintails"
+        "übel",
+        "ubel",
+        "sousou no frieren"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "An Anime Girl",
+      "name": "帕南·帕尔默·Cyberpunk2077",
+      "name_en": "Panam Palmer",
+      "lora_file": "Panamv4K112.safetensors",
+      "trigger_tags": [
+        "panam palmer",
+        "panam"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "惠惠·このすば",
+      "name_en": "Megumin",
+      "lora_file": "konosuba-megumin-s2-ponyxl-lora-nochekaiser.safetensors",
+      "trigger_tags": [
+        "megumin",
+        "konosuba"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "拉姆·Re:Zero",
+      "name_en": "Ram",
+      "lora_file": "拉姆_Ram_IlluXL.safetensors",
+      "trigger_tags": [
+        "ram",
+        "re:zero",
+        "maid"
+      ],
+      "model_target": "illustrious"
+    },
+    {
+      "name": "斯卡蕾特·甜蜜女友3",
+      "name_en": "Scarlet",
+      "lora_file": "Scarlet甜蜜女友3.safetensors",
+      "trigger_tags": [
+        "scarlet",
+        "scarlet amakano"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "日向雏田·Naruto",
+      "name_en": "Hinata Hyuga",
+      "lora_file": "Hinata 日向雏田Alter IL .safetensors",
+      "trigger_tags": [
+        "hinata hyuga",
+        "hyuga",
+        "naruto"
+      ],
+      "model_target": "illustrious"
+    },
+    {
+      "name": "春丽·Street Fighter",
+      "name_en": "Chun-Li",
+      "lora_file": "GoodfitchunliPonyv1.safetensors",
+      "trigger_tags": [
+        "chun-li",
+        "chunli"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "松嶋みちる·グリザイア",
+      "name_en": "Michiru Matsushima",
       "lora_file": "matsushima_michiru松嶋.safetensors",
       "trigger_tags": [
-        "matsushima_michiru",
-        "an anime girl",
-        "long hair",
-        "smile",
-        "open mouth",
-        "blue eyes",
-        "blonde hair",
-        "bow"
+        "matsushima michiru",
+        "grisaia"
       ],
-      "model_target": "sdxl",
-      "alternatives": [
-        "风间一姬kazami_kazuki.safetensors"
-      ]
+      "model_target": "sdxl"
     },
     {
-      "name": "Moria Luluka",
+      "name": "格温·史黛西·SpiderMan",
+      "name_en": "Gwen Stacy",
+      "lora_file": "gwen Stacy(comics).safetensors",
+      "trigger_tags": [
+        "gwen stacy",
+        "spider-gwen",
+        "spider-man"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "格温·坦尼森·Ben10",
+      "name_en": "Gwen Tennyson",
+      "lora_file": "Gwen Tennyson (Ben10) - XL IL V1.0.safetensors",
+      "trigger_tags": [
+        "gwen tennyson",
+        "tennyson"
+      ],
+      "model_target": "illustrious"
+    },
+    {
+      "name": "格蕾丝·RE Requiem",
+      "name_en": "Grace Ashcroft",
+      "lora_file": "Grace_Ashcroft_Resident_Evil_Requiem_ilxl_goofy.safetensors",
+      "trigger_tags": [
+        "grace ashcroft",
+        "ashcroft"
+      ],
+      "model_target": "illustrious"
+    },
+    {
+      "name": "森亚瑠瑠香·名探偵プリキュア",
+      "name_en": "Luluka Moria",
       "lora_file": "moria-luluka-anime-illustriousxl-lora-nochekaiser.safetensors",
       "trigger_tags": [
-        "moria luluka",
-        "long hair",
-        "skirt",
-        "dress",
-        "school uniform",
-        "grey hair",
-        "ahoge",
-        "capelet"
+        "luluka",
+        "moria",
+        "cure arcana shadow"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Naked Dogeza",
-      "lora_file": "naked_dogeza全裸土下座_ilxl_v1.safetensors",
+      "name": "森岛遥·アマガミSS",
+      "name_en": "Haruka Morishima",
+      "lora_file": "haruka-morishima-ponyxl-森岛.safetensors",
       "trigger_tags": [
-        "naked dogeza",
-        "long hair",
-        "thighhighs",
-        "tohsaka rin",
-        "closed eyes",
-        "black thighhighs",
-        "black hair",
-        "gertrud barkhorn"
+        "haruka morishima",
+        "morishima"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "nannan.pf.ly",
-      "lora_file": "nannan.pf.ly.safetensors",
+      "name": "水城雪风·対魔忍",
+      "name_en": "Mizuki Yukikaze",
+      "lora_file": "Mizuki_Yukikaze_RPGX_outfit_1_epoch_10.safetensors",
       "trigger_tags": [
-        "zkz"
+        "mizuki yukikaze",
+        "yukikaze",
+        "mizuki"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "nannan.pf",
-      "lora_file": "nannan.pf.safetensors",
+      "name": "水瀬伊织·Idolmaster",
+      "name_en": "Iori Minase",
+      "lora_file": "Minase_Iori-97.safetensors",
       "trigger_tags": [
-        "zkz"
+        "iori minase",
+        "minase iori"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "sdxl"
     },
     {
-      "name": "nannan.pm",
-      "lora_file": "nannan.pm.safetensors",
+      "name": "温水佳树·負けヒロイン",
+      "name_en": "Kaju Nukumizu",
+      "lora_file": "kaju-nukumizu-pony佳树.safetensors",
       "trigger_tags": [
-        "zkz"
+        "kaju nukumizu",
+        "nukumizu"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "nannan.pmp.ly",
-      "lora_file": "nannan.pmp.ly.safetensors",
-      "trigger_tags": [
-        "zkz"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "nannan.pmp",
-      "lora_file": "nannan.pmp.safetensors",
-      "trigger_tags": [
-        "zkz"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "A Photo Of A Woman Wearing A White One Piece Swimsuit",
-      "lora_file": "seethruv3_SDXL.safetensors",
-      "trigger_tags": [
-        "seethru",
-        "a photo of a woman wearing a white one piece swimsuit",
-        "hin a marble bathroom",
-        "blonde hair",
-        "audrina patridge",
-        "window in the background",
-        "a close up photo of a woman wearing a white one piece swimsuit",
-        "hand on head"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Male Focus",
-      "lora_file": "sf-marisa-ingame-ponyxl-lora-nochekaiser.safetensors",
+      "name": "玛丽莎·罗塞蒂·StreetFighter",
+      "name_en": "Marisa Rossetti",
+      "lora_file": "MarisaRxl-12v1-Ill.safetensors",
       "trigger_tags": [
         "marisa",
-        "standing",
-        "male focus",
-        "no humans",
-        "smoke",
-        "boxing gloves",
-        "gloves",
-        "multiple boys"
+        "marisa rossetti",
+        "street fighter"
       ],
-      "model_target": "pony",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Grey Pants",
-      "lora_file": "shion yanag柳木诗梦i.safetensors",
+      "name": "玛奇玛·Chainsaw Man",
+      "name_en": "Makima",
+      "lora_file": "mak1ma0XL_Pony_玛奇玛.safetensors",
       "trigger_tags": [
-        "shirt",
-        "grey pants",
-        "pants",
-        "shoes",
-        "white background",
-        "sneakers",
-        "full body",
-        "black shirt"
+        "makima",
+        "chainsaw man"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "奴隶精灵",
-      "lora_file": "slave-elf-amputee奴隶精灵.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Arm At Side",
-      "lora_file": "snegovski.safetensors",
+      "name": "田山·スーパーの裏",
+      "name_en": "Tayama",
+      "lora_file": "Yamada(Tayama) v1.0 Illustrious-000016.safetensors",
       "trigger_tags": [
-        "snegovski",
-        "original",
-        "request",
-        "arm at side",
-        "arm up",
-        "ass",
-        "bare shoulders",
-        "bikini"
+        "tayama",
+        "yamada"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Sora Kasugano",
-      "lora_file": "sora-kasugano-s1-illustriousxl-春日野穹.safetensors",
+      "name": "由比滨妈妈·春物",
+      "name_en": "Mother Yuigahama",
+      "lora_file": "Mother Yuigahama (結衣の母).safetensors",
       "trigger_tags": [
-        "sora kasugano",
-        "long hair",
-        "dress",
-        "sitting",
-        "stuffed toy",
-        "stuffed animal",
-        "reflection",
-        "stuffed bunny"
+        "yuigahama",
+        "yuigahama mother"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Sumika Fujimiya",
-      "lora_file": "sumika-fujimiya藤宮 澄夏illu异世界舅舅.safetensors",
-      "trigger_tags": [
-        "sumika fujimiya",
-        "blush",
-        "short hair",
-        "open mouth",
-        "brown hair",
-        "black hair",
-        "braid",
-        "glasses"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Nishikata Chii",
-      "lora_file": "takagi and chii XL高木母子 Illustrious.safetensors",
-      "trigger_tags": [
-        "nishikata chii",
-        "japanese clothes",
-        "kimono",
-        "two-tone background",
-        "wavy mouth",
-        "obi",
-        "forehead",
-        "sash"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Tiara Basori",
-      "lora_file": "tiara-basori-s1-ponyxl-lora-nochekaiser.safetensors",
-      "trigger_tags": [
-        "tiara basori",
-        "blush",
-        "smile",
-        "skirt",
-        "black hair",
-        "long sleeves",
-        "2girls",
-        "animal ears"
-      ],
-      "model_target": "pony",
-      "alternatives": null
-    },
-    {
-      "name": "Tomo Aizawa",
-      "lora_file": "tomo-aizawa-s1-illu小智.safetensors",
-      "trigger_tags": [
-        "tomo aizawa",
-        "short hair",
-        "shirt",
-        "white shirt",
-        "short sleeves",
-        "red hair",
-        "t-shirt",
-        "motion blur"
-      ],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "White Queen",
+      "name": "白女王·Date A Bullet",
+      "name_en": "White Queen",
       "lora_file": "white-queen-movie-ponyxl-lora-nochekaiser.safetensors",
       "trigger_tags": [
         "white queen",
-        "long hair",
-        "bangs",
-        "shirt",
-        "monochrome",
-        "english text",
-        "text focus",
-        "dress"
+        "queen"
       ],
-      "model_target": "pony",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "Left Blue Eye",
-      "lora_file": "white_queen.safetensors",
+      "name": "空条徐伦·JoJo",
+      "name_en": "Jolyne Kujo",
+      "lora_file": "JolynePdxlDwnsty.safetensors",
       "trigger_tags": [
-        "white-queen",
-        "def",
-        "left blue eye",
-        "right red eye",
-        "clock eye",
-        "heterochromia",
-        "white hair",
-        "twintails"
+        "jolyne cujoh",
+        "jolyne kujo",
+        "jolyne"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "北原伊织",
-      "lora_file": "北原伊织.safetensors",
-      "trigger_tags": [],
-      "model_target": "sdxl",
-      "alternatives": null
-    },
-    {
-      "name": "Blonde Hair",
-      "lora_file": "战斗员combatant.safetensors",
+      "name": "绚辻词·アマガミSS",
+      "name_en": "Tsukasa Ayatsuji",
+      "lora_file": "tsukasa-ayatsuji-ponyxl-絢辻詞.safetensors",
       "trigger_tags": [
-        "gunroad",
-        "weapon",
-        "gun",
-        "joints",
-        "twintails",
-        "blonde hair",
-        "red hair",
-        "green eyes"
+        "tsukasa ayatsuji",
+        "ayatsuji"
       ],
-      "model_target": "sdxl",
-      "alternatives": [
-        "早坂爱HayasakaAi_IlluXL.safetensors",
-        "路人女主英梨梨Eriri_IlluXL.safetensors"
-      ]
+      "model_target": "pony"
     },
     {
-      "name": "Spoken Ellipsis",
-      "lora_file": "白妤昭-il-V2.safetensors",
+      "name": "艾莉同学·時々ボソッと",
+      "name_en": "Alya (Alisa Kujou)",
+      "lora_file": "alisa-mikhailovna-kujou-s1-ponyxl-艾莉同学.safetensors",
       "trigger_tags": [
-        "bsh",
-        "...",
-        "ribbon",
-        "spoken ellipsis",
-        "short hair",
-        "tears",
-        "shirt",
-        "speech bubble"
+        "alisa mikhailovna kujou",
+        "alya",
+        "kujou"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "pony"
     },
     {
-      "name": "Blue Hair",
+      "name": "英格丽德·Street Fighter",
+      "name_en": "Ingrid",
+      "lora_file": "IngridSFILXL - by KillerUwU13_AI.safetensors",
+      "trigger_tags": [
+        "ingrid",
+        "street fighter"
+      ],
+      "model_target": "illustrious"
+    },
+    {
+      "name": "蕾妮·格雷夫斯",
+      "name_en": "Renee Graves",
+      "lora_file": "Renee_Graves蕾妮.safetensors",
+      "trigger_tags": [
+        "renee graves"
+      ],
+      "model_target": "sdxl"
+    },
+    {
+      "name": "蕾姆·Re:Zero",
+      "name_en": "Rem",
       "lora_file": "蕾姆_Rem_IlluXL.safetensors",
       "trigger_tags": [
-        "blue hair",
-        "blue eyes",
-        "short hair",
-        "detached sleeves",
-        "black ribbon",
-        "hair over one eye",
-        "cleavage",
-        "x hair ornament"
+        "rem",
+        "re:zero",
+        "maid"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "illustrious"
     },
     {
-      "name": "Short Hair",
+      "name": "蛛丝·Cindy Moon·Marvel",
+      "name_en": "Cindy Moon / Silk",
       "lora_file": "蛛丝Silk10.safetensors",
       "trigger_tags": [
-        "cindymoonmarloo",
-        "short hair",
-        "simple background",
-        "black hair",
-        "bodysuit",
-        "mask",
-        "pink background",
-        "mouth mask"
+        "cindy moon",
+        "silk",
+        "spider-man"
       ],
-      "model_target": "sdxl",
-      "alternatives": [
-        "路人女主惠惠KatouMegumi_IlluXL.safetensors"
-      ]
+      "model_target": "pony"
     },
     {
-      "name": "Red Eyes",
-      "lora_file": "辉夜ShinomiyaKaguya_IlluXL.safetensors",
+      "name": "雪之下母亲·春物",
+      "name_en": "Mother Yukinoshita",
+      "lora_file": "Mother_Yukinoshita-Yahari_雪乃妈妈.safetensors",
       "trigger_tags": [
-        "red eyes",
-        "red ribbon",
-        "black hair",
-        "white background",
-        "heart",
-        "black dress",
-        "folded ponytail",
-        "simple background"
+        "yukinoshita",
+        "mother",
+        "yahari"
       ],
-      "model_target": "sdxl",
-      "alternatives": null
+      "model_target": "sdxl"
+    },
+    {
+      "name": "韩蛛俐·Street Fighter",
+      "name_en": "Juri Han",
+      "lora_file": "juri han from 3d Model Pony - damocles_aaa.safetensors",
+      "trigger_tags": [
+        "juri han",
+        "han juri",
+        "juri"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "鹭沢文香·Idolmaster",
+      "name_en": "Fumika Sagisawa",
+      "lora_file": "fumika鹭沢文香.safetensors",
+      "trigger_tags": [
+        "fumika sagisawa",
+        "idolmaster"
+      ],
+      "model_target": "sdxl"
+    },
+    {
+      "name": "黑寡妇·Marvel",
+      "name_en": "Black Widow",
+      "lora_file": "Black_Widow_Marvel_Rivals_-_PonyXL-000015.safetensors",
+      "trigger_tags": [
+        "black widow",
+        "natasha romanoff",
+        "marvel"
+      ],
+      "model_target": "pony"
     }
-  ],
-  "total": 91
+  ]
 }

@@ -1,0 +1,10 @@
+28-list characters without local LoRA (download from CivitAI to complete):
+
+1. Frieren (芙莉莲) — 葬送のフリーレン
+2. Flamme (伏拉梅) — 葬送のフリーレン
+3. Linie (莉妮耶) — 葬送のフリーレン
+4. Judy Alvarez — Cyberpunk 2077
+5. Jill Valentine — Resident Evil
+6. Omni-Man — Invincible
+
+Search: civitai.com → character:<name> → download .safetensors → put in models/Lora/
