@@ -12,6 +12,18 @@ scripts/
 # ── 运行时数据 ──
 web/*
 !web/creator_users.txt
+# web/ 前端源码与配置资产（例外纳入仓库）
+!web/src/
+!web/index.html
+!web/package.json
+!web/package-lock.json
+!web/vite.config.ts
+!web/tsconfig.json
+!web/svelte.config.js
+!web/characters.json
+!web/resolutions.json
+!web/points_config.json
+!web/styles/
 
 # ── 运行时图片 & 资源 ──
 web/thumbnails
