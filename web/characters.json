@@ -52,7 +52,8 @@
         "orange hair",
         "ancient greek"
       ],
-      "model_target": "illustrious"
+      "model_target": "illustrious",
+      "_download_status": "blocked_by_gfw"
     },
     {
       "name": "全能侠·Invincible",
@@ -62,7 +63,8 @@
         "omni-man",
         "invincible"
       ],
-      "model_target": "pony"
+      "model_target": "pony",
+      "_download_status": "blocked_by_gfw"
     },
     {
       "name": "八九寺真宵·物語",
@@ -125,7 +127,8 @@
         "blue eyes",
         "resident evil"
       ],
-      "model_target": "pony"
+      "model_target": "pony",
+      "_download_status": "blocked_by_gfw"
     },
     {
       "name": "姬宫华恋·負けヒロイン",
@@ -228,7 +231,8 @@
         "judy alvarez",
         "cyberpunk 2077"
       ],
-      "model_target": "pony"
+      "model_target": "pony",
+      "_download_status": "blocked_by_gfw"
     },
     {
       "name": "松嶋みちる·グリザイア",
@@ -416,7 +420,8 @@
         "grey hair",
         "green eyes"
       ],
-      "model_target": "illustrious"
+      "model_target": "illustrious",
+      "_download_status": "blocked_by_gfw"
     },
     {
       "name": "英格丽德·Street Fighter",
@@ -439,7 +444,8 @@
         "pink hair",
         "horns"
       ],
-      "model_target": "illustrious"
+      "model_target": "illustrious",
+      "_download_status": "blocked_by_gfw"
     },
     {
       "name": "蕾妮·格雷夫斯",
