@@ -26,3 +26,9 @@ aifadian-api-docs.md
 page-snapshot.yml
 test_esc.txt
 test2.txt
+frontend/node_modules/
+frontend/.svelte-kit/
+frontend/build/
+frontend/node/
+web/node_modules/
+web/dist/

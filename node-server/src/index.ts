@@ -91,6 +91,18 @@ app.get('/api/_diag', (req, res) => {
   res.json({ active_count: 0, active_status: null, subscribers: wss.clients.size });
 });
 
+// POST /api/dev-login — 本地开发免密登录，返回 JWT
+app.post('/api/dev-login', (req, res) => {
+  const jwt = require('jsonwebtoken');
+  const secret = config.jwt_secret || process.env.JWT_SECRET || 'local-dev-secret';
+  const token = jwt.sign(
+    { id: 1, role: 'admin', email: 'local@dev' },
+    Buffer.from(secret, 'utf-8'),
+    { expiresIn: '365d' }
+  );
+  res.json({ token, user: { id: 1, role: 'admin', email: 'local@dev', points: 99999 } });
+});
+
 // Public announcement endpoint
 app.get('/api/announcement', (req, res) => {
   const f = path.join(path.dirname(config.creator_map_file), 'announcement.json');

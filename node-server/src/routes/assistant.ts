@@ -155,12 +155,24 @@ router.post('/chat', async (req: Request, res: Response) => {
   card.width = card.width || 1344;
   card.height = card.height || 768;
 
+  // 工作流路径兜底：角色专属工作流不存在时回退到 none.json
+  let wfPath = card.character_name
+    ? `${card.workflow}/base/${card.character_name}.json`
+    : `${card.workflow}/base/none.json`;
+  if (!fs.existsSync(path.join(WF_DIR, wfPath))) {
+    const fallback = `${card.workflow}/base/none.json`;
+    if (fs.existsSync(path.join(WF_DIR, fallback))) {
+      wfPath = fallback;
+    } else {
+      // 最后兜底：Flux 默认文生图
+      wfPath = 'Flux/默认文生图.json';
+    }
+  }
+
   res.json({
     reply: card.reply,
     card: {
-      workflow_path: card.character_name
-        ? `${card.workflow}/base/${card.character_name}.json`
-        : `${card.workflow}/base/none.json`,
+      workflow_path: wfPath,
       positive: card.positive,
       negative: card.negative,
       width: card.width,
