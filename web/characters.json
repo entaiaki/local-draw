@@ -43,6 +43,28 @@
       "model_target": "sdxl"
     },
     {
+      "name": "伏拉梅·葬送のフリーレン",
+      "name_en": "Flamme",
+      "lora_file": "Flamme_IlluXL.safetensors",
+      "trigger_tags": [
+        "flamme",
+        "frieren",
+        "orange hair",
+        "ancient greek"
+      ],
+      "model_target": "illustrious"
+    },
+    {
+      "name": "全能侠·Invincible",
+      "name_en": "Omni-Man",
+      "lora_file": "omni_man_invincible.safetensors",
+      "trigger_tags": [
+        "omni-man",
+        "invincible"
+      ],
+      "model_target": "pony"
+    },
+    {
       "name": "八九寺真宵·物語",
       "name_en": "Hachikuji Mayoi",
       "lora_file": "Hachik八九寺XL.safetensors",
@@ -92,6 +114,18 @@
         "nangou shoufuu"
       ],
       "model_target": "illustrious"
+    },
+    {
+      "name": "吉尔·瓦伦蒂安·Resident Evil",
+      "name_en": "Jill Valentine",
+      "lora_file": "Jill_Valentine_REmake_PonyXL.safetensors",
+      "trigger_tags": [
+        "jill valentine",
+        "beret",
+        "blue eyes",
+        "resident evil"
+      ],
+      "model_target": "pony"
     },
     {
       "name": "姬宫华恋·負けヒロイン",
@@ -183,6 +217,16 @@
       "trigger_tags": [
         "chun-li",
         "chunli"
+      ],
+      "model_target": "pony"
+    },
+    {
+      "name": "朱迪·阿尔瓦雷兹·Cyberpunk2077",
+      "name_en": "Judy Alvarez",
+      "lora_file": "judy_alvarez_cyberpunk_2077.safetensors",
+      "trigger_tags": [
+        "judy alvarez",
+        "cyberpunk 2077"
       ],
       "model_target": "pony"
     },
@@ -363,12 +407,37 @@
       "model_target": "pony"
     },
     {
+      "name": "芙莉莲·葬送のフリーレン",
+      "name_en": "Frieren",
+      "lora_file": "SousouNoFrieren_Frieren_IlluXL.safetensors",
+      "trigger_tags": [
+        "frieren",
+        "sousou no frieren",
+        "grey hair",
+        "green eyes"
+      ],
+      "model_target": "illustrious"
+    },
+    {
       "name": "英格丽德·Street Fighter",
       "name_en": "Ingrid",
       "lora_file": "IngridSFILXL - by KillerUwU13_AI.safetensors",
       "trigger_tags": [
         "ingrid",
         "street fighter"
+      ],
+      "model_target": "illustrious"
+    },
+    {
+      "name": "莉妮耶·葬送のフリーレン",
+      "name_en": "Linie",
+      "lora_file": "Linie_Frieren.safetensors",
+      "trigger_tags": [
+        "linie",
+        "linnie",
+        "frieren",
+        "pink hair",
+        "horns"
       ],
       "model_target": "illustrious"
     },
