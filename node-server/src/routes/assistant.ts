@@ -25,7 +25,9 @@ function loadJson<T>(fp: string, def: T): T {
 }
 
 function getCharacters(): any[] {
-  return loadJson<{ characters: any[] }>(CHARS_FILE, { characters: [] }).characters;
+  const chars = loadJson<{ characters: any[] }>(CHARS_FILE, { characters: [] }).characters;
+  // 过滤未下载的幽灵角色（_download_status 标记，文件到手后删标记即恢复）
+  return chars.filter((c: any) => !c._download_status);
 }
 
 function getResolutions(): Record<string, { width: number; height: number }> {
