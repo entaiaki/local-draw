@@ -200,5 +200,36 @@ class ZImage(Lumina2):        # 行 1122 —— image_model: "lumina2", dim 3840
 
 *报告完。建议从「P0 跑通 Z-Image-Turbo 中文直出」开始——这是验证「模型原生语义理解能否替代工作流库」的最小成本实验。*
 
+---
+
+## 附录 A：技术实施方案（Bridge 架构）
+
+### 模型分层调用
+
+```
+natureDrawImage 后端
+├── WAI / Anima / Flux / Real  →  ComfyUI (UNETLoader + workflow injection)
+│                                    (复杂节点链、LoRA 注入、多工作流)
+├── Z-Image  →  tools/zimage_bridge.py  →  diffusers ZImagePipeline
+│                                            (单模型、原生语义、不用工作流)
+└── GLM-Image →  tools/glm_image_bridge.py →  diffusers GlmImagePipeline
+                                             (混合自回归、文本渲染特化)
+```
+
+### 桥接脚本调用方式
+
+```bash
+echo '{"prompt":"中文长句...","width":1024,"height":1024,"steps":8}' | \
+  python tools/zimage_bridge.py <模型目录> <输出路径>
+```
+
+### 显存规划（5090 32GB）
+
+| 同时运行 | 显存分配 | 可行性 |
+|---------|---------|--------|
+| ComfyUI 空闲 + 1个 bridge | ~16GB (Z-Image-Turbo) | ✅ |
+| ComfyUI 生成(SDXL ~6GB) + bridge | ~22GB | ✅ |
+| ComfyUI + 2个 bridge 同时 | OOM 风险 | ❌ 需串行或 CUDA_VISIBLE_DEVICES 隔离 |
+
 
 
