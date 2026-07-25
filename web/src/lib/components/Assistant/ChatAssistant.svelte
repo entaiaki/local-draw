@@ -231,9 +231,9 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <!-- Mode switcher: WAI / Anima -->
+      <!-- Mode switcher: WAI / Anima / Flux / Real -->
       <div class="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
-        {#each ['WAI', 'Anima', 'Flux'] as mode}
+        {#each ['WAI', 'Anima', 'Flux', 'Real'] as mode}
           <button
             class="px-2.5 py-1 text-xs font-medium rounded-md transition-all {drawMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
             onclick={() => switchMode(mode as DrawMode)}
