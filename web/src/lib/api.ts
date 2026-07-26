@@ -275,3 +275,20 @@ export async function fetchBridgeModels(): Promise<{ alias: string; kind: string
     return await resp.json();
   } catch { return []; }
 }
+
+export async function bridgeEdit(params: {
+  model: string;
+  prompt: string;
+  image_name: string;
+  width?: number;
+  height?: number;
+  steps?: number;
+  guidance?: number;
+}): Promise<BridgeResult> {
+  const resp = await fetch('/api/draw/bridge/edit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  return await resp.json();
+}

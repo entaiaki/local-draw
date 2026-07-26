@@ -44,3 +44,37 @@ bridgeRouter.post('/bridge', async (req, res) => {
     res.status(502).json({ ok: false, error: `bridge error: ${e.message}` });
   }
 });
+
+// POST /api/draw/bridge/edit — 原生图像编辑 {model, prompt, image_name}
+// image_name 为 ComfyUI input 目录里已上传的文件名(img2img_xxx.png)
+bridgeRouter.post('/bridge/edit', async (req, res) => {
+  const { model, prompt, image_name, width = 0, height = 0, steps = 0, guidance = -1 } = req.body || {};
+  if (!model || !prompt || !image_name) {
+    return res.status(400).json({ ok: false, error: 'model, prompt and image_name required' });
+  }
+  const { loadConfig } = await import('../services/config.js');
+  const config = loadConfig();
+  // input 目录 = output_dir 的同级 input/
+  const pathMod = await import('path');
+  const imagePath = pathMod.join(pathMod.dirname(config.output_dir), 'input', image_name).replace(/\\/g, '/');
+  try {
+    const r = await fetch(`${BRIDGE_URL}/edit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, prompt, image_path: imagePath, width, height, steps, guidance }),
+      signal: AbortSignal.timeout(600000),
+    });
+    const data: any = await r.json();
+    if (!data.ok) return res.status(500).json(data);
+    res.json({
+      ok: true,
+      image_url: `/api/image?filename=${encodeURIComponent(data.filename)}`,
+      filename: data.filename,
+      seed: data.seed,
+      gen_sec: data.gen_sec,
+      load_sec: data.load_sec,
+    });
+  } catch (e: any) {
+    res.status(502).json({ ok: false, error: `bridge error: ${e.message}` });
+  }
+});

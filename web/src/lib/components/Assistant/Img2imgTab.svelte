@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { uploadImg2img, submitToQueue, fetchMyQueue, getImageUrl } from '$lib/api';
+  import { uploadImg2img, submitToQueue, fetchMyQueue, getImageUrl, bridgeEdit } from '$lib/api';
   import { onDestroy } from 'svelte';
 
   interface EditRecord {
@@ -23,6 +23,8 @@
   let pollTimer: ReturnType<typeof setInterval> | null = null;
   let fileInput: HTMLInputElement | undefined = $state();
   let idCounter = 0;
+  // Flux 版本选择: kontext(旧fp8) / flux2-klein(新4B原生编辑,互斥加载防OOM)
+  let editModel: 'kontext' | 'flux2-klein' = $state('flux2-klein');
 
   const quickInstructions = [
     '换成赛博朋克风格背景',
@@ -62,6 +64,35 @@
     errorText = '';
     try {
       const up = await uploadImg2img(imageFile);
+
+      // Flux2-Klein: bridge 原生编辑, 同步等待结果
+      if (editModel === 'flux2-klein') {
+        const rec: EditRecord = {
+          id: ++idCounter,
+          srcName: up.image1_name,
+          srcPreview: imagePreview,
+          instruction: instruction.trim(),
+          queueId: 0,
+          status: 'running',
+        };
+        records = [rec, ...records];
+        const res = await bridgeEdit({
+          model: 'flux2-klein',
+          prompt: instruction.trim(),
+          image_name: up.image1_name,
+        });
+        if (res.ok && res.filename) {
+          rec.status = 'done';
+          rec.outputPath = res.filename;
+        } else {
+          rec.status = 'failed';
+          rec.error = res.error || '编辑失败';
+        }
+        records = records;
+        return;
+      }
+
+      // Kontext: ComfyUI 工作流 + 队列轮询
       const res = await submitToQueue({
         workflow_path: 'Flux/图片编辑.json',
         direct_prompt: instruction.trim(),
@@ -121,10 +152,25 @@
   <div class="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 shrink-0">
     <div class="flex items-center gap-2">
       <span class="text-lg">🖼️</span>
-      <span class="font-semibold text-sm">图生图 · Flux Kontext</span>
+      <span class="font-semibold text-sm">图生图</span>
       <span class="text-[10px] text-muted-foreground">上传图片 + 自然语言编辑指令</span>
     </div>
-    <span class="text-[10px] text-muted-foreground">≤5MB · 尺寸跟随原图</span>
+    <div class="flex items-center gap-3">
+      <!-- Flux 版本切换: Klein(新4B,推荐) / Kontext(旧fp8) -->
+      <div class="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+        <button
+          class="px-2 py-0.5 text-[10px] font-medium rounded-md transition-all {editModel === 'flux2-klein' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
+          onclick={() => editModel = 'flux2-klein'}
+          title="Flux.2 Klein 4B：原生编辑，中文指令，低显存(互斥加载)"
+        >Flux2 Klein</button>
+        <button
+          class="px-2 py-0.5 text-[10px] font-medium rounded-md transition-all {editModel === 'kontext' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
+          onclick={() => editModel = 'kontext'}
+          title="Flux.1 Kontext fp8：ComfyUI 工作流，ReferenceLatent"
+        >Kontext</button>
+      </div>
+      <span class="text-[10px] text-muted-foreground">≤5MB</span>
+    </div>
   </div>
 
   <div class="flex-1 min-h-0 flex">
