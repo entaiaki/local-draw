@@ -64,12 +64,13 @@ export interface AssistantCard {
 
 export async function assistantChat(
   message: string,
-  history: Array<{ role: string; content: string }> = []
+  history: Array<{ role: string; content: string }> = [],
+  mode?: string
 ): Promise<AssistantCard> {
   const resp = await fetch('/api/assistant/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify({ message, history, mode }),
   });
   const data = await resp.json();
   if (!resp.ok) throw new Error(data.error || data.detail || '请求失败');
@@ -238,4 +239,39 @@ export async function fetchWorkflows(): Promise<{ workflows: DrawWorkflow[]; cat
     const resp = await fetch('/api/workflows');
     return await resp.json();
   } catch { return { workflows: [], category_order: [] }; }
+}
+
+// ── Bridge (diffusers 直出: Z-Image / GLM / Flux2) ──
+export interface BridgeResult {
+  ok: boolean;
+  image_url?: string;
+  filename?: string;
+  seed?: number;
+  gen_sec?: number;
+  load_sec?: number;
+  error?: string;
+}
+
+export async function bridgeGenerate(params: {
+  model: string;
+  prompt: string;
+  negative_prompt?: string;
+  width?: number;
+  height?: number;
+  steps?: number;
+  guidance?: number;
+}): Promise<BridgeResult> {
+  const resp = await fetch('/api/draw/bridge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  return await resp.json();
+}
+
+export async function fetchBridgeModels(): Promise<{ alias: string; kind: string; loaded: boolean; dir_exists: boolean }[]> {
+  try {
+    const resp = await fetch('/api/draw/bridge/models');
+    return await resp.json();
+  } catch { return []; }
 }

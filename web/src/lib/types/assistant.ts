@@ -60,4 +60,12 @@ export interface Character {
   alternatives: string | null;
 }
 
-export type DrawMode = 'WAI' | 'Anima' | 'Flux' | 'Real' | 'Pony';
+export type DrawMode = 'WAI' | 'Anima' | 'Flux' | 'Real' | 'Pony' | 'ZImage' | 'GLM' | 'Flux2';
+
+// 桥接模式（diffusers 原生语义直出，不走 ComfyUI 工作流）
+export const BRIDGE_MODES: DrawMode[] = ['ZImage', 'GLM', 'Flux2'];
+export const BRIDGE_MODEL_MAP: Record<string, string> = {
+  ZImage: 'zimage-turbo',
+  GLM: 'glm-image',
+  Flux2: 'flux2-klein',
+};

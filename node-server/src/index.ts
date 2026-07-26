@@ -15,6 +15,7 @@ import { loadConfig, loadJson } from './services/config.js';
 import { walletRouter, deductPoints, refundPoints, loadPointsCfg } from './routes/wallet.js';
 import { presetRouter } from './routes/presets.js';
 import assistantRouter from './routes/assistant.js';
+import { bridgeRouter } from './routes/bridge.js';
 
 // CLI arg parsing: --host HOST --port PORT
 const argv = process.argv.slice(2);
@@ -59,6 +60,7 @@ app.use('/api', jwtAuth(config));
 
 // Assistant route (public, no auth required for chat)
 app.use('/api/assistant', assistantRouter);
+app.use('/api/draw', bridgeRouter);
 
 // Global admin guard: all /api/draw/admin/* routes require admin role
 app.use('/api/draw/admin', requireAdmin);

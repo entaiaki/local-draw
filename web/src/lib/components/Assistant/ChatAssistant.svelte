@@ -1,11 +1,12 @@
 <script lang="ts">
   import type { AssistantMessage, GeneratedCard, DrawMode } from '$lib/types/assistant';
+  import { BRIDGE_MODES, BRIDGE_MODEL_MAP } from '$lib/types/assistant';
   import MessageList from './MessageList.svelte';
   import PromptCard from './PromptCard.svelte';
   import QuickPromptBox from './QuickPromptBox.svelte';
   import AssistantInput from './AssistantInput.svelte';
   import CharacterStyleDialog from './CharacterStyleDialog.svelte';
-  import { assistantChat, submitToQueue, fetchMyQueue, fetchCharacters, fetchStyles, connectWs, getImageUrl, type WsStatusEvent } from '$lib/api';
+  import { assistantChat, submitToQueue, fetchMyQueue, fetchCharacters, fetchStyles, connectWs, getImageUrl, bridgeGenerate, type WsStatusEvent } from '$lib/api';
   import { onMount, onDestroy } from 'svelte';
 
   let messages: AssistantMessage[] = $state([
@@ -121,7 +122,7 @@
         .slice(-6)
         .map(m => ({ role: m.role, content: m.content }));
 
-      const data = await assistantChat(promptText.trim(), history);
+      const data = await assistantChat(promptText.trim(), history, drawMode);
 
       const card: GeneratedCard = {
         positivePrompt: data.card?.positive || promptText,
@@ -167,6 +168,37 @@
 
   async function submitGeneration(messageId: string, card: GeneratedCard): Promise<void> {
     updateMessage(messageId, { queueStatus: 'queued' });
+
+    // 桥接模式: diffusers 原生语义直出, 同步等待结果
+    if (BRIDGE_MODES.includes(drawMode)) {
+      try {
+        const result = await bridgeGenerate({
+          model: BRIDGE_MODEL_MAP[drawMode],
+          prompt: card.positivePrompt,
+          negative_prompt: card.negativePrompt,
+          width: card.width,
+          height: card.height,
+        });
+        if (result.ok && result.filename) {
+          updateMessage(messageId, {
+            queueStatus: 'done',
+            imagePath: result.filename,
+            queueError: undefined,
+          });
+        } else {
+          updateMessage(messageId, {
+            queueStatus: 'failed',
+            queueError: result.error || '桥接生成失败',
+          });
+        }
+      } catch (e: any) {
+        updateMessage(messageId, {
+          queueStatus: 'failed',
+          queueError: e.message || '桥接服务不可用',
+        });
+      }
+      return;
+    }
 
     try {
       const result = await submitToQueue({
@@ -231,9 +263,9 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <!-- Mode switcher: WAI / Anima / Flux / Real -->
+      <!-- Mode switcher: 工作流系 + 桥接直出系 -->
       <div class="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
-        {#each ['WAI', 'Anima', 'Flux', 'Real'] as mode}
+        {#each ['WAI', 'Anima', 'Flux', 'Real', 'ZImage', 'GLM', 'Flux2'] as mode}
           <button
             class="px-2.5 py-1 text-xs font-medium rounded-md transition-all {drawMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}"
             onclick={() => switchMode(mode as DrawMode)}

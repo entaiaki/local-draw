@@ -115,9 +115,27 @@ ${resList}
 }
 
 // ── POST /api/assistant/chat ──
+const BRIDGE_MODE_SET = new Set(['ZImage', 'GLM', 'Flux2']);
+
 router.post('/chat', async (req: Request, res: Response) => {
-  const { message, history } = req.body;
+  const { message, history, mode } = req.body;
   if (!message) return res.status(400).json({ error: '消息不能为空' });
+
+  // 桥接模式: 原生语义理解, 跳过 LLM 拆 tags, 中文原句直达模型
+  if (mode && BRIDGE_MODE_SET.has(mode)) {
+    return res.json({
+      reply: `好的，用 ${mode} 直出「${message}」`,
+      card: {
+        workflow_path: `${mode}/base/none.json`,
+        positive: message,
+        negative: '',
+        width: 1024,
+        height: 1024,
+        style: null,
+        character: null,
+      }
+    });
+  }
 
   const characters = getCharacters();
   const styles = getStyles();
