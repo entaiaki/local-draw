@@ -68,28 +68,26 @@
 
       // Flux2-Klein: bridge 原生编辑, 同步等待结果
       if (editModel === 'flux2-klein') {
-        const rec: EditRecord = {
-          id: ++idCounter,
+        const recId = ++idCounter;
+        records = [{
+          id: recId,
           srcName: up.image1_name,
           srcPreview: imagePreview,
           instruction: instruction.trim(),
           queueId: 0,
           status: 'running',
-        };
-        records = [rec, ...records];
+        }, ...records];
         const res = await bridgeEdit({
           model: 'flux2-klein',
           prompt: instruction.trim(),
           image_name: up.image1_name,
         });
-        if (res.ok && res.filename) {
-          rec.status = 'done';
-          rec.outputPath = res.filename;
-        } else {
-          rec.status = 'failed';
-          rec.error = res.error || '编辑失败';
-        }
-        records = records;
+        // Svelte 5 响应式: 必须用 map 生成新数组(直接改局部对象不触发更新)
+        records = records.map(r => r.id === recId
+          ? (res.ok && res.filename
+              ? { ...r, status: 'done' as const, outputPath: res.filename }
+              : { ...r, status: 'failed' as const, error: res.error || '编辑失败' })
+          : r);
         return;
       }
 
@@ -130,17 +128,20 @@
     let active = 0;
     for (const qi of items) {
       if (qi.status === 'pending' || qi.status === 'running' || qi.status === 'waiting') active++;
-      const rec = records.find(r => r.queueId === qi.id);
-      if (rec) {
-        const mapped = qi.status === 'pending' || qi.status === 'waiting' ? 'queued' : qi.status;
-        if (mapped !== rec.status) rec.status = mapped as any;
-        if (qi.status === 'done' && (qi as any)._output_files?.length) {
-          rec.outputPath = (qi as any)._output_files[0];
-        }
-        if (qi.error) rec.error = qi.error;
-      }
     }
-    records = records; // trigger reactivity
+    // Svelte 5 响应式: map 生成新数组触发更新
+    records = records.map(rec => {
+      const qi = items.find((q: any) => q.id === rec.queueId);
+      if (!qi) return rec;
+      const mapped = qi.status === 'pending' || qi.status === 'waiting' ? 'queued' : qi.status;
+      const out = (qi as any)._output_files;
+      return {
+        ...rec,
+        status: (mapped || rec.status) as any,
+        outputPath: (qi.status === 'done' && out?.length) ? out[0] : rec.outputPath,
+        error: qi.error || rec.error,
+      };
+    });
     if (active === 0 && pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   }
 
