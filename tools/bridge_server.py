@@ -66,6 +66,22 @@ app = FastAPI()
 def health():
     return {"ok": True, "loaded": list(_pipes.keys())}
 
+@app.post("/unload")
+def unload(req: dict):
+    """释放指定模型(或全部)的显存"""
+    global _pipes
+    alias = req.get("model")
+    if alias == "all" or alias is None:
+        _pipes.clear()
+    else:
+        _pipes.pop(alias, None)
+    import gc
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return {"ok": True, "loaded": list(_pipes.keys()),
+            "vram_free_gb": round(torch.cuda.mem_get_info()[0] / 2**30, 1) if torch.cuda.is_available() else None}
+
 @app.get("/models")
 def models():
     out = []
