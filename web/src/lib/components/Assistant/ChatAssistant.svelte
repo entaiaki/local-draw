@@ -6,6 +6,7 @@
   import QuickPromptBox from './QuickPromptBox.svelte';
   import AssistantInput from './AssistantInput.svelte';
   import CharacterStyleDialog from './CharacterStyleDialog.svelte';
+  import ModelLoadButton from './ModelLoadButton.svelte';
   import { assistantChat, submitToQueue, fetchMyQueue, fetchCharacters, fetchStyles, connectWs, getImageUrl, bridgeGenerate, type WsStatusEvent } from '$lib/api';
   import { onMount, onDestroy } from 'svelte';
 
@@ -272,6 +273,10 @@
           >{mode}</button>
         {/each}
       </div>
+      <!-- 桥接模式: 模型加载/卸载按钮(显存管理) -->
+      {#if BRIDGE_MODES.includes(drawMode)}
+        <ModelLoadButton model={BRIDGE_MODEL_MAP[drawMode]} />
+      {/if}
 
       <button
         class="px-3 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors"

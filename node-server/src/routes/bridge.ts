@@ -16,6 +16,34 @@ bridgeRouter.get('/bridge/models', async (_req, res) => {
   }
 });
 
+// POST /api/draw/bridge/load {model} — 预加载模型(互斥,会驱逐其他)
+bridgeRouter.post('/bridge/load', async (req, res) => {
+  try {
+    const r = await fetch(`${BRIDGE_URL}/load`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: req.body?.model }),
+      signal: AbortSignal.timeout(300000),
+    });
+    res.json(await r.json());
+  } catch (e: any) {
+    res.status(502).json({ ok: false, error: `bridge error: ${e.message}` });
+  }
+});
+
+// POST /api/draw/bridge/unload {model|'all'} — 卸载模型释放显存
+bridgeRouter.post('/bridge/unload', async (req, res) => {
+  try {
+    const r = await fetch(`${BRIDGE_URL}/unload`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: req.body?.model || 'all' }),
+      signal: AbortSignal.timeout(30000),
+    });
+    res.json(await r.json());
+  } catch (e: any) {
+    res.status(502).json({ ok: false, error: `bridge error: ${e.message}` });
+  }
+});
+
 // POST /api/draw/bridge — 直出生图 {model, prompt, negative_prompt?, width?, height?, steps?, guidance?}
 bridgeRouter.post('/bridge', async (req, res) => {
   const { model, prompt, negative_prompt = '', width = 1024, height = 1024, steps = 0, guidance = -1 } = req.body || {};

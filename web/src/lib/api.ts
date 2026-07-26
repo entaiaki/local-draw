@@ -292,3 +292,30 @@ export async function bridgeEdit(params: {
   });
   return await resp.json();
 }
+
+// ── 模型加载/卸载管理 ──
+export interface BridgeLoadResult {
+  ok: boolean;
+  loaded?: string[];
+  load_sec?: number;
+  vram_free_gb?: number;
+  error?: string;
+}
+
+export async function bridgeLoadModel(model: string): Promise<BridgeLoadResult> {
+  const resp = await fetch('/api/draw/bridge/load', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model }),
+  });
+  return await resp.json();
+}
+
+export async function bridgeUnloadModel(model: string | 'all' = 'all'): Promise<BridgeLoadResult> {
+  const resp = await fetch('/api/draw/bridge/unload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model }),
+  });
+  return await resp.json();
+}

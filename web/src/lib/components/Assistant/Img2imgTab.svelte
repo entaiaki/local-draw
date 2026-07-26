@@ -1,5 +1,6 @@
 <script lang="ts">
   import { uploadImg2img, submitToQueue, fetchMyQueue, getImageUrl, bridgeEdit } from '$lib/api';
+  import ModelLoadButton from './ModelLoadButton.svelte';
   import { onDestroy } from 'svelte';
 
   interface EditRecord {
@@ -169,6 +170,9 @@
           title="Flux.1 Kontext fp8：ComfyUI 工作流，ReferenceLatent"
         >Kontext</button>
       </div>
+      {#if editModel === 'flux2-klein'}
+        <ModelLoadButton model="flux2-klein" />
+      {/if}
       <span class="text-[10px] text-muted-foreground">≤5MB</span>
     </div>
   </div>

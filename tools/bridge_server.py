@@ -116,6 +116,21 @@ def unload(req: dict):
     return {"ok": True, "loaded": list(_pipes.keys()),
             "vram_free_gb": round(torch.cuda.mem_get_info()[0] / 2**30, 1) if torch.cuda.is_available() else None}
 
+@app.post("/load")
+def load(req: dict):
+    """预加载指定模型(不生成), 用于前端'加载模型'按钮"""
+    alias = req.get("model")
+    if alias not in MODELS:
+        return {"ok": False, "error": f"unknown model: {alias}"}
+    try:
+        t0 = time.time()
+        _load(alias)
+        return {"ok": True, "loaded": list(_pipes.keys()),
+                "load_sec": round(time.time() - t0, 1),
+                "vram_free_gb": round(torch.cuda.mem_get_info()[0] / 2**30, 1) if torch.cuda.is_available() else None}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.get("/models")
 def models():
     out = []
