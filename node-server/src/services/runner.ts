@@ -250,6 +250,73 @@ export function workflowToPromptApi(data: any): { prompt_dict: Record<string, an
   return findClipRefs(prompt);
 }
 
+// ── LoRA 动态注入: 角色 LoRA 挂载到 CheckpointLoaderSimple/UNETLoader 之后 ──
+interface CharacterLora { lora_file: string; trigger_tags: string[]; strength?: number }
+
+function loadCharactersMap(): Record<string, CharacterLora> {
+  try {
+    const charsFile = path.resolve(process.cwd(), '..', 'web', 'characters.json');
+    const d = JSON.parse(fs.readFileSync(charsFile, 'utf-8'));
+    const map: Record<string, CharacterLora> = {};
+    for (const c of d.characters || []) {
+      if (c.name_en && c.lora_file && !c._download_status) {
+        map[c.name_en.toLowerCase()] = { lora_file: c.lora_file, trigger_tags: c.trigger_tags || [], strength: c.strength };
+      }
+    }
+    return map;
+  } catch { return {}; }
+}
+
+/** 在工作流中插入 LoraLoader 节点, 串联到模型加载器之后. 返回实际使用的触发词(未在prompt中出现的). */
+function injectLoraNode(prompt_dict: Record<string, any>, loraFile: string, strength = 1.0): boolean {
+  // 找模型加载器: CheckpointLoaderSimple 或 UNETLoader + CLIPLoader
+  let modelSrc: [string, number] | null = null;
+  let clipSrc: [string, number] | null = null;
+  for (const [id, nd] of Object.entries(prompt_dict)) {
+    const node = nd as any;
+    if (node.class_type === 'CheckpointLoaderSimple') {
+      modelSrc = [id, 0]; clipSrc = [id, 1]; break;
+    }
+  }
+  if (!modelSrc) {
+    // UNETLoader(0=model) + 找 CLIP 源(DualCLIPLoader/CLIPLoader, 输出0)
+    for (const [id, nd] of Object.entries(prompt_dict)) {
+      const node = nd as any;
+      if (node.class_type === 'UNETLoader') modelSrc = [id, 0];
+      if (['CLIPLoader', 'DualCLIPLoader', 'TripleCLIPLoader'].includes(node.class_type)) clipSrc = [id, 0];
+    }
+  }
+  if (!modelSrc || !clipSrc) return false;
+
+  const loraId = 'lora_inject_1';
+  prompt_dict[loraId] = {
+    class_type: 'LoraLoader',
+    inputs: {
+      lora_name: loraFile,
+      strength_model: strength,
+      strength_clip: strength,
+      model: modelSrc,
+      clip: clipSrc,
+    },
+  };
+  // 重定向所有对原 MODEL/CLIP 的引用到 LoRA 输出
+  for (const [, nd] of Object.entries(prompt_dict)) {
+    const node = nd as any;
+    if (!node.inputs) continue;
+    for (const [key, val] of Object.entries(node.inputs)) {
+      if (Array.isArray(val) && val.length === 2 && typeof val[0] === 'string') {
+        if (val[0] === modelSrc![0] && val[1] === modelSrc![1] && key !== 'model') node.inputs[key] = [loraId, 0];
+        else if (val[0] === modelSrc![0] && val[1] === modelSrc![1]) node.inputs[key] = [loraId, 0];
+        if (val[0] === clipSrc![0] && val[1] === clipSrc![1]) node.inputs[key] = [loraId, 1];
+      }
+    }
+  }
+  // LoraLoader 自身输入还原(刚被上面误改)
+  prompt_dict[loraId].inputs.model = modelSrc;
+  prompt_dict[loraId].inputs.clip = clipSrc;
+  return true;
+}
+
 function findClipRefs(prompt: Record<string, any>): { prompt_dict: Record<string, any>; positive_ref: [string, string] | null; negative_ref: [string, string] | null } {
   let positiveRef: [string, string] | null = null;
   let negativeRef: [string, string] | null = null;
@@ -416,7 +483,32 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       positive_ref = result.positive_ref;
       negative_ref = result.negative_ref;
 
-    const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + req.direct_prompt : (req.style_tags || '');
+    // ── 角色 LoRA 动态注入 ──
+    let loraTriggers: string[] = [];
+    if (req.character) {
+      const charsMap = loadCharactersMap();
+      const char = charsMap[String(req.character).toLowerCase()];
+      if (char && injectLoraNode(prompt_dict, char.lora_file, char.strength ?? 1.0)) {
+        const pLower = (req.direct_prompt || '').toLowerCase();
+        loraTriggers = char.trigger_tags.filter(t => !pLower.includes(t.toLowerCase()));
+        console.log(`[lora] injected ${char.lora_file} for ${req.character}, extra triggers: ${loraTriggers.join(', ') || '(none)'}`);
+      } else if (char) {
+        console.log(`[lora] WARN: inject failed for ${req.character} (no compatible loader in workflow)`);
+      }
+    }
+
+    // ── 输出按日期分文件夹: SaveImage prefix 加 YYYY-MM-DD/ ──
+    const dateFolder = new Date().toISOString().slice(0, 10);
+    for (const [, nd] of Object.entries(prompt_dict)) {
+      const node = nd as any;
+      if (node.class_type === 'SaveImage' && node.inputs && typeof node.inputs.filename_prefix === 'string') {
+        if (!node.inputs.filename_prefix.startsWith(dateFolder)) {
+          node.inputs.filename_prefix = `${dateFolder}/${node.inputs.filename_prefix}`;
+        }
+      }
+    }
+
+    const finalPrompt = req.direct_prompt ? (req.style_tags ? req.style_tags + ', ' : '') + (loraTriggers.length ? loraTriggers.join(', ') + ', ' : '') + req.direct_prompt : (req.style_tags || '');
     const isTtsWF = (req.workflow_path || '').startsWith('TTS/');
     // TTS 工作流：通过 XiaomiMiMo API 生成，不经过 ComfyUI
     if (isTtsWF) {
@@ -602,6 +694,12 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
       const crawlOutputs = (obj: any, depth = 0): void => {
         if (depth > 10 || !obj) return;
         const isMedia = (s: string) => /\.(png|jpg|jpeg|webp|gif|mp4|webm|wav|flac)$/i.test(s);
+        // {filename, subfolder} 结构: 保留子目录(日期分类)
+        if (typeof obj === 'object' && !Array.isArray(obj) && typeof obj.filename === 'string' && isMedia(obj.filename)) {
+          const sf = (typeof obj.subfolder === 'string' && obj.subfolder) ? obj.subfolder.replace(/\\+/g, '/').replace(/^\/|\/$/g, '') + '/' : '';
+          foundFiles.add(sf + obj.filename);
+          return;
+        }
         if (typeof obj === 'string' && isMedia(obj)) { foundFiles.add(obj); return; }
         if (Array.isArray(obj)) { obj.forEach(v => crawlOutputs(v, depth + 1)); return; }
         if (typeof obj === 'object') {
@@ -613,10 +711,17 @@ export async function runQueueTask(item: QueueItem): Promise<void> {
     }
     const images: { filename: string; subfolder: string }[] = [];
     const hasVideo = [...foundFiles].some(f => /\.(mp4|webm)$/i.test(f));
+    // 去重: 同一文件若同时存在带子目录版本, 丢弃裸文件名版(ui crawl 冗余)
+    const dirBasenames = new Set([...foundFiles].filter(f => f.includes('/')).map(f => f.split('/').pop()));
     for (const fn of foundFiles) {
       if (hasVideo && /\.png$/i.test(fn)) continue;
       if (fn.includes(':\\') || fn.startsWith('/')) continue;
-      images.push({ filename: fn, subfolder: '' });
+      if (!fn.includes('/') && dirBasenames.has(fn)) continue;  // 已有日期目录版
+      const parts = fn.split('/');
+      images.push({
+        filename: parts[parts.length - 1],
+        subfolder: parts.length > 1 ? parts.slice(0, -1).join('/') : '',
+      });
     }
     if (images.length === 0) throw new Error('未找到输出文件');
 

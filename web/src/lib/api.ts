@@ -139,7 +139,7 @@ export async function submitToQueue(params: {
   width: number;
   height: number;
   style_tags?: string;
-  seed?: number;
+  character?: string;
   image1_name?: string;
   image2_name?: string;
   image3_name?: string;

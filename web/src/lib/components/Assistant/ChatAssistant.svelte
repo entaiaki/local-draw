@@ -210,6 +210,7 @@
         width: card.width,
         height: card.height,
         style_tags: card.styleTags,
+        character: card.character,
       });
 
       updateMessage(messageId, {
