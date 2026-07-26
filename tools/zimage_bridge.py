@@ -78,9 +78,10 @@ try:
     gen_time = time.time() - t1
     
     # Save
-    Path(OUT_PATH).parent.mkdir(parents=True, exist_ok=True)
-    image.save(OUT_PATH)
-    size_kb = Path(OUT_PATH).stat().st_size // 1024
+    out_path = str(Path(OUT_PATH).resolve())
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    image.save(out_path)
+    size_kb = Path(out_path).stat().st_size // 1024
     
     print(json.dumps({
         "ok": True,
