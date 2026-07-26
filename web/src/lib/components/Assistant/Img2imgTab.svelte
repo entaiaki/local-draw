@@ -114,6 +114,12 @@
       if (!pollTimer) pollTimer = setInterval(poll, 2000);
     } catch (e: any) {
       errorText = e.message || '提交失败';
+      // 卡死的记录复位: 所有非终态记录标记为失败
+      records = records.map(r =>
+        (r.status === 'running' || r.status === 'queued') && !r.outputPath
+          ? { ...r, status: 'failed' as const, error: r.error || errorText }
+          : r
+      );
     } finally {
       uploading = false;
     }

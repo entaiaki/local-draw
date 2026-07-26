@@ -29,7 +29,12 @@ export default defineConfig({
       ],
     },
     proxy: {
-      '/api': 'http://127.0.0.1:8080',
+      '/api': {
+        target: 'http://127.0.0.1:8080',
+        // 桥接生成含模型加载(30s+)，默认代理超时(2min)可能掐断长请求
+        timeout: 600000,
+        proxyTimeout: 600000,
+      },
       '/ws': {
         target: 'ws://127.0.0.1:8080',
         ws: true,
